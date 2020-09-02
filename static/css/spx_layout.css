@@ -1,0 +1,770 @@
+/*
+  Copyright 2020 SmartPX
+  CSS file for basic stuff. Must be loaded first.
+*/
+
+
+html, body {
+    margin: 5px;
+    box-sizing: border-box;
+    height: 99.5%;
+    overflow: hidden;
+    font-size: 1.5vw;
+    color: white;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    }
+
+
+.HIDE{
+    /* WHILE DEBUGGING unhide OBJECTS with display:no-none */
+    display     :      none; /*change this to no-none to see debug data in editors */
+    border      :      2px dashed rgb(0, 248, 0);
+    padding     :      5px;
+    margin      :      5px;
+    background-color: rgba(173, 76, 11, 0.246);
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++++  */
+}
+    
+
+ul{
+    padding-left: 2em;
+}
+
+a:link,
+a:visited {
+    color: white;
+    text-decoration: none;
+}
+
+a:hover {
+    color: orange;
+    text-decoration: none;
+}
+
+a:active {
+    color: orange;
+    text-decoration: none;
+}
+
+div {
+    box-sizing: border-box;
+}
+
+h2{
+    color: rgb(25, 134, 212);
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 80px;
+    margin-bottom: 2px;
+}
+
+h2:first-of-type{
+    margin-top: 10px;
+}
+
+.h2hr{
+    margin: 6px 0px 10px 0px;
+    border: 1px solid rgba(0,0,0,0.0);
+    border-top: 2px solid rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(106, 112, 119, 0.5);
+}
+
+
+hr{
+    margin: 20px 0px 20px 0px;
+    border: 1px solid rgba(0,0,0,0.0);
+    border-top: 2px solid rgba(0,0,0,0.2);
+    border-bottom: 2px solid rgba(255,255,255,0.05);
+}
+
+
+td {
+    vertical-align: middle;
+    border: 0px solid yellow;
+}
+
+
+
+iframe {
+    transform-origin:   top left;
+    background-color:   rgb(0, 0, 0);
+    border:             1px solid rgb(0, 0, 0);
+    width:              1920px;
+    height:             1080px;
+    overflow:           hidden;
+}
+
+
+/* html elements above this line, custom classes alphabetized below */
+
+
+td.aright{
+    text-align: right;
+}
+
+
+.beta
+    {
+    background-color: rgba(138, 113, 113, 0.822);
+    border-radius: 0px;
+    padding: 1px 8px;
+    font-family: "UI-Bold", Arial, Helvetica, sans-serif;
+    font-size: 0.85em;
+    color: rgb(48, 48, 48);
+    margin-left: 0.25em;
+    margin-right: 0.75em;
+    border-bottom: 2px solid rgb(128, 21, 7);
+    }
+
+
+.brd{
+    border: 2px dotted white;
+    border-collapse: separate;
+}
+
+
+.breadcrumbs{
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    font-size: 0.9rem;
+    color:  #B9BDC2;
+    border: 0px solid yellow;
+    text-transform: uppercase;
+}
+
+
+.browserMessage{
+    font-size: 0.6rem;
+    color:  rgb(255, 255, 255);
+    margin-left: 0.5em;
+    user-select: none;
+}
+
+.caption{
+    font-size: 0.7em;
+    opacity: 0.6;
+}
+
+
+.caret-icon{
+    font-size: 1.0rem;
+    color:  #237BBA;
+    margin: 0px 5px 0px 5px  !important;
+}
+
+
+
+
+.center {
+    text-align: center !important;
+    }
+
+
+.centerColumn {
+    margin: auto;
+    width: 70%;
+    height: 100%;
+    overflow: auto;
+    border: 0px solid salmon;
+    }
+    
+
+
+.content {
+    flex: 1;
+    overflow: auto;
+    border: 0px solid red;
+    }
+
+
+.delim {
+    color: rgba(28, 153, 226, 0.651);
+    margin-right: 0.3em;
+}
+
+.delim::before {
+    content: "|";
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    text-align: left;
+}
+
+.dropdown-content {
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    display: none;
+    position: absolute;
+    background-color: #272833;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 0.3em 1em;
+    z-index: 1;
+    line-height: 2em;
+    font-size: 0.8em;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.file, .folder{
+    user-select: none;
+    display: block;
+    cursor: pointer;
+}
+
+.filebrowser {
+    font-size: 0.9em;
+    padding: 0.1em;
+}
+
+.selectedFile{
+    border-left: 3px solid orange;
+    border-right: 3px solid orange;
+    background-color: rgba(255, 166, 0, 0.157);
+}
+
+.filebrowser UL {
+    padding: 0.2em;
+}
+
+.filebrowser LI {
+    font-size: 0.9em;
+    padding: 0.5em;
+    margin-left: 0px;
+    border-bottom: 1px solid #ffffff28;
+}
+
+.filebrowser_file, .filebrowser_folder, .filebrowser_up{
+    color: rgb(214, 214, 214);
+    display: block;
+    cursor: pointer;
+}
+
+.filebrowser_file:hover, .filebrowser_folder:hover, .filebrowser_up:hover{
+    color: rgb(227, 239, 245);
+    background-color: #2c3136;
+}
+
+div.curfolder{
+    margin-top: 1.0em;
+    padding: 0.1em 1em;
+    color: rgba(227, 239, 245, 0.589);
+    font-size: 0.6em;
+}
+
+.headlineArea {
+    border-top: 2px solid grey;
+    vertical-align: top;
+}
+
+
+.header{
+    height: 80px;
+    border: 0px solid pink;
+    }
+
+
+.tableheaderText
+    {
+        color: rgb(25, 134, 212);
+        font-family: "UI-Light", Arial, Helvetica, sans-serif;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+
+.tableheaderHelp
+    {
+        color: rgb(25, 134, 212);
+        font-family: "UI-Light", Arial, Helvetica, sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.5;
+    }
+
+.tableheaderHelp:hover
+    {
+        color: rgb(250, 201, 96);
+        opacity: 1.0;
+        cursor: pointer;
+    }
+
+
+.hidden {
+    opacity: 0;
+}
+
+
+.home-icon{
+    font-size: 1.2em;
+    color: #B9BDC2;
+    margin-left: 20px;
+    margin-right: 5px;
+}
+
+
+
+.itemlist  
+    {
+        background-color: #2A3641;
+    }
+
+
+.truncate{
+    margin-top: 0.2em;
+    margin-bottom: 0.3em;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    width: auto;
+    min-width: 0;
+    max-width: 90%;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.5;
+  }
+
+
+
+.left {
+    width: 60%;
+    height: 100%;
+    float: left;
+    overflow: auto;
+    border: 0px solid salmon;
+    }
+
+
+
+.message{
+    padding: 10px;
+    background-color: rgba(125, 226, 159, 0.363);
+    color: white;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.7rem;
+    margin-bottom: 30px;
+}
+
+
+.messagerror{
+    padding: 10px;
+    background-color: rgba(221, 82, 27, 0.363);
+    color: white;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.7rem;
+    margin-bottom: 30px;
+}
+
+
+.over {
+    background-color: pink !important;
+}
+
+
+.pM
+    {
+        padding: 10px;
+    }
+
+    
+.playFalse
+    {
+        /*FIXME: This is not super clever... See view-controller play icon logic...*/
+        opacity: 0 !important; 
+        color:green;
+    }
+
+
+.playTrue
+    {
+        /*FIXME: This is not super clever... See view-controller play icon logic...*/
+        opacity: 1 !important;
+        color:green;
+    }
+
+.playAuto
+    {
+        /*FIXME: This is not super clever... See view-controller play icon logic...*/
+        opacity: 1 !important;
+        color:green !important;
+        border-right: 3px solid green;
+    }
+
+
+.renderer
+    {
+        background-image: url('/img/checker60.png'); /* bgimage for local preview */
+        background-size: 10vw;
+    }
+
+
+
+.right {
+    margin-left: 60%;
+    height: 100%;
+    overflow: auto;
+    border: 0px solid blueviolet;
+    }
+
+
+
+.rowhead {
+    margin: auto 1px auto 1px;
+    vertical-align: middle;
+    color: white;
+    font-family: "UI-Black", Arial, Helvetica, sans-serif;
+    font-size: 0.85em;
+    line-height: 2em;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+
+.scroller::-webkit-scrollbar-track
+    {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.0);
+    border-radius: 0px;
+    background-color: #414C5A;
+}
+
+.scroller::-webkit-scrollbar
+    {
+    width: 14px;
+    background-color: #414C5A;
+    border: 0px solid yellow;
+    }
+
+
+
+.scroller::-webkit-scrollbar-thumb
+    {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.0);
+    background-color: #677180;
+    padding: 10px;
+    }
+
+.scroller::-webkit-scrollbar-thumb:hover
+    {
+    background-color: #718cb4;
+    }
+
+    
+.serverbtn {
+        background-color: rgba(0, 0, 0, 0);
+        font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+        padding: 0.3em 0.8em;
+        border-radius: 0px;
+        font-size: 0.8em;
+        margin: 0px;
+        color: white;
+        cursor: default;
+    }
+
+
+.spxFlexContainer {
+    display: flex; /* flex or inline-flex */
+    justify-content: center;
+    align-content: stretch;
+    padding: 0.0em;
+    border: 0px solid yellow;
+    margin: 0px;
+}
+
+.spxFlexItem {
+    flex: auto;
+    white-space: nowrap;
+    padding: 0px 0px 0px 0px;
+    margin: 0px;
+}
+
+.spxMainPanel {
+    height: 55vw;
+    display: table;
+    width: 100%;
+    max-width: 2000px;
+    text-align: center;
+    border: 0px solid yellow;
+    border-collapse: separate;
+    border-spacing: 2px;
+    margin: auto;
+}
+
+.spxTopRow {
+    display: table-row;
+    height: 4em;
+    color: white;
+    border: 1px solid red !important;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+}
+
+.spxBottomRow {
+    display: table-row;
+    height: 12.5em;
+    /* background: rgb(9, 36, 9); */
+    color: beige;
+    vertical-align: middle;
+}
+
+.spxMainSection {
+    height: 100%;
+    display: table-cell;
+    width: 100%;
+    vertical-align: middle;
+    border: 0px solid green;
+}
+
+.spxTableRow {
+    height: 100%;
+    display: table-row;
+    width: 100%;
+    vertical-align: middle;
+    border: 0px solid green;
+}
+
+.spxCell {
+    display: table-cell;
+    vertical-align: middle;
+    margin: 10px !important;
+    text-align: left;
+    padding: 10px;
+}
+
+.spxPanelL {
+    width: 50%;
+    color: white;
+}
+
+.spxPanelC {
+    width: 0.1em;
+    /* background: red; */
+    color: white;
+}
+
+.spxPanelR {
+    color: white;
+    border-left: 2px solid grey;
+    margin-left: 10px;
+}
+
+.spxTableHead {
+    color: white;
+    text-transform: uppercase;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    text-shadow: rgba(255, 255, 255, 0.1) 0 0 2px;
+    line-height: 2em;
+    font-size: 0.75em;
+    margin: auto auto;
+    border: 0px solid pink;
+}
+
+.spxConfigHead {
+    color: rgba(255, 255, 255, 0.52);
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    text-shadow: rgba(255, 255, 255, 0.1) 0 0 2px;
+    line-height: 2em;
+    font-size: 0.75em;
+    margin: auto auto;
+    border: 0px solid pink;
+    white-space: nowrap;
+}
+
+
+.spxInfotext {
+    font-size: 0.6em;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    opacity: 0.7;
+    line-height: 120%;
+}
+
+.spxTableHeadsmall {
+    font-size: 0.6em;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    text-shadow: rgba(255, 255, 255, 0.5) 0 0 2px;
+    opacity: 0.75;
+    line-height: 75%;
+}
+
+
+.footer {
+    height: 32px;
+    border: 0px solid orange;
+    margin: 8px 10px 4px 10px;
+    padding: 8px 10px;
+  }
+
+
+table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTable{
+    padding: 0px;
+    margin: 0px;
+    line-height: 16px;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    font-size:  14px;
+}
+
+
+
+.statusbar
+    {
+    color:      #aaaaaa;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:  100%;
+    padding:    3px 3px;
+    }
+
+.statusBarWarn
+    {
+    color:      #ffb95d;
+    }
+
+.statusBarWarn::before
+    {
+    font-family: "FontAwesomeSol900";
+    content:    "\f071";
+    color: rgb(230, 137, 16);
+    font-size: 60%;
+    margin-right: 6px;
+    }
+
+
+
+.statusBarError
+    {
+    background-color: rgba(124, 9, 9, 0.808);
+    color:      #f3ebeb;
+    }
+
+.statusBarError::before
+    {
+    font-family: "FontAwesomeSol900";
+    content:    "\f071";
+    color: rgb(230, 226, 16);
+    font-size: 60%;
+    margin-right: 6px;
+    }
+
+.tooltipzone {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltipzone .tooltip {
+    visibility: hidden;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 0.1em 0.7em;
+    font-size: 0.9em;
+    opacity: 0;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 10px);
+    transition: opacity 1.5s;
+}
+
+.tooltipzone:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+.vtop{
+    vertical-align: top;
+}
+
+.vmid{
+    vertical-align: middle;
+}
+
+
+.wide
+    {
+    width: 100% !important;
+    }
+
+.w50
+    {
+    width: 49% !important;
+    }
+
+
+
+.working
+    {
+    background-color: rgb(255, 136, 0);
+    border-radius: 3px;
+    padding: 1px 8px;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    font-size: 0.85em;
+    text-shadow: rgba(0, 0, 0, 1.0) 0 0 6px;
+    color: white;
+    margin-left: 1.5em;
+    }
+
+
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0px solid green;
+    }
+
+
+.itemrow {
+    background-color: rgba(255,255,255,0.05);
+    border-top: 2px solid transparent !important;
+    border-right: 2px solid transparent !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: border-left 0.3s, color 0.2s, background-color 0.2s, border-width 0.2s;
+}
+
+.itemrow:hover {
+    background-color: rgba(153, 218, 255, 0.07);
+    border-width: 2px 2px 2px 15px;
+}
+
+
+.inFocus {
+    border-top: 2px solid rgba(187, 164, 60, 0.746) !important;
+    border-right: 2px solid rgba(141, 122, 13, 0.431) !important;
+    border-bottom: 2px solid rgba(158, 120, 14, 0.527) !important;
+    transition: background-color 0.2s, border-left 0.3s, box-shadow 0.6s;
+    background-color: rgba(0, 0, 0, 0.1);
+    box-shadow: rgba(156, 119, 50, 0.3) 0px 0px 10px;
+}
+
+.inFocus:hover {
+    transition: background-color 0.2s, border-left 0.3s;
+    background-color: rgba(0, 0, 0, 0.1);
+    box-shadow: rgba(218, 112, 13, 0.657) 0px 0px 10px;
+    border-width: 2px 2px 2px 15px;
+}

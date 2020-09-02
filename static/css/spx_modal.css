@@ -1,0 +1,230 @@
+/*
+  Copyright 2020 SmartPX
+  CSS file for basic stuff. Must be loaded first.
+*/
+
+.addTemplateItem{
+  background-color: rgba(255,255,255,0.05);
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  box-shadow: rgba(0, 0, 0, 0.7) 0px 0px 10px;
+}
+
+.addTemplateItem:hover{
+  background-color: rgba(255,255,255,0.2);
+  cursor: pointer;
+}
+
+.templateName{
+  text-transform: uppercase;
+}
+
+.templateDesc{
+  font-size: 75%;
+  opacity: 0.6;
+}
+
+.collapsible {
+    box-sizing: border-box;
+    color: white;
+    cursor: pointer;
+    padding: 12px;
+    width: 100%;
+    border-top: 0px;
+    border-right: 0px;
+    border-bottom: 1px solid black;
+    text-align: left;
+    outline: none;
+    font-size: 1rem;
+    text-transform: uppercase;
+  }
+
+  .collapsible::before{
+    content: "\25B6";
+    color: white;
+    display: inline-block;
+    margin-right: 12px;
+    transform: rotate(0deg) scale(0.7);
+    transition: transform 0.3s ease-in-out;
+  }
+
+
+  .globalCollapsible
+    {
+      font-size: 0.7rem;
+    }
+
+  .active, .collapsible:hover {
+    background-color: #375ea3;
+  }
+
+   
+  .active::before{
+    content: "\25B6";
+    color: white;
+    display: inline-block;
+    margin-right: 12px;
+    transform: rotate(90deg)  scale(1.0);
+    transition: transform 0.3s ease-in-out;
+  }
+
+
+  .collapsiblecontent {
+    box-sizing: border-box;
+    padding: 0px 10px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    font-size: 1rem;
+    background-color: rgba(0,0,0,0.1);
+  }
+
+
+
+/* Remove default bullets */
+ul, #myUL {
+list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#myUL {
+margin: 0;
+padding: 0;
+}
+
+/* Style the caret/arrow */
+.caret {
+cursor: pointer;
+user-select: none; /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.caret::before {
+content: "\25B6";
+color: black;
+display: inline-block;
+margin-right: 6px;
+}
+
+/* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+.caret-down::before {
+transform: rotate(90deg);
+}
+
+/* Hide the nested list */
+.nested {
+display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.opened {
+display: block;
+}
+
+
+.overlay {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(65, 76, 90, 0.9);
+  z-index: 900;
+}
+
+
+.modal {
+  width: 60%;
+  height: 50%;
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  padding: 0.3em;
+  background-color: #414C5A;
+  color: white;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 20px;
+}
+
+.icon::before {
+  font-family: "FontAwesomeSol900";
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 1.2em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.folder::before { content: "\f07b"; color: rgb(9, 119, 170);}
+.file::before { content: "\f15b"; color: rgb(241, 241, 237);}
+.back::before { content: "\f062"; }
+
+.height1{
+  height: 1em;
+}
+
+.height2{
+  height: 2em;
+}
+
+.height3{
+  height: 3em;
+}
+
+.height4{
+  height: 4em;
+}
+
+
+.modal_top{
+  border: 0px solid pink;
+  border-bottom: 1px dashed rgba(51, 150, 216, 0.445);
+  }
+
+.modal_top SPAN{
+  transform: translateY(-50%);
+  font-size: 0.8em;
+  margin-left: 1em;
+  }
+
+.modal_content{
+  border: 0px solid pink;
+  padding: 0.7em;
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  }
+
+.modal_bottom{
+  border: 0px solid pink;
+  height: 2.5em;
+  padding-top: 0.3em;
+  }
+
+
+.KBHelptable{
+    border-collapse:collapse; 
+	}
+
+.KBHelptable td{ 
+    padding:10px;
+    border:#4e95f4 0px solid;
+	}
+
+.KBHelptable th{ 
+  background: rgba(0,0,0,0.5);
+  text-align: left;
+  padding: 7px;
+}
+
+.KBHelptable tr:nth-child(odd){ 
+		background: rgba(0,0,0,0.1);
+	}
+	/*  Define the background color for all the EVEN background rows  */
+	.KBHelptable tr:nth-child(even){
+		background: rgba(255,255,255,0.1);
+	}
+

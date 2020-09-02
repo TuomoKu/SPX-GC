@@ -1,0 +1,38 @@
+<!-- This is the file browser modal overlay (used by view-showconfig) -->
+<div class="overlay" id="extraoverlay" id="extrabrowserModal">
+   <div class="modal wrapper">
+    <div class="modal_top height4">
+      <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
+        <tr style="background-color: rgba(255,255,255,0.2);">
+          <td valign="middle" style="font-size: 0.8em;">
+            &nbsp;{{lang 'pagetitle.selectshowextra'}}
+          </td>
+          <td valign="middle" class="aright">
+            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('extraoverlay');"></i>&nbsp;
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="modal_content content scroller">
+          <div class="addTemplateItem row_accentExtras">
+            <button type="button" class="addbtn bg_blue ripple" onClick="addExtra('button');" style="float:right;">+</button>
+            <span class="templateName">{{lang 'config.extrabutton'}}</span><BR>
+            <span class="templateDesc">{{lang 'config.extrabuttondescription'}}</span>
+          </div>
+
+          <div class="addTemplateItem row_accentExtras">
+            <button type="button" class="addbtn bg_blue ripple" onClick="addExtra('togglebutton');" style="float:right;">+</button>
+            <span class="templateName">{{lang 'config.extratoggle'}}</span><BR>
+            <span class="templateDesc">{{lang 'config.extratoggledescription'}}</span>
+          </div>
+
+          <div class="addTemplateItem row_accentExtras">
+            <button type="button" class="addbtn bg_blue ripple" onClick="addExtra('selectbutton');" style="float:right;">+</button>
+            <span class="templateName">{{lang 'config.extraselectbutton'}}</span><BR>
+            <span class="templateDesc">{{lang 'config.extraselectdescription'}}</span>
+          </div>
+    </div>
+
+  </div>
+</div><!-- overlay ended-->

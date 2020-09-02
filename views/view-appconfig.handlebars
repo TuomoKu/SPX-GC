@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/js/axios.min.js"></script>
+  <script src="/js/fontawesome.all.min.js"></script>
+  <script src="/js/Sortable.min.js"></script>
+  <script src="/js/socket.io.js"></script>
+  <script src="/js/spx_gc.js"></script>
+  <title>GC | {{lang 'pagetitle.configapp'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+</head>
+
+
+<body onload="pageInit();" class="bg_body" onmouseover="tip('');">
+  <div class="wrapper">
+    <div class="header">
+      {{>header page="appconfig"}}
+    </div><!-- header ended -->
+    <div class="content">
+      <div class="centerColumn pM wrapper ">
+        <div id="itemList" class="content pM scroller" style="border: 0px solid yellow;">
+
+          {{#if message}}
+          <div class="message">{{message}}</div>
+          {{/if}}
+
+          {{#if error}}
+          <div class="messagerror">{{error}}</div>
+          {{/if}}
+
+
+          <form name="config" id="config" method="post">
+
+          <input type="hidden" name="general[username]" value="{{config.general.username}}">
+          <input type="hidden" name="general[password]" value="{{config.general.password}}">
+          <input type="hidden" name="general[hostname]" value="{{config.general.hostname}}">
+          <input type="hidden" name="general[greeting]" value="{{config.general.greeting}}">
+          <input type="hidden" name="general[showusercommapass]" value="{{config.general.showusercommapass}}">
+
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.general'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('config');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <table style="width: 100%;" cellspacing="10" border="0">
+            <!--
+            <tr onmouseover="tip('{{lang 'hover.openbrowser'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">{{lang 'config.openchrome'}}</span>
+              </td>
+              <td>
+                {{{ OpenChromeCheck }}}
+              </td>
+            </tr>
+            -->
+            <tr>
+              <td width="40%">
+                <span class="spxConfigHead">Config file</span>
+              </td>
+              <td>
+                 <span class="spxConfigHead">{{configfile}}</span>
+              </td>
+            </tr>
+
+            <tr onmouseover="tip('{{lang 'hover.lang'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">{{lang 'config.language'}}</span>
+              </td>
+              <td>
+                <select class="wide drop bg_grey15" name="general[langfile]">
+                  {{{ DropdownOptionsLANG }}}
+                </select>
+                <BR>
+                
+              </td>
+            </tr>
+            
+            <tr onmouseover="tip('{{lang 'hover.loglevel'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">{{lang 'config.loglevel'}} *</span>
+              </td>
+              <td>
+                <select class="wide drop bg_grey15" name="general[loglevel]">
+                      <!-- error, warn, info, verbose, debug -->
+                      {{#ifValue config.general.loglevel "error"}}
+                          <option selected>error</option>
+                      {{else}}
+                          <option>error</option>
+                      {{/ifValue}}
+
+                      {{#ifValue config.general.loglevel "warn"}}
+                          <option selected>warn</option>
+                      {{else}}
+                          <option>warn</option>
+                      {{/ifValue}}
+
+                      {{#ifValue config.general.loglevel "info"}}
+                          <option selected>info</option>
+                      {{else}}
+                          <option>info</option>
+                      {{/ifValue}}
+
+                      {{#ifValue config.general.loglevel "verbose"}}
+                          <option selected>verbose</option>
+                      {{else}}
+                          <option>verbose</option>
+                      {{/ifValue}}
+
+                      {{#ifValue config.general.loglevel "debug"}}
+                          <option selected>debug</option>
+                      {{else}}
+                          <option>debug</option>
+                      {{/ifValue}}
+
+                </select>
+              </td>
+            </tr>
+
+            <tr onmouseover="tip('{{lang 'hover.logfolder'}}');">
+              <td>
+                <span class="spxConfigHead">{{lang 'config.logfolder'}} *</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="Log folder" name="general[logfolder]" value="{{config.general.logfolder}}">
+              </td>
+            </tr>
+
+            <tr  onmouseover="tip('{{lang 'hover.port'}}');">
+              <td>
+                <span class="spxConfigHead">{{lang 'config.serverport'}} *&nbsp;&nbsp;<i style="color:rgba(255, 166, 0, 0.472);" class="fas fa-exclamation-triangle" title="URL port must be changed after reload, otherwise this page will not load!"></i></span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="port" name="general[port]" value="{{config.general.port}}">
+              </td>
+            </tr>
+            <tr onmouseover="tip('{{lang 'hover.dataroot'}}');">
+              <td>
+                <span class="spxConfigHead">{{lang 'config.dataroot'}} *</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="Dataroot folder" name="general[dataroot]" value="{{config.general.dataroot}}">
+              </td>
+            </tr>
+            <tr onmouseover="tip('{{lang 'hover.htmlfolder'}}');">
+              <td width="40%" class="vtop">
+                <span class="spxConfigHead">GC {{lang 'config.templateroot'}} *</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="Template folder for browsing" name="general[templatefolder]" value="{{config.general.templatefolder}}">
+                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5;"><small><BR>
+                 {{lang 'config.templatepathinfo'}}
+                  </small>
+                </P>
+                <!--  -->
+              </td>
+            </tr>
+
+
+            <!-- external audio player is disabled:
+            <tr onmouseover="tip('{{lang 'hover.dataroot'}}');">
+              <td>
+                <span class="spxConfigHead">{{lang 'config.audioplayer'}}</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="Audioplayer path" name="general[audioplayer]" value="{{config.general.audioplayer}}">
+              </td>
+            </tr>
+            <tr onmouseover="tip('{{lang 'hover.htmlfolder'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">{{lang 'config.playerflags'}}</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="Audioplayer arguments (%FILE%)" name="general[playerflags]" value="{{config.general.playerflags}}">
+              </td>
+            </tr>
+            audio player -->
+            
+          </table>
+
+          <BR><BR>
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.webplayout'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('webplayout');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <table style="width: 100%;" cellspacing="5" border="0">
+            <tr onmouseover="tip('{{lang 'hover.playouturl'}}');">
+              <td width="40%">
+                <a href="http://{{{ getServerAddress }}}/renderer/" target="_player"><span style="border-bottom: 1px dashed rgb(0, 140, 255);" class="spxConfigHead">{{lang 'config.webplayurl'}} *</span></a>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" style="border: 1px dashed rgba(0, 140, 255, 0.507); background-color: #575757;" placeholder="URL for OBS / vMIX" value="http://{{{ getServerAddress }}}/renderer/">
+              </td>
+            </tr>
+
+            <!--
+            <tr onmouseover="tip('{{lang 'hover.remoteplayouturl'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">DEMO RemoteRenderer</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" style="border: 1px dashed rgba(0, 140, 255, 0.507); background-color: #575757;" placeholder="URL for OBS / vMIX" value="remoteserver.address.com/webrenderer/index.html?gc={{{ getServerAddress }}}">
+              </td>
+            </tr>
+            -->
+
+          </table>
+
+          <BR><BR>
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.casparcg'}} *</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('casparcg');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <table style="width: 100%;" cellspacing="5" border="0">
+
+
+            <!-- THIS NOT NEEDED, HUH?
+            <tr onmouseover="tip('{{lang 'hover.ccgtemplatepath'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">{{lang 'config.ccgtemplates'}}*</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="From casparcg.config" name="casparcg[relativeTemplateFolder]" value="{{config.casparcg.relativeTemplateFolder}}">
+              </td>
+            </tr>
+            -->
+
+            {{#each config.casparcg.servers}}
+            <tr>
+              <td width="40%">
+                <span class="spxConfigHead">
+                  {{#ifValue @index 0}}
+                      {{lang 'config.ccgservers'}}
+                  {{else}}
+                      &nbsp;
+                  {{/ifValue}}
+                </span>
+              </td>
+
+              <td class="spxFlexContainer" style="padding:0px; margin:0px;" >
+                <span class="spxConfigHead">{{@index}}</span>
+                <input type="text" class="bg_grey15 cfg" style="margin:0px 4px 0px 0px; width:30%;" name="casparcg[servers][{{@index}}][name]" onmouseover="tip('{{lang 'hover.ccgserver'}}');" placeholder="Server name" value="{{name}}">
+                <input type="text" class="bg_grey15 cfg" style="margin:0px 4px 0px 0px; width:30%;" name="casparcg[servers][{{@index}}][host]" onmouseover="tip('{{lang 'hover.ccghost'}}');" placeholder="ip" value="{{host}}">
+                <input type="text" class="bg_grey15 cfg" style="margin:0px 0px 0px 0px; width:30%;" name="casparcg[servers][{{@index}}][port]" onmouseover="tip('{{lang 'hover.ccgport'}}');" placeholder="port" value="{{port}}">
+              </td>
+            </tr>
+            {{/each}}
+
+            <tr>
+              <td width="40%">
+                &nbsp;
+              </td>
+              <td class="spxFlexContainer" style="padding:0px; margin:0px;" onmouseover="tip('{{lang 'hover.addccgserver'}}');">
+                <span class="spxConfigHead">+</span>
+                <input type="text" class="bg_grey15 cfg" style="margin:0px 0px 0px 0px; width:30%;" name="NewName" placeholder="Server name" value="">
+                <input type="text" class="bg_grey15 cfg" style="margin:0px 0px 0px 5px; width:30%;" name="NewHost" placeholder="ip" value="">
+                <input type="text" class="bg_grey15 cfg" style="margin:0px 0px 0px 5px; width:30%;" name="NewPort" placeholder="port" value="">
+              </td>
+            </tr>
+            <tr>
+              <td width="40%">
+                &nbsp;
+              </td>
+              <td class="spxFlexContainer" style="padding:0px; margin:0px;" onmouseover="tip('{{lang 'hover.addccgserver'}}');">
+                <!--
+                <P class="spxConfigHead"
+                style="white-space: normal; line-height: 100%; opacity:0.5;"><small>
+                  <BR>
+                 Bug warning! There must be at least one server here.<BR>
+                 It does not need to exist for real thought...</small>
+                </P>
+                -->
+              </td>
+            </tr>
+          </table>
+          <BR>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- /////////////// extras starts ///////////////// -->
+
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.globalbuttons'}} *</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('globalextras');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+
+
+
+
+          <!-- script linker -->
+          <table style="width: 100%;" cellspacing="5" border="0">
+            <tr onmouseover="tip('{{lang 'hover.confjsfile'}}');">
+              <td width="40%">
+                <span class="spxConfigHead">{{lang 'config.functionlibrary'}}</span>
+              </td>
+              <td>
+                <input type="text" class="wide bg_grey15 cfg" placeholder="/path/in/ASSETS/filename.js" name="globalExtras[customscript]" value="{{config.globalExtras.customscript}}">
+              </td>
+            </tr>
+          </table>
+
+          <table style="width: 100%;" cellspacing="5" border="0">
+            <tr>
+              <td width="40%" class="vtop">
+                <span class="spxConfigHead">{{lang 'config.globalbuttons'}}</span>
+              </td>
+              <td><!-- button list starts -->
+
+
+                  {{#each config.globalExtras.CustomControls}}
+                    <!-- each extra button  -->
+                  <div id="extra{{@index}}">
+                    <button class="collapsible globalCollapsible bg_grey15 row_accentExtras" type="button">{{description}}</button>
+                    <div class="collapsiblecontent spxConfigHead" >
+                      <input type="hidden" name="globalExtras[CustomControls][{{@index}}][ftype]" value="{{ftype}}">
+                      <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                        <tr onmouseover="tip('{{lang 'hover.buttontype'}}');">
+                          <td><span class="spxConfigHead">{{lang 'config.buttontype'}}</span></td>
+                          <td><span class="spxConfigHead">{{ftype}}</span></td>
+                        </tr>
+                        <tr onmouseover="tip('{{lang 'hover.colors'}}');">
+                          <td width="40%"><span class="spxConfigHead">{{lang 'config.buttoncolor'}}</span></td>
+                          <td>
+                            <select class="wide drop bg_grey15" name="globalExtras[CustomControls][{{@index}}][bgclass]">
+                              {{{generateButtonColorClasses bgclass}}}
+                            </select>
+                          </td>
+                        </tr>
+
+
+                        {{#ifValue ftype "button"}}
+                          <tr onmouseover="tip('{{lang 'hover.text'}}');">
+                            <td><span class="spxConfigHead">{{lang 'config.buttontext'}}</span></td>
+                            <td>
+                              <input type="text" class="wide bg_grey15 cfg" placeholder="Caption" name="globalExtras[CustomControls][{{@index}}][text]" value="{{text}}">
+                              </td>
+                          </tr>
+
+                          <tr onmouseover="tip('{{lang 'hover.fcall'}}');">
+                            <td><span class="spxConfigHead">{{lang 'config.functionhandler'}}</span></td>
+                            <td><input type="text" class="wide bg_grey15 cfg" placeholder="clickHandler()" name="globalExtras[CustomControls][{{@index}}][fcall]" value="{{fcall}}"></td>
+                          </tr>
+                        {{/ifValue}}
+
+
+                        {{#ifValue ftype "togglebutton"}}
+                          <tr>
+                            <td><span class="spxConfigHead">{{lang 'config.buttontexts'}}</span></td>
+                            <td>
+                              <input  onmouseover="tip('{{lang 'hover.text'}}');"  type="text" style="width: 49%;" class="bg_grey15 cfg" placeholder="ON" name="globalExtras[CustomControls][{{@index}}][text0]" value="{{text0}}">
+                              <input  onmouseover="tip('{{lang 'hover.text1'}}');" type="text" style="width: 49%;" class="bg_grey15 cfg" placeholder="OFF" name="globalExtras[CustomControls][{{@index}}][text1]" value="{{text1}}">
+                              </td>
+                          </tr>
+
+                          <tr onmouseover="tip('{{lang 'hover.fcall'}}');">
+                            <td><span class="spxConfigHead">{{lang 'config.functionhandler'}}</span></td>
+                            <td><input type="text" class="wide bg_grey15 cfg" placeholder="toggleHandler()" name="globalExtras[CustomControls][{{@index}}][fcall]" value="{{fcall}}"></td>
+                          </tr>
+                        {{/ifValue}}
+
+
+
+                        <tr onmouseover="tip('{{lang 'hover.extradescr'}}');">
+                          <td><span class="spxConfigHead">{{lang 'config.functiondescription'}}</span></td>
+                          <td><input type="text" class="wide bg_grey15 cfg" placeholder="Description" name="globalExtras[CustomControls][{{@index}}][description]" value="{{description}}"></td>
+                        </tr>
+          
+                      </table>
+
+                      <table class="wide" style="padding: 10px; margin-bottom:10px;">
+                        <tr>
+                          <td width="25%">
+                            <button type="button" onmouseover="tip('{{lang 'hover.removeglobalextra'}}');" class="wide spxFlexItem btnsmall bg_grey10 ripple black" onClick="notImplemented();">{{lang 'button.deletebutton'}}</button>
+                          </td>
+                          <td>&nbsp;</td>
+                          <td width="25%" class="center">
+                            <!-- <button type="button" class="wide spxFlexItem btnsmall bg_grey10 ripple black" onClick="alert('Not implemented. Modify config.json manually.');">{{lang 'button.save'}}</button> -->
+                          </td>
+                        </tr>
+                      </table>
+                      </form>
+
+                    </div><!--ended extra item -->
+                  </div><!-- extra index ended -->
+          
+
+
+                    <!-- //each extra button -->
+                  {{/each}}
+
+
+                <div class="wide" style="text-align: center; padding:0.5rem;">
+                  <button type="button" class="addbtn bg_blue ripple" onmouseover="tip('{{lang 'hover.browseglobalextras'}}');" onClick="notImplemented();">+</button>
+                </div>
+                
+              </td><!-- button list ended -->
+            </tr>
+          </table>
+
+          <!-- /////////////// extras ended ///////////////// -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          <HR><!-- save / cancel buttons -->
+          <center>
+            <span class="spxConfigHead">* {{lang 'config.restartinfo'}}</span>
+          </center>
+          <BR>
+          <div class="spxFlexContainer">
+              <button onmouseover="tip('{{lang 'hover.saveconfig'}}');" class="wide spxFlexItem btn bg_green ripple" type="submit" form="config">{{lang 'button.save'}}</button>
+              <button type="button" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide spxFlexItem btn bg_red ripple" onClick="location.href='/';">{{lang 'button.cancel'}}</button>
+          </div>
+
+          </form>
+        </div><!-- itemlist ended -->
+      </div><!-- center wrapper ended -->
+    </div><!-- content ended -->
+
+
+    {{>footer}}
+
+
+  </div><!-- MAINwrapper ended -->
+
+
+
+
+  <script>
+
+     // COLLAPSIPLE HANDLERS
+      var coll = document.getElementsByClassName("collapsible");
+      var i;
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          var content = this.nextElementSibling;
+          if (content.style.maxHeight){
+            content.style.maxHeight = null;
+          } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+          } 
+        });
+      }
+
+    function notImplemented() {
+      // request ..... 
+      // returns ..... 
+      // Describe the function here 
+      alert('Not implemented yet.\n\nPlease modify config.json manually. Read help for additional information.');
+    } // NotImplemented ed
+     
+
+
+
+    // See spx_gc.js
+    function pageInit(){
+      spxInit('');
+    }
+  </script>
+</body>
+</html>

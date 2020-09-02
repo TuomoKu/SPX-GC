@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="/js/axios.min.js"></script>
+  <script src="/js/fontawesome.all.min.js"></script>
+  <script src="/js/Sortable.min.js"></script>
+  <script src="/js/socket.io.js"></script>
+  <script src="/js/spx_gc.js"></script>
+  <title>GC | {{lang 'pagetitle.configshow'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+  <script>
+
+
+    function removeExtraIndex(formNro)
+      {
+        //console.log('Removing extra index ' + formNro);
+        data={
+            showFolder: document.getElementById('showfolder').value,
+            ExtraIndex: formNro
+        };
+        post('config/removeExtra', data, 'post')
+      }
+
+    function removeTemplateIndex(formNro)
+      {
+        //console.log('Removing template index ' + formNro);
+        data={
+            showFolder: document.getElementById('showfolder').value,
+            TemplIndex: formNro
+        };
+        post('config/removeTemplate', data, 'post')
+      }
+
+
+    function RenderFolder(data)
+      {
+        // will draw folder and files to the popup GUI
+        document.getElementById('curfolder').innerText = data.folder.split("\\").join("/");
+        document.getElementById("folderList").innerHTML="";
+        document.getElementById("fileList").innerHTML="";
+        data.foldArr.forEach((folder,i) => {
+          var node = document.createElement("LI");
+          node.classList.add("filebrowser_folder");
+          // node.onclick = function() { alert('OPEN FOLDER ' + folder); };
+          var span = document.createElement("SPAN");
+          span.classList.add("icon");
+          span.classList.add("folder");
+          var textnode = document.createTextNode(folder + "/");
+          span.appendChild(textnode);
+          node.appendChild(span);
+          document.getElementById("folderList").appendChild(node);
+        });
+        data.fileArr.forEach((file,i) => {
+          var node = document.createElement("LI");
+          node.classList.add("filebrowser_file");
+          // node.onclick = function() { alert('CHOOSE FILE ' + file); };
+          var span = document.createElement("SPAN");
+          span.classList.add("icon");
+          span.classList.add("file");
+          var textnode = document.createTextNode(file);
+          span.appendChild(textnode);
+          node.appendChild(span);
+          document.getElementById("fileList").appendChild(node);
+        });
+        applyFileBrowserHandlers();
+      }
+
+
+      function FileBrowserOn() {
+        document.getElementById("overlay").style.display = "block";
+      }
+
+      function FileBrowserOff() {
+        document.getElementById("overlay").style.display = "none";
+      }
+
+
+      function navigateDeeper(targetFolderName)
+        {
+          let curFolder = document.getElementById('curfolder').innerText;
+          // console.log('Deeper',curFolder,targetFolderName);
+          openFolder(curFolder, targetFolderName)
+        }
+
+
+      function openFolder(fromFolder, toFolder)
+        {
+          // deselect files first
+          var fils = document.getElementsByClassName("filebrowser_file");
+          document.getElementById('btnChooseTemplate').style.opacity=0.2;
+          var fi;
+          for (fi = 0; fi < fils.length; fi++) {
+            fils[fi].classList.remove('selectedFile');
+          }
+          // console.log('Opening folder ' + folderName);
+          axios.post('/api/browseTemplates', {
+              curFolder: fromFolder,
+              tgtFolder: toFolder
+            })
+              .then(function (response) {
+                  // console.log(response);
+                  RenderFolder(response.data);
+
+              })
+              .catch(function (error) {
+                  console.log(error);
+              });
+        }
+
+
+      function highlightFile(e)
+        {
+          // Clicked
+          var fils = document.getElementsByClassName("filebrowser_file");
+          var fi;
+          for (fi = 0; fi < fils.length; fi++) {
+            fils[fi].classList.remove('selectedFile');
+          }
+          // console.log(e.target.parentElement);
+          setTimeout(function () { e.target.parentElement.classList.add('selectedFile'); }, 10);
+          document.getElementById('btnChooseTemplate').style.opacity=1;
+          showMessage(e.target.innerText);
+        }
+
+      function applyFileSelection(e)
+        {
+          // DblClicked to apply the selection
+          var fils = document.getElementsByClassName("filebrowser_file");
+          var fi;
+          for (fi = 0; fi < fils.length; fi++) {
+            fils[fi].classList.remove('selectedFile');
+          }
+          setTimeout(function () { e.target.parentElement.classList.add('selectedFile'); }, 10);
+          setTimeout(function () { openSelectedFile(); }, 50);
+        }
+
+
+      function addExtra(controltype)
+        {
+          // add button or togglebutton to the show
+          let data={};
+          data.command = 'addshowextra';
+          data.ftype = controltype;
+          data.curFolder = document.getElementById('curfolder').innerText;
+          data.showFolder = document.getElementById('showfolder').value;
+          post('', data, 'post');
+        }
+
+
+      function addShowScript()
+        {
+          // add scriptfile to the show
+          let data={};
+          data.command = 'addshowextrascript';
+          data.customscript = document.getElementById('customscript').value;
+          data.curFolder = document.getElementById('curfolder').innerText;
+          data.showFolder = document.getElementById('showfolder').value;
+          post('', data, 'post');
+        }
+
+      function openSelectedFile()
+        {
+          var fils = document.getElementsByClassName("filebrowser_file");
+          var fi;
+          for (fi = 0; fi < fils.length; fi++) {
+            if (fils[fi].classList.contains('selectedFile'))
+              {
+              let data={};
+              data.command = 'addtemplate';
+              data.curFolder = document.getElementById('curfolder').innerText;
+              data.template = fils[fi].innerText;
+              data.showFolder = document.getElementById('showfolder').value;
+              // alert('Fire baby burn: ' + data.template);
+              post('', data, 'post');
+              break;
+              }
+          }
+        }
+
+
+      function goUp()
+        {
+          let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
+          let pathItems = document.getElementById('curfolder').innerText.split("/");
+          pathItems.pop();
+          pathItems.pop();
+          let targetFolder = pathItems.join('/') + '/';
+
+          if (ConfigTemplateFolder.length > targetFolder.length ){
+            showMessage(document.getElementById('templaterootmassage').value);
+            return;
+          }
+
+          // console.log('targetFolder',targetFolder);
+          openFolder(targetFolder, '');
+        }
+
+
+  function showMessage(msg)
+    {
+      document.getElementById('browserMessage').innerText=msg;
+      setTimeout('document.getElementById(\'browserMessage\').innerText="";', 2000);
+    }
+
+
+   function applyFileBrowserHandlers(){
+     // FILEBROWSER HANDLERS
+      var timer = 0;
+      var delay = 150;
+      var prevent = false;
+      var fols = document.getElementsByClassName("folder");
+      var fils = document.getElementsByClassName("file");
+      var fo;
+      for (fo = 0; fo < fols.length; fo++) {
+        fols[fo].addEventListener("dblclick", function() {
+          navigateDeeper(this.innerText);
+        });
+      }
+
+      var fi;
+      for (fi = 0; fi < fils.length; fi++) {
+        // Assign click handler with delay timer
+        fils[fi].addEventListener("click", function(e) {
+          timer = setTimeout(function() {
+            if (!prevent) {
+              highlightFile(e);
+            }
+            prevent = false;
+          }, delay);
+        });
+
+        // Assign dblClick handler with delay timer
+        fils[fi].addEventListener("dblclick", function(e) {
+          clearTimeout(timer);
+          prevent = true;
+          applyFileSelection(e);
+        });
+       } // end for
+}
+
+
+  </script>
+
+
+</head>
+
+
+<body onload="pageInit();" class="bg_body" onmouseover="tip('');">
+
+<input type="hidden" id="treedata" value="{{TemplateFiles}}">
+<input type="hidden" id="showfolder" value="{{folder}}">
+<input type="hidden" id="templateroot" value="{{TemplateRootFolder}}">
+<input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
+
+
+{{>partial-templatebrowsermodal}}
+{{>partial-showextrabrowsermodal}}
+
+
+  <div class="wrapper">
+
+
+    <div class="header">
+      {{>header page="showconfig"}}
+
+    </div><!-- header ended -->
+
+
+    <div class="content">
+      <div class="centerColumn pM wrapper">
+        <div id="itemList" class="content pM scroller" style="border: 0px solid yellow;">
+
+          {{#if messageCode}}
+          <div class="message">{{messageCode}}</div>
+          {{/if}}
+
+          {{#if errorCode}}
+          <div class="messagerror"><B>{{errorCode}}</B><BR><BR>{{lang errorCode}}</div>
+          {{/if}}
+
+
+<!--
+          Move this nag to documentation instead...
+          <span style="display: block; padding: 0.6em 1.7em; background: #0000004b; color:#ffffff; font-size:0.7em; border-radius:9px; margin_5px; text-align:center;">
+            {{lang 'warning.showprofilebackup'}}
+          </span><BR>
+-->
+
+
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.templates'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projecttemplates');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+
+          <!-- iterate all templates from showconfig =========================================================================  -->
+
+          {{#each showconfig.templates}}
+
+          <div id="template{{@index}}">
+          <button class="collapsible bg_grey15 row_accent{{uicolor}}" type="button" onmouseover="tip('{{lang 'hover.confitem'}}');">
+              {{{nameFromTemplatePath relpath }}}
+              <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{playlayer}} | {{webplayout}}</SPAN>
+            </button>
+          <div class="collapsiblecontent spxConfigHead" >
+            <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">
+            <input type="hidden" name="showFolder" value="{{../folder}}">
+            <input type="hidden" name="TemplIndex" value="{{@index}}">
+            <input type="hidden" name="templateData[DataFields]" value="{{{DataToJSONString DataFields}}}">
+            <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+              <tr>
+                <td><span class="spxConfigHead">{{lang 'config.templatefile'}}</span></td>
+                <td><input type="text" class="wide bg_grey15 cfg" placeholder="Template file" name="templateData[relpath]" value="{{relpath}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
+              </tr>
+              <tr>
+                <td><span class="spxConfigHead">{{lang 'config.description'}}</span></td>
+                <td><input type="text" class="wide bg_grey15 cfg" placeholder="Description" name="templateData[description]" value="{{description}}" onmouseover="tip('{{lang 'hover.templatedescr'}}');"></td>
+              </tr>
+              <tr>
+                <td><span class="spxConfigHead">{{lang 'config.inputfields'}}</span></td>
+                <td onmouseover="tip('{{lang 'hover.fields'}}');">
+                  <span class="spxConfigHead">
+                    {{DataFields.length}} {{lang 'general.pcs'}}:  
+                    {{#each DataFields}}
+                      &nbsp;{{title}}
+                    {{/each}}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td width="40%"><span class="spxConfigHead">{{lang 'config.ccgplayout'}}</span></td>
+                <td>
+                  <div class="" style="width: 100%; border: 0px solid blue;">
+                    <select style="width: 50%;" class="drop bg_grey15" name="templateData[playserver]"  onmouseover="tip('{{lang 'hover.ccgserver'}}');">
+                      {{{generateCasparCgPlayoutOptions playserver}}}
+                    </select>
+                    <input style="width: 23%;" type="text" class="bg_grey15 cfg" onmouseover="tip('{{lang 'hover.ccgchannel'}}');" placeholder="Channel" name="templateData[playchannel]" value="{{playchannel}}">
+                    <input style="width: 23%;" type="text" class="bg_grey15 cfg" onmouseover="tip('{{lang 'hover.ccglayer'}}');" placeholder="Layer" name="templateData[playlayer]" value="{{playlayer}}">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="40%"><span class="spxConfigHead">{{lang 'config.dataformat'}}</span></td>
+                <td>
+                  <select class="wide drop bg_grey15" name="templateData[dataformat]" onmouseover="tip('{{lang 'hover.dataformat'}}');">
+                     {{{generateDataFormatOptions dataformat}}}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td width="40%"><span class="spxConfigHead">{{lang 'config.webplayout'}}</span></td>
+                <td>
+                  <select class="wide drop bg_grey15" name="templateData[webplayout]" onmouseover="tip('{{lang 'hover.weblayer'}}');">
+                     {{{generateWebPlayoutOptions webplayout}}}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td width="40%"><span class="spxConfigHead">{{lang 'config.stopmode'}}</span></td>
+                <td>
+                  <select class="wide drop bg_grey15" name="templateData[out]" onmouseover="tip('{{lang 'hover.outmode'}}');">
+                     {{{generateOutOptions out}}}
+                  </select>
+                </td>
+              </tr>
+
+
+              <tr>
+                <td width="40%"><span class="spxConfigHead">{{lang 'config.coloraccent'}}</span></td>
+                <td  onmouseover="tip('{{lang 'hover.accent'}}');">
+                  {{{generateColorAccents uicolor @index}}}
+                </td>
+              </tr>
+            </table>
+
+
+
+
+
+            <table class="wide" style="padding: 10px; margin-bottom:10px;">
+              <tr>
+                <td width="25%">
+                  <button type="button"
+                    class="wide spxFlexItem btnsmall bg_grey10 ripple black"
+                    onclick="removeTemplateIndex({{@index}});"
+                    onmouseover="tip('{{lang 'hover.removetemplate'}}');"
+                    >{{lang 'button.deletetemplate'}}</button>
+                </td>
+                <td>&nbsp;</td>
+                <td width="25%" class="aright">
+                  <button type="submit"
+                    class="wide spxFlexItem btnsmall bg_grey10 ripple black"
+                    onmouseover="tip('{{lang 'hover.saveprofile'}}');"
+                    >{{lang 'button.save'}}</button>
+                </td>
+              </tr>
+            </table>
+            </form>
+
+          </div><!--ended item -->
+
+          </div><!-- index ended -->
+          {{/each}}
+          <!-- templates ended from showconfig =========================================================================  -->
+
+
+          <div class="wide" style="text-align: center; padding:0.5rem;">
+          {{#if showconfig.templates}}
+            <!-- templates above -->
+          {{else}}
+            <span style="display: inline-block; margin: 10px;padding: 0.6em 1.7em; background: #0000001c; color:#ffffff; font-size:0.7em; border-radius:2em; margin_5px; text-align:center;">
+              {{lang 'config.addfirsttemplate'}}
+            </span><BR>
+          {{/if}}
+
+            <button type="button" class="addbtn bg_blue ripple" onClick="ModalOn('fileoverlay');" onmouseover="tip('{{lang 'hover.browsetemplate'}}');">+</button>
+          </div>
+
+          <BR>
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.showextras'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projectextras');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+
+          <!-- script linker -->
+          <div id="scriptLinker">
+            <button class="collapsible bg_grey15 row_accentExtras" type="button">{{lang 'config.functionlibrary'}}</button>
+            <div class="collapsiblecontent spxConfigHead" >
+              <form name="extrascript" id="extrascript" method="post" action="config/saveExtraScript">
+              <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                <tr>
+                  <td><span class="spxConfigHead">{{lang 'config.javascriptfile'}}</span></td>
+                  <td>
+                  <input type="text" class="wide bg_grey15 cfg" placeholder="ExtraFunctions/myExtraFunctions.js" id="customscript" name="customscript"  
+                  {{#if showconfig.showExtras.customscript}}
+                    value="{{showconfig.showExtras.customscript}}"
+                  {{else}}
+                    value="ExtraFunctions/demoFunctions.js"
+                  {{/if}}
+                  onmouseover="tip('{{lang 'hover.showjsfile'}}');">
+                  </td>
+                  </tr>
+                <tr>
+                  <td>&nbsp;</td>
+                  <td><button type="button" class="wide spxFlexItem btnsmall bg_grey10 ripple black" onClick="addShowScript();" onmouseover="tip('{{lang 'hover.saveprofile'}}');">{{lang 'button.save'}}</button></td>
+                  </td>
+                </tr>
+              </table>
+              </form>
+
+            </div><!--ended extra item -->
+          </div><!-- extra index ended -->
+          <!-- //script linker -->
+
+
+          {{#each showconfig.showExtras.CustomControls}}
+            <!-- each extra button  -->
+          <div id="extra{{@index}}">
+            <button class="collapsible bg_grey15 row_accentExtras" type="button">{{description}}</button>
+            <div class="collapsiblecontent spxConfigHead" >
+              <form name="extra{{@index}}" id="extra{{@index}}" method="post" action="config/saveExtra">
+              <input type="hidden" name="ExtraIndex" value="{{@index}}">
+              <input type="hidden" name="showFolder" value="{{../folder}}">
+              <input type="hidden" name="extraData[ftype]" value="{{ftype}}">
+              <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                <tr onmouseover="tip('{{lang 'hover.buttontype'}}');">
+                  <td><span class="spxConfigHead">{{lang 'config.buttontype'}}</span></td>
+                  <td><span class="spxConfigHead">{{ftype}}</span></td>
+                </tr>
+                <tr>
+                  <td><span class="spxConfigHead">{{lang 'config.functiondescription'}}</span></td>
+                  <td><input type="text" class="wide bg_grey15 cfg" placeholder="Description" name="extraData[description]" value="{{description}}" onmouseover="tip('{{lang 'hover.extradescr'}}');"></td>
+                </tr>
+                <tr onmouseover="tip('{{lang 'hover.colors'}}');">
+                  <td width="40%"><span class="spxConfigHead">{{lang 'config.buttoncolor'}}</span></td>
+                  <td>
+                    <select class="wide drop bg_grey15" name="extraData[bgclass]">
+                      {{{generateButtonColorClasses bgclass}}}
+                    </select>
+                  </td>
+                </tr>
+
+
+                {{#ifValue ftype "button"}}
+                  <tr onmouseover="tip('{{lang 'hover.text'}}');">
+                    <td><span class="spxConfigHead">{{lang 'config.buttontext'}}</span></td>
+                    <td>
+                      <input type="text" class="wide bg_grey15 cfg" placeholder="Caption" name="extraData[text]" value="{{text}}" >
+                      </td>
+                  </tr>
+
+                  <tr onmouseover="tip('{{lang 'hover.fcall'}}');">
+                    <td><span class="spxConfigHead">{{lang 'config.functionhandler'}}</span></td>
+                    <td><input type="text" class="wide bg_grey15 cfg" placeholder="clickHandler" name="extraData[fcall]" value="{{fcall}}" ></td>
+                  </tr>
+                {{/ifValue}}
+
+
+                {{#ifValue ftype "togglebutton"}}
+                  <tr>
+                    <td><span class="spxConfigHead">{{lang 'config.buttontexts'}}</span></td>
+                    <td>
+                      <input type="text" style="width: 49%;" class="bg_grey15 cfg" placeholder="ON" name="extraData[text0]" value="{{text0}}" onmouseover="tip('{{lang 'hover.text'}}');">
+                      <input type="text" style="width: 49%;" class="bg_grey15 cfg" placeholder="OFF" name="extraData[text1]" value="{{text1}}" onmouseover="tip('{{lang 'hover.text1'}}');">
+                      </td>
+                  </tr>
+
+                  <tr onmouseover="tip('{{lang 'hover.fcall'}}');">
+                    <td><span class="spxConfigHead">{{lang 'config.functionhandler'}}</span></td>
+                    <td><input type="text" class="wide bg_grey15 cfg" placeholder="toggleHandler" name="extraData[fcall]" value="{{fcall}}" ></td>
+                  </tr>
+                {{/ifValue}}
+
+
+                {{#ifValue ftype "selectbutton"}}
+                  <input type="hidden" name="value" value="{{value}}">
+                  <tr onmouseover="tip('{{lang 'hover.text'}}');">
+                    <td><span class="spxConfigHead">{{lang 'config.buttontext'}}</span></td>
+                    <td><input type="text" class="wide bg_grey15 cfg" placeholder="Caption" name="extraData[text]" value="{{text}}" ></td>
+                  </tr>
+
+                  <tr onmouseover="tip('{{lang 'hover.fcall'}}');">
+                    <td><span class="spxConfigHead">{{lang 'config.functionhandler'}}</span></td>
+                    <td><input type="text" class="wide bg_grey15 cfg" placeholder="toggleHandler" name="extraData[fcall]" value="{{fcall}}" ></td>
+                  </tr>
+
+                  <tr onmouseover="tip('{{lang 'hover.defaultvalue'}}');">
+                    <td><span class="spxConfigHead">{{lang 'config.defaultvalue'}}</span></td>
+                    <td><input type="text" class="wide bg_grey15 cfg" placeholder="" name="extraData[value]" value="{{value}}" ></td>
+                  </tr>
+
+                  <tr onmouseover="tip('{{lang 'hover.options'}}');">
+                    <td><span class="spxConfigHead vtop">{{lang 'config.options'}}</span></td>
+                    <td>
+                      {{#each items}}
+                            <input type="text" class="w50 bg_grey15 cfg" placeholder="{{lang 'config.text'}}"  name="extraData[items][{{@index}}][text]" value="{{text}}" >
+                            <input type="text" class="w50 bg_grey15 cfg" placeholder="{{lang 'config.value'}}" name="extraData[items][{{@index}}][value]" value="{{value}}" ><BR>
+                            <!-- name="casparcg[servers][{{@index}}][name]" -->
+                      {{/each}}
+                    <input type="text" class="w50 bg_grey15 cfg" placeholder="{{lang 'config.text'}}"  name="newTXT" value="" >
+                    <input type="text" class="w50 bg_grey15 cfg" placeholder="{{lang 'config.value'}}" name="newVAL" value="" ><BR>
+                    <span style="display:block; font-size: 0.7em; text-align:center;">{{lang 'config.addnewtip'}}</span>
+                   </td>
+
+                  </tr>
+                {{/ifValue}}
+
+              </table>
+              <table class="wide" style="padding: 10px; margin-bottom:10px;">
+                <tr >
+                  <td width="25%" onmouseover="tip('{{lang 'hover.removetemplate'}}');">
+                    <button type="button" class="wide spxFlexItem btnsmall bg_grey10 ripple black" onclick="removeExtraIndex({{@index}});"  >{{lang 'button.deletebutton'}}</button>
+                  </td>
+                  <td>&nbsp;</td>
+                  <td width="25%" class="aright" onmouseover="tip('{{lang 'hover.saveprofile'}}');">
+                    <button type="submit" class="wide spxFlexItem btnsmall bg_grey10 ripple black" >{{lang 'button.save'}}</button>
+                  </td>
+                </tr>
+              </table>
+              </form>
+
+            </div><!--ended extra item -->
+          </div><!-- extra index ended -->
+   
+
+
+            <!-- //each extra button -->
+          {{/each}}
+          <div class="wide" style="text-align: center; padding:0.5rem;">
+            {{#if showconfig.showExtras.CustomControls}}
+              <!-- templates above -->
+            {{else}}
+              <span style="display: inline-block; margin: 10px;padding: 0.6em 1.7em; background: #0000001c; color:#ffffff; font-size:0.7em; border-radius:2em; margin_5px; text-align:center;">
+                {{lang 'config.addfirstextra'}}
+              </span><BR>
+            {{/if}}
+            <button type="button" class="addbtn bg_blue ripple" onClick="ModalOn('extraoverlay');" onmouseover="tip('{{lang 'hover.browseextras'}}');">+</button>
+          </div>
+
+        </div><!-- itemlist ended -->
+      </div><!-- center wrapper ended -->
+    </div><!-- content ended -->
+
+
+    {{>footer}}
+
+
+  </div><!-- MAINwrapper ended -->
+
+
+  <script>
+    // See spx_gc.js
+    function pageInit(){
+      RenderFolder(JSON.parse(document.getElementById('treedata').value));
+
+     // COLLAPSIPLE HANDLERS
+      var coll = document.getElementsByClassName("collapsible");
+      var i;
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          var content = this.nextElementSibling;
+          if (content.style.maxHeight){
+            content.style.maxHeight = null;
+          } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+          } 
+        });
+      }
+
+
+      // TREE HANDLERS
+      // https://www.w3schools.com/howto/howto_js_treeview.asp
+      var toggler = document.getElementsByClassName("caret");
+      var z;
+      for (z = 0; z < toggler.length; z++) {
+        toggler[z].addEventListener("click", function() {
+          this.parentElement.querySelector(".nested").classList.toggle("opened");
+          this.classList.toggle("caret-down");
+        });
+      }
+
+
+
+      spxInit('');
+    }
+  </script>
+</body>
+</html>

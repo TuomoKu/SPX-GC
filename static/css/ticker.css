@@ -1,0 +1,84 @@
+:root {
+  /* Define a variable for the margin of the overlay, ~70px at 1080p */
+  --margin: 3.65vmax;
+}
+
+.main {
+  position: absolute;
+  top: calc(12 * var(--margin));
+  left: var(--margin);
+  width: calc(100vw - 2 * var(--margin) - 12vw);
+  opacity: 0;
+}
+
+.f1_bg {
+  background: var(--main-color);
+  display: table;
+  position: relative;
+  padding: 0.2em 0.4em;
+}
+
+.f1_text {
+  color: var(--white-color);
+  font-family: 'UI-Black';
+  font-size: 0.8rem;
+  line-height: 1;
+  width: 100%;
+}
+
+.f2_bg {
+  background: var(--white-color);
+  display: table;
+  position: relative;
+  padding: 0.1em 0.4em 0em;
+  width: 100%;
+}
+
+.f2_text {
+  color: var(--black-color);
+  font-family: 'UI-Black';
+  font-size: 1.45rem;
+  line-height: 1.25;
+  overflow: hidden;
+  white-space: nowrap;
+  letter-spacing: -0.05rem;
+}
+
+.f3_bg {
+  z-index: 2;
+  background: #252525;
+  float: left;
+  position: relative;
+  padding: 0.1em 0.4em;
+}
+
+.f3_text {
+  color: var(--white-color);
+  font-family: 'UI-Regular';
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.ticker_bg {
+  z-index: -1;
+  background: var(--dark-color);
+  width: 100%;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.ticker {
+  z-index: 1;
+}
+
+.webTicker {
+  color: var(--white-color);
+  float: left;
+  position: relative;
+}
+
+.webTicker li {
+  font-size: 1rem;
+  line-height: 1.2;
+  font-family: 'UI-Regular';
+}

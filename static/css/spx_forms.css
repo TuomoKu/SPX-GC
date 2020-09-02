@@ -1,0 +1,307 @@
+/*
+  Copyright 2020 SmartPX
+  CSS file for form items. Loaded after spx_layout.css
+*/
+
+::placeholder {
+    color: #555;
+    opacity: 1;
+}
+
+.cfg::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    /* font-family: Arial, Helvetica, sans-serif; */
+    opacity: 0.4;
+}
+
+.spxformtext {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1em;
+}
+
+.disabled_btn {
+    opacity: 0.2;
+}
+
+.cfg {
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    height: 2.4em;
+    font-size: 0.8em;
+    color: white;
+    border: 2px solid transparent;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
+    box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
+    padding-inline-start: 5px;
+}
+
+
+.addbtn {
+    font-size: 1.2em;
+    color: white;
+    border: 2px solid transparent;
+    text-transform: uppercase;
+    font-family: "UI-Bold", Arial, Helvetica, sans-serif;
+    text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
+    box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
+    padding-inline-start: 10px;
+    padding-inline-end: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+    
+}
+
+.addbtn:hover {
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+.btn {
+    height: 2.4em;
+    font-size: 0.8em;
+    color: white;
+    border: 2px solid transparent;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    text-transform: uppercase;
+    font-family: "UI-Bold", Arial, Helvetica, sans-serif;
+    text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
+    box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
+    padding-inline-start: 5px;
+    user-select: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn:focus{
+    outline: none;
+}
+
+
+.btnsmall {
+    font-size: 0.7em;
+    color: white;
+    border: 2px solid transparent;
+    margin-left: 1px;
+    margin-right: 1px;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
+    text-transform: uppercase;
+    height: 150%;
+    padding: 0.3em 1em;
+    cursor: pointer;
+}
+
+.btnsmall:hover {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.btnsmall:focus{
+    outline: none;
+}
+
+.drop {
+    height: 2.4em;
+    font-size: 0.8em;
+    color: white;
+    border: 2px solid transparent;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
+    box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
+}
+
+.drop:hover {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+
+
+
+.floinput {
+    padding: 0.1em;
+    background-color: #706e83;
+    border: 0;
+    font-family: inherit;
+    font-size: 1em;
+    margin: 0px;
+    color: white;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+
+.gcinput{
+    width: 100%;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    font-size: 1em;
+    margin: 1px;
+    margin-top: 5px;
+    line-height: 132%;
+}
+.gcinput::placeholder {
+    color: rgb(156, 156, 156);
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: italic;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+    }
+
+
+
+
+
+.tablineinput {
+    font-family: "UI-Black", Arial, Helvetica, sans-serif;
+    margin: 0px;
+    border: 0;
+    font-size: 1.2em; /* <-------------------------- HEADLINE SIZE IN UI*/
+    background-color: brown;
+    color: white;
+    display: inline-block;
+    padding: 0.1em;
+    padding-left: 0.4em;
+    padding-right: 0.2em;
+}
+
+.headlineinput {
+    font-family: "UI-Black", Arial, Helvetica, sans-serif;
+    margin: 0px;
+    background-color: white;
+    color: black;
+    padding-left: 0.2em;
+    border: 0;
+    font-size: 2.4em; /* <-------------------------- HEADLINE SIZE IN UI*/
+}
+
+.tickerinput {
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    padding-left: 0.2em;
+    background-color: #222;
+    margin: 0px;
+    border: 0;
+    color: white;
+    font-size: 1.35em; /* <-------------------------- HEADLINE SIZE IN UI*/
+}
+
+.imsinput {
+    flex: auto;
+    flex-basis: 290px;
+    padding: 0.1em;
+    background-color: #706e83;
+    border: 0;
+    font-family: inherit;
+    font-size: 0.9em; /* Changed 15.04.2020 - was 1.em */
+    margin: 0px;
+    color: white;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    height: 100%;
+    box-sizing: border-box;
+    height: 1.83em; /* Added 15.04.2020 */
+}
+
+.inlineInput {
+    padding: 0.1em;
+    background-color: inherit;
+    border: 0;
+    font-family: inherit;
+    font-size: 1em;
+    margin: 0px;
+    color: white;
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    height: 100%;
+    /* width: 100%; */
+    box-sizing: border-box;
+}
+
+.spxRoundedButton {
+    margin: 10px;
+    font-size: 60%;
+    padding: 0 2em;
+    border-radius: 1em;
+}
+
+/* Ripple effect */
+.ripple {
+    background-position: center;
+    transition: background 0.2s;
+}
+.ripple:hover {
+    /* background: #47a7f5 radial-gradient(circle, transparent 1%, #47a7f5 1%) center/15000%; */
+}
+.ripple:active {
+    background-color: #ffffff;
+    background-size: 100%;
+    transition: background 0s;
+}
+
+
+
+/* The radiocontainer */
+.radiocontainer {
+    display: block;
+    position: relative;
+    padding-left: 1.8em;
+    margin-bottom: 0.5em;
+    cursor: pointer;
+    font-size: 1.2em;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Hide the browser's default radio button */
+  .radiocontainer input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  /* Create a custom radio button */
+  .checkmark {
+    position: absolute;
+    top: -0.2em;
+    left: 0;
+    height: 1.3em;
+    width: 1.3em;
+    background-color: #eee;
+    border-radius: 50%;
+  }
+  
+  /* On mouse-over, add a grey background color */
+  .radiocontainer:hover input ~ .checkmark {
+    background-color: rgb(146, 179, 155);
+  }
+  
+  /* When the radio button is checked, add a blue background */
+  .radiocontainer input:checked ~ .checkmark {
+    background-color: #54af3c;
+  }
+  
+  /* Create the indicator (the dot/circle - hidden when not checked) */
+  .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  /* Show the indicator (dot/circle) when checked */
+  .radiocontainer input:checked ~ .checkmark:after {
+    display: block;
+  }
+  
+  /* Style the indicator (dot/circle) */
+  .radiocontainer .checkmark:after {
+       top: 0.4em;
+      left: 0.4em;
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 50%;
+      background: rgb(255, 255, 255);
+  }

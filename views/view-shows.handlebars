@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GC {{SPX.title}} | {{lang 'pagetitle.selectshow'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <script src="/js/fontawesome.all.min.js"></script>
+  <script src="/js/socket.io.js"></script>
+  <script src="/js/spx_gc.js"></script>
+</head>
+<body onload="pageInit();" class="bg_body" onmouseover="tip('');">
+  <div class="wrapper">
+    <div class="header">
+      {{>header page="shows"}}
+    </div><!-- header ended -->
+    <div class="content">
+      <div class="centerColumn pM wrapper ">
+        <div id="itemList" class="content pM scroller" style="border: 0px solid yellow;">
+          {{#if message}}
+          <div class="message">{{message}}</div>
+          {{/if}}
+          {{#if error}}
+          <div class="messagerror">{{error}}</div>
+          {{/if}}
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'headline.select'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projects');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <table style="width: 100%;" cellspacing="10" border="0">
+            <tr>
+              <td>
+                <select id="lists"
+                size=10 class="spxformtext bg_grey40"
+                style="width: 100%; height:100%; color:white; border:0px; padding:0.2em; line-height:3;"
+                onmouseover="tip('{{lang 'hover.showlist'}}');"
+                ondblclick="eps();" autofocus>
+                {{#each folders}}
+                <option>{{this}}</option>
+                {{/each}}
+              </select><BR>
+              </td>
+            </tr>
+          </table>
+          <HR>
+          <div class="spxFlexContainer">
+            <button onmouseover="tip('{{lang 'hover.addshow'}}');" class="spxformtext btn spxFlexItem bg_blue ripple"    onClick="addshow();">{{lang 'button.add'}}...</button>
+            <button onmouseover="tip('{{lang 'hover.deleteshow'}}');" class="spxformtext btn spxFlexItem bg_blue ripple"    onClick="delshow();">{{lang 'button.delete'}}...</button>
+            <button onmouseover="tip('{{lang 'hover.navishow'}}');" class="spxformtext btn spxFlexItem bg_orange ripple"  onClick="eps();">{{lang 'button.select'}}</button>
+          </div>
+        </div><!-- itemlist ended -->
+      </div><!-- center wrapper ended -->
+    </div><!-- content ended -->
+    {{>footer}}
+  </div><!-- MAINwrapper ended -->
+  <script>
+    window.onload = function () {
+      document.getElementById('lists').selectedIndex = "0";
+    }
+  </script>
+</body>
+</html>

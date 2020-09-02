@@ -1,0 +1,24 @@
+/* @font-face {
+    font-family: "Yle-Black";
+    src: url("/fonts/Yle-Black.ttf");
+}
+
+@font-face {
+    font-family: "Yle-Medium";
+    src: url("/fonts/Yle-Medium.ttf");
+}
+
+@font-face {
+    font-family: "Yle-Regular";
+    src: url("/fonts/Yle-Regular.ttf");
+} */
+
+
+@font-face { font-family: "UI-Light";   src: url("/fonts/EncodeSansSemiExpanded-Light.ttf");  }
+@font-face { font-family: "UI-Regular"; src: url("/fonts/EncodeSansSemiExpanded-Regular.ttf");  }
+@font-face { font-family: "UI-Bold";    src: url("/fonts/EncodeSansSemiExpanded-Bold.ttf"); }
+@font-face { font-family: "UI-Black";   src: url("/fonts/EncodeSansSemiExpanded-Black.ttf");   }
+
+
+@font-face { font-family: "FontAwesomeReg400";   src: url("/fonts/fa-regular-400.ttf");   }
+@font-face { font-family: "FontAwesomeSol900";   src: url("/fonts/fa-solid-900.ttf");   }

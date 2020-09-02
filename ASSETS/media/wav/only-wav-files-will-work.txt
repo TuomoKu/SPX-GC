@@ -1,0 +1,6 @@
+
+The node-wav-player is a Node.js module which allows you to play a wav file
+on the host computer. It supports Windows 10, MacOS X, and some Linux distros.
+
+https://www.npmjs.com/package/node-wav-player
+

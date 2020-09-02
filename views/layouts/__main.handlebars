@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Example App</title>
+
+  <style>
+    .itemrow {
+      border: 0px solid green;
+      border-radius: 0px;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1px;
+      box-sizing: border-box;
+    }
+
+    .itemrow:nth-child(odd) {
+      background: rgb(75, 75, 75);
+    }
+
+    .itemrow:nth-child(even) {
+      background: rgb(46, 43, 43);
+    }
+
+    .list {
+      border: 0px solid red;
+      width: 500px;
+      padding: 2px
+    }
+
+    .spx_input {
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      font-size: 1.2rem;
+      line-height: 12px;
+      border: 0px;
+      color: white;
+      font-weight: bold;
+      padding: 2px;
+      width: 47%;
+      margin-right: 2px;
+    }
+
+
+    .input_active {
+      background-color: rgba(0, 0, 0, 0.5);
+      color: rgb(236, 224, 171);
+      outline: blue 2px;
+    }
+
+    .input_deactive {
+      background-color: rgba(1, 1, 1, 0);
+      outline: none;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  {{>navi}}
+
+
+  {{{body}}}
+
+</body>
+
+</html>

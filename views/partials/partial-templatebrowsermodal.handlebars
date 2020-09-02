@@ -1,0 +1,44 @@
+<!-- This is the file browser modal overlay (used by view-showconfig) -->
+<div class="overlay" id="fileoverlay" id="filebrowserModal">
+   <div class="modal wrapper">
+    <div class="modal_top height4">
+      <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
+        <tr style="background-color: rgba(255,255,255,0.2);">
+          <td valign="middle" style="font-size: 0.8em;">
+            &nbsp;{{lang 'pagetitle.selectemplate'}}
+          </td>
+          <td valign="middle" class="aright">
+            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('fileoverlay')"></i>&nbsp;
+          </td>
+        </tr>
+      </table>
+      <div class="curfolder" id="curfolder"></div>
+    </div>
+
+    <div class="modal_content content scroller">
+        <div id="treeview" class="filebrowser">
+            <UL>
+              <LI style="user-select: none;" id="prefolder" class="filebrowser_up" onDblClick="goUp();"><SPAN class="icon back">{{lang 'general.up'}}</SPAN></LI>
+            </UL>
+            <UL id="folderList">
+            </UL>
+            <UL id="fileList">
+            </UL>
+        </div>
+    </div>
+
+    <div class="modal_bottom">
+      <table class="wide">
+        <tr>
+          <td width="60%">
+            <span id="browserMessage" class="browserMessage"></span>
+          </td>
+          <td class="spxFlexContainer aright" >
+            <button style="width:25%;" class="spxformtext btn spxFlexItem bg_grey15 ripple"  onClick="ModalOff('fileoverlay')">{{lang 'button.cancel'}}</button>
+            <button style="width:25%; opacity:0.2;" id="btnChooseTemplate" class="spxformtext btn spxFlexItem bg_blue ripple"  onClick="openSelectedFile();">{{lang 'button.selectemplate'}}</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div><!-- overlay ended-->

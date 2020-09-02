@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GC {{SPX.title}} | {{lang 'pagetitle.login'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+  <style>
+    .l:link, .l:visited{color:#000000}
+    .l:link:hover{color:#ffd000}
+
+  .login {
+    width: 60%;
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -40%);
+    z-index: 20;
+    padding: 0.3em;
+    background-color: #414C5A;
+    color: white;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 20px;
+    vertical-align: middle;
+  }
+
+
+  </style>
+</head>
+
+
+
+<body class="bg_body">
+  <form name="login" id="login" method="post" action="/">
+  <div class="">
+    <div class="contentXX">
+      <div class="centerColumnXX login" style="width: 35%; border:0px solid yellow; border-radius:0.8em;">
+          <table style="width: 100%; height:100%; border:0px solid yellow;" cellspacing="20" border="0">
+            <tr>
+              <td align="center">
+                <h1 style="padding:0px; margin:0px;">SPX-GC</h1>
+               SPX Graphics Controller<BR><BR>
+               <span class="spxTableHeadsmall" style="font-size: 0.6em; opacity:0.6;">
+                Manage and control graphics with CasparCG and streaming applications.<BR>
+                My friends call me <I>dʒiː.siː</I> 😉<BR>
+                </span>
+               <BR>
+
+              </td>
+            </tr>
+            <tr>
+              <td align="center">
+                <table style="width: 90%; border-radius:1em; background-color: #ffffff11;" cellspacing="25" border="1">
+                  {{{ShowDemoLoginInfo}}}
+                  <tr>
+                    <td class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">Username</td>
+                    <td ><input type="text" class="wide gcinput" name="username" autofocus value=""></td>
+                  </tr>
+                  <tr>
+                    <td class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">password</td>
+                    <td ><input type="password" class="wide gcinput" name="password" value=""></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" class="vmid center">
+                      <div class="spxFlexContainer">
+                        <input type="submit" class="spxformtext btn spxFlexItem bg_blue ripple" value="Login" style="margin:0.0em 0em 0.7em;">
+                        {{!-- <button class="spxformtext btn spxFlexItem bg_blue ripple" onclick="github()">Github</button> --}}
+                      </div>
+                      <span style="font-size: 0.55em; opacity:0.9; color:#000000;">
+                        v.{{{ShowVersion}}} | <a class="l" href="mailto:info@smartpx.fi?subject=SPX-GC">&copy; 2020 SmartPX</a></span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+      </div><!-- center wrapper ended -->
+    </div><!-- content ended -->
+  </div><!-- MAINwrapper ended -->
+  </form>
+</body>
+</html>

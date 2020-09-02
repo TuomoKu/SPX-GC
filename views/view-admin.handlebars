@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GC {{SPX.title}} | {{lang 'pagetitle.admin'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+  <style>
+    .l:link, .l:visited{color:#000000}
+    .l:link:hover{color:#ffd000}
+
+  .login {
+    width: 60%;
+    position: absolute;
+    left: 50%;
+    top: 1em;
+    transform: translate(-50%, 0%);
+    padding: 0.5em;
+    background-color: #414C5A;
+    color: white;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 20px;
+  }
+
+
+  </style>
+</head>
+
+
+
+<body class="bg_body">
+  <form name="login" id="login" method="post" action="/">
+      <div class="login" style="width: 80%; border:0px solid yellow; border-radius:0.6em; padding:10px;">
+          <table style="width: 100%;" cellspacing="20" border="0">
+            <tr>
+              <td align="left">
+                <h1 style="padding:0px; margin:0px;">SPX-GC</h1>
+               SPX Graphics Controller Admin Panel<BR><BR>
+              </td>
+            </tr>
+          </table>
+
+          <table style="width: 100%; border-radius:0.5em; background-color: #ffffff11; padding:0.4em; margin-bottom:0.7em;" cellspacing="5" border="1">
+            <tr style="background-color:#00000020;">
+              <td colspan="2" style="padding:0.4em;">LOG</td></tr>
+            <tr>
+              <td style="padding:0.4em; width:20%;" class="vtop">Last 10 logins</td>
+              <td style="padding:0.4em;">
+                12.12.2020 klo 12.22 - Windows<BR>
+                12.12.2020 klo 12.22 - Windows<BR>
+                12.12.2020 klo 12.22 - Windows<BR>
+              </td>
+            </tr>
+          </table>
+
+          <table style="width: 100%; border-radius:0.5em; background-color: #ffffff11; padding:0.4em; margin-bottom:0.7em;" cellspacing="5" border="1">
+            <tr style="background-color:#00000020;">
+              <td colspan="2" style="padding:0.4em;">RESET</td></tr>
+            <tr>
+              <td style="padding:0.4em; width:20%;" class="vtop">Last 10 logins</td>
+              <td style="padding:0.4em;">
+                12.12.2020 klo 12.22 - Windows<BR>
+                12.12.2020 klo 12.22 - Windows<BR>
+                12.12.2020 klo 12.22 - Windows<BR>
+              </td>
+            </tr>
+          </table>
+
+
+
+      </div>
+  </form>
+</body>
+</html>

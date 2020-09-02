@@ -1,0 +1,65 @@
+
+/* inspired by https://codepen.io/wildbeard/pen/eZZPZr */
+
+
+
+input[type="radio"] {
+  display: none;
+}
+input[type="radio"]:checked + label span { transform: scale(1.25); }
+
+input[type="radio"]:checked + label .gra { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .red { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .ora { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .gre { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .blu { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .pin { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .vio { border: 2px solid #ffffff;}
+input[type="radio"]:checked + label .bla { border: 2px solid #ffffff;}
+
+label {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+label:hover span {
+  transform: scale(1.25);
+}
+label span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform .2s ease-in-out;
+}
+
+/* grey, red, orange, green, blue, pink, violet, black */
+label span.gra {  background: #7a7a7a;}
+label span.red {  background: #DB2828;}
+label span.ora {  background: #F2711C;}
+label span.gre {  background: #21BA45;}
+label span.blu {  background: #2185D0;}
+label span.pin {  background: #E03997;}
+label span.vio {  background: #8840FF;}
+label span.bla {  background: #000000;}
+
+.row_accent0 {border-left: 10px solid #696969; }
+.row_accent1 {border-left: 10px solid rgb(114, 38, 38); }
+.row_accent2 {border-left: 10px solid rgb(117, 70, 38); }
+.row_accent3 {border-left: 10px solid rgb(42, 107, 57); }
+.row_accent4 {border-left: 10px solid rgb(41, 87, 122); }
+.row_accent5 {border-left: 10px solid rgb(124, 57, 95); }
+.row_accent6 {border-left: 10px solid rgb(91, 67, 129); }
+.row_accent7 {border-left: 10px solid #181818; }
+.row_accentExtras {border-left: 10px solid #acacac; }
+
+.accent_{
+  background-color: rgba(255,255,255,0.05);
+  border: 0px solid yellow;
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  border-left: 12px solid white;
+  box-shadow: rgba(0, 0, 0, 0.7) 0px 0px 10px;
+}

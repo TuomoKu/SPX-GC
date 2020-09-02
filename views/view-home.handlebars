@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GC {{SPX.title}} | {{lang 'pagetitle.home'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <script src="/js/fontawesome.all.min.js"></script>
+  <script src="/js/socket.io.js"></script>
+  <script src="/js/spx_gc.js"></script>
+  <script src="/js/axios.min.js"></script>
+  <script>
+    function github() {
+      window.open('https://github.com/TuomoKu/SPX-GC', '_github');
+    }
+
+    function start() {
+      document.location = '/shows';
+    }
+
+    function appconfig() {
+      document.location = '/config';
+    }
+  </script>
+
+  <style>
+    .auto-resizable-iframe {
+      max-width: 100%;
+      margin: 0px auto;
+    }
+
+    .auto-resizable-iframe > div {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0px;
+      background-color: #000000;
+    }
+
+    .auto-resizable-iframe iframe {
+      position: absolute;
+      background-color: #000000;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 100%;
+    }
+
+  .box {
+    /* width: 150px; */
+    margin-right: 10px;
+    background: #00000088;
+    padding: 0.6em 1em;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.671);
+    position: absolute;
+    bottom: 60px;
+    right: 50px;
+    font-size: 0.7em;
+    border-radius: 0.5em;
+  }
+
+  .sb4:before {
+    content: "";
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    border-left: 10px solid transparent;
+    border-right: 10px solid #00000088;
+    border-top: 10px solid #00000088;
+    border-bottom: 10px solid transparent;
+    right: 19px;
+    bottom: -19px;
+  }
+
+
+  #upgradeinfo, #messageinfo {
+    display: block;
+    margin: 2.0em 0em 1.5em 0em;
+    border: 1px solid rgba(0, 0, 0, 0);
+    padding: 0.8em 2.5em 1.6em 2.0em;
+    border-radius: 0.5em;
+    font-size: 0.8em;
+    background-color: #ffffff17;
+    box-shadow: rgba(0, 0, 0, 0.418) 0px 0px 10px;
+    border-left: 8px solid rgba(229, 16, 16, 0)
+  }
+
+
+  .messagedate {
+    color: rgba(255, 255, 255, 0.493);
+    font-size: 0.8em;
+    margin-top: 0.4em;
+    margin-bottom: 0.0em;
+  }
+
+  .messageheadline {
+    color: #fff;
+    margin-top: 0.2em;
+    margin-bottom: 1.0em;
+    font-size: 1.5em;
+  }
+
+  .messagebody {
+    font-size: 0.7;
+    color: rgba(255, 255, 255, 0.685);
+  }
+
+  #messagelink, #notificationlink{
+    display: inline-block;
+    margin-top: 1em;
+    padding: 0.5em 1.2em;
+    border-radius: 0.0em;
+    font-size: 1.0em;
+    background-color: #00000081;
+    border-left: 4px solid #00000000;
+    color: rgba(255, 255, 255, 0.76);
+  }
+  
+  #messagelink > a:link, #notificationlink > a:link {
+    font-size: 1.2em;
+    color: rgb(255, 255, 255);
+    margin: 0.5em 1.2em;
+    text-shadow: 0;
+  }
+
+  #messagelink > a:hover, #notificationlink> a:hover{
+    color: #e6dfd4;
+    text-decoration: underline;
+  }
+
+  /* none | upgrade | info | warning */
+  .message-upgrade  { border-left-color: #e57010a6 !important;  }
+  .message-info     { border-left-color: #106ce5b4 !important;  }
+  .message-warn     { border-left-color: #e51010a9 !important;  }
+
+  .greeting {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    display: block;
+    padding: 12px;
+    background-color: rgba(72, 128, 212, 0.2);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1.0em;
+    text-shadow: rgba(0, 0, 0, 0.7) 1px 1px 4px;
+    {{!-- border: 1px solid rgba(0, 0, 0, 0.384); --}}
+    border-left: 8px solid rgba(0, 140, 255, 0.76);
+    box-shadow: rgba(0, 0, 0, 0.267) 0px 0px 6px;
+  }
+
+
+
+  </style>
+
+</head>
+
+
+
+<body class="bg_body">
+  <div class="wrapper">
+    <div class="header">
+      {{>header page="home"}}
+    </div><!-- header ended -->
+
+
+    <div class="content">
+      <div class="centerColumn pM wrapper ">
+        <div id="itemList" class="content pM scroller" style="border: 0px solid yellow;">
+          {{#if message}}
+          <div class="message">{{message}}</div>
+          {{/if}}
+          {{#if error}}
+          <div class="messagerror">{{error}}</div>
+          {{/if}}
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">
+                {{lang 'pagetitle.home'}}
+                {{#ifValue user "default"}}
+                  <!--default user -->
+                {{else}}
+                  {{user}}
+                {{/ifValue}}
+              </td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('intro');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <table style="width: 100%;" cellspacing="10" border="0">
+            <tr>
+              <td>
+                <img src="/img/spx-gc-home-256.png" style="width: 64px; float:right; margin-right: 1em;">
+                <h1 style="padding:0px; margin:0px;">SPX-GC</h1>
+                SPX Graphics Controller <span style="opacity:0.5;">v.{{{ShowVersion}}}</span><BR>
+               <span class="spxTableHeadsmallXX spxInfotext" style="font-size: 0.8em; opacity:0.5;">
+                {{lang 'general.slogan'}}<BR>
+
+                {{#if greeting}}
+                <div class="greeting">
+                    <I>{{greeting}}</I>
+                </div>
+                {{/if}}
+
+
+                <!-- Notifications from the SmartPX messaging service: -->
+                <div class="message-upgrade" id="upgradeinfo" style="display:none">
+                  <div class="messagedate" id="upgrade_date"></div>
+                  <div class="messageheadline" id="upgrade_head"></div>
+                  <div class="messagebody" id="upgrade_body"></div><BR>
+                  <div id="notificationlink" class="message-upgrade"><span id="upgrade_call"></span><a href="" id="upgrade_link"></a></div>
+                </div>
+
+                <div class="message-info" id="messageinfo" style="display:none">
+                  <div class="messagedate" id="message_date"></div>
+                  <div class="messageheadline" id="message_head"></div>
+                  <div class="messagebody" id="message_body"></div><BR>
+                  <div id="messagelink" class="message-info"><span id="message_call"></span><a href="" id="message_link"></a></div>
+                </div>
+
+
+              <BR>
+              <div class="spxFlexContainer">
+                <button onmouseover="tip('{{lang 'hover.navishows'}}');" class="spxformtext btn spxFlexItem bg_orange ripple" onclick="start();">{{lang 'button.launch'}}</button>
+                <button onmouseover="tip('{{lang 'hover.config'}}');" class="spxformtext btn spxFlexItem bg_grey15 ripple" onclick="appconfig()"><i class="fas fa-wrench"></i>&nbsp;{{lang 'button.config'}}</button>
+                <button onmouseover="tip('{{lang 'hover.docs'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="help('/')">{{lang 'button.help'}}</button>
+                <!-- <button onmouseover="tip('{{lang 'hover.github'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="github()">Github</button> -->
+              </div>
+
+              <HR>
+              <BR>
+              <A href="https://www.youtube.com/watch?v=mnqU3bTeXk8" target="_yt">Introduction video</A>:<BR><BR>
+              <div class="auto-resizable-iframe">
+                <div>
+                  <iframe
+                    style="background-color: rgba(0, 0, 0, 0);border:0px;"
+                    src="https://www.youtube.com/embed/mnqU3bTeXk8"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+                    </iframe>
+                </div>
+              </div>
+              </span>
+            </td>
+          </tr>
+        </table>
+
+
+
+          
+        </div><!-- itemlist ended -->
+      </div><!-- center wrapper ended -->
+    </div><!-- content ended -->
+
+
+    {{>footer}}
+
+    <div class="box sb4">Got something to say?</div>
+  </div><!-- MAINwrapper ended -->
+
+
+  <script>
+    // check for upgrade
+    document.getElementById('upgradeBubble').style.display="none";
+
+
+    function getMessages() {
+      // Poll server for upgrade info.
+      // Requires CORS in the route.
+      localStorage.removeItem('SPX-GC-NewVersion');
+      document.getElementById('upgradeinfo').style.display="none";
+      document.getElementById('messageinfo').style.display="none";
+
+      var url = (`https://www.smartpx.fi/gc/messageservice/?{{{curVerInfo}}}`);
+      fetch(url)
+      .then((res) => res.json())
+      .then((messages) => {
+        // do something with the messages (json data)
+
+        let currntVer = document.getElementById('footerVerDisplay').innerText;
+        let latestVer = messages.latest.vers;
+        if (messages.latest.vers && versInt(latestVer) > versInt(currntVer)){
+          // Yes, there is new version available
+          localStorage.setItem('SPX-GC-NewVersion',latestVer);
+          document.getElementById('upgradeinfo').style.display="block";
+          document.getElementById('upgrade_date').innerText=messages.latest.date;
+          document.getElementById('upgrade_head').innerText=messages.latest.head;
+          document.getElementById('upgrade_body').innerText=messages.latest.body;
+          document.getElementById('upgrade_call').innerText=messages.latest.call;
+          document.getElementById('upgrade_link').href=messages.latest.href;
+          document.getElementById('upgrade_link').innerText=messages.latest.link;
+        }
+        
+        if (messages.notification.type && messages.notification.type!="none"){
+          // Yes, there is something else to announce
+          document.getElementById('messageinfo').style.display="block";
+          document.getElementById('messageinfo').classList="message-" + messages.notification.type;
+          document.getElementById('messagelink').classList="message-" + messages.notification.type;
+          document.getElementById('message_date').innerText=messages.notification.date;
+          document.getElementById('message_head').innerText=messages.notification.head;
+          document.getElementById('message_body').innerText=messages.notification.body;
+          document.getElementById('message_call').innerText=messages.notification.call;
+          document.getElementById('message_link').href=messages.notification.href;
+          document.getElementById('message_link').innerText=messages.notification.link;
+        }
+
+
+
+
+        console.log('Latest: ' + latestVer);
+
+      })
+      .catch((error) => console.log(error))
+    }
+
+    function versInt(semver){
+      // Returns a numeric value representing "1.0.0" formatted semantic version string.
+      // This works as long as max value of each field is 99!
+      let parts = semver.split(".");
+      let MajorInt = parseInt(parts[0].trim())*100000
+      let MinorInt = parseInt(parts[1].trim())*1000
+      let PatchInt = parseInt(parts[2].trim())
+      let versInt  = (MajorInt + MinorInt + PatchInt);
+      console.log('Semver ' + semver + ' = versInt ' + versInt);
+      return versInt
+    }
+
+    getMessages();
+  
+
+  </script>
+
+
+
+
+
+</body>
+
+
+
+</html>

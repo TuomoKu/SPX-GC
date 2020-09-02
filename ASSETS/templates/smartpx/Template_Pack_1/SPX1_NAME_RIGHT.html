@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (C) 2020 tuomo@smartpx.fi (MIT License)
+    Demo template for SPX-GC. See SPXGCTemplateDefinition -object below for data field descriptions.
+
+    This demo template does not have linked properties so all layers remain in their positions and
+    do not "make space" for others.
+
+    Need custom templates?
+	Let me know 😀
+
+-->
+
+
+
+<head>
+    <meta charset="utf-8" />
+    <title>RIGHT</title>
+    <script type="text/javascript" src="js/gsap3.2.6.min.js"></script>
+    <script type="text/javascript" src="js/webcg-framework.umd.js"></script>
+    <script type="text/javascript" src="js/spx_cmdhandler.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+    <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+    <link rel="stylesheet" type="text/css" href="customize.css" />
+
+    <script>
+
+        function initValues(){
+            // set initial values to elements
+
+            gsap.set("#line1", { opacity: 0 });
+            gsap.set("#line2", { display:"block" });
+
+            // hide fields if not set
+            // This function must be customized per each template (and it's DOM structure)
+            let DataVisibilityPairs = [
+                {
+                    id:     'f0',
+                    hide:   'line1'
+                },
+                {
+                    id:     'f1',
+                    hide:   'f1_parent'
+                },
+                {
+                    id:     'f2',
+                    hide:   'f2_parent'
+                }
+            ];
+
+            DataVisibilityPairs.forEach(function(pair,index){
+                let dataElement = document.getElementById(pair.id);
+                let showElement = document.getElementById(pair.hide);
+                if (dataElement.innerText=='')
+                    {
+                        showElement.style.display='none';
+                    }
+                else
+                    {
+                        showElement.style.display='inline-block';
+                    }
+
+            });//end for
+
+        }
+
+        function runAnimationIN(IsLoop) {
+            let dur = 0.8;
+            initValues()
+            gsap.set("#TG", { opacity: 1 });
+            gsap.set("#line1", { opacity: 1 });
+            gsap.set("#line2", { display:"block" });
+            gsap.fromTo(
+                "#line1",
+                dur,
+                    {
+                        // start value
+                        width:0
+                    },
+                    {
+                        // end value
+                        width:function(i, target)
+                            {
+                            target.style.width = "auto"; 
+                            var width = target.offsetWidth-6;
+                            target.style.width = "0px"; //now reset it to 0
+                            return width; //return the natural height
+                            },
+                        onComplete:function() { gsap.set("#line1", {width:"auto"});  },
+                        ease: "Power3.easeOut"
+                        // ease: "back.out(1.0)"
+                    }
+                );
+            
+            gsap.fromTo("#f0", { opacity:  0 }, { delay: 0.1, duration: dur - 0.2, opacity  : 1,       ease: "Power3.easeOut" });
+            gsap.fromTo("#f0", { x:      200 }, { delay: 0.1, duration: dur - 0.1, x        : 0,
+                        //ease: "back.out(2.0)" });
+                        ease: "Power3.easeOut" });
+            
+            gsap.fromTo(
+                "#line2",
+                    {
+                        // start value
+                        height:0
+                    },
+                    {
+                        // end value
+                        duration: dur/3,
+                        delay: dur-0.3,
+                        height:function(i, target)
+                            {
+                            target.style.height = "auto"; 
+                            var height = target.offsetHeight;
+                            target.style.height = "0px"; //now reset it to 0
+                            return height; //return the natural value
+                            },
+                        onComplete:function() { gsap.set("#line2", {height:"auto"});  }
+                    }
+                );
+            gsap.set("#line2", { delay: 0.00, opacity: 1 });
+            gsap.fromTo("#f1", { y:     -200 }, { delay: dur - 0.3, duration: dur - 0.2, y     : 0,          ease: "Power3.easeOut" });
+            gsap.fromTo("#f2", { y:     -200 }, { delay: dur - 0.2, duration: dur - 0.2, y     : 0,          ease: "Power3.easeOut" });
+
+
+
+            if (IsLoop){
+                console.log('%c SPX LOOP MODE! Parameter loop=true. Animation will forcefully AUTO-LOOP. ', 'background: #222; color: #bada55');
+                setTimeout(function(){ runAnimationOUT(); }, 3000);
+                setTimeout(function(){ runAnimationIN(true); }, 5000);
+            }
+        }
+
+        function runAnimationOUT() {
+            let dur = 0.7;
+            gsap.to("#f2",     { delay: 0.00, duration: dur/2, y:     -100, ease: "back.in(1.2)" });
+            gsap.to("#f1",     { delay: 0.10, duration: dur/2, y:     -100, ease: "back.in(1.2)" });
+            gsap.to("#line1",  { delay: 0.00, duration: dur, width:    0, ease: "back.in(1.2)" });
+            gsap.to("#f0",     { delay: 0.00, duration: dur, x:      200, ease: "back.in(1.2)" });
+            gsap.to("#line2",  { delay: 0.00, duration: dur, height:   0, ease: "back.in(1.2)" });
+            gsap.set("#line2", { delay: 0.70, display:"none" });
+            gsap.set("#line1", { delay: dur + 0.0, opacity: 0 });
+            gsap.set("#line2", { delay: dur + 0.0, opacity: 0 });
+            gsap.set("#TG",    { delay: dur - 0.0, opacity: 0 });
+        }
+
+    </script>
+
+
+    <style>
+        .tgpos{
+            transform-origin: top right;
+            position: absolute;
+            border-right: 1.4rem solid var(--spx-accent-color);
+            display:inline-block;
+            right: 3.2vw;
+            top: 70%;
+            z-index: 10;
+            opacity:0;
+            }
+    </style>
+    <script type="text/javascript">
+        window.SPXGCTemplateDefinition = {
+            "description": "Namestrap right",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "6",
+            "webplayout": "6",
+            "out": "manual",
+            "uicolor": "7",
+            "DataFields": [
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Fullname",
+                    "value" : "Keyser Söze"
+                },
+                {
+                    "field" : "f1",
+                    "ftype" : "textfield",
+                    "title" : "Title",
+                    "value" : "mystic"
+                },
+                {
+                    "field" : "f2",
+                    "ftype" : "textfield",
+                    "title" : "Company or location",
+                    "value" : "New York"
+                }
+            ]
+        };
+    </script>
+</head>
+
+<body>
+    <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
+        <div id="TG" class="tgpos SKEW RIGHTELEMENTS">
+            <div id="line1" class="color1 accentLeft region fright">
+                <div class="font1 nowrap fright ANTISKEW" id="f0"></div>
+            </div>
+            <div id="line2" class="nowrap region fbreak">
+                <div id="f2_parent" class="color2 font2 fright" style="display: inline-block;"><div id="f2" class="ANTISKEW"></div></div>
+                <div id="f1_parent" class="color3 font2 fright" style="display: inline-block;"><div id="f1" class="ANTISKEW"></div></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

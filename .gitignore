@@ -1,0 +1,59 @@
+############################
+# SmartPX's unwanted files #
+############################
+.vscode/
+node_modules/
+pkg-builds/
+zip-builds/
+ZIP_TEMP/
+Distro/
+bin/
+viz/
+*.mov
+*.mp4
+*.mp3
+SmartPX_log*.txt
+.env
+env.txt
+.log
+devnotes.txt
+MEDIA/*
+DATAROOT/*
+ASSETS/media/video/*
+ASSETS/template_stash/
+ASSETS/templates/smartpx_internal/
+notes/
+notes2/
+cg20.*
+START_GC_IN_BACKGROUND.bat
+BUILD_PACKAGES.BAT
+BUILD_A_ZIP_PACK.BAT
+SPX_STARTER_MENU.bat
+config*.json
+
+######################
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+
+############
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip

@@ -1,0 +1,84 @@
+        <table style="width: 100%; height: 100%; border: 0px solid cornsilk; padding:7px;" border="0">
+            <tr style="background-colorXXX: #666;">
+                <td>
+                  <div class="dropdown">
+                    <i class="fas fa-home home-icon"></i>
+                    <div class="dropdown-content" style="white-space: nowrap;" )>
+                      <A HREF="/"><i class="fas fa-home"></i>&nbsp; {{lang 'pagetitle.home'}}</A><br>
+                      <A HREF="/shows/"><i class="fas fa-folder"></i>&nbsp; {{lang 'pagetitle.shows'}}...</A>
+                      <BR>
+                      <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A>
+                      
+                      {{#ifValue page "controller"}}
+                      <BR>
+                      <A HREF="" onClick="ModalOn('overlayHelp');return false;"><i class="far fa-keyboard"></i>&nbsp; {{lang 'button.shortcuts'}}...</A>
+                      {{/ifValue}}
+
+                      <HR>
+                      <A HREF="" onClick="spx_system('openWebRenderer');return false;"><i class="far fa-window-maximize"></i>&nbsp; {{lang 'button.showwebrenderer'}}</A>
+                      {{{GenerateOpenFolderCommands}}}
+
+
+                      {{#ifValue user "default"}}
+                        <!--default user -->
+                      {{else}}
+                      <hr>
+                      <A HREF="/logout">Logout {{{user}}}...</A>
+                      {{/ifValue}}
+
+
+                      <HR>
+                      <A HREF="" onClick="spx_system('restartServer');return false;"><i class="fas fa-power-off"></i>&nbsp; Kill (restart GC -server)</A>
+
+                      <!--
+                      <br>
+                      <A HREF="" onClick="aFunctionTest();return false;">Debug: Ping servers</A>
+                      -->
+
+
+                      
+                    </div>
+                  </div>
+
+                  {{#ifValue page "appconfig"}}
+                    <span class="caret-icon">&#9654;</span>
+                    <span  class="breadcrumbs">{{lang 'pagetitle.configapp'}}</span>
+                  {{/ifValue}}
+
+                  {{#ifValue page "shows"}}
+                    <span class="caret-icon">&#9654;</span>
+                    <span class="breadcrumbs">{{lang 'pagetitle.shows'}}</span>
+                  {{/ifValue}}
+
+                  {{#ifValue page "showconfig"}}
+                    <span class="caret-icon">&#9654;</span>
+                    <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
+                    <span class="caret-icon">&#9654;</span>
+                    <span  class="breadcrumbs"><a href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+                    <span class="caret-icon">&#9654;</span>
+                    <span  class="breadcrumbs">{{lang 'pagetitle.configshow'}}</span>
+                  {{/ifValue}}
+
+                  {{#ifValue page "episodes"}}
+                    <span class="caret-icon">&#9654;</span>
+                    <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
+                    <span class="caret-icon">&#9654;</span>
+                    <span  class="breadcrumbs">{{folder}}</span>
+                  {{/ifValue}}
+
+                  {{#ifValue page "controller"}}
+                    <span class="caret-icon">&#9654;</span>
+                    <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
+                    <span class="caret-icon">&#9654;</span>
+                    <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+                    <span class="caret-icon">&#9654;</span>
+                    <span  class="breadcrumbs">{{filebasename}}</span>
+                  {{/ifValue}}
+              </td>
+              <td class="aright breadcrumbs">
+                {{#ifValue page "controller"}}
+                    {{{ServerStatus}}}
+                {{/ifValue}}
+            </td>
+            </tr>
+        </table>

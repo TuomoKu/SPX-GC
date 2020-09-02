@@ -1,0 +1,51 @@
+
+    <!-- footer start -->
+    <div class="footerTable footer" style="background-color: rgba(0,0,0,0.2); padding:0 10 0 10px;">
+      <table class="wide footerTable" style="border: 0px solid green;" cellpadding=0 cellspacing=0>
+        <tr class="footerTable">
+          <td class="footerTable">
+            <span id="statusbar" class="footerTable statusbar"></span> <span id="working" class="working" style="display:none;"></span>
+          </td>
+          <td class="footerTable aright">
+
+            <a id="upgradeBubble"
+            href="https://smartpx.fi/gc"
+            style="padding: 2px 10px;
+                background-color: rgb(39, 95, 58);
+                border-radius: 4px;
+                margin-right: 10px;
+                font-size: 90%;
+                cursor: pointer;
+                display: inline;
+                "
+                title="{{lang 'hover.newversavailable'}}"
+                onmouseover="hvr('{{lang 'hover.newversavailable'}}')";
+                onmouseout="hvr('')";
+                >
+            <i class="fas fa-bullhorn"></i>&nbsp;<span id="upgradeVersion">v.X.X.X</span>&nbsp;<span id="upg"></span></a></span>
+            </span>
+            <span class="footerTable statusbar" style="opacity:0.53;">GC v.<span id="footerVerDisplay">{{{ShowVersion}}}</span>
+              &nbsp;<A href="https://smartpx.fi/gc">SmartPX</A></span>
+            <span class="footerTable statusbar" style="opacity:0.33;"> | 💡 <A href="https://forms.gle/T26xMFyNZt9E9S6d8" target="_feedback">feedback</A></span>
+            <!-- <span class="beta">beta</span> -->
+          </td>
+        </tr>
+      </table>
+  </div><!-- footer end -->
+
+
+<script>
+  // show upgrade bubble if stored
+  if (localStorage.getItem('SPX-GC-NewVersion')){
+    document.getElementById('upgradeBubble').style.display="inline";
+    document.getElementById('upgradeVersion').innerText=localStorage.getItem('SPX-GC-NewVersion');
+  }
+  else {
+    document.getElementById('upgradeBubble').style.display="none";
+  }
+
+  function hvr(msg){
+    document.getElementById('upg').innerText=msg;
+  }
+
+</script>
