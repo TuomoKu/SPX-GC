@@ -62,6 +62,7 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 * Create a new folder for the app (for example on Windows `C:/Program Files/SPXGC/`, or on Linux `/SPXGC` ).
 * Extract the zip-file to that folder.
 * Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX-GC server. A console window should open (and remain open) and show some startup information. When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX-GC does _not_ usually require admin priviledges.
+* On Linux add execute permission to the file (`chmod a+x SPX-GC_linux64`) and launch it in a console (`./SPX-GC_linux64`).
 * See next steps in section [first launch](#firstlaunch).
 
 ![files](screenshots/windows-installation.png)
