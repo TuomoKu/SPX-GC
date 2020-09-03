@@ -54,7 +54,7 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 | Operating system | Zip file| Build date | Notes |
 | ------ | ------ | ----- | ----- |
 | Windows  | [SPX-GC_1_0_0_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_win64.zip   ) | Sept 02 2020 | Most tested version.
-| MacOS    | [SPX-GC_1_0_0_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_macos64.zip ) | Sept 02 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move config.json and DATAROOT folder to correct folder and edited config.json manually to reflect these path changes.
+| MacOS    | [SPX-GC_1_0_0_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_macos64.zip ) | Sept 02 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move config.json and DATAROOT folder to correct folder and edited config.json manually to reflect these path changes.  [Issue (#3)](/../../issues/3).
 | Linux   | [SPX-GC_1_0_0_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_linux64.zip ) | Sept 02 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). |
 
 ## Option 1: **Install a pre-built package**
@@ -86,7 +86,7 @@ npm install
 npm run dev
 ```
 #### pm2 process manager<a id="pm2"></a>
-* Installation of `pm2` process manager ([https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)) can help in advanced production installations.
+* Installation of `pm2` process manager ([https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)) can help in advanced production scanarios.
 * To run the server in **production mode** use `npm start` which will run the server in the background with `pm2` process manager which will automatically restart the server if a crash occurs. Deeper usage and configuration options of _pm2_ is outside the scope of this readme-file. 
 
 ```sh
@@ -129,7 +129,7 @@ pm2 start ecosystem.config.js
   http://192.148.1.22:5000
 --------------------------------
 ```
->Port 5000 is the default value in config. In some virtual machines the IP address shown may show the _internal IP_ but the _external IP_ must be used instead.
+> Port 5000 is the default value in config. In some virtual machines the IP address shown may show the _internal IP_ but the _external IP_ must be used instead.
 
 If installation and server start-up worked, you should see a Config screen in your browser asking a preference regarding user access.
 ![snapshot](screenshots/01-spx-loginpolicy.png)
@@ -146,7 +146,8 @@ Depending on the selection made, you will either be asked to login or you land t
 > By default the dataroot is **empty** and has no projects.
 
 Start making [configuration changes](#config) or creating [projects](#dataroot) and adding [templates](#templates) and adding those to [rundowns](#rundown) for playout.
-You can also follow these steps to get yourself familiarized with the application:
+
+**You can also follow these steps to get yourself familiarized with the application:**
 
 1. Open SPX-GC in browser, typically at http://localhost:5000
 2. Choose 'no login' policy by selecting **No** option and click **Save**
