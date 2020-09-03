@@ -393,10 +393,9 @@ Recommended folder structure for templates
 
 ## SPXGCTemplateDefinition -object in templates
 
-TemplateDefinition configures how a template is supposed to work by within SPX-GC, what kinds of controls are shown to the operator and how the graphic should playout. These values are `defaults` and can be changed in the Project Settings view.
+TemplateDefinition configures how a template is supposed to work within SPX-GC; what kinds of controls are shown to the operator and how the graphic should playout, on which server and layer for instance. These values are template's `defaults` and can be changed in the Project Settings view after the template is added to the project.
 
 Each HTML template must have an `JSON data object` present in the HTML-files source code, within the HEAD section. 
-
 
 
 > See details about supported values below the snippet.
@@ -466,7 +465,7 @@ Each HTML template must have an `JSON data object` present in the HTML-files sou
       - `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]`
       - `value` is one of the item array values
   - `caption` text of "value" is shown in UI. Useful with static graphics.
-  - **Note** additional user interface controls, such as multiline textarea and a file picker, will be added in future releases.
+  - **Note** additional user interface controls, such as multiline textarea and a file picker, will be added in a future release.
 
 > The developer of the HTML template can consider how to utilize these values, for instance a `dropdown` control can be used to pick the name of the show host, or it can drive other values via javascript in the templates. See /ASSETS/templates/smartpx -folder for some inspiration.
 
