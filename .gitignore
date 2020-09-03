@@ -22,6 +22,7 @@ DATAROOT/*
 ASSETS/media/video/*
 ASSETS/template_stash/
 ASSETS/templates/smartpx_internal/
+ASSETS/ExtraFunctions/spx_internal_demo_functions.js
 notes/
 notes2/
 cg20.*

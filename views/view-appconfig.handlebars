@@ -200,10 +200,10 @@
           <table style="width: 100%;" cellspacing="5" border="0">
             <tr onmouseover="tip('{{lang 'hover.playouturl'}}');">
               <td width="40%">
-                <a href="http://{{{ getServerAddress }}}/renderer/" target="_player"><span style="border-bottom: 1px dashed rgb(0, 140, 255);" class="spxConfigHead">{{lang 'config.webplayurl'}} *</span></a>
+                <a href="/renderer/" target="_player"><span style="border-bottom: 1px dashed rgb(0, 140, 255);" class="spxConfigHead">{{lang 'config.webplayurl'}} *</span></a>
               </td>
               <td>
-                <input type="text" class="wide bg_grey15 cfg" style="border: 1px dashed rgba(0, 140, 255, 0.507); background-color: #575757;" placeholder="URL for OBS / vMIX" value="http://{{{ getServerAddress }}}/renderer/">
+                <input type="text" class="wide bg_grey15 cfg" style="border: 1px dashed rgba(0, 140, 255, 0.507); background-color: #575757;" placeholder="URL for OBS / vMIX" id="rendererLink" value="">
               </td>
             </tr>
 
@@ -476,6 +476,9 @@
 
 
   <script>
+
+    var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + '/renderer/';
+    document.getElementById('rendererLink').value = RendererUrl;
 
      // COLLAPSIPLE HANDLERS
       var coll = document.getElementsByClassName("collapsible");

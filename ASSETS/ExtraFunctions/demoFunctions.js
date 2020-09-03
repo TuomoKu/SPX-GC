@@ -54,7 +54,24 @@ function clearAllChannels() {
     clearUsedChannels(); // <-- function in spx_gc.js
     }   
  
-
+ 
+ 
+function wipeClean() {
+    let data = {};
+    data.relpath       = 'smartpx/Template_Pack_1/SPX1_COLORBUMPER.html';    // template file
+    data.playserver    = 'OVERLAY';                          // CCG server or '-'
+    data.playchannel   = '1';                                // Channel
+    data.playlayer     = '20';                               // Layer
+    data.webplayout    = '20';                               // Web layer or '-'
+    data.relpathCCG    = data.relpath.split('.htm')[0];
+	data.command = 'play';
+	ajaxpost('/gc/playout',data, 'true');
+	setTimeout(function(){ 
+		stopAll()
+    }, 50);
+}
+ 
+ 
 function stopAll(){
     // Will send STOP commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
@@ -119,4 +136,36 @@ function logoToggle(eventButton) {
         }
     }
 
+
+function playSelectedBumber(selectList){
+    // request ..... id of select list
+    // returns ..... post a server command
+    file = document.getElementById(selectList).value;
+    let data = {};
+    data.relpathCCG    =  file; 				               // videofile (without file extension!)
+    data.playserver    = 'OVERLAY';                            // CCG server or '-'
+    data.playchannel   = '1';                                  // Channel
+    data.playlayer     = '30';                                 // Layer
+    data.webplayout    = '-';                                  // ** NO VIDEO IN WEB PLAYER!!!!! For now. **
+    data.playoptions   =  'CUT 0 Linear RIGHT'                 // Additional play options
+    data.command       = 'play';
+    x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
+    console.log('Response:',x);
+}
+
+
+function lottieBumber(){
+    // request ..... id of select list
+    // returns ..... post a server command
+    let data = {};
+    data.relpath       = 'smartpx_internal/GC_PACK_2/BUMPER.html';    // template file
+    data.relpathCCG    = data.relpath.split('.htm')[0];		 // videofile (without file extension!)
+    data.playserver    = 'OVERLAY';                          // CCG server or '-'
+    data.playchannel   = '1';                                // Channel
+    data.playlayer     = '20';                               // Layer
+    data.webplayout    = '20';                               
+    data.command       = 'play';
+    x = ajaxpost('/gc/playout',data,'true');                  // true is prepopulation
+    console.log('Response:',x);
+}
 

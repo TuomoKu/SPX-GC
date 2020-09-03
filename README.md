@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Sept 032020
+> Readme updated Sept 03 2020
 
 >**v.1.0.0** released in Sept 2020
 
@@ -129,7 +129,7 @@ pm2 start ecosystem.config.js
   http://192.148.1.22:5000
 --------------------------------
 ```
-> Port 5000 is the default value in config. In some virtual machines the IP address shown may show the _internal IP_ but the _external IP_ must be used instead.
+> Port 5000 is the default value in config and can be changed.
 
 If installation and server start-up worked, you should see a Config screen in your browser asking a preference regarding user access.
 ![snapshot](screenshots/01-spx-loginpolicy.png)
