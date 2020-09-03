@@ -362,7 +362,9 @@ Custom control's ftype can be
 # Templates
 SPX-GC uses HTML templates for visuals.
 
-They can have any features supported by the renderers, such as Canvas objects, WebGL animations, CSS transforms and animations, animation libraries, such as GSAP, ThreeJS, Anime, Lottie/Bodymovin and templates can utilize ajax calls for data visualizations and other advanced uses.
+Templates can have any features supported by the renderers, such as Canvas objects, WebGL animations, CSS transforms and animations, animation libraries, such as GSAP, ThreeJS, Anime, Lottie/Bodymovin and templates can utilize ajax calls for data visualizations and other advanced uses.
+
+SPX-GC comes with a starter template package for reference. See folder [ASSETS/templates/smartpx/Template_Pack_1](https://github.com/TuomoKu/SPX-GC/tree/master/ASSETS/templates/smartpx/Template_Pack_1).
 
 ```
 Recommended folder structure for templates
@@ -386,7 +388,7 @@ Recommended folder structure for templates
 ```
 > The templates must be within `ASSETS/templates` folder structure. It is preferred to have a single subfolder for all _your_ templates (myCompany in the example above) and futher subfolders for different _template packs_ or _visual styles_ within it (ProjectA, ProjectB in the example).
 
->**CasparCG** does not support absolute file paths with HTML-templates. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. **The simplest** way to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
+>**CasparCG** does not support absolute file paths with HTML-templates. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
 
 ## SPXGCTemplateDefinition -object in templates
 
@@ -496,8 +498,7 @@ A marketplace for SPX-GC compatible HTML -templates and plugins will open by the
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
 | 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal logic change to fix [playlist item issue (#1)](/../../issues/1), simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, textarea control, global extras editor in appconfig, item / file duplication. Project and rundown rename. | Q4/2020 |
-| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream). HTML template marketplace. Video tutorials. Wiki. Forum. Slack support channel. Free lunches. | TBD |
-
+| X.X  | Under consideration: templates to CasparCG via http, mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration. HTML template marketplace. Video tutorials. Wiki. Forum. Slack support channel. Free lunches. | TBD |
 
 ----
 
