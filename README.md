@@ -42,7 +42,7 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 | ![animation](screenshots/spx-gc-ui-anim-v1-0.gif) | SPX-GC UI is browser based and can be operated with a mouse or keyboard. Additonal _extra controls_ can be added as _plugins_ to execute specific tasks or to trigger events in external devices. |
 | ![project list](screenshots/01-spx-gc-projectlist.png) | Content is managed in _projects_. Each project can have unlimited amount of _rundowns_ and _graphics templates_. Projects and their rundowns and settings are stored in _dataroot -folder_. |
 | ![controller](screenshots/05-spx-gc-controller-rundown.png) | Main Controller: rundown with few items and a local preview. Items can be edited and controlled also with keyboard shortcuts. Fullscreen viewing mode recommended. Buttons below preview are customizeable. | 
-| [![intro video on Youtube](screenshots/yt_mockup.png)](https://www.youtube.com/watch?v=mnqU3bTeXk8) | An introduction video on Youtube. There are more images in the screenshots -folder.  | 
+| [![intro video on Youtube](screenshots/yt_mockup.png)](https://www.youtube.com/watch?v=e5LTFC9MlOI) | An introduction video on Youtube. There are more images in the screenshots -folder.  | 
 
 ----
 # Installation <a id="install"></a>
