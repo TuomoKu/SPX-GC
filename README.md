@@ -476,9 +476,9 @@ Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used 
 
 ### _Gotcha's & Known Issues_ (things to be aware of)
 - If UI becomes wonky reload the view (F5 / Ctrl+R).
-- In some cases after sorting (drag-drop) and/or deleting items from the rundown play/continue/stop commands may effect incorrect items. Workaround: always refresh view (Ctrl+R) after sort/delete operations. This is a known [issue (#1)](/issues/1) and will be fixed in v.1.1.
+- In some cases after sorting (drag-drop) and/or deleting items from the rundown play/continue/stop commands may effect incorrect items. Workaround: always refresh view (Ctrl+R) after sort/delete operations. This is a known [issue (#1)](/../../issues/1) and will be fixed in v.1.1.
 - Some comments in the source code suggest that importing a "faulty template" can clear or corrupt the entire profile.json -file. (Need to check this).
-- Event with "none" out-mode sometimes gets stuck to "onair" mode in the GUI [issue (#2)](/issues/2).
+- Event with "none" out-mode sometimes gets stuck to "onair" mode in the GUI [issue (#2)](/../../issues/2).
 - There is spagetti code whenever worked tired. Try to accept it...
 - Undocumented features do exist. (templateEvents, TTS, pm2, cfg:hostname/usercommapass/greeting...)
 - This list shouldn't be. At least not here.
@@ -495,7 +495,7 @@ A marketplace for SPX-GC compatible HTML -templates and plugins will open by the
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | Mac install folder [issue (#3)](/issues/3) fix . Help page update, internal logic change to fix [playlist item issue (#1)](/issues/1), simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, textarea control, global extras editor in appconfig, item / file duplication. Project and rundown rename. | Q4/2020 |
+| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal logic change to fix [playlist item issue (#1)](/../../issues/1), simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, textarea control, global extras editor in appconfig, item / file duplication. Project and rundown rename. | Q4/2020 |
 | X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream). HTML template marketplace. Video tutorials. Wiki. Forum. Slack support channel. Free lunches. | TBD |
 
 
