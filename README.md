@@ -21,6 +21,8 @@ Graphic templates are typical HTML templates used with CasparCG and other HTML c
 
 Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
 
+> See **LIVE DEMO** at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day.
+
 > For extra functionality, integrations and advanced custom templates, do not hesitate to contact tuomo@smartpx.fi.
 
 ---
