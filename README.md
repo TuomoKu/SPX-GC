@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Sept 03 2020
+> Readme updated Sept 05 2020
 
 >**v.1.0.0** released in Sept 2020
 
@@ -32,7 +32,7 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Configuration](#config)
 - [Projects and rundowns](#dataroot)
-- [HTML templates](#templates)
+- [HTML templates](#templates) and [template definition](#templatedefinition)
 - [Custom controls](#projectextras)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
@@ -50,6 +50,8 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 # Installation <a id="install"></a>
 
 SPX-GC can be installed using a **ready-to-go binary package** which includes all required software components. Developers can alternatively get the full source code and run SPX-GC with `npm scripts`, see section [install source code](#npminstall).
+
+>Source is updated more frequently than binary packages. See [package.json](package.json) file for current version.
 
 ### **Available pre-built packages:** <a id="builds"></a>
 
@@ -240,6 +242,9 @@ An example `config.json` of the SPX-GC server
 ```
 >**Please note**: the server will fail to start if config is not valid JSON. You can use [JSONLint](https://jsonlint.com/) to validate JSON data.
 
+**templatefolder** contains the HTML templates for SPX-GC. To make CasparCG work with these templates, the easiest way is to configure CasparCG to use this folder as it's template folder.
+See [this note](#fileprotocol).
+
 **langfile** is a filereference in locales-folder for a JSON file containing UI strings in that language. You can copy an existing file to another name and modify it's contents. Folder is scanned at server start and files are shown in the configuration as language options.
 
 **loglevel** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
@@ -280,6 +285,8 @@ File structure of dataroot:
 
 
 <a id="projectextras"></a> **showExtras** are additional user interface controls, or _plugins_, shown below preview window in current project as opposed to [globalExtras](#globalextras) which are shown in every project. Each item has an UI component (a button) and associated function call available in the specified `javascript file`.
+
+An example projects settings `<PROJECT>/profile.json`:
 
 ```json
 {
@@ -367,7 +374,9 @@ SPX-GC uses HTML templates for visuals.
 
 Templates can have any features supported by the renderers, such as Canvas objects, WebGL animations, CSS transforms and animations, animation libraries, such as GSAP, ThreeJS, Anime, Lottie/Bodymovin and templates can utilize ajax calls for data visualizations and other advanced uses.
 
-SPX-GC comes with a starter template package for reference. See folder [ASSETS/templates/smartpx/Template_Pack_1](https://github.com/TuomoKu/SPX-GC/tree/master/ASSETS/templates/smartpx/Template_Pack_1).
+SPX-GC comes with a starter template package for reference. See folder [ASSETS/templates/smartpx/Template_Pack_1](https://github.com/TuomoKu/SPX-GC/tree/master/ASSETS/templates/smartpx/Template_Pack_1)
+
+Video: [Use existing HTML templates](https://www.youtube.com/watch?v=AdZATSBByng).
 
 ```
 Recommended folder structure for templates
@@ -391,13 +400,14 @@ Recommended folder structure for templates
 ```
 > The templates must be within `ASSETS/templates` folder structure. It is preferred to have a single subfolder for all _your_ templates (myCompany in the example above) and futher subfolders for different _template packs_ or _visual styles_ within it (ProjectA, ProjectB in the example).
 
->**CasparCG** does not support absolute file paths with HTML-templates. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
+> <a id="fileprotocol"></a>**CasparCG** does not support absolute file paths with HTML-templates using file protocol. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
 
-## SPXGCTemplateDefinition -object in templates
+## SPXGCTemplateDefinition -object in templates <a id="templatedefinition"></a>
+
+> **IMPORTANT:** Each HTML template must have an `JSON data object` present in the HTML-files source code, within the HEAD section. [Video: use existing HTML templates](https://www.youtube.com/watch?v=AdZATSBByng) covers also this topic.
 
 TemplateDefinition configures how a template is supposed to work within SPX-GC; what kinds of controls are shown to the operator and how the graphic should playout, on which server and layer for instance. These values are template's `defaults` and can be changed in the Project Settings view after the template is added to the project.
 
-Each HTML template must have an `JSON data object` present in the HTML-files source code, within the HEAD section. 
 
 
 > See details about supported values below the snippet.
@@ -499,8 +509,8 @@ A marketplace for SPX-GC compatible HTML -templates and plugins will open by the
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal logic change to fix [playlist item issue (#1)](/../../issues/1), simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, textarea control, global extras editor in appconfig, item / file duplication. Project and rundown rename. | Q4/2020 |
-| X.X  | Under consideration: templates to CasparCG via http, mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration. HTML template marketplace. Video tutorials. Wiki. Forum. Slack support channel. Free lunches. | TBD |
+| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal logic change to fix [playlist item issue (#1)](/../../issues/1), http protocol for CasparCG templates, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, textarea control, item / file duplication. Project and rundown rename. | Q4/2020 |
+| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration, global extras editor in appconfig. HTML template marketplace. Video tutorials. Wiki. Forum. Slack support channel. Free lunches. | TBD |
 
 ----
 

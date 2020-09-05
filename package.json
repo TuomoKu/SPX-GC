@@ -1,6 +1,6 @@
 {
   "name": "spx-gc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SPX-GC | SmartPX Graphics Controller for CasparCG and streaming applications",
   "homepage": "https://github.com/TuomoKu",
   "main": "server.js",
@@ -18,7 +18,7 @@
     "dev2": "nodemon server.js config2.json -i DATAROOT/* -i config2.json",
     "start": "pm2 start server.js --name GC",
     "stop": "pm2 stop server.js",
-    "build": "BUILD_PACKAGE.BAT"
+    "build": "BUILD_PACKAGES.BAT"
   },
   "keywords": [],
   "author": "Tuomo Kulomaa <tuomo@smartpx.fi> (http://smartpx.fi)",

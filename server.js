@@ -695,10 +695,11 @@ var server = app.listen(port, (err) => {
   `Version ............. ${vers}\n` +  
   'Homepage ............ https://github.com/TuomoKu/SPX-GC\n' +
   `Config file ......... ${configfileref}\n`  +
-  `Cfg / locale ........ ${config.general.langfile}\n`  +
   `Cfg / dataroot ...... ${config.general.dataroot}\n`  +  
+  `Cfg / templates ..... ${config.general.templatefolder}\n`  +  
   `Cfg / logfolder ..... ${config.general.logfolder}\n` +
   `Cfg / loglevel ...... ${config.general.loglevel} (error, warn, info, verbose, debug)\n` + 
+  `Cfg / locale ........ ${config.general.langfile}\n`  +
   `SPX-GC url .......... http://${ipad}:${port}`);
 
   console.log('\x1b[32m%s\x1b[0m', '\n\n────────────────────────────────');

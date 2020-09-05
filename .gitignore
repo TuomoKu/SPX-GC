@@ -19,6 +19,7 @@ env.txt
 devnotes.txt
 MEDIA/*
 DATAROOT/*
+DATAROOT_ORG/*
 ASSETS/media/video/*
 ASSETS/template_stash/
 ASSETS/templates/smartpx_internal/
