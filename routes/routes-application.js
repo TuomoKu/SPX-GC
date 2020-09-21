@@ -703,7 +703,10 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         // downstream in the playout controller as per renderer's needs.
         let FieldItem={};
         FieldItem.field = item.field;
-        FieldItem.value = item.value;
+        // FieldItem.value = item.value;
+        let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
+        let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
+        FieldItem.value = temp2;
         dataOut.fields.push(FieldItem);
       });
     } // else

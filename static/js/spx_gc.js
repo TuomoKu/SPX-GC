@@ -230,8 +230,7 @@ function AJAXGET(URL) {
 function applyTextEditChanges(event, e) {
     // end editing a TG field
     if (APPSTATE != "EDITING") return;
-    if (event.keyCode == 13 || event.which == 13) {
-        // setinactive(e);
+    if (event.keyCode == 13 || event.which == 13) { // 13 = enter key
         ToggleExpand();
     }
 } // applyTextEditChanges
@@ -359,7 +358,11 @@ function checkKey(e) {
             switch (e.keyCode)
             {
                 case 13: // enter
-                    saveTemplateItemChanges(getElementIdOfFocusedItem()) // this included toggle to close it
+                    if ( document.activeElement.nodeName === "TEXTAREA" && document.hasFocus()) {
+                        console.log('Come on, we are multilining here');
+                        return;
+                    }
+                    saveTemplateItemChanges(getElementIdOfFocusedItem()) // this includes toggle to close it
                     e.preventDefault();
                     break;
                 
@@ -1318,7 +1321,9 @@ function saveTemplateItemChanges(elementID) {
                 // console.log('Looking for ' + 'datapreview_' + FormNro + '_' + iterator);
                 if (document.getElementById('datapreview_' + elementID + '_' + iterator))
                 {
-                    document.getElementById('datapreview_' + elementID + '_' + iterator).innerText=input.value;
+                    let temp1 = input.value.replace(/\n/g, ' ');  // remove \n globally to support text areas
+                    let temp2 = temp1.replace(/\r/g, '');            // remove \r globally to support text areas
+                    document.getElementById('datapreview_' + elementID + '_' + iterator).innerText=temp2;
                 }
             }
     });

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<!-- this is an empty file, which acts as a placeholder -->
+
+<!-- DO NOT MODIFY THIS empty.html FILE -->
+
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -28,39 +30,22 @@
 				document.getElementById('debug').innerText=msg;
 			}
 
-			function play() 	{ emptyMessage('play') }
-			function stop() 	{ emptyMessage('stop') }
-			function invoke() 	{ emptyMessage('invoke') }
-			function update() 	{ emptyMessage('update') }
-			function data() 	{ emptyMessage('data') }
+			function play()   { emptyMessage('play') }
+			function stop()   { emptyMessage('stop') }
+			function invoke() { emptyMessage('invoke') }
+			function update() { emptyMessage('update') }
+			function data()   {	emptyMessage('data') }
 
 			function emptyMessage(cmd)
 				{
-					// console.log('FYI: empty.html received command [' + cmd + '].');
+					console.log('**** INFO: empty.html received command "' + cmd + '", which is ignored ****');
 				}
 
 		</script>
-		<script>
-			window.SPXGCTemplateDefinition = {
-				"description": "INTERNAL GC FILE - Should not be used in projects.",
-				"playserver": "-",
-				"playchannel": "1",
-				"playlayer": "7",
-				"webplayout": "-",
-				"out": "none",
-				"uicolor": "0",
-				"DataFields": [
-					{
-						"field" : "caption",
-						"ftype" : "caption",
-						"title" : "EMPTY FILE",
-						"value" : "Internal GC file. Should not be used in projects."
-					}
-				]
-			};
-		</script>
+
     </head>
     <body>
-	<span id="debug"></span>
+		<span id="debug"></span>
+        <!-- nothing here -->
     </body>
 </html>

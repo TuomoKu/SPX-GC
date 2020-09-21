@@ -57,7 +57,7 @@ module.exports = {
         <data id=\"text\" value=\"Donald Trump\"/>
     </componentData>
     */
-    let decodedValue = decodeURIComponent(value) + " ";
+    let decodedValue = decodeURIComponent(value) || "null"; // changed 05092020. Was += " " <:-/
     return `<componentData id=\\"${fieldID}\\"><data id=\\"text\\" value=\\"${decodedValue}\\"/></componentData>`;
   },
 

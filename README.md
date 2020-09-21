@@ -2,9 +2,9 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Sept 05 2020
+> Readme updated Sept 21 2020
 
->**v.1.0.0** released in Sept 2020
+>**v.1.0** released in Sept 2020. (See [RELEASE_NOTES.md](RELEASE_NOTES.md) for recent changes)
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -400,7 +400,9 @@ Recommended folder structure for templates
 ```
 > The templates must be within `ASSETS/templates` folder structure. It is preferred to have a single subfolder for all _your_ templates (myCompany in the example above) and futher subfolders for different _template packs_ or _visual styles_ within it (ProjectA, ProjectB in the example).
 
-> <a id="fileprotocol"></a>**CasparCG** does not support absolute file paths with HTML-templates using file protocol. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
+> <a id="fileprotocol"></a>**CasparCG** does not support absolute file paths with HTML-templates using file protocol. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. [Video: template path configuration](https://www.youtube.com/watch?v=bjVzdaR9a0U).
+
+Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
 
 ## SPXGCTemplateDefinition -object in templates <a id="templatedefinition"></a>
 
@@ -451,7 +453,13 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
                         "value": "live.png"
                     }
                 ]
-            }
+            },
+            {
+                "field" : "f2",
+                "ftype" : "textarea",
+                "title" : "Multiline field",
+                "value" : "First line\nSecond line\n\nFourth one"
+            },
         ]
     };
 </script>
@@ -477,6 +485,7 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
       - `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]`
       - `value` is one of the item array values
   - `caption` text of "value" is shown in UI. Useful with static graphics.
+  - `textarea` for multiline texts, will accept _return_ key for newline
   - **Note** additional user interface controls, such as multiline textarea and a file picker, will be added in a future release.
 
 > The developer of the HTML template can consider how to utilize these values, for instance a `dropdown` control can be used to pick the name of the show host, or it can drive other values via javascript in the templates. See /ASSETS/templates/smartpx -folder for some inspiration.

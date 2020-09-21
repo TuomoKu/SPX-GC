@@ -504,6 +504,12 @@ app.engine('handlebars', exphbs({
       return myIP;
     },
 
+    // Convert JSON \\n to newline for textarea
+    injectNewlines(jsonString) {
+      let multiline = jsonString.replace('\\n', '\r\n')
+      return multiline;
+    },
+
     // Language string helper
     lang(str) {
       return spx.lang(str);

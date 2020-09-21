@@ -249,8 +249,17 @@
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
                                   </table>
                                 </div>
-
                                 <input type="text"  name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                              {{/ifValue}}
+
+                              {{#ifValue ftype "textarea"}}
+                                <!-- TEXTAREA TYPE OF TEMPLATE FIELD -->
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textarea"></td></tr>
+                                  </table>
+                                </div>
+                                <textarea rows="8" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" onkeypressXX="javascript:applyTextEditChanges(event,this);" class="gcinput">{{injectNewlines value}}</textarea><BR>
                               {{/ifValue}}
 
                               {{#ifValue ftype "dropdown"}}
@@ -266,9 +275,7 @@
                                     ></td></tr>
                                   {{/each}}
                                 </table>
-                                  
                                 <!-- then visible DOM elements -->
-
                                   <select data-update="{{field}}" data-role="userEditable" class="gcinput" name="DropdownValues[{{field}}]">
                                     <option disabled>{{title}}:</option>
                                     {{#each items}}
@@ -283,6 +290,9 @@
 
                             {{/each}}
                           </TD>
+
+
+
                           <TD class="vtop">
                               <table class="wide" style="border-spacing: 5px; margin-top:0px;">
                                 <tr>
