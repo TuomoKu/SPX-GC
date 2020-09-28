@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<!--  Super basic demo template for SPX-GC.
+	  smartpx.fi/gc -->
+
+<html lang="en">
+  <html>
+    <head>
+		<title>SmartPX SPX-GC Basic Demo Template</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<script type="text/javascript" src="js/webcg-framework.umd.js"></script>
+		<script type="text/javascript" src="js/spx_cmdhandler.js"></script>
+
+		<script>
+			function runAnimationIN() {
+				// PLAY - with basic CSS animation
+                document.getElementById('f0').classList="textbox fade-in";
+			}
+
+			function runAnimationOUT() {
+				// STOP- with basic CSS animation
+                document.getElementById('f0').classList="textbox fade-out";
+			}
+		</script>
+
+		<style type="text/css">
+			/* CSS styles of html elements*/
+            body {
+                margin: 			0px;
+                padding: 			0px;
+                overflow: 			hidden;
+                background-color: 	transparent;
+            }
+
+			.viewport {
+				position: 			absolute;
+				display: 			block;
+				width: 				1920px;	/* HD size */
+				height: 			1080px; /* HD size */
+				overflow: 			hidden;
+			}
+
+			.textbox{
+                display: 			inline-block;
+                position: 			relative;
+				max-width:			70%;
+				text-align: 		center;
+                color: 				white;
+				text-shadow: 		darkred 5px 5px;
+                background-color:	red;
+                left: 				50%;
+                top: 				50%;
+                transform: 			translate(-50%,-50%);
+                padding: 			20px 60px;
+				border-radius: 		45px;
+                font-family: 		'Arial', 'Helvetica', sans-serif;
+				font-weight: 		bold;
+				letter-spacing: 	-2px;
+                font-size: 			120px;
+                opacity: 			0.0;
+            }
+
+            .fade-in {				animation:  fadein 0.5s forwards; }
+			@keyframes fadein		{ from  {opacity: 0;} to {opacity: 1;}}
+
+            .fade-out { 			animation:  fadeout 2s forwards; }
+			@keyframes fadeout 		{ from  {opacity: 1;} to {opacity: 0;}}
+		</style>
+
+		<script type="text/javascript">
+			// SPX-GC Template definition
+			window.SPXGCTemplateDefinition = {
+				"defversion": "1",
+				"description": "Basic template",
+				"playserver": "OVERLAY",
+				"playchannel": "1",
+				"playlayer": "10",
+				"webplayout": "10",
+				"out": "manual",
+				"uicolor": "7",
+				"DataFields": [
+					{
+						"field" : "f0",
+						"ftype" : "textfield",
+						"title" : "Greetings text",
+						"value" : "Hello world!"
+					}
+				]
+			}; // Definition ended
+		</script>
+	</head>
+
+	<body>
+        <div class="viewport">
+            <div class="textbox" id="f0">Lorem ipsum world!</div>
+        </div>
+  </body>
+  </html>
