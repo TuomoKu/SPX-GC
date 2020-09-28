@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Sept 21 2020
+> Readme updated Sept 28 2020
 
 >**v.1.0** released in Sept 2020. (See [RELEASE_NOTES.md](RELEASE_NOTES.md) for recent changes)
 
@@ -30,6 +30,7 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 ### Table of Contents
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
+- [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
 - [Projects and rundowns](#dataroot)
 - [HTML templates](#templates) and [template definition](#templatedefinition)
@@ -89,14 +90,16 @@ npm install
 ```sh
 npm run dev
 ```
-#### pm2 process manager<a id="pm2"></a>
+### pm2 process manager<a id="pm2"></a>
 * Installation of `pm2` process manager ([https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)) can help in advanced production scanarios.
 * To run the server in **production mode** use `npm start` which will run the server in the background with `pm2` process manager which will automatically restart the server if a crash occurs. Deeper usage and configuration options of _pm2_ is outside the scope of this readme-file. 
 
 ```sh
 npm start
 ```
-* To run several instances of SPX-GC (on different ports) with `pm2` prepare a `ecosystem.config.js` -file with details of each instance, such as:
+
+### Run multiple instances<a id="multipleinstances"></a> 
+* To run several instances of SPX-GC (on different ports) with `pm2` prepare a `ecosystem.config.js` -file to same folder as config.json with details of each instance, such as:
 ```javascript
 // Example "ecosystem.config.js" file for pm2 to run multiple instances of SPX-GC.
 
@@ -119,6 +122,10 @@ module.exports = {
 Then launch multiple instances with pm2:
 ```sh
 pm2 start ecosystem.config.js
+```
+Stop all running instances 
+```sh
+pm2 kill
 ```
 
 
