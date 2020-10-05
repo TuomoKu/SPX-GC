@@ -140,6 +140,7 @@
   .message-upgrade  { border-left-color: #e57010a6 !important;  }
   .message-info     { border-left-color: #106ce5b4 !important;  }
   .message-warn     { border-left-color: #e51010a9 !important;  }
+  .message-none     { border-left-color: #106ce5b4 !important;  }
 
   .greeting {
     margin-top: 1em;
@@ -204,9 +205,7 @@
                 {{lang 'general.slogan'}}<BR>
 
                 {{#if greeting}}
-                <div class="greeting">
-                    <I>{{greeting}}</I>
-                </div>
+                <div class="greeting" id="greeting">{{greeting}}</div>
                 {{/if}}
 
 
@@ -277,7 +276,8 @@
 
         let currntVer = document.getElementById('footerVerDisplay').innerText;
         let latestVer = messages.latest.vers;
-        if (messages.latest.vers && versInt(latestVer) > versInt(currntVer)){
+        let dbggreet  = messages.dbggreet || "";
+        if (messages.latest.vers && versInt(latestVer) > versInt(currntVer) || document.getElementById('greeting').innerText == dbggreet ){
           // Yes, there is new version available
           localStorage.setItem('SPX-GC-NewVersion',latestVer);
           document.getElementById('upgradeinfo').style.display="block";
@@ -289,7 +289,7 @@
           document.getElementById('upgrade_link').innerText=messages.latest.link;
         }
         
-        if (messages.notification.type && messages.notification.type!="none"){
+        if (messages.notification.type && messages.notification.type!="none" || document.getElementById('greeting').innerText == dbggreet){
           // Yes, there is something else to announce
           document.getElementById('messageinfo').style.display="block";
           document.getElementById('messageinfo').classList="message-" + messages.notification.type;

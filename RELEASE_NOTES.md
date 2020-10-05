@@ -4,6 +4,10 @@
 
 ---
 
+Changes (live document)
+- Added messages.dbggreet logic to view-home.handlebars for msg debugging.
+
+
 ## **1.0.2** (Sept 21 2020)
 - added support for multiline "textarea" fields
 
