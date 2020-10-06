@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Sept 28 2020
+> Readme updated Oct 06 2020
 
 >**v.1.0** released in Sept 2020. (See [RELEASE_NOTES.md](RELEASE_NOTES.md) for recent changes)
 
@@ -58,16 +58,16 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 | Operating system | Zip file| Build date | Notes |
 | ------ | ------ | ----- | ----- |
-| Windows  | [SPX-GC_1_0_0_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_win64.zip   ) | Sept 02 2020 | Most tested version.
-| MacOS    | [SPX-GC_1_0_0_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_macos64.zip ) | Sept 02 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move config.json and DATAROOT folder to correct folder and edited config.json manually to reflect these path changes.  [Issue (#3)](/../../issues/3).
-| Linux   | [SPX-GC_1_0_0_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_linux64.zip ) | Sept 02 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). |
+| Windows  | [SPX-GC_1_0_0_1_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_1_win64.zip   ) | Sept 02 2020 | Most tested version.
+| MacOS    | [SPX-GC_1_0_0_1_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_1_macos64.zip ) | Sept 02 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move config.json and DATAROOT folder to correct folder and edited config.json manually to reflect these path changes.  [Issue (#3)](/../../issues/3).
+| Linux   | [SPX-GC_1_0_0_1_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_1_linux64.zip ) | Sept 02 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). |
 
 ## Option 1: **Install a pre-built package**
 * Download a zip-file for  your system using one of the links above.
 * Create a new folder for the app (for example on Windows `C:/Program Files/SPXGC/`, or on Linux `/SPXGC` ).
 * Extract the zip-file to that folder.
 * Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX-GC server. A console window should open (and remain open) and show some startup information. When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX-GC does _not_ usually require admin priviledges.
-* On Linux add execute permission to the file (`chmod a+x SPX-GC_linux64`) and launch it in a console (`./SPX-GC_linux64`).
+* On Linux or Mac add execute permission to the file (`chmod a+x SPX-GC_linux64 [or ...macos64]`) and launch it in a console (`./SPX-GC_linux64 [or ...macos64]`).
 * See next steps in section [first launch](#firstlaunch).
 
 ![files](screenshots/windows-installation.png)
@@ -154,7 +154,7 @@ There are two alternatives:
 
 Depending on the selection made, you will either be asked to login or you land to the Welcome page and you are free to explore the application. If password is given it will be stored in the config-file in unreadable, encrypted format.
 
-> By default the dataroot is **empty** and has no projects.
+> By default the dataroot has one "Hello world" -project with "My First Rundown" in it for demonstration purposes.
 
 Start making [configuration changes](#config) or creating [projects](#dataroot) and adding [templates](#templates) and adding those to [rundowns](#rundown) for playout.
 

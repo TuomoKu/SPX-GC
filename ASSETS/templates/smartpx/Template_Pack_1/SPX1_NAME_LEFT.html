@@ -79,19 +79,17 @@
                         width:function(i, target)
                             {
                             target.style.width = "auto"; 
-                            var width = target.offsetWidth-6;
+                            var width = target.offsetWidth;
                             target.style.width = "0px"; //now reset it to 0
                             return width; //return the natural height
                             },
-                        onComplete:function() { gsap.set("#line1", {width:"auto"});  },
-                        ease: "Power3.easeInOut"
-                        // ease: "back.out(1.0)"
+                        ease: "back.out(2.0)"
                     }
                 );
             
             gsap.fromTo("#f0", { opacity:  0 }, { delay: 0.1, duration: dur - 0.2, opacity  : 1,       ease: "Power3.easeOut" });
-            gsap.fromTo("#f0", { x:     -200 }, { delay: 0.1, duration: dur - 0.1, x        : 0,
-                        //   ease: "back.out(2.0)"
+            gsap.fromTo("#f0", { x:     -200 }, { delay: 0.1, duration: dur - 0.2, x        : 0,
+                        //ease: "back.out(2.0)"
                           ease: "Power3.easeOut"
                         });
             
