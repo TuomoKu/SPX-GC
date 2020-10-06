@@ -4,7 +4,7 @@
 .vscode/
 node_modules/
 pkg-builds/
-zip-builds/
+zip_builds/
 ZIP_TEMP/
 Distro/
 bin/
