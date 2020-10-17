@@ -11,21 +11,10 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 
 ![snapshot](screenshots/00-spx-gc-principle2.png)
 
-**SPX-GC** can be used to playout lower thirds, bumpers, logos and other on-screen graphics in live web streams or live TV broadcasts. Content for the graphic templates are entered into _elements_ which are stored on _rundowns_ within _projects_.
-
-Software is based on a NodeJS server and can be run on Windows, Mac or Linux computers, on-premise or using cloud instances for remote work scenarios.
-
-Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX-GC is done by adding _a template definition_ (javascript-snippet) to them.
-
-Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
-
-> See **LIVE DEMO** at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day.
-
-> For extra functionality, integrations and advanced custom templates, do not hesitate to contact tuomo@smartpx.fi.
-
 ---
 
 ### Table of Contents
+- [LIVE DEMO](#demo)
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -36,6 +25,25 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
 - [MIT License](#license)
+
+
+**SPX-GC** can be used to playout lower thirds, bumpers, logos and other on-screen graphics in live web streams or live TV broadcasts. Content for the graphic templates are entered into _elements_ which are stored on _rundowns_ within _projects_.
+
+Software is based on a NodeJS server and can be run on Windows, Mac or Linux computers, on-premise or using cloud instances for remote work scenarios.
+
+Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX-GC is done by adding _a template definition_ (javascript-snippet) to them.
+
+Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
+
+---
+<a id="demo"></a>
+## Live demo 
+See a **LIVE DEMO** of CG at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+
+---
+
+> For extra GC functionality, software integration or advanced custom graphics templates, do not hesitate to contact tuomo@smartpx.fi.
+
 
 
 | Screenshots<a id="screenshots"></a> |   |
