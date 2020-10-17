@@ -30,6 +30,10 @@ router.get('/admin', spxAuth.CheckLogin, function (req, res) {
   res.render('view-admin', { layout: false });
 });
 
+router.get('/templates/empty.html', function (req, res) {
+  res.render('view-empty', { layout: false });
+});
+
 router.get('/logout', spxAuth.Logout, function (req, res) {
   res.redirect('/');
 });
@@ -702,12 +706,14 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         // We pass data as custom JSON format and the format is changed
         // downstream in the playout controller as per renderer's needs.
         let FieldItem={};
-        FieldItem.field = item.field;
-        // FieldItem.value = item.value;
-        let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
-        let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
-        FieldItem.value = temp2;
-        dataOut.fields.push(FieldItem);
+        if (item.field){
+            FieldItem.field = item.field;
+            // FieldItem.value = item.value;
+            let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
+            let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
+            FieldItem.value = temp2;
+            dataOut.fields.push(FieldItem);
+        }
       });
     } // else
     
@@ -998,6 +1004,45 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
       res.status(500).send('Server error in /gc/sortTemplates [' + error + '].')  // error 500 AJAX RESPONSE
     };
 });
+
+
+router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
+  // Create a duplicate 
+  // Request: data obj
+  // TODO: kesken
+  let foldname = req.body.foldname;
+  let filename = req.body.filename;
+  let filerefe = path.normalize(path.join(config.general.dataroot,foldname, 'data', filename));
+  try {
+    spx.duplicateFile(filerefe, ' copy') ;
+    res.status(200).send('Item duplicated.'); // ok 200 AJAX RESPONSE
+  } catch (error) {
+    let errmsg = 'Server error in /gc/duplicateRundown [' + error + ']';
+    logger.error(errmsg);
+    res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
+  }
+});
+
+
+router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
+  // Rename a rundown file
+  // Request: data obj
+  // TODO: kesken
+  let foldnam = req.body.foldnam;
+  let orgname = req.body.orgname;
+  let newname = req.body.newname;
+  let fileref = path.normalize(path.join(config.general.dataroot,foldnam, 'data', orgname));
+  try {
+    spx.renameRundown(fileref, newname) ;
+    res.status(200).send('Item renamed.'); // ok 200 AJAX RESPONSE
+  } catch (error) {
+    let errmsg = 'Server error in /gc/renameRundown [' + error + ']';
+    logger.error(errmsg);
+    res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
+  }
+});
+
+
 
 
 

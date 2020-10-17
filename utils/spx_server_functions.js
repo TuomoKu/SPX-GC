@@ -8,9 +8,11 @@ const moment = require('moment');
 const wavplayer = require('node-wav-player');
 const PlayoutCCG = require('./playout_casparCG.js');
 const glob = require("glob");
+const ip = require('ip')
 const { rejects } = require('assert');
 const axios = require('axios')
 
+const port = config.general.port || 5000;
         
 let Connected=true; // used we messaging service
 
@@ -62,6 +64,52 @@ module.exports = {
       logger.error('ERROR in spx.checkServerConnections()', error);
     }
   },
+
+
+  duplicateFile: function (fileRefe, suffix) {
+    // TODO: Tämä on kesken!
+    try {
+      return new Promise(resolve => {
+        let fldrname = path.dirname(fileRefe);
+        let extename = path.extname(fileRefe);
+        let basename = path.basename(fileRefe, extename);
+        let copyfile =  path.normalize(path.join(fldrname, basename + suffix + extename));
+        fs.copyFile(fileRefe, copyfile, (err) => {
+            if (err) throw err;
+            logger.info('Rundown file ' + fileRefe + ' was copied to ' + copyfile + '.');
+            resolve()
+            return true
+          });
+      })
+    } catch (error) {
+      logger.error('spx.duplicateFile - Error while duplicating: ' + fileRefe + ': ' + error);    
+      return false
+    }
+  },
+
+  
+
+  getFileList: function (FOLDER, EXTENSION) {
+    try {
+      // Get files from a given folder and return an array of files
+      const directoryPath = path.normalize(FOLDER);
+      let fileList=[];
+      fs.readdirSync(directoryPath).forEach((file, index) => {
+        // console.log(index + ': ' + file + '(' + path.extname(file) + ')');
+        let TARGETFILETYPE = EXTENSION.toUpperCase()
+        let CURRENTFILETYPE = path.extname(file).toUpperCase();
+        if (CURRENTFILETYPE.includes(TARGETFILETYPE) ) {
+          fileList.push(file);
+        }
+      });
+      return fileList;
+    }
+    catch (error) {
+      logger.error('ERROR in spx.getFileList (Folder: ' + FOLDER + ', Extension: ' + EXTENSION + '): ' + error);
+      return false;
+    }
+  }, // getJSONFileList ended
+
 
 
 
@@ -308,6 +356,42 @@ prettifyName: function (fullFilePath){
     return niceStringOut;
   } catch (error) {
     logger.error('ERROR in spx.prettifyName (fullFilePath: ' + fullFilePath + '): ' + error);  
+  }
+},
+
+
+renameRundown: function (orgfile, newname) {
+  // Rename a file:
+  // request ..... full original name (c:/temp/volvo.txt), new basename (toyota)
+  // returns ..... not much, it just does it
+  try {
+    return new Promise(resolve => {
+      let fldrname = path.dirname(orgfile);
+      let extename = path.extname(orgfile);
+      let renafile = path.normalize(path.join(fldrname, newname + extename));
+      fs.rename(orgfile, renafile, (err) => {
+            if (err) throw err;
+            logger.info('Rundown file ' + orgfile + ' was renamed to ' + renafile + '.');
+            resolve()
+          });
+    })
+  } catch (error) {
+    logger.error('spx.renameRundown - Error while renaming: ' + orgfile + ': ' + error);    
+  }
+},
+
+
+
+shortifyName: function (fullString){
+  try {
+    // request ..... a long string, such as server asset url
+    // return ...... max length returned
+
+    let SERVER_URL = 'http://' + ip.address() + ':' + port;
+    let serverRemoved = fullString.split(SERVER_URL).join("");
+    return serverRemoved;
+  } catch (error) {
+    logger.error('ERROR in spx.shortifyName (fullString: ' + fullString + '): ' + error);  
   }
 },
 

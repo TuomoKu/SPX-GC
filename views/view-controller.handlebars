@@ -159,7 +159,7 @@
                       <table class="wide" style="border-spacing: 2px; margin-top: 2px;">
                         <TR>
                           <TD class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
-                            <span><!--item {{@index}} &nbsp;&middot;&nbsp;-->{{{nameFromTemplatePath relpath}}}
+                            <span><!--item {{@index}} &nbsp;&middot;&nbsp;-->{{{ nameFromTemplatePath relpath }}}
                               {{#if description}}
                               &nbsp;<span class="delim"></span><span style="opacity:0.5;">{{description}}</span>
                               {{/if}}
@@ -173,16 +173,16 @@
                       <div style="width:100%; " class="truncate">
 
                         {{#ifValue DataFields.0.ftype "hidden"}}
-                          <span id="datapreview_{{@index}}_0">{{DataFields.0.title}}</span>
+                          <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.title }}}</span>
                         {{else}}
-                          <span id="datapreview_{{@index}}_0">{{DataFields.0.value}}</span>
+                          <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.value }}}</span>
                         {{/ifValue}}
 
                         {{#if DataFields.1.value}}
                             {{#ifValue DataFields.1.ftype "hidden"}}
                               <!-- show nothing -->
                             {{else}}
-                              <span class="delim"></span><span id="datapreview_{{@index}}_1">{{DataFields.1.value}}</span>
+                              <span class="delim"></span><span id="datapreview_{{@index}}_1">{{{ shortifyUIstrings DataFields.1.value }}}</span>
                             {{/ifValue}}
                         {{/if}}
 
@@ -190,7 +190,7 @@
                             {{#ifValue DataFields.2.ftype "hidden"}}
                               <!-- show nothing -->
                             {{else}}
-                              <span class="delim"></span><span id="datapreview_{{@index}}_2">{{DataFields.2.value}}</span>
+                              <span class="delim"></span><span id="datapreview_{{@index}}_2">{{{ shortifyUIstrings DataFields.2.value }}}</span>
                             {{/ifValue}}
                         {{/if}}
                         
@@ -209,6 +209,7 @@
                         </TR>
                         <TR>
                           <TD width="65%" class="vtop">
+
                             {{#each DataFields}}
                               <!-- COMMON FIELD DATA -->
                               <div class="wide HIDE">
@@ -267,13 +268,6 @@
                                 <!-- first, hidden fields -->
                                 <table class="HIDE wide brd spxTableHeadsmall">
                                   <tr><td class="aright">fType</td>  <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="dropdown"><BR><BR></td></tr>
-                                  {{#each items}}
-                                    <tr><td colspan="2"><BR>Option {{text}}:</td></tr>
-                                    <tr><td class="aright">text</td> <td><input type="text" class="wide" name="RundownItem[DataFields][{{@../index}}][items][{{@index}}][text]"  value="{{text}}"></td></tr>
-                                    <tr><td class="aright">value</td> <td> <input type="text" class="wide" name="RundownItem[DataFields][{{@../index}}][items][{{@index}}][value]" value="{{value}}"></td></tr>
-                                    <tr><td class="aright">TRUE</td> <td><input type="text" class="wide" name="RundownItem[DataFields][{{@../index}}][items][{{@index}}][selected]"
-                                    ></td></tr>
-                                  {{/each}}
                                 </table>
                                 <!-- then visible DOM elements -->
                                   <select data-update="{{field}}" data-role="userEditable" class="gcinput" name="DropdownValues[{{field}}]">
@@ -288,7 +282,37 @@
                                   </select>
                               {{/ifValue}}
 
-                            {{/each}}
+                              {{#ifValue ftype "filelist"}}
+                                <!-- FILELIST TYPE OF TEMPLATE FIELD -->
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
+                                    <tr><td class="aright">assetfolder</td>  <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][assetfolder]" value="{{assetfolder}}"></td></tr>
+                                    <tr><td class="aright">extension</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][extension]" value="{{extension}}"></td></tr>
+                                  </table>
+                                </div>
+                                <!-- then render visible DOM elements with a helper-->
+                                <select data-update="{{field}}" data-role="userEditable" class="gcinput" name="FilelistValues[{{field}}]">
+                                  <option disabled>{{title}} {{lang 'general.fromFolder'}}:</option>
+                                  <option disabled>{{assetfolder}}</option>
+                                  <option disabled></option>
+                                    {{{ PopulateFilelistOptions assetfolder extension value }}}
+                                </select>
+                              {{/ifValue}}
+
+
+                              {{#ifValue ftype "divider"}}
+                                <!-- DIVIDER TYPE OF TEMPLATE FIELD -->
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="divider"></td></tr>
+                                  </table>
+                                </div>
+                                <div class="divider">{{title}}</div>
+                              {{/ifValue}}
+
+
+                            {{/each}} <!-- ftype check ended -->
                           </TD>
 
 
@@ -353,6 +377,7 @@
                             <tr><td class="aright">onair</td>       <td><input style="width: 100%;" type="text" id="onair{{@index}}"       name="RundownItem[onair]"           value="{{onair}}"></td></tr>
                             <tr><td class="aright">out</td>         <td><input style="width: 100%;" type="text" id="out{{@index}}"         name="RundownItem[out]"             value="{{out}}"></td></tr>
                             <tr><td class="aright">uicolor</td>     <td><input style="width: 100%;" type="text" id="uicolor{{@index}}"     name="RundownItem[uicolor]"         value="{{uicolor}}"></td></tr>
+                            <tr><td class="aright">steps</td>       <td><input style="width: 100%;" type="text" id="steps{{@index}}"       name="RundownItem[steps]"           value="{{steps}}"></td></tr>
 
                             <!-- special event triggers -->
                             <tr><td class="aright">onPlay</td>     <td><input style="width: 100%;" type="text" id="onPlay"     name="RundownItem[function_onPlay]"  value="{{function_onPlay}}"></td></tr>

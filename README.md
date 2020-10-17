@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Oct 06 2020
+> Readme updated Oct 17 2020
 
 >**v.1.0** released in Sept 2020. (See [RELEASE_NOTES.md](RELEASE_NOTES.md) for recent changes)
 
@@ -432,8 +432,10 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
         "playchannel": "1",
         "playlayer": "7",
         "webplayout": "7",
+        "steps" : "1",
         "out": "manual",
         "uicolor": "2",
+        "dataformat": "json",
         "DataFields": [
             {
                 "field" : "f0",
@@ -444,20 +446,16 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
             {
                 "field": "f1",
                 "ftype": "dropdown",
-                "title": "Select icon",
-                "value": "live.png",
+                "title": "Select logo scaling",
+                "value": "0.3",
                 "items": [
                     {
-                        "text": "No icon",
-                        "value": "empty.gif"
+                        "text": "Tiny logo",
+                        "value": "0.3"
                     },
                     {
-                        "text": "Telephone",
-                        "value": "phone.png"
-                    },
-                    {
-                        "text": "Live",
-                        "value": "live.png"
+                        "text": "Huge logo",
+                        "value": "1.2"
                     }
                 ]
             },
@@ -467,6 +465,18 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
                 "title" : "Multiline field",
                 "value" : "First line\nSecond line\n\nFourth one"
             },
+            {
+                "ftype" : "divider",
+                "title" : "This is a divider",
+            },
+            {
+                "field": "f3",
+                "ftype": "filelist",
+                "title": "Choose background image",
+                "assetfolder" : "/media/images/bg/" ,
+                "extension" : "png",
+                "value": "/media/images/bg/checker.png",
+            }
         ]
     };
 </script>
@@ -480,22 +490,30 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
   * `manual` default way: press STOP to animate out
   * `none` play only. Suitable for wipes / bumpers
   * `[numeric]` milliseconds until STOP is executed
+* **steps**: how many phases in animation? For normal in-out templates this is 1. For templates with 2 or more steps the _Continue_ button gets enabled.
 * **dataformat**: how template is expecting data
     - `xml` the default
     - `json` used in some special templates
 * **ftypes**
-  - _ftypes_ (for field types) define template's GUI controls in SPX-GC controller
-  - the first two values are used as content preview in the rundown, so the order of fields should be considered for the ease of use
-  - `textfield` a typical input field
-  - `hidden` value is used, title shown
-  - `dropdown` options provided as an array
-      - `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]`
-      - `value` is one of the item array values
-  - `caption` text of "value" is shown in UI. Useful with static graphics.
-  - `textarea` for multiline texts, will accept _return_ key for newline
-  - **Note** additional user interface controls, such as multiline textarea and a file picker, will be added in a future release.
+    -  _ftypes_ (for field types) define template's GUI controls in SPX-GC controller
+    - the values of first two fileds are used as content preview in the rundown, so the order of fields should be considered for the ease of use
+    - The developer of the HTML template can consider how to utilize these values, for instance a `dropdown` control can be used to pick the name of the show host, or it can drive other values via javascript in the templates. See /ASSETS/templates/smartpx -folder for some inspiration.
 
-> The developer of the HTML template can consider how to utilize these values, for instance a `dropdown` control can be used to pick the name of the show host, or it can drive other values via javascript in the templates. See /ASSETS/templates/smartpx -folder for some inspiration.
+| Field type |  Description | Example |
+| ------ | ------ | ----- |
+| `hidden` | A variable which is not editable by the user. _Value_ is used by the template and, _title_ shown as static text on UI. | `Red color (#f00)`  |
+| `caption` | The _value_ is shown in UI. Caption can be used to display texts to operators of the template. | `This template does not have editable values` |
+| `textfield`  | A typical single line text input field. | `Firstname Lastname` |
+| `dropdown` | A dropdown selector list. Options is an _items_ array, each consisting of _text_ (which is visible) and the  _value_ (which the template will use). The default selection is defined as `value` and it must be one of the values in the _items_ array. See an example definition above. | `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]` |
+| `textarea`  | A multiline text control which accepts _return_ key for new lines. (Added in 1.0.2)| `First line \n Second line` |
+| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX-GC. This is useful for picking images or other media files in templates. (Added in 1.0.3) | `sport_logo.png, news_logo.png` |
+| `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | `Color options below` |
+
+
+
+
+> **Note** additional user interface controls may be added in future releases.
+
 
 ----
 

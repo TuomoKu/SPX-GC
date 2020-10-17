@@ -55,7 +55,7 @@
 
             <tr>
               <td>
-                <select id="lists" size=10 class="spxformtext bg_grey40"
+                <select id="lists" size=14 class="spxformtext bg_grey40"
                 style="width: 100%; height:100%; color:white; border:0px; padding:0.2em; line-height:3;"
                 onmouseover="tip('{{lang 'hover.epslist'}}');"
                 ondblclick="cas();" autofocus>
@@ -72,8 +72,10 @@
           <table style="width: 100%;" cellspacing="10" border="0">
             <tr>
               <td valign="top" width="50%">
-                <button onmouseover="tip('{{lang 'hover.addrundown'}}');" class="spxformtext btn wide bg_blue ripple"  style="margin:2px;" onClick="add();">{{lang 'button.addplaylist'}}...</button>
-                <button onmouseover="tip('{{lang 'hover.deletepisode'}}');" class="spxformtext btn wide bg_blue ripple"  style="margin:2px;" onClick="del();">{{lang 'button.delete'}}</button>
+                <button onmouseover="tip('{{lang 'hover.addrundown'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px; width: 48%;" onClick="add();">{{lang 'button.addplaylist'}}</button>
+                <button onmouseover="tip('{{lang 'hover.duplicaterundown'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px; width: 48%;" onClick="duplicateRundown();">{{lang 'button.duplicate'}}</button>
+                <button onmouseover="tip('{{lang 'hover.renameepisode'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px;  width: 48%;" onClick="renameRundown();">{{lang 'button.rename'}}</button>
+                <button onmouseover="tip('{{lang 'hover.deletepisode'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px;  width: 48%;" onClick="del();">{{lang 'button.delete'}}...</button>
               </td>
               <td valign="top">
                 <button onmouseover="tip('{{lang 'hover.openrundown'}}');" class="spxformtext btn wide bg_orange ripple"  style="margin:2px;" onClick="cas();">{{lang 'button.open'}}</button>

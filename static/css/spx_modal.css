@@ -139,10 +139,10 @@ display: block;
 
 .modal {
   width: 60%;
-  height: 50%;
+  height: 90%;
   position: absolute;
-  left: 50%;
-  top: 40%;
+  left: 55%;
+  top: 50%;
   transform: translate(-50%, -50%);
   z-index: 20;
   padding: 0.3em;

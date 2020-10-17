@@ -9,7 +9,8 @@
 		"pcs": "pcs",
 		"help": "Help",
 		"yes": "Yes",
-		"no": "No"
+		"no": "No",
+		"fromFolder": "from folder"
 	},
 	"color": {
 		"red": "Red",
@@ -33,6 +34,7 @@
 		"deletetemplate": "Remove template",
 		"deletebutton": "Remove button",
 		"docs": "Documentation",
+		"duplicate": "Duplicate",
 		"help": "Help",
 		"edit": "Edit",
 		"edittemplates": "Edit templates",
@@ -44,6 +46,7 @@
 		"open": "Open rundown",
 		"play": "Play ►",
 		"playmaster": "Play ► Space",
+		"rename": "Rename",
 		"selectemplate": "Select",
 		"select": "Open project",
 		"settings": "Project settings",
@@ -166,6 +169,7 @@
 		"deletepisode": "Delete selected rundown including all content on it",
 		"deleteshow": "Delete selected project including settings and all rundowns",
 		"docs": "Open documentation",
+		"duplicaterundown": "Creates a duplicate of the selected rundown",
 		"epslist": "Select or doubleclick rundown to open it",
 		"extradescr": "Extra function's description",
 		"fcall": "Event handler function in function library (for example helloWorld)",
@@ -194,6 +198,7 @@
 		"removeglobalextra": "Remove this extra from all projects",
 		"removetemplate": "Remove this template from this project",
 		"remoteplayouturl": "Webrender installed to en external server. (Note, public IP addresses required)",
+		"renameepisode": "Change the name of the selected rundown",
 		"saveconfig": "Save configurations to a config file",
 		"saveprofile": "Save project settings",
 		"showjsfile": "Javascript function library of this project",

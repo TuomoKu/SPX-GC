@@ -88,7 +88,7 @@ global.LastBrowsedTemplateFolder = '';
 
 macaddress.one(function (err, mc) {
   let macaddress = String(mc);
-  let pseudomac = macaddress.split(':').join('');
+  let pseudomac = macaddress.split(':').join('').substring(0,8);
   global.hwid = config.general.hostname || pseudomac;
   // console.log('(Pseudo) HardwareID for messaging service: ' + global.hwid);
 });
@@ -522,6 +522,11 @@ app.engine('handlebars', exphbs({
     },
 
 
+    // Make long strings nicer to look at
+    shortifyUIstrings(str) {
+        return spx.shortifyName(str);
+    },
+
     // generate checkbox to appconfig
     // "launchchromeatstartup":"false"
     // Feature most likely only works on Windows...?
@@ -625,7 +630,30 @@ app.engine('handlebars', exphbs({
       return html
     },
 
-
+    // This is used to populate filelist dropdown control type in templates.
+    // Note: these files are returned as http-assets from SPX-GC server
+    // Feature added in 1.0.3.
+    PopulateFilelistOptions(assetfolder, extension, value){
+      let html = "";
+      let sel = "";
+      let fullFilePath = "";
+      let SERVER_URL = 'http://' + ip.address() + ':' + port;
+      let assetPath = path.normalize(assetfolder || '');
+      let seleFilePath = path.join(__dirname, 'ASSETS', assetPath, value);
+      let fullPath = path.join(__dirname, 'ASSETS', assetPath);
+      let fileList = spx.getFileList(fullPath, extension);
+      if (fileList) {
+        fileList.forEach((fileRef,index) => {
+          console.log('fileRef');
+          fullFilePath = path.join(__dirname, 'ASSETS', assetPath, fileRef);
+          if (fullFilePath == seleFilePath) {
+            sel = 'selected';
+          }
+          html += '<option value="' + SERVER_URL + assetfolder + fileRef + '" ' + sel + '>' + fileRef  + '</option>';
+        });
+      } 
+      return html
+    },
 
     // Servers status check request
     ServerStatus() {

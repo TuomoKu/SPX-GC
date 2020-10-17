@@ -5,7 +5,6 @@
 // (c) 2020 tuomo@smartpx.fi
 // ***************************************
 
-
 /*
     Personal remarks
     - if imported template is faulty it will clear profile.json <:-(
@@ -542,11 +541,11 @@ function continueUpdateStop(command,index=undefined,indexIsDomIndex=true) {
             if (indexIsDomIndex) {
                 // index type was DOMid
                 index = getElementIdByDomIndex(givenindex);
-                console.log('Given DomIndex ' + givenindex + ', which means ElementID [playlistitem' + index + '].');
+                // console.log('Given DomIndex ' + givenindex + ', which means ElementID [playlistitem' + index + '].');
             }
             else {
                 // index type was ElementID
-                console.log('Given index ' + index + ', which we use as element [playlistitem' + index + '].');
+                // console.log('Given index ' + index + ', which we use as element [playlistitem' + index + '].');
             }
         }
     
@@ -590,14 +589,18 @@ function continueUpdateStop(command,index=undefined,indexIsDomIndex=true) {
 
 
 
+
 function del() {
     // Episodes -view
     // Delete a datafile from disk.
     // Called from delete button in lists page.
     var filename = document.getElementById('lists').value;
     let foldname = document.getElementById("hidden_folder").value;
-    fetch('/show/' + foldname + "/" + filename, { method: 'DELETE' });
-    setTimeout(function(){ document.location = '/show/' + foldname; }, 500);
+
+    if (confirm('SURE?! Delete "' + filename + '" and all it\'s data?')) {
+        fetch('/show/' + foldname + "/" + filename, { method: 'DELETE' });
+        setTimeout(function(){ document.location = '/show/' + foldname; }, 500);
+    }
 } // del ended
 
 
@@ -623,6 +626,19 @@ function delRow(e) {
     // save data 
     SaveNewSortOrder();
 } // delRow ended
+
+
+
+function duplicateRundown() {
+    // Duplicate a rundown
+    data={};
+    data.filename=document.getElementById('lists').value + '.json';
+    data.foldname=document.getElementById("hidden_folder").value;
+    ajaxpost('/gc/duplicateRundown',data);
+    setTimeout(function(){ document.location = '/show/' + data.foldname; }, 500);
+} // duplicateRundown ended
+
+
 
 
 
@@ -1007,14 +1023,14 @@ function playItem(index='') {
                     break;
                 };
         }
-        console.log('playItem() Found focused list index #' + domIndex + ' which means playlistitem [' + eleIndex + ']');
+        // console.log('playItem() Found focused list index #' + domIndex + ' which means playlistitem [' + eleIndex + ']');
         }
     else
         {
             // ElementID given, must find dom index of it...
             domIndex = getDomIndexByElementId(index);
             eleIndex = index;
-            console.log('playItem() Given playlistitem [' + index + '], which means list index #' + domIndex + '.');
+            // console.log('playItem() Given playlistitem [' + index + '], which means list index #' + domIndex + '.');
         }
     data = {};
     data.datafile      = document.getElementById('datafile').value;
@@ -1092,6 +1108,23 @@ function playItem(index='') {
             }
 
   } // playItem
+
+
+
+function renameRundown() {
+    // Rename an existing rundown
+    var filename = document.getElementById('lists').value;
+    var foldname = document.getElementById("hidden_folder").value;
+    var newname = prompt("Rename the rundown?", filename);
+    if (newname != null && newname != "") {
+        data={};
+        data.orgname = filename + '.json';
+        data.newname = newname;
+        data.foldnam = foldname;
+        ajaxpost('/gc/renameRundown',data);
+        setTimeout(function(){ document.location = '/show/' + foldname; }, 500);
+    }
+} // renameRundown ended
 
 
 
@@ -1364,26 +1397,42 @@ function saveTemplateItemChanges(elementID) {
 function setMasterButtonStates(index, debugMessage='') {
     // this triggers when row focuses or when Play or Stop pressed or item changed.
     // console.log('CHECKING: setMasterButtonStates ' + index + '. ' + debugMessage);
+    
+    
+    if (!document.getElementById('MasterTOGGLE')) return; // this page does not have buttons...
 
     let TOGGLEBUTTON = document.getElementById('MasterTOGGLE');
     let UPDATEBUTTON = document.getElementById('MasterUPDATE');
-    let e = document.getElementById('playlistitem' + index);
+    let CONTINBUTTON = document.getElementById('MasterCONTINUE');
 
-    if (!TOGGLEBUTTON) return; // this page does not have buttons...
+    let e = document.getElementById('playlistitem' + index);
     if (document.getElementById('out' + index) && document.getElementById('out' + index).value=="none") return; // this gfx only has in-animation
 
+    var steps = parseInt(e.querySelector('input[name="RundownItem[steps]"]').value) || 0;
+    var onAirState = (e.getAttribute('data-spx-onair') || false).toLowerCase();
+    var changState = (e.getAttribute('data-spx-changed') || false).toLowerCase();
+    var onair = (onAirState == 'true'); // make bool
+    var chngd = (changState == 'true'); // make bool
+    
+    // console.log('Onair', onair, 'Changed', chngd, 'Steps', steps );
+
+
     // UPDATE
-    if (e && e.getAttribute('data-spx-changed')=="true")
+    UPDATEBUTTON.classList.add('disabled');            
+    if (chngd)
         {
-            UPDATEBUTTON.classList.remove('disabled');
+            setTimeout(function () { UPDATEBUTTON.classList.remove('disabled'); }, 2);
         }
-    else
+
+    // CONTINUE
+    CONTINBUTTON.classList.add('disabled');
+    if (steps > 1 && onair)
         {
-            UPDATEBUTTON.classList.add('disabled');            
+            setTimeout(function () { CONTINBUTTON.classList.remove('disabled'); }, 3);
         }
 
     // PLAY - STOP TOGGLE
-    if (e && e.getAttribute('data-spx-onair')=="true")
+    if (onair)
         {
             // console.log('Focused item IS playing (so change it to STOP)');
             TOGGLEBUTTON.innerText = TOGGLEBUTTON.getAttribute('data-spx-stoptext');
@@ -1398,9 +1447,6 @@ function setMasterButtonStates(index, debugMessage='') {
             TOGGLEBUTTON.classList.add('bg_green');
         }
 } // setTGButtonStates ended 
-
-
-
 
 
 

@@ -24,7 +24,7 @@ html, body {
 
 .HIDE{
     /* WHILE DEBUGGING unhide OBJECTS with display:no-none */
-    display     :      none; /*change this to no-none to see debug data in editors */
+    display     :      no-none; /*change this to no-none to see debug data in editors */
     border      :      2px dashed rgb(0, 248, 0);
     padding     :      5px;
     margin      :      5px;
@@ -194,6 +194,20 @@ td.aright{
     content: "|";
 }
 
+.divider {
+    display: block;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    text-align: left;
+    font-size: 0.5em;
+    text-transform: uppercase;
+    margin-top: 1.5em;
+    padding-bottom: 0.4em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.5em;
+    opacity: 0.5;
+}
+
+
 .dropdown {
     position: relative;
     display: inline-block;
@@ -320,6 +334,10 @@ div.curfolder{
 .itemlist  
     {
         background-color: #2A3641;
+        /* background-image: url('/media/images/rundown_graphic.png');
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position-y: 100%; */
     }
 
 
