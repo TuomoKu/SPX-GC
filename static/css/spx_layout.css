@@ -24,7 +24,7 @@ html, body {
 
 .HIDE{
     /* WHILE DEBUGGING unhide OBJECTS with display:no-none */
-    display     :      no-none; /*change this to no-none to see debug data in editors */
+    display     :      none; /*change this to no-none to see debug data in editors */
     border      :      2px dashed rgb(0, 248, 0);
     padding     :      5px;
     margin      :      5px;
