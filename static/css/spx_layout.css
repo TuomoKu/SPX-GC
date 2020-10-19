@@ -366,6 +366,15 @@ div.curfolder{
     }
 
 
+.l-icon {
+    margin-top: 0.7em;
+    }
+
+.l-icon:hover {
+    color: orange;
+    }
+
+
 
 .message{
     padding: 10px;
@@ -729,7 +738,16 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     width: 49% !important;
     }
 
-
+.welcome {
+    margin-top:     0.7em;
+    font-family:    Arial, Helvetica, sans-serif;
+    margin-left:    3em;
+    margin-right:   3em;
+    font-size:      0.9em;
+    color:          #cfcfcf;
+    line-height:    1.3em;
+    
+}
 
 .working
     {

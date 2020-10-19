@@ -31,6 +31,9 @@ router.get('/admin', spxAuth.CheckLogin, function (req, res) {
 });
 
 router.get('/templates/empty.html', function (req, res) {
+  // let emptyhtml = path.join(__dirname + '/../static/empty.html');
+  // console.log('Haetaan empty: ' + emptyhtml);
+  // res.sendFile(emptyhtml);
   res.render('view-empty', { layout: false });
 });
 
@@ -594,7 +597,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
   //
   // Can handle several commands from the controller page
   //
-  let rundownDataJSONobj="";
+  var rundownDataJSONobj="";
   let profileDataJSONobj="";
   let showprofile ="";
 
@@ -638,9 +641,21 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 
     case 'removeItemFromRundown': 
       // REMOVE TEMPLATE ITEM FROM RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
-      logger.verbose('Removing template[' + data.templateindex + '] from rundown ' + data.listname );
+      logger.verbose('Removing template epoch [' + data.epoch + '] from rundown ' + data.listname );
       rundownDataJSONobj = await GetJsonData(data.datafile);
-      rundownDataJSONobj.templates.splice(data.templateindex,1);
+      let templateIndex = -1;
+      rundownDataJSONobj.templates.forEach((template,index) => {
+        if ( template.itemID == data.epoch) {
+          templateIndex = index;
+          }
+        //
+      });
+
+      if (templateIndex>-1) {
+        rundownDataJSONobj.templates.splice(templateIndex,1);
+      }
+
+      
       try {
           await spx.writeFile(data.datafile, rundownDataJSONobj);
           res.status(200).send('Item removed ok.'); // ok 200 AJAX RESPONSE
@@ -651,6 +666,49 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
           // console.log('Error while saving file: ', error);
       }; //file written
       break;
+
+
+
+    case 'duplicateRundownItem': 
+      // CLONE TEMPLATE ITEM ON RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
+
+      let freshID = data.cloneEpoch;
+      var newItemData = "";
+      var duplicateData = "";
+      var duplicated = false;
+
+      logger.info('Cloning item [' + data.sourceEpoch + '] to [' + freshID + '] in file [' + data.listname + '].');
+      rundownDataJSONobj = await GetJsonData(data.datafile);
+
+      var NewTemplateArray = [];
+      for (var i = 0; i < rundownDataJSONobj.templates.length; i++) {
+        NewTemplateArray.push(rundownDataJSONobj.templates[i]);
+        let duplicateData = JSON.parse(JSON.stringify(rundownDataJSONobj.templates[i]));  // copy values and NOT a reference! Sheeeeeet!!!
+        duplicateData.itemID=freshID;
+        duplicateData.onair='false';
+        if (rundownDataJSONobj.templates[i].itemID == data.sourceEpoch && !duplicated ) {
+          console.log('--- Jee, löytyi haluttu ID ' + rundownDataJSONobj.templates[i].itemID + ' joka kopioidaan kerran.');
+          console.log('Copy', duplicateData);
+          NewTemplateArray.push(duplicateData);
+          duplicated = true;
+        }
+      }
+      rundownDataJSONobj.templates = NewTemplateArray;
+      console.log('Tallennetaan uusi data ', rundownDataJSONobj.templates);
+
+
+      try {
+          await spx.writeFile(data.datafile, rundownDataJSONobj);
+          res.status(200).send('Item duplicated ok.'); // ok 200 AJAX RESPONSE
+          return;
+      } catch (error) {
+          logger.error('Error while saving file: ', error);
+          // console.log('Error while saving file: ', error);
+      }; //file written
+      break;
+
+
+
 
 
     case 'saveRundownItemModifications': 
@@ -672,6 +730,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // This function will collect data from datafile and will send out "stupid" playout commands
   // to all needed renderer interfaces.
   // This will also persist the onair state to rundown file.
+  let templateIndex = 0;
 
   try {
     let dataOut     = {}; // new object
@@ -693,7 +752,18 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.templateindex + '] of [' + req.body.datafile + '].');
       RundownFile = path.normalize(req.body.datafile);
       RundownData = await GetJsonData(RundownFile);
-      let ItemData = RundownData.templates[req.body.templateindex];
+
+      // Refactored: identify with epoch / itemID, not index.
+      req.body.templateindex
+      
+      RundownData.templates.forEach((template,index) => {
+        if (template.itemID == req.body.epoch) 
+          {
+            templateIndex=index;
+          }
+      });
+
+      let ItemData = RundownData.templates[templateIndex];
       // console.log('gc/playout handler. Current items data:',ItemData);
       dataOut.relpath   = ItemData.relpath;
       dataOut.relpathCCG = ItemData.relpath.split('.htm')[0]; // casparCG needs template path without htm/html -extension. 
@@ -718,9 +788,17 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     } // else
     
 
+    let playOutCommand = "";
+    if ( req.body.command == 'playonce') {
+      playOutCommand = "play";
+      preventSave = true;
+      logger.verbose('Note playonce command received,  preventSave = true');
+    } else {
+      playOutCommand = req.body.command;
+    }
 
 
-    switch (req.body.command) {
+    switch (playOutCommand) {
 
       // == PLAY ======================================================
       case 'play':
@@ -730,7 +808,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           dataOut.command="ADD";
           logger.verbose('CasparCG play: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
           PlayoutCCG.playoutController(dataOut);
-          if (!preventSave) {RundownData.templates[req.body.templateindex].onair='true';}
+          if (!preventSave) {RundownData.templates[templateIndex].onair='true';}
         }
         else
         {
@@ -768,7 +846,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             let dataWeb     = dataOut.webplayout || '-';
             let dataOutput  = dataServer.trim() + dataChannel.trim() + dataLayer.trim() + dataWeb.trim() + dataOnair.trim();
 
-            if (index!=req.body.templateindex && thisOutput==dataOutput){
+            if (index!=templateIndex && thisOutput==dataOutput){
               RundownData.templates[index].onair='false';
             }
           });
@@ -785,7 +863,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           dataOut.command="NEXT";
           logger.verbose('CasparCG next: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
           PlayoutCCG.playoutController(dataOut);
-          if (!preventSave) {RundownData.templates[req.body.templateindex].onair='true';}
+          if (!preventSave) {RundownData.templates[templateIndex].onair='true';}
         }
         else
         {
@@ -810,7 +888,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // == STOP ======================================================
       case 'stop': 
         logger.verbose('Stopping [' + dataOut.relpath + ']');
-        if (!preventSave) {RundownData.templates[req.body.templateindex].onair='false';}
+        if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
         // Send PlayoutCCG.functionCalls() if any ---------------------
         if (dataOut.playserver!='-'){
           dataOut.command="STOP";
@@ -840,7 +918,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // == UPDATE ======================================================
       case 'update':
         logger.verbose('Updating [' + dataOut.relpath + ']');
-        if (!preventSave) {RundownData.templates[req.body.templateindex].onair='true';}        
+        if (!preventSave) {RundownData.templates[templateIndex].onair='true';}        
 
         if (dataOut.playserver!='-'){
           // TODO: Update functions not deeply properly tested.
@@ -868,7 +946,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         break;
     
       default:
-        logger.warn('/gc/playout did not recognize command [' + req.body.command + '].');
+        logger.warn('/gc/playout did not recognize command [' + playOutCommand + '].');
         break;
     }
 
@@ -1051,26 +1129,43 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
   // Handles modification changes of a template in the rundown.
   // Request: form data as JSON
   // Returns: Ajax response
-  logger.verbose('Overwriting a template item in rundown ' + req.body.rundownfile + ' with updated values.');
+
+
+  // FIXME: This needs to change.
+  // Original version uses index new one uses ItemID (epoch) for matching.
+
+  logger.info('Overwriting a template itemID [' + req.body.epoch + '] in rundown [' + req.body.rundownfile + '] with updated values.');
   try {
     // spx.talk('Saving template changes from rundown.');
-    // console.log('DATA IN ROUTER', JSON.stringify(req.body, null, 4));
-    let TemplateIdx = req.body.TemplateIdx || 0;
-    let RundownFile = path.normalize(req.body.rundownfile);
-    let RundownData = await GetJsonData(RundownFile);
-    req.body.DataFields.forEach(function(PostField){
-      RundownData.templates[TemplateIdx].DataFields.forEach(function(JsonField){
-        if (PostField.field == JsonField.field)
-          {
-            JsonField.value = PostField.value;
-          }
-      });  
+
+    var RundownFile = path.normalize(req.body.rundownfile);
+    var RundownData = await GetJsonData(RundownFile);
+
+    RundownData.templates.forEach((template,TemplateIdx) => {
+        if (template.itemID == req.body.epoch){
+          // let TemplateIdx = req.body.TemplateIdx || 0;
+          console.log('Haa, found #' + TemplateIdx);
+          req.body.DataFields.forEach(function(PostField){
+            console.log('-- Iterating data fields');
+            RundownData.templates[TemplateIdx].DataFields.forEach(function(JsonField){
+              console.log('-- Checking ' + PostField.field);
+              if (PostField.field == JsonField.field)
+                {
+                  JsonField.value = PostField.value;
+                }
+            });  
+          });
+        }
+        else {
+          console.log('Skipping #' + TemplateIdx);
+        }
     });
-    // console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
+
+    console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
     await spx.writeFile(RundownFile,RundownData);
     res.status(200).send('Item changes saved.'); // ok 200 AJAX RESPONSE
   } catch (error) {
-      let errmsg = 'Server error in /gc/sortTemplates [' + error + ']';
+      let errmsg = 'Server error in /gc/saveItemChanges [' + error + ']';
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };

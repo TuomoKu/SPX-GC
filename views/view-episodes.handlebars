@@ -16,6 +16,37 @@
   <script src="/js/fontawesome.all.min.js"></script>
   <script src="/js/socket.io.js"></script>
   <script src="/js/spx_gc.js"></script>
+
+<style>
+    .box {
+      position: relative;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.671);
+      padding: 0.6em 1em;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.842);
+      bottom: 2px;
+      left: 50px;
+      font-size: 0.7em;
+      border-radius: 0.5em;
+  }
+
+  .sb4:before {
+    content: "";
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    border-right: 10px solid transparent;
+    border-left: 10px solid rgba(255, 255, 255, 0.671);;
+    border-top: 10px solid rgba(255, 255, 255, 0.671);;
+    border-bottom: 10px solid transparent;
+    left: 40px;
+    bottom: -20px;
+  }
+
+</style>
+
+
 </head>
 
 
@@ -68,7 +99,15 @@
           </table>
 
           <HR>
+
+              {{#if files}}
+                  <!-- // -->
+                {{else}}
+                  <div class="box sb4">{{lang 'headline.createrundowntip'}}</div>
+              {{/if}}
           
+
+
           <table style="width: 100%;" cellspacing="10" border="0">
             <tr>
               <td valign="top" width="50%">

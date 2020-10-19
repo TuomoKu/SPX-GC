@@ -5,9 +5,10 @@
 // (c) 2020 tuomo@smartpx.fi
 // ***************************************
 
+
 /*
     Personal remarks
-    - if imported template is faulty it will clear profile.json <:-(
+    - if imported template is faulty it will clear profile.json?
 */
 
 var socket = io();
@@ -92,9 +93,12 @@ function tip(msg) {
     // request ..... 
     // returns ..... 
     // Describe the function here 
-    document.getElementById('statusbar').innerText=msg;
-    event.stopPropagation();
-    // playServerAudio('beep', 'We are in TIP function');
+    e = document.getElementById('statusbar') || null;
+    if (e) {
+        document.getElementById('statusbar').innerText=msg;
+        event.stopPropagation();
+        // playServerAudio('beep', 'We are in TIP function');
+    }
 } // tip mgsed
  
 
@@ -228,7 +232,10 @@ function AJAXGET(URL) {
 
 function applyTextEditChanges(event, e) {
     // end editing a TG field
-    if (APPSTATE != "EDITING") return;
+    setMasterButtonStates(e.closest('.itemrow'));
+    if (APPSTATE != "EDITING") {
+        return;
+    }
     if (event.keyCode == 13 || event.which == 13) { // 13 = enter key
         ToggleExpand();
     }
@@ -329,6 +336,8 @@ function checkKey(e) {
 
     e = e || window.event;
 
+    // console.log('--- ' + e.keyCode + ' ---');
+
     // FIRST GENERIC keycodes for all situations
     switch (e.keyCode)
     {
@@ -345,6 +354,16 @@ function checkKey(e) {
             }
             return;
             break;
+
+        
+        case 68: // d and D
+            if (e.ctrlKey && document.getElementById('filebasename')) {
+                // Ctrl+D and we are in controller
+                duplicateRundownItem();
+                e.preventDefault(); // do use add to bookmarks
+            }
+            return;
+            break;
     }
 
 
@@ -353,15 +372,16 @@ function checkKey(e) {
     switch (APPSTATE) {
         // EDITING (while editor open)
         case "EDITING":
-            console.log('Captured keypress while editing');    
+            // console.log('Captured keypress while editing');    
             switch (e.keyCode)
             {
                 case 13: // enter
                     if ( document.activeElement.nodeName === "TEXTAREA" && document.hasFocus()) {
-                        console.log('Come on, we are multilining here');
+                        // console.log('Come on, we are multilining here');
                         return;
                     }
-                    saveTemplateItemChanges(getElementIdOfFocusedItem()) // this includes toggle to close it
+                    saveTemplateItemChangesByElement(getFocusedRow()); 
+                    // saveTemplateItemChanges(getElementIdOfFocusedItem()) // this includes toggle to close it
                     e.preventDefault();
                     break;
                 
@@ -451,36 +471,6 @@ function clearUsedChannels(ServerName='') {
 } //clearUsedChannels
 
 
-function ClockOnOff() {
-    // toggle play/stop state of clock
-    // console.log('ClockOnOff()');
-    let SenderBtn = document.getElementById('clockBtn');
-    let data = {};
-    data.element = 'clock';
-    data.profile = localStorage.SPX_CT_ProfileName;
-    let CurStatus = SenderBtn.getAttribute('data-spx-state') || '';
-    if (CurStatus == "PLAYING") {
-        // console.log('currently playing, so stop clock play and make button green play');
-        SenderBtn.setAttribute('data-spx-state', '');
-        SenderBtn.innerText = SenderBtn.getAttribute('data-spx-playtext');
-        data.command = 'STOP';
-        SenderBtn.classList.remove('bg_red');
-        SenderBtn.classList.add('bg_green');
-        AJAXGET('/CCG/control/' + JSON.stringify(data));
-    }
-    else {
-        // console.log('currently stopped, so start play and make button red stop');
-        SenderBtn.setAttribute('data-spx-state', 'PLAYING');
-        SenderBtn.innerText = SenderBtn.getAttribute('data-spx-stoptext');
-        data.command = 'ADD';
-        SenderBtn.classList.remove('bg_green');
-        SenderBtn.classList.add('bg_red');
-        AJAXGET('/CCG/control/' + JSON.stringify(data));
-    }
-} // clock end
-
-
-
 
 function CollectJSONFromDOM() {
     // iterate DOM and collect data to an array of objects
@@ -502,68 +492,14 @@ function CollectJSONFromDOM() {
 
 
 
-function continueUpdateStop(command,index=undefined,indexIsDomIndex=true) {
-    // request ..... command, index (optional), indexIs... force usage
+function continueUpdateStop(command, itemrow='') {
+    // request ..... command, itemrow (optional)
     // returns ..... ajax response
-    // This will handle all playout / update / stop commands
-    // and will also force saving unsaved changes prior playout.
-    //
-    // FYI: This is being called (at least) from custom-functions...
-    //
-    // Needs refactoring: some duplicated functionality with
-    // playItem -function.
-
-    
-    data = {};
-    data.datafile      = document.getElementById('datafile').value;
-    
-    console.log('\ncontinueUpdateStop: command [' + command + '], index ['+index+'] type of list index = ' + indexIsDomIndex + '...');
-    let templateArrayIndex = 0;
-
-    if (index==undefined)
-        {
-            // index not given, get focused line
-            for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-                if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
-                    {
-                        index = getElementIdByDomIndex(nro);
-                        templateArrayIndex = nro;
-                        break;
-                    };
-            }
-            console.log('Found focused item ' + index);
-        }
-    else
-        {
-            // index was given, let's use it
-            let givenindex = index;
-            templateArrayIndex = givenindex;
-            if (indexIsDomIndex) {
-                // index type was DOMid
-                index = getElementIdByDomIndex(givenindex);
-                // console.log('Given DomIndex ' + givenindex + ', which means ElementID [playlistitem' + index + '].');
-            }
-            else {
-                // index type was ElementID
-                // console.log('Given index ' + index + ', which we use as element [playlistitem' + index + '].');
-            }
-        }
-    
-    data.templateindex = templateArrayIndex;
-    let CURITEM = document.getElementById('playlistitem' + index);
+    // This is being called (at least) from custom-functions...
+    if (!itemrow) { itemrow = getFocusedRow(); }
     switch (command) {
         case 'stop':
-            // STOP
-            CURITEM.setAttribute('data-spx-onair','false');
-            document.getElementById('playIcon' + index).classList.remove('playAuto');
-            document.getElementById('playIcon' + index).classList.remove('playTrue');
-            document.getElementById('playIcon' + index).classList.add('playFalse');
-            document.getElementById('deleteSmall' + index).style.display="inline-block";
-            document.getElementById('deleteLarge' + index).style.display="block";
-
-            // CancelOutTimerIfRunning(CURITEM);
-
-            data.command = 'stop';
+            playItem(itemrow, 'stop');
             break;
 
         case 'continue':
@@ -578,11 +514,6 @@ function continueUpdateStop(command,index=undefined,indexIsDomIndex=true) {
             console.log('Unknown command ['+ command +']');
             break;
     }
-
-    setMasterButtonStates(index, 'from continueUpdateStop'); // update visuals
-    working('Sending ' + data.command + ' ' + index  + ' request.');
-    ajaxpost('/gc/playout',data);
-
 } // ContinueUpdateStop() ended
 
 
@@ -653,55 +584,6 @@ function edi() {
 
 
 
-function EnableJustOneButton(clickedID = '') {
-    // ACTIVATE ALL
-    let buttonList = ['tgbtn1stop', 'tgbtn1play', 'tgbtn2stop', 'tgbtn2play', 'tgbtn3stop', 'tgbtn3play'];
-    buttonList.forEach(function (item) {
-        if (document.getElementById(item)) {
-            document.getElementById(item).classList.remove('disabled_btn');
-        }
-        else {
-            // console.log('Fail to remove disabled class from ', item);
-        }
-    })
-
-    // DEACTIVE ALL BUT ONE
-    if (clickedID == '') return;
-
-    console.log('Haetaan buttonin nimeä', clickedID);
-    let disableThese = "";
-    switch (clickedID) {
-        case 'tgbtn1play':
-        case 'tgbtn1stop':
-            disableThese = ['tgbtn2stop', 'tgbtn2play', 'tgbtn3stop', 'tgbtn3play'];
-            break;
-
-        case 'tgbtn2play':
-        case 'tgbtn2stop':
-            disableThese = ['tgbtn1stop', 'tgbtn1play', 'tgbtn3stop', 'tgbtn3play'];
-            break;
-
-        case 'tgbtn3play':
-        case 'tgbtn3stop':
-            disableThese = ['tgbtn1stop', 'tgbtn1play', 'tgbtn3stop', 'tgbtn3play'];
-            break;
-
-        default:
-            break;
-    }
-
-    disableThese.forEach(function (item) {
-        if (document.getElementById(item)) {
-            document.getElementById(item).classList.add('disabled_btn');
-        }
-        else {
-            // console.log('Fail to add disabled class to ', item);
-        }
-    })
-
-} // EnableJustOneButton ended
-
-
 
 function eps() {
     // Opens the selected (or current) file in controller.
@@ -735,71 +617,52 @@ function ModalOn(modalID) {
   } //FileBrowserOff
 
 
-function FloCommand(cmd) {
-    // toggle play/stop state of flockler -ticker. 
-    let CurCmd = cmd.toUpperCase();
-    let SenderBtn = document.getElementById('FloBtn1');
-    let data = {};
-    data.element = 'flockler';
-    data.profile = localStorage.SPX_CT_ProfileName;
-    localStorage.setItem('SPX_CT_flocklerID', document.getElementById('flocklerID').value);
-    localStorage.setItem('SPX_CT_flocklerPosts', document.getElementById('flocklerPosts').value);
 
-    switch (CurCmd) {
-        case 'TOGGLE':
-            let CurStatus = SenderBtn.getAttribute('data-spx-state') || '';
-            if (CurStatus == "PLAYING") {
-                // console.log('currently playing, so stop play and make button green play');
-                SenderBtn.setAttribute('data-spx-state', '');
-                SenderBtn.innerText = SenderBtn.getAttribute('data-spx-playtext');
-                data.command = 'STOP';
-                SenderBtn.classList.remove('bg_red');
-                SenderBtn.classList.add('bg_green');
-                AJAXGET('/CCG/control/' + JSON.stringify(data));
-            }
-            else {
-                // console.log('currently stopped, so start PLAY and make button red stop');
-                SenderBtn.setAttribute('data-spx-state', 'PLAYING');
-                SenderBtn.innerText = SenderBtn.getAttribute('data-spx-stoptext');
-                data.command = 'ADD';
-                data.jsonData = {
-                    'f0': document.getElementById('flocklerID').value,
-                    'f1': '',
-                    'f2': '',
-                    'f3': document.getElementById('flocklerPosts').value,
-                    'f4': 'false'
-                };
-                AJAXGET('/CCG/controljson/' + JSON.stringify(data));
-                SenderBtn.classList.remove('bg_green');
-                SenderBtn.classList.add('bg_red');
-            }
-            break;
 
-        case 'UPDATE':
-            // issue #2 fixed (after headline / ticker were separated)
-            data.command = 'UPDATE';
-            data.jsonData = {
-                'f0': document.getElementById('flocklerID').value,
-                'f1': '',
-                'f2': '',
-                'f3': document.getElementById('flocklerPosts').value,
-                'f4': 'false'
-            };
-            AJAXGET('/CCG/controljson/' + JSON.stringify(data));
-            break;
+function focusRow(rowitemOrIndex) {
+    // will make TG item focused and will set masterbutton states.
+    // console.log('Focusing', typeof rowitemOrIndex, rowitemOrIndex);
 
-        default:
+    // clear focus from all rows first
+    document.querySelectorAll('.itemrow').forEach(function (item, i) {
+        if (item.classList.contains("inFocus")) {
+            item.classList.remove('inFocus');
+        }
+    })
+    var index = 0; // for master buttons
+
+    let TargetElement = '';
+    if (typeof rowitemOrIndex == "number") {
+        // console.log('rowitemOrIndex was a number');
+        TargetElement = document.querySelectorAll('.itemrow')[rowitemOrIndex];
+        index = rowitemOrIndex;
     }
-} // FloCommand end
+
+    if (typeof rowitemOrIndex == "object") {
+        TargetElement = rowitemOrIndex;
+        index = getIndexOfRowItem(rowitemOrIndex);
+    }
+
+    if (TargetElement){
+        TargetElement.classList.add('inFocus');
+        TargetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "center"
+        });
+    }
+     setMasterButtonStates(TargetElement, 'from focusRow');
+} // focusRow ended
 
 
 
 
 
 
+function org_focusRow(index, useID=false) {
+    // FIXME: This is archived version of this function.
+    // Delete at some point -----------------------------
 
-
-function focusRow(index, useID=false) {
     // will make TG item focused
     // and will set TG button states.
     // index = target number
@@ -839,6 +702,7 @@ function focusRow(index, useID=false) {
 
 function getElementIdOfFocusedItem()
 {
+    // FIXME: Is this in use? From old logic?
     // a utility to iterate DOM items, return element ID of focused
     for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
         if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
@@ -848,8 +712,31 @@ function getElementIdOfFocusedItem()
     }
 }
 
+function getFocusedRow()
+{
+    // a utility to iterate DOM rows, returns focused element reference
+    for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
+        if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
+            {
+                return document.querySelectorAll('.itemrow')[nro];
+            };
+    }
+}
+
+
+function getIndexOfRowItem(rowitem) {
+    // Utility, gets a row element and returns it's index
+    document.querySelectorAll('.itemrow').forEach(function (item, i) {
+        if (rowitem = item) {
+            return i;
+        }
+    })
+}
+
+
 function getElementIdByDomIndex(domIndex)
 {
+    // FIXME: Is this in use? From old logic?
     // A utility to iterate all DOM items and return ID of element at itemIndex.
     // request = dom index number
     // returns = ElementID number
@@ -862,6 +749,7 @@ function getElementIdByDomIndex(domIndex)
 
 function getDomIndexByElementId(ElementId)
 {
+    // FIXME: Is this in use? From old logic?
     // A utility to iterate all DOM items and return dom index of given ElementId
     // Tested, this seem to work :)
     // request = ElementID
@@ -964,147 +852,127 @@ function moveFocus(nro) {
 
 
 
-function nextItem(index='') {
+function nextItem(itemrow='') {
     // Next / continue command.
-    let domIndex=0; // the current item domIndex
-    let eleIndex=0; // elementID in that location
-    if (!index)
+    if (!itemrow)
         {
-        for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-            if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
-                {
-                    // note, items may be sorted!
-                    domIndex=nro;
-                    eleIndex=getElementIdByDomIndex(nro);
-                    break;
-                };
-        }
-        }
-    else
-        {
-            // ElementID given, must find dom index of it...
-            domIndex = getDomIndexByElementId(index);
-            eleIndex = index;
+            // itemrow not given, get focused row
+            itemrow = getFocusedRow();
         }
     data = {};
     data.datafile      = document.getElementById('datafile').value;
-    data.templateindex = domIndex;
+    data.epoch         = itemrow.getAttribute('data-spx-epoch');
     data.command       = 'next';
-    working('Sending ' + data.command + ' ' + domIndex  + ' request.');
+    working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
+
+    // decrease steps left
+    var stepsleft= parseInt(itemrow.getAttribute('data-spx-stepsleft'))-1;
+    itemrow.setAttribute('data-spx-stepsleft',stepsleft);
+    console.log('Steps left: ' + stepsleft);
+    if (stepsleft < 1) {
+        // This should go somewhere else - because of DRY.
+        // This duplicates some code from playItem
+        // itemrow.setAttribute('data-spx-onair', false);
+        itemrow.setAttribute('data-spx-stepsleft',itemrow.querySelector('input[name="RundownItem[steps]"]').value); // reset counter
+        let uselessReturnValue = setItemButtonStates(itemrow, forcedCommand='stop');
+        document.getElementById('MasterCONTINUE').classList.add('disabled');
+        setMasterButtonStates(itemrow);
+    }
+
   } // nextItem
 
 
 
-function playItem(index='') {
+function playItem(itemrow='', forcedCommand='') {
     // Play item toggle.
     //
-    // request ..... rundown template index OPTIONAL
+    // request ..... itemrow
+    //               forcedCommand is (for example) to stop item when continue steps are done
     // returns ..... ajax response message to GUI
     //
     // Will send data object with an index and playlist filename
     // and playout handler will parse required data and so on. 
-    //
-    // Needs refactoring: some duplicated functionality with
-    // continueUpdateStop-function.
 
-    let domIndex=0; // the current item domIndex
-    let eleIndex=0; // elementID in that location
+    if (!itemrow) { itemrow = getFocusedRow();  }
 
-    if (!index)
-        {
-        // index not given, get focused line
-        for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-            if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
-                {
-                    // note, items may be sorted!
-                    domIndex=nro;
-                    eleIndex=getElementIdByDomIndex(nro);
-                    break;
-                };
-        }
-        // console.log('playItem() Found focused list index #' + domIndex + ' which means playlistitem [' + eleIndex + ']');
-        }
-    else
-        {
-            // ElementID given, must find dom index of it...
-            domIndex = getDomIndexByElementId(index);
-            eleIndex = index;
-            // console.log('playItem() Given playlistitem [' + index + '], which means list index #' + domIndex + '.');
-        }
+    if (!itemrow) {
+        console.log('No active rows, skip command.');
+        return;
+    }
+
     data = {};
     data.datafile      = document.getElementById('datafile').value;
-    data.templateindex = domIndex;
-    data.command       = setItemButtonStates(eleIndex);         // update all item buttons (expanded and collapsed)
-    setMasterButtonStates(eleIndex, 'from playItem');           // update master button UI
-    working('Sending ' + data.command + ' ' + domIndex  + ' request.');
+    data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
+    data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
+    setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
+    working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
-
-    let CURITEM = document.getElementById('playlistitem' + eleIndex);
-
+    // playonce (for out type=none) command acts on the server, but the state will not be saved to JSON
     // Check for function_onPlay:
-    let onPlayField = CURITEM.querySelector('#onPlay');
-    if (data.command=="play" && onPlayField && onPlayField.value!="") {
+    let isPlay = false;
+    if (data.command=="play" || data.command=="playonce") { isPlay = true; }
+     
+    let onPlayField = itemrow.querySelector('[name="RundownItem[function_onPlay]"]');
+    if (isPlay && onPlayField && onPlayField.value!="") {
         let onPlayCommand = onPlayField.value;
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Suoritetaan: ' + onPlayCommand);
-        let FunctionName = String(onPlayCommand.split("|")[0].trim());
-        let ArgsArray    = onPlayCommand.split("|")[1].trim().split(",");
-        let TempData = {};
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Executing: ' + onPlayCommand);
+        let FunctionName  = String(onPlayCommand.split("|")[0].trim());
+        let ArgsArray     = onPlayCommand.split("|")[1].trim().split(",");
+        let TempData      = {};
         TempData.server   = String(ArgsArray[0]);
         TempData.channel  = String(ArgsArray[1]);
         TempData.layer    = String(ArgsArray[2]); // 
         TempData.video    = String(ArgsArray[3]); // 'PARTICLESANDFLUIDCORNER_RGBAS_1080P50_V2'
         TempData.looping  = String(ArgsArray[4]); // 'true'
-        ExecuteDelay = parseInt(ArgsArray[5]) || 40; // 500 (ms)
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName + ', args: ', TempData);
+        ExecuteDelay      = parseInt(ArgsArray[5]) || 40; // 500 (ms)
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName + ', args: ', TempData);
 
         setTimeout(function () {
             window[FunctionName](TempData);
             },
             ExecuteDelay);
-
-        
     }
     else{
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onPlay function.');
-    } // onPlay check ended
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onPlay function.');
+    }   // onPlay check ended
 
     // Check for function_onStop:
-    let onStopField = CURITEM.querySelector('#onStop');
+    let onStopField = itemrow.querySelector('[name="RundownItem[function_onCont]"]');
     if (data.command=="stop" && onStopField && onStopField.value!="") {
         let onStopCommand = onStopField.value;
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Suoritetaan: ' + onStopCommand);
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Executing: ' + onStopCommand);
         let FunctionName2   = String(onStopCommand.split("|")[0].trim());
         let ArgsArray2      = onStopCommand.split("|")[1].trim().split(",");
         let TempData2 = {};
         TempData2.server   = String(ArgsArray2[0]);
         TempData2.channel  = String(ArgsArray2[1]);
         TempData2.layer    = String(ArgsArray2[2]);
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName2 + ', args: ', TempData2);
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName2 + ', args: ', TempData2);
         window[FunctionName2](TempData2);
     }
     else{
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onStop function.');
-    } // onStop check ended
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onStop function.');
+    }   // onStop check ended
 
     // auto-out trigger UI update
-    let TimeoutAsString = document.getElementById('out' + eleIndex).value;
+    let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
     if (!isNaN(TimeoutAsString))
         // value is numerical, so 
-        if (data.command=="play")
+        if (data.command=="play" )
             {
                 // start an new timer and store id to attribute
                 let TimeoutAsInt    = parseInt(TimeoutAsString);
-                console.log('Will stop playlistitem [' + eleIndex + '] in ' + TimeoutAsInt + ' ms...');
+                // console.log('Will stop playlistitem [' + eleIndex + '] in ' + TimeoutAsInt + ' ms...');
                 AutoOutTimerID = setTimeout(function () { playItem(eleIndex); }, TimeoutAsInt);
-                CURITEM.setAttribute('data-spx-timerid',AutoOutTimerID);
+                itemrow.setAttribute('data-spx-timerid',AutoOutTimerID);
                 document.getElementById('playIcon' + eleIndex).classList.add('playAuto');
                 document.getElementById('deleteSmall' + eleIndex).style.display="none";
                 document.getElementById('deleteLarge' + eleIndex).style.display="none";
             }
         else
             {
-                CancelOutTimerIfRunning(CURITEM);
+                CancelOutTimerIfRunning(itemrow);
             }
 
   } // playItem
@@ -1128,35 +996,38 @@ function renameRundown() {
 
 
 
-function setItemButtonStates(eleIndex){
+function setItemButtonStates(itemrow, forcedCommand=''){
     // Utility function which will toggle play indicators in
     // collapsed AND expanded views based on calling element's
     // current state.
+    
+    // forcedCommand is used to forcefully stop an item, which steps has run
+    // out after continue is done...
+
     // 
     // Requests ..... playlistitem's eleIndex nro
     // Response ..... 'play' or 'stop' state after toggle
     // 
 
-    if ( document.getElementById('out' + eleIndex).value=="none" )
+    if ( itemrow.querySelector('[name="RundownItem[out]"]').value=="none" )
         {
-            console.log('NONE button: do not set the buttons in any way');
-            return 'play';
+            // console.log('NONE out type in this graphic. Do not set the buttons in any way and return with playonce.');
+            return 'playonce';
         }
 
     let CommandToExecute = ''
-    let CURITEM = document.getElementById('playlistitem' + eleIndex);
-    let EXPANDEDPLAY = document.getElementById('tplay' + eleIndex);
+    let EXPANDEDPLAY = itemrow.querySelector('[data-spx-name="playbutton"]');
     let rows = document.querySelectorAll('.itemrow');
-    if (CURITEM.getAttribute('data-spx-onair')=="true")
+    if (itemrow.getAttribute('data-spx-onair')=="true" || forcedCommand=='stop')
         {
             // Convert button to PLAY button and execute stop command
-            console.log('was playing. so send STOP and make button PLAY');
+            // console.log('was playing. so send STOP and make button PLAY');
             CommandToExecute = 'stop';
-            CURITEM.setAttribute('data-spx-onair','false');
-            document.getElementById('onair' + eleIndex).value='false';
-            document.getElementById('playIcon' + eleIndex).classList.remove('playTrue');
-            document.getElementById('playIcon' + eleIndex).classList.remove('playAuto');
-            document.getElementById('playIcon' + eleIndex).classList.add('playFalse');
+            itemrow.setAttribute('data-spx-onair','false');
+            itemrow.querySelector('[name="RundownItem[onair]"]').value='false';
+            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
+            itemrow.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
             EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-playtext');
             EXPANDEDPLAY.classList.remove('bg_red');
             EXPANDEDPLAY.classList.add('bg_green');
@@ -1165,21 +1036,20 @@ function setItemButtonStates(eleIndex){
         {
             // Convert button to STOP button and execute play command
             // first we need to dim all other elements which are playing on same output channel / layer
-            console.log('was stopped. so send PLAY and make button STOP');
+            // console.log('was stopped. so send PLAY and make button STOP');
             CommandToExecute = 'play';
-            let PlayoutConfig = CURITEM.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
+            let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
             rows.forEach(function (item, index) {
                 let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
                 if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig )
                     {
                         // console.log('Dom item ' + index + ' is the same, so dim it');
                         item.setAttribute('data-spx-onair','false');
-                        document.getElementById('onair' + index).value='false';
-                        let icon = item.querySelector('[data-spx-name="icon"]');
-                        icon.classList.remove('playTrue');
-                        icon.classList.add('playFalse');
-                        CancelOutTimerIfRunning(CURITEM);
-                        curExpandedPlay = document.getElementById('tplay' + index);
+                        item.querySelector('[name="RundownItem[onair]"]').value='false';
+                        item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+                        item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+                        CancelOutTimerIfRunning(itemrow);
+                        curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
                         curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
                         curExpandedPlay.classList.remove('bg_red');
                         curExpandedPlay.classList.add('bg_green');
@@ -1192,10 +1062,14 @@ function setItemButtonStates(eleIndex){
             EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-stoptext');
             EXPANDEDPLAY.classList.remove('bg_green');
             EXPANDEDPLAY.classList.add('bg_red');
-            CURITEM.setAttribute('data-spx-onair','true');
-            document.getElementById('onair' + eleIndex).value='true';
-            document.getElementById('playIcon' + eleIndex).classList.remove('playFalse');
-            document.getElementById('playIcon' + eleIndex).classList.add('playTrue');
+            itemrow.setAttribute('data-spx-onair','true');
+            itemrow.querySelector('[name="RundownItem[onair]"]').value='true';
+            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playFalse');
+            itemrow.querySelector('[data-spx-name="icon"]').classList.add('playTrue');
+            // // reset update buttons
+            // itemrow.setAttribute('data-spx-changed','false');
+            // itemrow.querySelector('[data-spx-name="updatebutton"]').classList.add('disabled');
+
         }
     
     // finally show or hide delete buttons on all items
@@ -1203,14 +1077,14 @@ function setItemButtonStates(eleIndex){
         if (item.getAttribute('data-spx-onair')=="true" )
             {
                 //console.log('Hide delete buttons of ' + item.id);
-                document.getElementById('deleteSmall' + index).style.display="none";
-                document.getElementById('deleteLarge' + index).style.display="none";
+                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="hidden";
+                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="hidden";
             }
         else
             {
                 // console.log('Show delete buttons of ' + item.id);
-                document.getElementById('deleteSmall' + index).style.display="inline-block";
-                document.getElementById('deleteLarge' + index).style.display="block";
+                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="visible";
+                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="visible";
             }
     })
     return CommandToExecute
@@ -1264,7 +1138,53 @@ function resizeInput() {
 
 
 
-function removeItemFromRundown(itemId)
+function duplicateRundownItem(rowitem)
+{
+    if (!rowitem){
+        rowitem = getFocusedRow();
+    }
+
+    // Collect data for the server to duplicating the item
+    data={};
+    data.command       = "duplicateRundownItem"; // FIXME: set new duplicate to not onair...
+    data.sourceEpoch   = rowitem.getAttribute('data-spx-epoch');
+    data.cloneEpoch    = String(Date.now()); // create epoch and give this to server also
+    data.foldername    = document.getElementById('foldername').value;
+    data.listname      = document.getElementById('filebasename').value;
+    data.datafile      = document.getElementById('datafile').value;
+    // data.templateindex = getDomIndexByElementId(itemId); // an ARRAY INDEX, not itemId!
+    // duplicate in DOM
+
+    var newItem = rowitem.cloneNode(true);
+    newItem.style.opacity=0;
+    setTimeout(function () { rowitem.classList.remove('inFocus'); }, 5);
+    setTimeout(function () { newItem.setAttribute('data-spx-epoch', data.cloneEpoch); }, 15);
+    setTimeout(function () { newItem.setAttribute('data-spx-onair', "false"); }, 20);
+    // reset play icon and play button
+    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'); }, 30);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'); }, 40);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'); }, 50);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'); }, 60);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'); }, 70);
+        
+    rowitem.after(newItem);
+    setTimeout(function () { newItem.style.opacity=1; }, 100);
+    setTimeout(function () { newItem.classList.add('inFocus'); }, 110);
+
+    
+    var FirstInput = newItem.querySelectorAll('[data-role="userEditable"]')[0];
+    FirstInput.focus();
+    FirstInput.select();
+
+    // send server command
+    working('Sending ' + data.command + ' request.');
+    ajaxpost('',data);
+
+} // duplicateRundownItem ended
+
+
+
+function removeItemFromRundown(itemrow)
 {
   // Collect data for server processing
   data={};
@@ -1272,16 +1192,14 @@ function removeItemFromRundown(itemId)
   data.foldername    = document.getElementById('foldername').value;
   data.listname      = document.getElementById('filebasename').value;
   data.datafile      = document.getElementById('datafile').value;
-  data.templateindex = getDomIndexByElementId(itemId); // an ARRAY INDEX, not itemId!
+  data.epoch         = itemrow.getAttribute('data-spx-epoch'); // an ARRAY INDEX, not itemId!
 
   // Remove from DOM
-  let elementToRemove = document.getElementById('playlistitem' + itemId);
-  console.log('Removing item id', elementToRemove.id);
-  elementToRemove.remove();
+  itemrow.remove();
   event.stopPropagation(); // prevent trying to set focus to a deleted item
 
   // send server command
-  working('Sending ' + data.command + ' ' + data.templateindex  + ' request.');
+  working('Sending ' + data.command + ' request.');
   ajaxpost('',data);
 
 } // removeItemFromRundown ended
@@ -1336,7 +1254,7 @@ function saveTemplateItemChanges(elementID) {
     let FormNro = getDomIndexByElementId(elementID)
 
     working('Saving data from ElementID [' + elementID + '] = domIndex [' + FormNro + '] to server...');
-    console.log('%c Saving data from ElementID [' + elementID + '] = domIndex [' + FormNro + '] to server...', 'background: #F0F; color: #000');
+    // console.log('%c Saving data from ElementID [' + elementID + '] = domIndex [' + FormNro + '] to server...', 'background: #F0F; color: #000');
     let urlPath='/gc/saveItemChanges';
 
     data={};
@@ -1392,25 +1310,94 @@ function saveTemplateItemChanges(elementID) {
 
 
 
+function saveTemplateItemChangesByElement(itemrow) {
+    working('Saving chnaged data to server...');
+    data={};
+    data.DataFields=[];
+    const form = itemrow.querySelectorAll('form')[0];
+    iterator = -1;
+    [...form.elements].forEach((input,index) => {
+        if (input.getAttribute('data-role')=="userEditable")
+            {
+                let updatedObj = {}
+                updatedObj.field = input.getAttribute('data-update');
+                updatedObj.value = input.value;
+                data.DataFields.push(updatedObj)
+                iterator += 1;
+                if (itemrow.querySelector('#datapreview_' + iterator))
+                {
+                    let temp1 = input.value.replace(/\n/g, ' ');        // remove \n globally to support text areas
+                    let temp2 = temp1.replace(/\r/g, '');               // remove \r globally to support text areas
+                    itemrow.querySelector('#datapreview_' + iterator).innerText=temp2;
+                }
+            }
+    });
+
+    data.rundownfile = document.getElementById('datafile').value;
+    data.epoch = itemrow.getAttribute("data-spx-epoch");
+    axios.post('/gc/saveItemChanges',data, {})
+    .then(function (response) {
+        statusbar(response.data);
+        working('');
+        ToggleExpand(itemrow);
+    })
+    .catch(function (error) {
+        working('');
+        if (error.response) {
+            statusbar(error.response.data,'error')
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+        } else if (error.request) {
+            statusbar('GC server connection error','error')
+            console.log(error.request);
+        } else {
+          statusbar('GC request error, see console','warn')
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      });
+} // saveTemplateItemChanges
 
 
-function setMasterButtonStates(index, debugMessage='') {
+
+
+
+function setMasterButtonStates(itemrow, debugMessage='') {
     // this triggers when row focuses or when Play or Stop pressed or item changed.
-    // console.log('CHECKING: setMasterButtonStates ' + index + '. ' + debugMessage);
-    
-    
+    // TODO: Add logic to maintain "data-spx-stepsleft" attribute of itemrow
+
     if (!document.getElementById('MasterTOGGLE')) return; // this page does not have buttons...
 
     let TOGGLEBUTTON = document.getElementById('MasterTOGGLE');
     let UPDATEBUTTON = document.getElementById('MasterUPDATE');
     let CONTINBUTTON = document.getElementById('MasterCONTINUE');
 
-    let e = document.getElementById('playlistitem' + index);
-    if (document.getElementById('out' + index) && document.getElementById('out' + index).value=="none") return; // this gfx only has in-animation
+    if (document.querySelectorAll('.itemrow').length<1){
+        // no items on page, so disable buttons and bale out
+        TOGGLEBUTTON.classList.add('disabled'); 
+        UPDATEBUTTON.classList.add('disabled'); 
+        CONTINBUTTON.classList.add('disabled'); 
+        return
+    }
 
-    var steps = parseInt(e.querySelector('input[name="RundownItem[steps]"]').value) || 0;
-    var onAirState = (e.getAttribute('data-spx-onair') || false).toLowerCase();
-    var changState = (e.getAttribute('data-spx-changed') || false).toLowerCase();
+    // console.clear();
+    // console.log('States check', typeof itemrow, itemrow);
+    // console.log('CHECKING: setMasterButtonStates ' + itemrow.getAttribute('data-spx-epoch') + ' ' + debugMessage);
+
+
+    // this gfx only has in-animation
+    if ( itemrow.querySelector('input[name="RundownItem[out]"]') && itemrow.querySelector('input[name="RundownItem[steps]"]').value=="none" ) {
+        console.log('This items outmode = none, so not changing button states');
+        // maybe add a play and setTimeout to reset quickly...
+        return;
+    }
+
+    var stepsVal = itemrow.querySelector('input[name="RundownItem[steps]"]').value || 0;
+    var stepsleft= itemrow.getAttribute('data-spx-stepsleft');
+    var steps = parseInt(stepsVal);
+    var onAirState = (itemrow.getAttribute('data-spx-onair') || false).toLowerCase();
+    var changState = (itemrow.getAttribute('data-spx-changed') || false).toLowerCase();
     var onair = (onAirState == 'true'); // make bool
     var chngd = (changState == 'true'); // make bool
     
@@ -1419,14 +1406,17 @@ function setMasterButtonStates(index, debugMessage='') {
 
     // UPDATE
     UPDATEBUTTON.classList.add('disabled');            
-    if (chngd)
+    if (chngd && onair)
         {
-            setTimeout(function () { UPDATEBUTTON.classList.remove('disabled'); }, 2);
+            setTimeout(function () {
+                UPDATEBUTTON.classList.remove('disabled');
+                itemrow.querySelector('[data-spx-name="updatebutton"]').classList.remove('disabled');
+            }, 2);
         }
 
     // CONTINUE
     CONTINBUTTON.classList.add('disabled');
-    if (steps > 1 && onair)
+    if (steps > 1 && onair )
         {
             setTimeout(function () { CONTINBUTTON.classList.remove('disabled'); }, 3);
         }
@@ -1435,6 +1425,7 @@ function setMasterButtonStates(index, debugMessage='') {
     if (onair)
         {
             // console.log('Focused item IS playing (so change it to STOP)');
+            TOGGLEBUTTON.classList.remove('disabled')
             TOGGLEBUTTON.innerText = TOGGLEBUTTON.getAttribute('data-spx-stoptext');
             TOGGLEBUTTON.classList.remove('bg_green');
             TOGGLEBUTTON.classList.add('bg_red');
@@ -1442,11 +1433,15 @@ function setMasterButtonStates(index, debugMessage='') {
     else
         {
             // console.log('Focused item NOT playing (so change it to PLAY)');
+            TOGGLEBUTTON.classList.remove('disabled')
             TOGGLEBUTTON.innerText = TOGGLEBUTTON.getAttribute('data-spx-playtext');
             TOGGLEBUTTON.classList.remove('bg_red');
             TOGGLEBUTTON.classList.add('bg_green');
         }
 } // setTGButtonStates ended 
+
+
+
 
 
 
@@ -1487,7 +1482,7 @@ function spx_system(cmd,servername='') {
     AJAXGET('/CCG/system/' + JSON.stringify(data));
     if (data.reloadPage) {
         document.getElementById('SmartPX_App').style.opacity = '0.4';
-        setTimeout('location.reload()', 2000);
+        setTimeout('location.reload()', 1000);
     }
 } // end spx_system
 
@@ -1518,6 +1513,7 @@ function spxInit() {
 
 
 function setProfile(profileName) {
+    // FIXME: remove?
     // change profile to profileName and save to localStorage
     if (profileName == '') {
         // retrieve from localStorage
@@ -1527,103 +1523,6 @@ function setProfile(profileName) {
     localStorage.SPX_CT_ProfileName = profileName;
 } // setProfile ended
 
-
-
-
-function spxAct(func, delay) {
-    // if need be use this is button onClick="spxAct('cas',500);"
-    console.log('Will trigger ' + func + ' after ' + delay + ' ms.');
-    setTimeout(eval(func), delay);
-} // spxAct ended
-
-
-
-function SPXGFX_TG(caspartoolItem, cmd) {
-    // this handles TG commands only
-    let f0 = " ";
-    let f1 = " ";
-    let f2 = " ";
-    let f3 = " ";
-    let f4 = " ";
-    let ACTIVETG = document.querySelector('.inFocus');
-
-    if (!ACTIVETG) {
-        console.log('WARNING! No row selected, select a TG and try again.');
-        return
-    }
-
-
-
-    // Issue #5 fixed, see also SwapCharacters()
-    f0 = swap2HTMLntities(ACTIVETG.querySelector('.name').value) || ' '; // must be SPACE here for empty to avoid [Object object]
-    f1 = swap2HTMLntities(ACTIVETG.querySelector('.titl').value) || ' '; // -"-
-    // f0 = ACTIVETG.querySelector('.name').value || ' '; // must be SPACE here for empty to avoid [Object object]
-    // f1 = ACTIVETG.querySelector('.titl').value || ' '; // -"-
-
-    // console.log('Fixed name/value', f0, f1);
-
-
-    let data = {};
-    data.element = caspartoolItem;                  // used to search profiledata
-    data.profile = localStorage.SPX_CT_ProfileName; // get from local storage
-    data.fields = [
-        { id: 'f0', value: encodeURIComponent(f0) },
-        { id: 'f1', value: encodeURIComponent(f1) },
-        { id: 'f2', value: f2 },
-        { id: 'f3', value: f3 },
-        { id: 'f4', value: f4 }
-    ];
-
-
-    // console.log("DATA",JSON.stringify(data));
-    // console.log("DATA ENCODED",encodeURIComponent(JSON.stringify(data)));
-
-
-        switch (cmd) {
-        case 'PLAY':
-            // starting play
-            data.command = 'ADD';
-            AJAXGET('/CCG/control/' + JSON.stringify(data)); // encoding added and remived
-
-            // define play icon: left, right or up
-            let tgElement = data.element.toUpperCase();
-            let PlayIcon = "&#9654"; // arrow right is the default play icon
-            ACTIVETG.querySelector("#dragIcon").innerHTML = PlayIcon;
-            ACTIVETG.querySelector("#dragIcon").classList.add("green");
-            break;
-
-        case 'STOP':
-            // stopping and clearing item
-            data.command = 'STOP';
-            AJAXGET('/CCG/control/' + JSON.stringify(data));
-            let LeftAttr = ACTIVETG.getAttribute('data-spx-playleft');
-            let RighAttr = ACTIVETG.getAttribute('data-spx-playright');
-            let LiveAttr = ACTIVETG.getAttribute('data-spx-playlive');
-            // console.log('[' + LeftAttr + '|' + RighAttr + '|' + LiveAttr + ']');
-            if (!LeftAttr && !RighAttr && !LiveAttr) {
-                ACTIVETG.querySelector("#dragIcon").innerHTML = "&#9776"; // drag icon
-                ACTIVETG.querySelector("#dragIcon").classList.remove("green");
-            }
-            break;
-
-        case 'UPDATE':
-            if (caspartoolItem.classList.contains('disabled')) {
-                // This works, but stinks. The 1st argument is a DOM element
-                // with UPDATE command, whereas with play, the argument is a 
-                // template_graphic identifier string. Yuck >:-P
-                return false;
-            }
-            data.command = 'UPDATE';
-            data.element = ACTIVETG.getAttribute('data-spx-playout');
-            AJAXGET('/CCG/control/' + JSON.stringify(data));
-            ACTIVETG.setAttribute('data-spx-changed', '');
-            break;
-
-        default:
-            console.log('Unknown SPXGFX command!');
-    }
-    setTGButtonStates(document.querySelector('.inFocus'));
-} // SPXGFX_TG ended
 
 
 
@@ -1662,36 +1561,34 @@ function swap2HTMLntities(str){
 
 
 
-function ToggleExpand(index='') {
-    if (!index){
-        // index not given, get focused line
-        for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-            if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
-                index=getElementIdByDomIndex(nro);
-            };
-        }
+function ToggleExpand(rowelement='') {
+    if (!rowelement){
+        // rowelement not given, get focused line
+         rowelement=getFocusedRow();
       }
-    // console.log('Toggle ElementID ' + index);
+    // console.log('Toggle row id ' + rowelement.id);
+    let Expanded  = rowelement.querySelector('#Expanded')
+    let Collapsed = rowelement.querySelector('#Collapsed')
 
-    if (document.getElementById('Collapsed' + index).style.display=="none")
+    if (Collapsed.style.display=="none")
         { 
         // We were open, so lets COLLAPSE
-        document.getElementById('Collapsed' + index).style.display="block";
-        document.getElementById('Expanded' + index).style.display="none";
+        Collapsed.style.display="block";
+        Expanded.style.display="none";
         AppState('DEFAULT');
         }
     else
         {
         // We were closed, so lets EXPAND and set focus to first text field
-        document.getElementById('Collapsed' + index).style.display="none";
-        document.getElementById('Expanded' + index).style.display="block";
-        if (document.getElementById('Expanded' + index).querySelectorAll('.gcinput').length>0)
+        Collapsed.style.display="none";
+        Expanded.style.display="block";
+        if (Expanded.querySelectorAll('.gcinput').length>0)
             {
                 // if there are input fields, go to editor mode (and disable dragsort)
-                let firstFormElement = document.getElementById('Expanded' + index).querySelectorAll('.gcinput')[0];
+                let firstFormElement = Expanded.querySelectorAll('.gcinput')[0];
                 if (firstFormElement.type=="text") {
-                    firstFormElement.focus();
-                    firstFormElement.select();
+                        firstFormElement.focus();
+                        firstFormElement.select();
                     }
                 AppState('EDITING');
             }
@@ -1699,41 +1596,29 @@ function ToggleExpand(index='') {
 } // ToggleExpand
 
 
-function updateItem(index) {
+
+function updateItem(itemrow) {
     // request ..... rundown template index
     // returns ..... ajax response message to GUI
     // Will send data object with an index and playlist filename
     // and playout handler will parse required data and so on. 
 
-    // Needs refactoring: some duplicated functionality with
-    // playItem and continueUpdateStop-functions.
+    if (!itemrow) {itemrow = getFocusedRow() }
 
-    if (index=='' || index==undefined){
-        // index not given, get focused line
-        for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-            if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
-                {
-                    index=nro;
-                    break;
-                };
-        }
-        console.log('Index was not given for update. Using focused domIndex ' + index);
-      }
-
-    working('Sending update ' + index  + ' request.');
-    console.log('updateItem',index);
-
+    working('Sending update request.');
     data = {};
     data.command       = 'update';
     data.datafile      = document.getElementById('datafile').value;
-    data.relpath       = document.getElementById('relpath' + index).value;
-    data.playserver    = document.getElementById('playserver' + index).value;
-    data.playchannel   = document.getElementById('playchannel' + index).value;
-    data.playlayer     = document.getElementById('playlayer' + index).value;
-    data.webplayout    = document.getElementById('webplayout' + index).value;
-    data.templateindex = index;
+
+    data.relpath       = itemrow.querySelector('[name="RundownItem[relpath]"]').value;
+    data.playserver    = itemrow.querySelector('[name="RundownItem[playserver]"]').value;
+    data.playchannel   = itemrow.querySelector('[name="RundownItem[playchannel]"]').value;
+    data.playlayer     = itemrow.querySelector('[name="RundownItem[playlayer]"]').value;
+    data.webplayout    = itemrow.querySelector('[name="RundownItem[webplayout]"]').value;
+    data.epoch         = itemrow.getAttribute('data-spx-epoch');
+
     data.fields        = [];
-    let CurrentDomFields = document.getElementById('playlistitem' + index).querySelectorAll("[data-update]");
+    let CurrentDomFields = itemrow.querySelectorAll("[data-update]");
 
     CurrentDomFields.forEach((item,index) => {
       let formField={};
@@ -1742,7 +1627,7 @@ function updateItem(index) {
       data.fields.push(formField);
     });
 
-    // Note, data here IS in internal array format [{"field":"f1", "value":"Moro"},{"field":"f2", "value":"Nääs"},]
+    // Note, data here IS in internal array format [{"field":"f1", "value":"Hello"},{"field":"f2", "value":"World"},]
     // and MUST NOT change. Format it downstream for different renderers.
     ajaxpost('/gc/playout',data, 'true');
   } // updateItem

@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Oct 17 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.
+> Readme updated Oct 19 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -211,6 +211,7 @@ An example `config.json` of the SPX-GC server
   "general": {
     "username": "welcome",
     "password": "",
+    "hostname": "My main machine",
     "langfile": "english.json",
     "loglevel": "info",
     "logfolder": "X:/GC-DEV/LOG/",

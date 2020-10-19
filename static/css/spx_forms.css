@@ -143,6 +143,8 @@
     margin: 1px;
     margin-top: 5px;
     line-height: 132%;
+    padding-left: 0.2em;
+    user-select: auto;
 }
 .gcinput::placeholder {
     color: rgb(156, 156, 156);

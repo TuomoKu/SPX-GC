@@ -4,6 +4,12 @@
 
 ---
 
+## **1.0.4** (Oct 19 2020)
+- Rundown items changed from index based to ID-based. This is a major internal change and improves app stability, enable further development and cleanup spaghetti code.
+- Added playlist item duplication.
+- Continue button only active if template definition "steps" > 1
+- Update button removed from main UI and is now only in the item editor
+- Minor UI tweaks and some orphan code purged
 
 
 ## **1.0.3** (Oct 17 2020)

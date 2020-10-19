@@ -58,6 +58,7 @@
 		"save": "Save"
 	},
 	"headline": {
+		"createrundowntip": "Add a rundown here",
 		"edit": "Edit rundown",
 		"select": "Choose a project",
 		"selectfile": "Choose a rundown"
@@ -169,6 +170,7 @@
 		"deletepisode": "Delete selected rundown including all content on it",
 		"deleteshow": "Delete selected project including settings and all rundowns",
 		"docs": "Open documentation",
+		"duplicateitem": "Duplicate this item",
 		"duplicaterundown": "Creates a duplicate of the selected rundown",
 		"epslist": "Select or doubleclick rundown to open it",
 		"extradescr": "Extra function's description",
@@ -183,7 +185,7 @@
 		"loglevel": "Logging level? Default level: info. Most log information: debug.",
 		"masterplay": "Play / stop selected item (Space)",
 		"masterupdate": "Update texts from selected item (F5)",
-		"mastercontinue": "Continue animation to next step (Shift + Space)",
+		"mastercontinue": "Continue animation to next step (Shift + Space). Only valid in templates with steps > 1.",
 		"navishows": "Projects",
 		"navishow": "Rundowns",
 		"newversavailable": "A newer version is available. Click to read more.",

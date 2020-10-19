@@ -58,6 +58,7 @@
 		"save": "Tallenna"
 	},
 	"headline": {
+		"createrundowntip": "Luo ensimmäinen ajolista täältä",
 		"edit": "Muokkaa sisältölistaa",
 		"select": "Valitse projekti",
 		"selectfile": "Valitse ajolista"
@@ -169,6 +170,7 @@
 		"deletepisode": "Poista valittu ajolista ja kaikki sen elementit",
 		"deleteshow": "Poista valittu projekti ja kaikki sen asetukset ja ajolistat",
 		"docs": "Avaa dokumentaatio",
+		"duplicateitem": "Monista tämä elementti",
 		"duplicaterundown": "Luo valitusta ajolistasta kopion",
 		"epslist": "Valitse tai tuplaklikkaa haluamasi ajolista auki",
 		"extradescr": "Toimintopainikeen lyhyt kuvaus käyttöliittymään",
@@ -183,7 +185,7 @@
 		"loglevel": "Mitä logitasoa käytetään? Oletus: info. Eniten tietoja tallentuu: debug.",
 		"masterplay": "Toista / pysäytä aktiivinen elementti (Space)",
 		"masterupdate": "Päivitä aktiivisen elementit tekstit (F5)",
-		"mastercontinue": "Jatka animaatiota seuraavaan vaiheeseen (Shift + Space)",
+		"mastercontinue": "Jatka animaatiota seuraavaan vaiheeseen (Shift + Space). Vain templateissa joiden steps > 1.",
 		"navishows": "Projektilistaukseen",
 		"navishow": "Ajolistat",
 		"newversavailable": "Uudempi versio saatavilla. Klikkaa ja lue lisää.",

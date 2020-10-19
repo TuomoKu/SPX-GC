@@ -1,6 +1,6 @@
 {
   "name": "spx-gc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "SPX-GC | SmartPX Graphics Controller for CasparCG and streaming applications",
   "homepage": "https://github.com/TuomoKu",
   "main": "server.js",

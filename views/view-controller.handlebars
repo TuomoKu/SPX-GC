@@ -106,6 +106,7 @@
           <TR><td>Up / Down</td>    <td>Select previous / next item</td></TR>
           <TR><td>Enter</td>        <td>Open / close selected item for editing</td></TR>
           <TR><td>Space</td>        <td>Play / stop selected playlist item</td></TR>
+          <TR><td>Ctrl + D</td>     <td>Duplicate a template item.</td></TR>
           <TR><td>Shift + Space</td><td>Continue animation to next step.<BR><small>Support for next -command must be implemented in the template.</small></td></TR>
           <TR><td>F5</td>           <td>Send an instant update to the template (to fix typos, for instance).<BR><small>Support for update command must be implemented in the template.</small></td></TR>
       </table>
@@ -127,19 +128,32 @@
         <div class="left pM wrapper">
             <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2;">
 
+                {{#if filedata.templates}}
+                  <!-- // -->
+                {{else}}
+                  <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
+                    <h2>Empty rundown</h2><BR>
+                    <P> Press 'F1' to open a list of useful keyboard shortcuts.<BR>Add templates to this rundown from + button below.</P>
+
+                  </div> 
+                {{/if}}
+
 
                 <!-- GC ITEMS -->
                 {{#each filedata.templates}}
 
                   <div id="playlistitem{{@index}}"
-                    class             = "itemrow row_accent{{uicolor}}"
-                    data-spx-index    = {{@index}}
-                    data-spx-changed  = "false"
-                    data-spx-onair    = "{{onair}}"
-                    data-spx-timerid  = ""
-                    onClick           = "focusRow({{@index}},true);"
-                    ondblclick        = "ToggleExpand({{@index}});"
-                    onmouseover       = "tip('{{lang 'hover.item'}}');">
+                    class              = "itemrow row_accent{{uicolor}}"
+                    data-spx-epoch     = {{itemID}}
+                    data-spx-index     = {{@index}}
+                    data-spx-changed   = "false"
+                    data-spx-onair     = "{{onair}}"
+                    data-spx-timerid   = ""
+                    data-spx-stepsleft = "{{steps}}"
+                    onClick            = "focusRow(this);"
+                    ondblclick         = "ToggleExpand(this);"
+                    old-ondblclick     = "ToggleExpand({{@index}});"
+                    onmouseover        = "tip('{{lang 'hover.item'}}');">
 
                   <form name="templates[{{@index}}]" id="form{{@index}}" method="post" action="/gc/saveItemChanges">
                   <input type="hidden" name="foldername"  value="{{../folder}}">
@@ -150,7 +164,7 @@
                   <div class="handle wide" id="item{{@index}}" style="padding: 6px; margin-bottom:5px; padding-left:12px; padding-bottom:12px;">
 
                     <!-- COLLAPSED to small line-->
-                    <div id="Collapsed{{@index}}" style="position:relative;">
+                    <div id="Collapsed" style="position:relative;">
                       <div style="position:absolute; right:10px; z-index:50; font-size:1.5em; top:0.6em;">
 
                         <i id="playIcon{{@index}}" data-spx-name="icon" class="fas fa-play {{{playIconClass onair}}}"></i>
@@ -166,23 +180,26 @@
                               </span>
                           </TD>
                           <TD class="vtop aright spxTableHeadsmall">
-                            <i id="deleteSmall{{@index}}" class="fas fa-times" onClick="removeItemFromRundown({{@index}});" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
+                            <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
                           </TD>
                         </TR>
                       </table>
                       <div style="width:100%; " class="truncate">
 
                         {{#ifValue DataFields.0.ftype "hidden"}}
-                          <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.title }}}</span>
+                          {{!-- <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.title }}}</span> --}}
+                          <span id="datapreview_0">{{{ shortifyUIstrings DataFields.0.title }}}</span>
                         {{else}}
-                          <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.value }}}</span>
+                          {{!-- <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.value }}}</span> --}}
+                          <span id="datapreview_0">{{{ shortifyUIstrings DataFields.0.value }}}</span>
                         {{/ifValue}}
 
                         {{#if DataFields.1.value}}
                             {{#ifValue DataFields.1.ftype "hidden"}}
                               <!-- show nothing -->
                             {{else}}
-                              <span class="delim"></span><span id="datapreview_{{@index}}_1">{{{ shortifyUIstrings DataFields.1.value }}}</span>
+                              {{!-- <span class="delim"></span><span id="datapreview_{{@index}}_1">{{{ shortifyUIstrings DataFields.1.value }}}</span> --}}
+                              <span class="delim"></span><span id="datapreview_1">{{{ shortifyUIstrings DataFields.1.value }}}</span>
                             {{/ifValue}}
                         {{/if}}
 
@@ -190,7 +207,8 @@
                             {{#ifValue DataFields.2.ftype "hidden"}}
                               <!-- show nothing -->
                             {{else}}
-                              <span class="delim"></span><span id="datapreview_{{@index}}_2">{{{ shortifyUIstrings DataFields.2.value }}}</span>
+                              {{!-- <span class="delim"></span><span id="datapreview_{{@index}}_2">{{{ shortifyUIstrings DataFields.2.value }}}</span> --}}
+                              <span class="delim"></span><span id="datapreview_2">{{{ shortifyUIstrings DataFields.2.value }}}</span>
                             {{/ifValue}}
                         {{/if}}
                         
@@ -200,7 +218,7 @@
                     </div>
 
                     <!-- EXPANDED to an editor -->
-                    <div id="Expanded{{@index}}" style="display: none;">
+                    <div id="Expanded" style="display: none;">
                       <table class="wide" style="border-spacing: 2px; margin-top:2px;">
                         <TR>
                           <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
@@ -322,8 +340,10 @@
                                 <tr>
                                   <td colspan="2" class="vtop">
                                     <!-- SAVE CHANGES BUTTON -->
+                                    <!-- onClick="saveTemplateItemChanges({{@index}});" -->
+
                                     <button type="button"
-                                      onClick="saveTemplateItemChanges({{@index}});"
+                                      onClick="saveTemplateItemChangesByElement(this.closest('.itemrow'));"
                                       class="wide spxFlexItem btnsmall bg_grey15 ripple"
                                       onmouseover="tip('{{lang 'hover.submitthis'}}');"
                                       >{{lang 'button.save'}} </button><!-- FORM SUBMIT MODEL -->
@@ -333,19 +353,22 @@
                                   <td>
                                     <!-- PLAY BUTTON -->
                                     <button type="button"
-                                      onClick="playItem('{{@index}}');" 
+                                      style="display: none;"
+                                      onClick="playItem(this.closest('.itemrow'));" 
                                       id="tplay{{@index}}"
                                       class="wide spxFlexItem btnsmall ripple {{{playButtonClass onair}}}"
                                       data-spx-stoptext="{{lang 'button.stop'}}"
                                       data-spx-playtext="{{lang 'button.play'}}"
+                                      data-spx-name="playbutton"
                                       onmouseover="tip('{{lang 'hover.playthis'}}');"
                                       >{{{playButtonText onair}}}</button>
                                   </td>
                                   <td>
-                                    <!-- UPDATE BUTTON -->
+                                    <!-- UPDATE BUTTON  -->
                                     <button type="button"
-                                      onClick="updateItem('{{@index}}');"
-                                      class="wide spxFlexItem btnsmall bg_blue ripple"
+                                      onClick="updateItem(this.closest('.itemrow'));"
+                                      class="wide spxFlexItem btnsmall bg_blue ripple disabled"
+                                      data-spx-name="updatebutton"
                                       onmouseover="tip('{{lang 'hover.updatethis'}}');"
                                       >{{lang 'button.update'}}</button>
                                   </td>
@@ -353,7 +376,8 @@
                               </table>
                           </TD>
                           <TD class="vtop center">
-                            <i id="deleteLarge{{@index}}" class="far fa-trash-alt" onClick="removeItemFromRundown({{@index}});" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i>
+                            <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
+                            <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i>
                           </TD>
                         </TR>
                         <TR>
@@ -380,9 +404,9 @@
                             <tr><td class="aright">steps</td>       <td><input style="width: 100%;" type="text" id="steps{{@index}}"       name="RundownItem[steps]"           value="{{steps}}"></td></tr>
 
                             <!-- special event triggers -->
-                            <tr><td class="aright">onPlay</td>     <td><input style="width: 100%;" type="text" id="onPlay"     name="RundownItem[function_onPlay]"  value="{{function_onPlay}}"></td></tr>
-                            <tr><td class="aright">onCont</td>     <td><input style="width: 100%;" type="text" id="onCont"     name="RundownItem[function_onCont]"  value="{{function_onCont}}"></td></tr>
-                            <tr><td class="aright">onStop</td>     <td><input style="width: 100%;" type="text" id="onStop"     name="RundownItem[function_onStop]"  value="{{function_onStop}}"></td></tr>
+                            <tr><td class="aright">onPlay</td>     <td><input style="width: 100%;" type="text" id="onPlay{{@index}}"      name="RundownItem[function_onPlay]"  value="{{function_onPlay}}"></td></tr>
+                            <tr><td class="aright">onCont</td>     <td><input style="width: 100%;" type="text" id="onCont{{@index}}"      name="RundownItem[function_onCont]"  value="{{function_onCont}}"></td></tr>
+                            <tr><td class="aright">onStop</td>     <td><input style="width: 100%;" type="text" id="onStop{{@index}}"      name="RundownItem[function_onStop]"  value="{{function_onStop}}"></td></tr>
 
                           </table> 
                       </div>
@@ -407,8 +431,8 @@
               <div class="wide center" style="margin: 0; padding: 0;">
                 <button
                   id="MasterTOGGLE"
-                  class="btn bg_green ripple"
-                  style="width:33%;"
+                  class="btn bg_green ripple disabled"
+                  style="width:45%;"
                   data-spx-graphic="name_left"
                   data-spx-playtext="{{lang 'button.playmaster'}}"
                   data-spx-stoptext="{{lang 'button.stopmaster'}}"
@@ -418,16 +442,17 @@
 
                 <button
                   id="MasterCONTINUE"
-                  class="btn bg_green ripple"
-                  style="width:30%;"
+                  class="btn bg_green ripple disabled"
+                  style="width:45%;"
                   onClick="nextItem();"
                    onmouseover="tip('{{lang 'hover.mastercontinue'}}');"
                   >{{lang 'button.continue'}}</button>
 
+                <!-- *** hidden **** it was confusing there -->
                 <button
                   id="MasterUPDATE"
                   class="btn bg_blue ripple disabled"
-                  style="width:33%;"
+                  style="width:33%; display:none;"
                   onClick="updateItem();"
                    onmouseover="tip('{{lang 'hover.masterupdate'}}');"
                   >{{lang 'button.update'}}</button> </div>

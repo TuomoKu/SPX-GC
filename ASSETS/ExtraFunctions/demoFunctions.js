@@ -79,8 +79,9 @@ function stopAll(){
     // develop a server-side function for this. 
     let ITEMS = document.querySelectorAll('.itemrow');
     ITEMS.forEach(function (templateItem, itemNro) {
+        console.log('iterate row ' + itemNro);
         setTimeout(function(){ 
-            continueUpdateStop('stop', itemNro);
+            continueUpdateStop('stop', templateItem);
             }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
         });
     }
