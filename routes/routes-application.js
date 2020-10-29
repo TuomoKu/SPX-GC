@@ -781,6 +781,19 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             // FieldItem.value = item.value;
             let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
             let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
+
+
+            // I am losing sleep over this - but it works! (Added 26.10.2020)
+            // console.log('Before HTMLentityfication: [' + temp2 + ']');
+            temp2 = temp2.replace(/&/g, "&amp;");
+            temp2 = temp2.replace(/>/g, "&gt;");
+            temp2 = temp2.replace(/</g, "&lt;");
+            temp2 = temp2.replace(/"/g, "&quot;");
+            temp2 = temp2.replace(/'/g, "&#039;");
+            temp2 = temp2.replace(/\\/g, "&#92;");
+            // console.log('After HTMLentityfication: [' + temp2 + ']');
+
+
             FieldItem.value = temp2;
             dataOut.fields.push(FieldItem);
         }

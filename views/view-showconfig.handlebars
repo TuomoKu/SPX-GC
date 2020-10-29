@@ -46,6 +46,12 @@
     function RenderFolder(data)
       {
         // will draw folder and files to the popup GUI
+
+        if (!data.folder){
+          console.log('Folder unknown');
+          return
+          }
+
         document.getElementById('curfolder').innerText = data.folder.split("\\").join("/");
         document.getElementById("folderList").innerHTML="";
         document.getElementById("fileList").innerHTML="";
