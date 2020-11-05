@@ -10,7 +10,7 @@
 - Continue button only active if template definition "steps" > 1
 - Update button removed from main UI and is now only in the item editor
 - Minor UI tweaks and some orphan code purged
-
+- Allow special characters in template fields (",'/\&#<>)
 
 ## **1.0.3** (Oct 17 2020)
 - added support for "filelist" dropdown selector for choosing a file of specific type (such as 'png') from a specific Asset -folder (such as '/media/image/logo/')

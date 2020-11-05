@@ -1,5 +1,6 @@
 # SPX-GC Template Demo Pack #1
 
+> Updated 05.11.2020
 
 
 This starter pack consists of a few example HTML -templates to be used for testing [**SPX Graphics Controller**](https://www.github.com/TuomoKu/SPX-GC/) for controlling [CasparCG](https://casparcg.com/) or streaming applications, such as [OBS](https://obsproject.com/), [Wirecast](https://www.telestream.net/wirecast/) and [vMix](https://www.vmix.com/).
