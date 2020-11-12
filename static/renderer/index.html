@@ -282,6 +282,10 @@
                 document.getElementById('layer' + data.webplayout).contentWindow.stop();
                 break;
 
+            case 'invokeFunction':
+                eval("document.getElementById('layer' + data.webplayout).contentWindow." + data.invoke);
+                break;
+
             default:
                 // console.log('Unknown SPXMessage2Client command in renderer: ' + data.spxcmd);
         }

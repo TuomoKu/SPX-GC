@@ -3,6 +3,9 @@
 > Most recent updated are at the top of this document.
 
 ---
+## **1.0.5** (Oct 19 2020)
+- Added support for INVOKE handler for custom template commands.
+
 
 ## **1.0.4** (Oct 19 2020)
 - Rundown items changed from index based to ID-based. This is a major internal change and improves app stability, enable further development and cleanup spaghetti code.

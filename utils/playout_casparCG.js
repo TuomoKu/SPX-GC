@@ -71,6 +71,7 @@ module.exports = {
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;
     let DataType = data.dataformat;
+    let InvFunct = data.invoke;
     data.command = data.command.toUpperCase();
 
     logger.info('CasparCG playoutController - command ' + data.command + "', Template: '" + GFX_Teml, "', CasparCG: " + GFX_Serv + ", " + GFX_Chan + ", " + GFX_Laye);
@@ -131,6 +132,10 @@ module.exports = {
         case 'NEXT':
           global.CCGSockets[this.getSockIndex(data.playserver)].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' NEXT 0\r\n');
           break;
+
+        case 'INVOKE':
+            global.CCGSockets[this.getSockIndex(data.playserver)].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' INVOKE 1 \"' + InvFunct + '\"\r\n');
+            break;
 
         default:
           logger.warn('CCG/Control (util) - Unknown command: ' + data.command);

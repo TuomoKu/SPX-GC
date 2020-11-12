@@ -732,12 +732,16 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // This will also persist the onair state to rundown file.
   let templateIndex = 0;
 
+
+
   try {
     let dataOut     = {}; // new object
     dataOut.fields  = []; // init it with an empty arr as placeholder
     let RundownFile = ""  // file reference
     let RundownData = ""  // file JSON
     let preventSave = false;
+
+    console.log(req.body.prepopulated);
 
     if (req.body.prepopulated && req.body.prepopulated=="true") {
       // data in pre-generated coming in. So we can just pass that along.
@@ -958,6 +962,24 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         } // else web 
         break;
     
+      // == UPDATE ======================================================
+      case 'invoke':
+        logger.verbose('Invoke [' + dataOut.invoke + ']');
+        // Example of expected dataOut down stream from here:
+        // dataOut.command = "invoke"
+        // dataOut.invoke  = "myTemplateFunction('hello world')"
+        if (dataOut.playserver != '-') {
+            dataOut.command = "INVOKE";
+            PlayoutCCG.playoutController(dataOut);
+        }
+
+        if (dataOut.webplayout != '-') {
+            dataOut.spxcmd = 'invokeFunction';
+            PlayoutWEB.webPlayoutController(dataOut);
+        } // if web
+        break;
+
+
       default:
         logger.warn('/gc/playout did not recognize command [' + playOutCommand + '].');
         break;
