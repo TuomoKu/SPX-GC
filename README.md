@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Nov 05 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.4).
+> Readme updated Dec 14 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.4).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -14,7 +14,7 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 ---
 
 ### Table of Contents
-- [LIVE DEMO](#demo)
+- [LIVE DEMO](#demo) is online again
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -39,6 +39,8 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 <a id="demo"></a>
 ## Live demo
 See a **LIVE DEMO** of CG v1.0.4 at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+
+_(Live demo was accidentally running with incorrect port number in Nov / Dec 2020 but it is up again normally. Sorry for the hickup.)_
 
 ---
 
