@@ -355,6 +355,11 @@ function checkKey(e) {
             return;
             break;
 
+        case 27: // esc
+            if (document.getElementById('filebasename')) {
+                // we are in controller
+                stopAll(); // STOP all layers used by current rundown
+            }
         
         case 68: // d and D
             if (e.ctrlKey && document.getElementById('filebasename')) {
