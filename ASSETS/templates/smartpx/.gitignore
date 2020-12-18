@@ -1,9 +1,0 @@
-############################
-# SmartPX's unwanted files #
-############################
-PoliisitStreamGfx/
-MB2021/
-
-
-# Except this file
-!.gitignore

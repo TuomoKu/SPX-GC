@@ -87,6 +87,22 @@ module.exports = {
     }
   },
 
+
+
+  fileNameFromPath: function (filepath) {
+    // returns the last item from slashed string
+    filepath.split("\\").join("/"); // force forward slashes
+    if (filepath.includes('/')) {
+      let items = filepath.split('/');
+      let justFileName = items[items.length-1];
+      console.log('Juukato: palautetaan ' + justFileName );
+      return justFileName;
+    } else {
+      console.log('Juukato: palautetaan sama takaisin ' + filepath);
+      return filepath
+    }
+  },
+
   
 
   getFileList: function (FOLDER, EXTENSION) {
@@ -380,6 +396,22 @@ renameRundown: function (orgfile, newname) {
   }
 },
 
+
+
+shortifyString: function (fullString){
+  try {
+    // request ..... a long string
+    // return ...... return just a short part
+    let shorter = fullString.substring(0, 30);
+    shorter = shorter.trim()
+    if (fullString.length > (shorter.length+2)) {
+      shorter += '...'
+    }
+    return shorter;
+  } catch (error) {
+    logger.error('ERROR in spx.shortifyString(fullString: ' + fullString + '): ' + error);  
+  }
+},
 
 
 shortifyName: function (fullString){

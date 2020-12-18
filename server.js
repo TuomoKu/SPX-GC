@@ -484,6 +484,59 @@ app.engine('handlebars', exphbs({
 
 
 
+    // preview span for collapsed view of each rundown item
+    generateCollapsedHeadline(DataFields)
+    {
+        var html = "";
+        console.log('DataField (length: ' + DataFields.length + ')' ,DataFields);
+        let Iterations = DataFields.length;
+        var Counter = 0;
+        if (DataFields.length>0) { 
+          for (let fieldIndex = 0; fieldIndex < Iterations; fieldIndex++) {
+            if (Counter>2) { break };
+            let fType = DataFields[fieldIndex].ftype || '';
+            let fTitl = DataFields[fieldIndex].title || '';
+            let fValu = DataFields[fieldIndex].value || '';
+            switch ( fType ) {
+              case "hidden":
+                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fTitl) + '</span>';
+                Counter++;
+                break;
+
+              case "textfield":
+                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fValu) + '</span>';
+                Counter++;
+                break;
+
+              case "filelist":
+                console.log('Kaivetaan polku: ' + fValu);
+                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(spx.fileNameFromPath(fValu)) + '</span>';
+                Counter++;
+                break;
+
+              case "dropdown":
+                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fValu) + '</span>';
+                Counter++;
+                break;
+              
+              default:
+                break;
+            }
+
+            if (fieldIndex != 2 && html != "") {
+              html += '&nbsp;<span class="delim"></span>&nbsp;';
+            }
+          } // for ended
+        }
+
+        if (html=="") {
+          html = '<span id="datapreview_2"></span>';
+        }
+        // console.log('HTML: ' + html);
+        return html
+    },
+
+
     // generate radio buttons for show config templates
     generateColorAccents(selectedIndex, templateIndex)
     {
@@ -632,24 +685,24 @@ app.engine('handlebars', exphbs({
 
     // This is used to populate filelist dropdown control type in templates.
     // Note: these files are returned as http-assets from SPX-GC server
-    // Feature added in 1.0.3.
+    // Feature added in 1.0.3. and improved in 1.0.6
     PopulateFilelistOptions(assetfolder, extension, value){
       let html = "";
       let sel = "";
       let fullFilePath = "";
       let SERVER_URL = 'http://' + ip.address() + ':' + port;
       let assetPath = path.normalize(assetfolder || '');
-      let seleFilePath = path.join(__dirname, 'ASSETS', assetPath, value);
+      let selectedValue = value;
       let fullPath = path.join(__dirname, 'ASSETS', assetPath);
       let fileList = spx.getFileList(fullPath, extension);
       if (fileList) {
         fileList.forEach((fileRef,index) => {
-          console.log('fileRef');
-          fullFilePath = path.join(__dirname, 'ASSETS', assetPath, fileRef);
-          if (fullFilePath == seleFilePath) {
+          fullFilePath = assetfolder + fileRef;
+          sel = "";
+          if (fullFilePath == selectedValue) {
             sel = 'selected';
           }
-          html += '<option value="' + SERVER_URL + assetfolder + fileRef + '" ' + sel + '>' + fileRef  + '</option>';
+          html += '<option value="' + assetfolder + fileRef + '" ' + sel + '>' + fileRef  + '</option>';
         });
       } 
       return html

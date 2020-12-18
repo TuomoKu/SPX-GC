@@ -329,6 +329,17 @@ div.curfolder{
     margin-right: 5px;
 }
 
+.instruction{
+    font-size:          0.6em;
+    color:              #a7abad;
+    line-height:        1.4em;
+    border-left:        1px solid #036a9e;
+    padding:            0.5em 0.2em 0.5em 1em;
+    margin-top:         0.5em;
+    margin-bottom:      0.5em;
+    background-color:   rgba(0, 0, 0, 0.2);
+}
+
 
 
 .itemlist  

@@ -3,6 +3,10 @@
 > Most recent updated are at the top of this document.
 
 ---
+## **1.0.6** (Dec 18 2020)
+- Improved 'filelist' field type functionality
+- Added 'instruction' field type
+
 ## **1.0.5** (Oct 19 2020)
 - Added support for INVOKE handler for custom template commands.
 

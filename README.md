@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Dec 14 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.4).
+> Readme updated Dec 14 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.6).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -447,6 +447,10 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
         "dataformat": "json",
         "DataFields": [
             {
+                "ftype" : "instruction",
+                "value" : "A example demo template definition. Learn what it does and make use of it's capabilities."
+            },
+            {
                 "field" : "f0",
                 "ftype" : "textfield",
                 "title" : "Info text",
@@ -475,8 +479,7 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
                 "value" : "First line\nSecond line\n\nFourth one"
             },
             {
-                "ftype" : "divider",
-                "title" : "This is a divider",
+                "ftype" : "divider"
             },
             {
                 "field": "f3",
@@ -516,7 +519,8 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 | `dropdown` | A dropdown selector list. Options is an _items_ array, each consisting of _text_ (which is visible) and the  _value_ (which the template will use). The default selection is defined as `value` and it must be one of the values in the _items_ array. See an example definition above. | `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]` |
 | `textarea`  | A multiline text control which accepts _return_ key for new lines. (Added in 1.0.2)| `First line \n Second line` |
 | `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX-GC. This is useful for picking images or other media files in templates. (Added in 1.0.3) | `sport_logo.png, news_logo.png` |
-| `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | `Color options below` |
+| `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | |
+| `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 
 
 
@@ -542,14 +546,14 @@ Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used 
 # Roadmap <a id="roadmap"></a>
 New releases will try address found issues and bugs in older versions and they will also introduce new features and functionality. See table for some planned features and use [feedback](#feedback) to submit suggestions.
 
-A marketplace for SPX-GC compatible HTML -templates and plugins will open by the end of 2020. 
+A marketplace for SPX-GC compatible HTML -templates and plugins will open ~~by the end of 2020~~ soon. 
 
 > When a new version becomes available it will be promoted on the Welcome page of the application (if access to internet). Several versions can be installed (into different folders) and if there are no backwards compatibility issues between versions they can be configured to use the same dataroot and template -folder. 
 
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, http protocol for CasparCG templates, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item~~ / file duplication. Project and ~~rundown~~ rename. | Q4/2020 |
+| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, http protocol for CasparCG templates, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item~~ / file duplication. Project and ~~rundown~~ rename. | Q1/2021 |
 | X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration, global extras editor in appconfig, public API for controls, HTML template marketplace. Video tutorials. Knowledgebase. Forum. Slack support channel. Free lunches. | TBD |
 
 Strikethrough items are done.

@@ -1316,7 +1316,7 @@ function saveTemplateItemChanges(elementID) {
 
 
 function saveTemplateItemChangesByElement(itemrow) {
-    working('Saving chnaged data to server...');
+    working('Saving changed data to server...');
     data={};
     data.DataFields=[];
     const form = itemrow.querySelectorAll('form')[0];
@@ -1331,6 +1331,9 @@ function saveTemplateItemChangesByElement(itemrow) {
                 iterator += 1;
                 if (itemrow.querySelector('#datapreview_' + iterator))
                 {
+                    // This smells feet. When a template is opened for editing and saved,
+                    // the preview data in the UI is ugly with filelist items.
+                    // Compare when reloaded... See? Improve this. TODO: FIXME:
                     let temp1 = input.value.replace(/\n/g, ' ');        // remove \n globally to support text areas
                     let temp2 = temp1.replace(/\r/g, '');               // remove \r globally to support text areas
                     itemrow.querySelector('#datapreview_' + iterator).innerText=temp2;

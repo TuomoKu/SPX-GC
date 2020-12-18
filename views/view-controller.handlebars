@@ -187,32 +187,9 @@
                       </table>
                       <div style="width:100%; " class="truncate">
 
-                        {{#ifValue DataFields.0.ftype "hidden"}}
-                          {{!-- <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.title }}}</span> --}}
-                          <span id="datapreview_0">{{{ shortifyUIstrings DataFields.0.title }}}</span>
-                        {{else}}
-                          {{!-- <span id="datapreview_{{@index}}_0">{{{ shortifyUIstrings DataFields.0.value }}}</span> --}}
-                          <span id="datapreview_0">{{{ shortifyUIstrings DataFields.0.value }}}</span>
-                        {{/ifValue}}
+                        {{{ generateCollapsedHeadline DataFields }}}
 
-                        {{#if DataFields.1.value}}
-                            {{#ifValue DataFields.1.ftype "hidden"}}
-                              <!-- show nothing -->
-                            {{else}}
-                              {{!-- <span class="delim"></span><span id="datapreview_{{@index}}_1">{{{ shortifyUIstrings DataFields.1.value }}}</span> --}}
-                              <span class="delim"></span><span id="datapreview_1">{{{ shortifyUIstrings DataFields.1.value }}}</span>
-                            {{/ifValue}}
-                        {{/if}}
-
-                        {{#if DataFields.2.value}}
-                            {{#ifValue DataFields.2.ftype "hidden"}}
-                              <!-- show nothing -->
-                            {{else}}
-                              {{!-- <span class="delim"></span><span id="datapreview_{{@index}}_2">{{{ shortifyUIstrings DataFields.2.value }}}</span> --}}
-                              <span class="delim"></span><span id="datapreview_2">{{{ shortifyUIstrings DataFields.2.value }}}</span>
-                            {{/ifValue}}
-                        {{/if}}
-                        
+  
 
 
                       </div>
@@ -239,6 +216,18 @@
                               </div>
 
 
+                              {{#ifValue ftype "instruction"}}
+                                <!-- INSTRUCTION TYPE OF TEMPLATE FIELD -->
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="instruction"></td></tr>
+                                  </table>
+                                </div>
+                                <div class="instruction">{{value}}</div>
+                                <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
+                              {{/ifValue}}
+
+
                               {{#ifValue ftype "caption"}}
                                 <!-- CAPTION TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -250,11 +239,12 @@
                                 <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
                               {{/ifValue}}
 
+
                               {{#ifValue ftype "hidden"}}
                                 <!-- HIDDEN TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
-                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="caption"></td></tr>
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="hidden"></td></tr>
                                   </table>
                                 </div>
                                 <span class="caption">{{title}}<BR><BR>{{field}} value:<BR>{{value}}</span><BR>
@@ -272,6 +262,7 @@
                                 <input type="text"  name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
                               {{/ifValue}}
 
+
                               {{#ifValue ftype "textarea"}}
                                 <!-- TEXTAREA TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -281,6 +272,7 @@
                                 </div>
                                 <textarea rows="8" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" onkeypressXX="javascript:applyTextEditChanges(event,this);" class="gcinput">{{injectNewlines value}}</textarea><BR>
                               {{/ifValue}}
+
 
                               {{#ifValue ftype "dropdown"}}
                                 <!-- DROPDOWN TYPE OF TEMPLATE FIELD -->
@@ -300,6 +292,7 @@
                                     {{/each}}
                                   </select>
                               {{/ifValue}}
+
 
                               {{#ifValue ftype "filelist"}}
                                 <!-- FILELIST TYPE OF TEMPLATE FIELD -->
