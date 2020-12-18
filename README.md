@@ -66,9 +66,9 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 | Operating system | Zip file| Build date | Notes |
 | ------ | ------ | ----- | ----- |
-| Windows  | [SPX-GC_1_0_6_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_win64.zip   ) | Dec 18 2020 | Most tested version.
-| MacOS    | [SPX-GC_1_0_2_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_2_macos64.zip ) | Oct 06 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move config.json and DATAROOT folder to correct folder and edited config.json manually to reflect these path changes.  [Issue (#3)](/../../issues/3).
-| Linux   | [SPX-GC_1_0_2_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_2_linux64.zip ) | Oct 06 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). |
+| Windows  | [SPX-GC_1_0_6_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_win64.zip   ) | Dec 18 2020 | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| MacOS    | [SPX-GC_1_0_6_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_macos64.zip ) | Dec 18 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move DATAROOT-, LOG-, locales- and ASSETS- folders to user's home directory, remove config.json and restart to generate a new config.json.  [Issue (#3)](/../../issues/3).
+| Linux   | [SPX-GC_1_0_6_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip ) | Dec 18 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
 
 ## Option 1: **Install a pre-built package**
 * Download a zip-file for  your system using one of the links above.
