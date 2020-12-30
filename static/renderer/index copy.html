@@ -105,34 +105,11 @@
     <div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
 
     <script>
-
-    function allowLayerControl(LayerNro)
-        {
-            // Usage:
-            // http://localhost:5000/renderer/?layers=[2,4,20]
-            // Check if use is limited to certain layers only.
-            // Can control which layers renders on which renderer,
-            // like web conference: participant 1 = layer 1
-            //   true = allow control
-            //   false = do not allow control
-            const queryString   = window.location.search;
-            const urlParams     = new URLSearchParams(queryString);
-            const limitLayers   = urlParams.get('layers');
-            if ( !limitLayers || limitLayers.includes(LayerNro) ) {
-                return true
-            }
-            else {
-                console.log('Commands to layer ' + LayerNro + ' prevented.');
-                return false;
-            }
-        }
 	
 	
 
     function clearLayer(LayerNro)
         {
-        // console.log('clearLayer ' + LayerNro);
-        if (!allowLayerControl(LayerNro)) return; // check layer param
         populateLayer(LayerNro,'');
         }
 
@@ -155,36 +132,36 @@
          
 
 
-    function remoteFunction(LayerNro, functionName, arg)
+    function remoteFunction(iframeID, functionName, arg)
     {
-        // console.log('remoteFunction ' + LayerNro);
-        let iframe = 'layer' + LayerNro;
+        let iframe = 'layer' + iframeID;
         document.getElementById(iframe).contentWindow.echo(arg);
     }
 
     function populateLayer(LayerNro,TemplateFileRef='')
     {
-        // console.log('populateLayer ' + LayerNro);
-        if (!allowLayerControl(LayerNro)) return; // check layer param
         let iframe = 'layer' + LayerNro;
         let templa = '';
 
         if (TemplateFileRef!='')
         {
+            // was give, use it
             templa = TemplateRoot + TemplateFileRef;
         }
         else
         {
+            // not given, set to empty
             templa = TemplateRoot + 'empty.html';
         }
 		let ranNro = (new Date()).getTime() + Math.floor(Math.random() * 1000000);
+        // console.log('Populating iframe id [' + iframe + '] with [' + templa + ']...');
         document.getElementById(iframe).src=templa + "?random=" + ranNro;
+        // console.log('POPULATED ' + iframe + ' with ' + templa);
     }
 
     function playLayer(LayerNro,fieldData)
     {
-        // console.log('playLayer ' + LayerNro);
-        if (!allowLayerControl(LayerNro)) return; // check layer param
+        console.log('PLAY LAYER', LayerNro, fieldData);
         let iframeID = 'layer' + LayerNro;
         let formattedJSON = formatJSONAndSetDomFields(fieldData, iframeID);
         document.getElementById(iframeID).contentWindow.update(formattedJSON); 
@@ -192,19 +169,27 @@
     }
 
     function formatJSONAndSetDomFields(fieldData, iframeID){
+        // console.log('fjasdf: FORMAT JSON: original', fieldData );
         let formattedJsonOut = {};
         if (fieldData) {
             var keys = [];
             for (var k in fieldData) keys.push(k);
+            // console.log('keys', keys);
             fieldData.forEach((item,index) => {
                 let KEY = Object.keys(item)[0];
                 let VAL = fieldData[index][Object.keys(item)[0]]
+                // console.log('AVAIN = ' + KEY + ' = ' + VAL);
                 formattedJsonOut[KEY]=VAL;
                 let e = document.getElementById(iframeID).contentWindow.document.getElementById(KEY);
                 if (e) {
+                    // console.log('Found DOM field [' + KEY + ']. Content [' + e.innerText + '] is changed to [' + VAL + '].') ;
                     e.innerText=VAL;
                 }
+                // if (document.getElementById(iframe).contentWindow.document.getElementById(item.field)) {
+                //     document.getElementById(iframe).contentWindow.document.getElementById(item.field).innerText=item.value;
+                // }
             });
+            // console.log('fjasdf: FORMAT JSON: modified', JSON.stringify(formattedJsonOut) );
             return JSON.stringify(formattedJsonOut)
         }
    }
@@ -212,17 +197,20 @@
 
     function updateLayer(LayerNro,fieldData)
     {
-        // console.log('updateLayer ' + LayerNro);
-        if (!allowLayerControl(LayerNro)) return; // check layer param
+        // console.log('Update data', fieldData);
         let iframeID = 'layer' + LayerNro;
         let formattedJSON = formatJSONAndSetDomFields(fieldData,iframeID);
+        // console.log('Update data formatted', formattedJSON);
+        // fieldData.forEach((item,index) => {
+        //     if (document.getElementById(iframeID).contentDocument.getElementById(item.field)){
+        //        document.getElementById(iframeID).contentDocument.getElementById(item.field).innerText=item.value;
+        //     }
+        // });
         document.getElementById(iframeID).contentWindow.update(formattedJSON);
     }
 
     function stopLayer(LayerNro)
     {
-        // console.log('stopLayer ' + LayerNro);
-        if (!allowLayerControl(LayerNro)) return; // check layer param
         let iframeID = 'layer' + LayerNro;
         document.getElementById(iframeID).contentWindow.stop();
     }
@@ -251,7 +239,7 @@
         // All comms using 'SPXMessage2Client' as a conduit with data object and
         // data.spxcmd as function identifier. Additional object values are payload.
 
-        // console.log('SPXMessage2Client ' + JSON.stringify(data));
+        // console.log('SPXMessage2Client received in renderer', data)
 
         switch (data.spxcmd) {
 
@@ -261,7 +249,7 @@
                 document.querySelectorAll('.frame').forEach(function(frame,index)
                 {
                     let layerNro = (index+1);
-                    // console.log('Clearing layer ' + layerNro); // 1 based, not 0!
+                    console.log('Clearing layer ' + layerNro); // 1 based, not 0!
                     clearLayer(layerNro,'');
                 });
                 document.getElementById('root').style.opacity=1;
@@ -283,7 +271,6 @@
 
             case 'nextTemplate':
                 // set callback function to the iframe and then load src to it.
-                if (!allowLayerControl(data.webplayout)) return; // check layer param
                 document.getElementById('layer' + data.webplayout).contentWindow.next();
                 break;
 
@@ -292,12 +279,10 @@
                 break;
 
             case 'stopTemplate':
-                if (!allowLayerControl(data.webplayout)) return; // check layer param
                 document.getElementById('layer' + data.webplayout).contentWindow.stop();
                 break;
 
             case 'invokeFunction':
-                if (!allowLayerControl(data.webplayout)) return; // check layer param
                 eval("document.getElementById('layer' + data.webplayout).contentWindow." + data.invoke);
                 break;
 
@@ -312,6 +297,7 @@
         // All comms using 'SPXWebRendererMessage' as a conduit with data object and
         // data.spxcmd as function identifier. Additional object values are payload.
         console.log('SPXWebRendererMessage received (but doing nothing to it)', data)
+
     }); // socketMessage handler ended
 
 	

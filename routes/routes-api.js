@@ -11,6 +11,7 @@ const directoryPath = path.normalize(config.general.dataroot);
 const logger = require('../utils/logger');
 logger.debug('API-route loading...');
 const spx = require('../utils/spx_server_functions.js');
+const xlsx = require('node-xlsx').default;
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -21,6 +22,18 @@ router.get('/files', async (req, res) => {
   // Get files
   const fileListAsJSON = await GetDataFiles();
   res.send(fileListAsJSON);
+}); // files route ended
+
+router.get('/logger/', async (req, res) => {
+  // Minimalistic logger for template messages
+  let message = req.query.message
+  let source  = req.query.source
+  let level   = req.query.level.toLowerCase()
+  let channel = req.query.channel
+  let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message
+  // console.log(msg);
+  eval('logger.' + level + '(msg)'); // nasty, eh?
+  res.sendStatus(200)
 }); // files route ended
 
 
@@ -34,6 +47,48 @@ router.post('/browseTemplates/', async (req, res) => {
   const fileListAsJSON = await spx.GetFilesAndFolders(BrowseFolder);
   res.send(fileListAsJSON);
 }); // browseTemplates API post request end
+
+
+
+router.post('/readExcelData', async (req, res) => {
+  // Function can be called from a template to get all data from 
+  // an Excel file in the ASSETS/excel -folder.
+  // Data parsing / logic must be implemented in the template
+  // this just dumps data out as-is.
+
+  var excelFile = path.join(__dirname, '..', 'ASSETS', req.body.filename);
+  var workSheetsData;
+  try {
+
+    let timenow = Date.now(); 
+    // console.log('Excel cache age ' + (timenow - excel.readtime) + ' ms');
+
+    if ( excel.data && excel.filename == req.body.filename && (timenow - excel.readtime) <= 10000) {
+      // sama data requested less than a second ago, return data from memory
+      logger.verbose('Returning cached Excel data from memory')
+      workSheetsData = excel.data;
+      // console.log('Returning CACHED Excel data.\n');
+    } else {
+      // get it from Excel file
+      logger.verbose('Returning Excel data from FILE and saving to cache.')
+      workSheetsData = xlsx.parse(excelFile);
+      // console.log('Returning Excel FILE data and caching it.\n');
+
+      // cache excel data to a global variable
+      global.excel.readtime = Date.now();
+      global.excel.filename = req.body.filename;
+      global.excel.data = workSheetsData;
+    }
+
+    
+    logger.verbose('OK API read Excel data from ' + excelFile);
+    res.status(200).send(workSheetsData); // ok 200 AJAX RESPONSE
+    return;
+  } catch (error) {
+    logger.error('Error in api/readExcelData while reading Excel ' + excelFile + ": " + error);
+    res.status(500).send(error);  }; // Server error
+    return;
+});
 
 
 

@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Dec 18 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.6).
+> Readme updated Dec 30 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.8).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -22,6 +22,8 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 - [Projects and rundowns](#dataroot)
 - [HTML templates](#templates) and [template definition](#templatedefinition)
 - [Custom controls](#projectextras)
+- [Using SPX-GC with OBS (or vMix, Wirecast, XSplit...)](#streaming)
+- [Control with external devices (Stream Deck etc)](#controlApi)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
 - [MIT License](#license)
@@ -488,6 +490,12 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
                 "assetfolder" : "/media/images/bg/" ,
                 "extension" : "png",
                 "value": "/media/images/bg/checker.png",
+            },
+            {
+                "field": "f4",
+                "ftype": "number",
+                "title": "Rotation degrees",
+                "value": "45",
             }
         ]
     };
@@ -521,14 +529,34 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 | `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX-GC. This is useful for picking images or other media files in templates. (Added in 1.0.3) | `sport_logo.png, news_logo.png` |
 | `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | |
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
-
-
+| `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
 
 
 > **Note** additional user interface controls may be added in future releases.
 
 
 ----
+# Using SPX-GC with OBS / vMix / Wirecast... <a id="streaming"></a>
+SPX-GC's animated graphics and overlays can be integrated used in streaming and videoconferencing with any video- or streaming application which has a support for "Browser" or "HTML Sources". SPX-GC provides a URL address which is entered to the streaming software as a layer / input / source. In OBS use `Browser source`, in vMIX it's called `Web Browser input` and in XSplit it's a `Webpage source`... 
+```
+http://localhost:5000/renderer
+```
+
+If you have several inputs (for instance for multiple presenters) you can limit which layers get's rendered to different screens with the `layers` parameter in Renderer url, for instance:
+```
+http://localhost:5000/renderer/?layers=[2,4,20]
+```
+
+----
+# Control SPX-GC with external devices such as Elgato Stream Deck... <a id="controlApi"></a>
+SPX-GC (v.1.0.8+) rundowns can be loaded and controlled with external devices with http-get commands. 
+See available commands here:
+
+```
+http://localhost:5000/api/v1
+```
+
+
 
 # Issues and Feedback <a id="feedback"></a>
 Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A> or directly by email to tuomo@smartpx.fi.
@@ -553,7 +581,7 @@ A marketplace for SPX-GC compatible HTML -templates and plugins will open ~~by t
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, http protocol for CasparCG templates, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item~~ / file duplication. Project and ~~rundown~~ rename. | Q1/2021 |
+| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. | Q1/2021 |
 | X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration, global extras editor in appconfig, public API for controls, HTML template marketplace. Video tutorials. Knowledgebase. Forum. Slack support channel. Free lunches. | TBD |
 
 Strikethrough items are done.

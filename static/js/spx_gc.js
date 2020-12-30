@@ -42,6 +42,76 @@ socket.on('SPXMessage2Client', function (data) {
     }
 });
 
+socket.on('SPXMessage2Controller', function (data) {
+
+    // Handles (API) messages coming from server to the SPX-GC Controller.
+    // All comms using 'SPXMessage2Controller' as a conduit with data object and
+    // data.APIcmd as function identifier. Additional object values are payload.
+    // Feature added in v.1.0.8.
+
+    console.log('SPXMessage2Controller received', data)
+    let DomItemID;
+    switch (data.APIcmd) {
+
+        // Rundown commands below
+
+        case 'RundownLoad':
+            window.location.href = '/gc/' + data.file
+            break;
+
+        case 'RundownFocusFirst':
+            focusRow(0)
+            break;
+
+        case 'RundownFocusNext':
+            moveFocus(1)
+            break;
+
+        case 'RundownFocusPrevious':
+            moveFocus(-1)
+            break;
+
+        case 'RundownFocusLast':
+            let lastIndex = document.querySelectorAll('.itemrow').length-1;
+            focusRow(lastIndex)
+            break;
+
+        case 'RundownStopAll':
+            stopAll()
+            break;
+
+
+        // Item commands below
+
+        case 'ItemPlay':
+            playItem(getFocusedRow(),'play')
+            break;
+
+        case 'ItemPlayID':
+            playItem(getElementByEpoch(data.itemID), 'play')
+            break;
+
+        case 'ItemContinue':
+            nextItem(getFocusedRow())
+            break;
+
+        case 'ItemContinueID':
+            nextItem(getElementByEpoch(data.itemID))
+            break;
+
+        case 'ItemStop':
+            playItem(getFocusedRow(),'stop')
+            break;
+
+        case 'ItemStopID':
+            playItem(getElementByEpoch(data.itemID), 'stop')
+            break;
+
+        default:
+            console.log('Unknown SPXMessage2Controller command: ' + data.APIcmd, data);
+    }
+});
+
 
 
 
@@ -305,6 +375,7 @@ function cas() {
     if (typeof (element) != 'undefined' && element != null) {
         filename = element.value;
     }
+    if (!filename) {return}
     document.location = '/gc/' + folder + "/" + filename;
 } // cas ended
 
@@ -531,6 +602,7 @@ function del() {
     // Delete a datafile from disk.
     // Called from delete button in lists page.
     var filename = document.getElementById('lists').value;
+    if (!filename) {return}
     let foldname = document.getElementById("hidden_folder").value;
 
     if (confirm('SURE?! Delete "' + filename + '" and all it\'s data?')) {
@@ -547,6 +619,7 @@ function delshow() {
     // Called from delete button in shows page.
     // setTimeot - since we do it the AJAX style.
     var foldername = document.getElementById('lists').value;
+    if (foldername==""){return};
     if (confirm('SURE?! Delete "' + foldername + '" and all it\'s data?')) {
         fetch('/shows/' + foldername, { method: 'DELETE' });
         setTimeout(function(){ document.location = '/shows'; }, 500);
@@ -558,6 +631,7 @@ function delshow() {
 
 function delRow(e) {
     //console.log('Would delete', e);
+    if (!e){return};
     document.getElementById('itemList').removeChild(e);
     // save data 
     SaveNewSortOrder();
@@ -568,7 +642,9 @@ function delRow(e) {
 function duplicateRundown() {
     // Duplicate a rundown
     data={};
-    data.filename=document.getElementById('lists').value + '.json';
+    let itemName = document.getElementById('lists').value;
+    if (!itemName) {return}
+    data.filename=itemName + '.json';
     data.foldname=document.getElementById("hidden_folder").value;
     ajaxpost('/gc/duplicateRundown',data);
     setTimeout(function(){ document.location = '/show/' + data.foldname; }, 500);
@@ -606,6 +682,7 @@ function eps() {
     if (typeof (element) != 'undefined' && element != null) {
         foldername = element.value;
     }
+    if (foldername==""){return};
     document.location = '/show/' + foldername;
 } // cas ended
 
@@ -724,6 +801,19 @@ function getFocusedRow()
         if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
             {
                 return document.querySelectorAll('.itemrow')[nro];
+            };
+    }
+}
+
+function getElementByEpoch(itemID)
+{
+    // get element by epoch id (added in 1.0.8)
+    let DomItemID;
+    for (let index = 0; index < document.querySelectorAll('.itemrow').length; index++) {
+        DomItemID = document.querySelectorAll('.itemrow')[index].getAttribute('data-spx-epoch');
+        if (DomItemID==itemID)
+            {
+                return document.querySelectorAll('.itemrow')[index]
             };
     }
 }
@@ -987,6 +1077,7 @@ function playItem(itemrow='', forcedCommand='') {
 function renameRundown() {
     // Rename an existing rundown
     var filename = document.getElementById('lists').value;
+    if (!filename) {return}
     var foldname = document.getElementById("hidden_folder").value;
     var newname = prompt("Rename the rundown?", filename);
     if (newname != null && newname != "") {
@@ -1009,6 +1100,9 @@ function setItemButtonStates(itemrow, forcedCommand=''){
     // forcedCommand is used to forcefully stop an item, which steps has run
     // out after continue is done...
 
+    // v.1.0.8 also forced 'play' is being used by API v1 to force
+    // play only, not just toggle..
+
     // 
     // Requests ..... playlistitem's eleIndex nro
     // Response ..... 'play' or 'stop' state after toggle
@@ -1020,14 +1114,25 @@ function setItemButtonStates(itemrow, forcedCommand=''){
             return 'playonce';
         }
 
-    let CommandToExecute = ''
+    let CommandToExecute = 'play' // default action
     let EXPANDEDPLAY = itemrow.querySelector('[data-spx-name="playbutton"]');
     let rows = document.querySelectorAll('.itemrow');
-    if (itemrow.getAttribute('data-spx-onair')=="true" || forcedCommand=='stop')
+
+
+    if (itemrow.getAttribute('data-spx-onair')=="true" || forcedCommand=='stop') {
+        // so, we are playing and needs to stop
+        CommandToExecute = 'stop';
+    }
+
+    if (itemrow.getAttribute('data-spx-onair')=="true" && forcedCommand=='play') {
+        // so, we are playing and needs to play (API buttons for example)
+        CommandToExecute = 'play';
+    }
+
+    if ( CommandToExecute == 'stop' )
         {
             // Convert button to PLAY button and execute stop command
             // console.log('was playing. so send STOP and make button PLAY');
-            CommandToExecute = 'stop';
             itemrow.setAttribute('data-spx-onair','false');
             itemrow.querySelector('[name="RundownItem[onair]"]').value='false';
             itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
@@ -1037,12 +1142,12 @@ function setItemButtonStates(itemrow, forcedCommand=''){
             EXPANDEDPLAY.classList.remove('bg_red');
             EXPANDEDPLAY.classList.add('bg_green');
         }
-    else
+
+    if ( CommandToExecute == 'play' )
         {
             // Convert button to STOP button and execute play command
             // first we need to dim all other elements which are playing on same output channel / layer
             // console.log('was stopped. so send PLAY and make button STOP');
-            CommandToExecute = 'play';
             let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
             rows.forEach(function (item, index) {
                 let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
@@ -1151,20 +1256,19 @@ function duplicateRundownItem(rowitem)
 
     // Collect data for the server to duplicating the item
     data={};
-    data.command       = "duplicateRundownItem"; // FIXME: set new duplicate to not onair...
+    data.command       = "duplicateRundownItem";
     data.sourceEpoch   = rowitem.getAttribute('data-spx-epoch');
     data.cloneEpoch    = String(Date.now()); // create epoch and give this to server also
     data.foldername    = document.getElementById('foldername').value;
     data.listname      = document.getElementById('filebasename').value;
     data.datafile      = document.getElementById('datafile').value;
-    // data.templateindex = getDomIndexByElementId(itemId); // an ARRAY INDEX, not itemId!
-    // duplicate in DOM
-
+    
     var newItem = rowitem.cloneNode(true);
     newItem.style.opacity=0;
     setTimeout(function () { rowitem.classList.remove('inFocus'); }, 5);
     setTimeout(function () { newItem.setAttribute('data-spx-epoch', data.cloneEpoch); }, 15);
     setTimeout(function () { newItem.setAttribute('data-spx-onair', "false"); }, 20);
+    
     // reset play icon and play button
     setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'); }, 30);
     setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'); }, 40);
@@ -1176,7 +1280,6 @@ function duplicateRundownItem(rowitem)
     setTimeout(function () { newItem.style.opacity=1; }, 100);
     setTimeout(function () { newItem.classList.add('inFocus'); }, 110);
 
-    
     var FirstInput = newItem.querySelectorAll('[data-role="userEditable"]')[0];
     FirstInput.focus();
     FirstInput.select();
@@ -1320,7 +1423,6 @@ function saveTemplateItemChangesByElement(itemrow) {
     data={};
     data.DataFields=[];
     const form = itemrow.querySelectorAll('form')[0];
-    iterator = -1;
     [...form.elements].forEach((input,index) => {
         if (input.getAttribute('data-role')=="userEditable")
             {
@@ -1328,24 +1430,19 @@ function saveTemplateItemChangesByElement(itemrow) {
                 updatedObj.field = input.getAttribute('data-update');
                 updatedObj.value = input.value;
                 data.DataFields.push(updatedObj)
-                iterator += 1;
-                if (itemrow.querySelector('#datapreview_' + iterator))
-                {
-                    // This smells feet. When a template is opened for editing and saved,
-                    // the preview data in the UI is ugly with filelist items.
-                    // Compare when reloaded... See? Improve this. TODO: FIXME:
-                    let temp1 = input.value.replace(/\n/g, ' ');        // remove \n globally to support text areas
-                    let temp2 = temp1.replace(/\r/g, '');               // remove \r globally to support text areas
-                    itemrow.querySelector('#datapreview_' + iterator).innerText=temp2;
-                }
             }
     });
+
 
     data.rundownfile = document.getElementById('datafile').value;
     data.epoch = itemrow.getAttribute("data-spx-epoch");
     axios.post('/gc/saveItemChanges',data, {})
     .then(function (response) {
-        statusbar(response.data);
+        statusbar(response.data[0]);
+
+        // the 2nd item from response is the html snippet for the GUI (improved in 1.0.7)
+        itemrow.querySelector('.truncate').innerHTML = response.data[1]; 
+        
         working('');
         ToggleExpand(itemrow);
     })
@@ -1404,8 +1501,10 @@ function setMasterButtonStates(itemrow, debugMessage='') {
     var stepsVal = itemrow.querySelector('input[name="RundownItem[steps]"]').value || 0;
     var stepsleft= itemrow.getAttribute('data-spx-stepsleft');
     var steps = parseInt(stepsVal);
-    var onAirState = (itemrow.getAttribute('data-spx-onair') || false).toLowerCase();
-    var changState = (itemrow.getAttribute('data-spx-changed') || false).toLowerCase();
+    var onAirState = String(itemrow.getAttribute('data-spx-onair') || false)
+    var changState = String(itemrow.getAttribute('data-spx-changed') || false)
+    onAirState = onAirState.toLowerCase();
+    changState = changState.toLowerCase();
     var onair = (onAirState == 'true'); // make bool
     var chngd = (changState == 'true'); // make bool
     
@@ -1556,6 +1655,24 @@ function statusbar(sMsg, sLevel="x")
         }
     document.getElementById('statusbar').innerText=sMsg;
   } // statusbar
+
+
+ 
+function stopAll(){
+    // Will send STOP commands to all layers used by current rundown.
+    // Timeout here allows some time for server to handle the incoming commands. 
+    // TODO: Far from elegant but kind of works. A better approach would be to 
+    // develop a server-side function for this. 
+    // Function implemented in v1.0.8 from ExtraFunctions -library
+    let ITEMS = document.querySelectorAll('.itemrow');
+    ITEMS.forEach(function (templateItem, itemNro) {
+        // console.log('iterate row ' + itemNro);
+        setTimeout(function(){ 
+            continueUpdateStop('stop', templateItem);
+            }, (itemNro * 20)); // 20, 40, 60, 80ms etc...
+        });
+    }
+
 
 
 

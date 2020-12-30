@@ -1,15 +1,27 @@
 
 # SPX-GC Release Notes
-> Most recent updated are at the top of this document.
+> Most recent updates are at the top.
 
 ---
+## **1.0.8** (Dec 30 2020)
+- Added `/api/v1` endpoint for external commands (for Elgato Stream Deck and other similar use cases)
+
+
+## **1.0.7** (Dec 20 2020)
+- Templates loaded to CasparCG via http:// protocol (and not file://)
+- Bugfixes in project / rundown file management functions (empty selections ignored)
+- Added Excel reading API capability for templates via ajax call (such as news ticker). Also added a demo template SPX1_TICKER_EXCEL.html
+- Added a "number" ftype to template definition
+- selected layers rendering (for external renderers, such os OBS) with `layers` parameter `/renderer/?layers=[2,4,20]`
+- improved collapsed rundown data preview
+- __NOTE: Issue found.__ Special-characters-fix (in 1.0.4) may break existing templates with multiline text areas and html sequences renders as text. Effected templates must be fixed with `DOMParser()` -logic which will interpret escaped characters (such as `&lt;BR&gt;`) back to valid HTML tags (`<BR>`) for correct rendering. (See this article for an example: https://www.codegrepper.com/code-examples/whatever/how+to+convert++text+to++html+document+javascript+DOMParser)
+
 ## **1.0.6** (Dec 18 2020)
-- Improved 'filelist' field type functionality
-- Added 'instruction' field type
+- Improved `filelist` field type functionality
+- Added `instruction` field type
 
 ## **1.0.5** (Oct 19 2020)
 - Added support for INVOKE handler for custom template commands.
-
 
 ## **1.0.4** (Oct 19 2020)
 - Rundown items changed from index based to ID-based. This is a major internal change and improves app stability, enable further development and cleanup spaghetti code.

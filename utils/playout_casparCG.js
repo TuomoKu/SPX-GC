@@ -6,6 +6,10 @@ const fs = require('fs');
 const path = require('path')
 const moment = require('moment');
 
+// 1.0.7:
+// const ip = require('ip') // for localhost IP address
+
+
 
 module.exports = {
 
@@ -66,7 +70,10 @@ module.exports = {
   playoutController: function (data){
     // We get data object which has
     // - data.command (ADD | STOP | UPDATE)
-    let GFX_Teml = data.relpathCCG;
+
+    // let GFX_Teml = data.relpathCCG; // before  1.0.7
+    // let GFX_Teml = 'http://' + ip.address() + ':' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // changed to http in 1.0.7
+    let GFX_Teml = 'http://localhost:' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // changed to http in 1.0.7
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;

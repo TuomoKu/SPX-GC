@@ -186,12 +186,13 @@ td.aright{
 
 
 .delim {
-    color: rgba(28, 153, 226, 0.651);
-    margin-right: 0.3em;
+    color:          rgba(53, 178, 250, 0.651);
+    margin-right:   0.5em;
+    margin-left:    0.5em;
 }
 
 .delim::before {
-    content: "|";
+    content:        "|";
 }
 
 .divider {

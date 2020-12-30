@@ -687,15 +687,14 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         duplicateData.itemID=freshID;
         duplicateData.onair='false';
         if (rundownDataJSONobj.templates[i].itemID == data.sourceEpoch && !duplicated ) {
-          console.log('--- Jee, löytyi haluttu ID ' + rundownDataJSONobj.templates[i].itemID + ' joka kopioidaan kerran.');
-          console.log('Copy', duplicateData);
+          // console.log('Yes, found ID ' + rundownDataJSONobj.templates[i].itemID + ' which gets duplicated once.');
+          // console.log('Copy', duplicateData);
           NewTemplateArray.push(duplicateData);
           duplicated = true;
         }
       }
       rundownDataJSONobj.templates = NewTemplateArray;
-      console.log('Tallennetaan uusi data ', rundownDataJSONobj.templates);
-
+      // console.log('Saving new data ', rundownDataJSONobj.templates);
 
       try {
           await spx.writeFile(data.datafile, rundownDataJSONobj);
@@ -1165,40 +1164,37 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
   // Request: form data as JSON
   // Returns: Ajax response
 
-
-  // FIXME: This needs to change.
-  // Original version uses index new one uses ItemID (epoch) for matching.
-
   logger.info('Overwriting a template itemID [' + req.body.epoch + '] in rundown [' + req.body.rundownfile + '] with updated values.');
   try {
     // spx.talk('Saving template changes from rundown.');
 
     var RundownFile = path.normalize(req.body.rundownfile);
     var RundownData = await GetJsonData(RundownFile);
+    var DataFieldsForCollapsePreview;
 
     RundownData.templates.forEach((template,TemplateIdx) => {
         if (template.itemID == req.body.epoch){
-          // let TemplateIdx = req.body.TemplateIdx || 0;
-          console.log('Haa, found #' + TemplateIdx);
           req.body.DataFields.forEach(function(PostField){
-            console.log('-- Iterating data fields');
             RundownData.templates[TemplateIdx].DataFields.forEach(function(JsonField){
-              console.log('-- Checking ' + PostField.field);
               if (PostField.field == JsonField.field)
                 {
                   JsonField.value = PostField.value;
                 }
-            });  
+            });
+            DataFieldsForCollapsePreview = RundownData.templates[TemplateIdx].DataFields;  
           });
         }
         else {
-          console.log('Skipping #' + TemplateIdx);
+          // console.log('Skipping #' + TemplateIdx);
         }
     });
 
-    console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
+    // console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
     await spx.writeFile(RundownFile,RundownData);
-    res.status(200).send('Item changes saved.'); // ok 200 AJAX RESPONSE
+    var htmlSnippetForCollapse = spx.generateCollapsedHeadline(DataFieldsForCollapsePreview);
+    console.log('html' + htmlSnippetForCollapse);
+    let response = ['Item changes saved', htmlSnippetForCollapse]
+    res.status(200).send(response); // ok 200 AJAX RESPONSE
   } catch (error) {
       let errmsg = 'Server error in /gc/saveItemChanges [' + error + ']';
       logger.error(errmsg);

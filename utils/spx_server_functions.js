@@ -95,15 +95,78 @@ module.exports = {
     if (filepath.includes('/')) {
       let items = filepath.split('/');
       let justFileName = items[items.length-1];
-      console.log('Juukato: palautetaan ' + justFileName );
       return justFileName;
     } else {
-      console.log('Juukato: palautetaan sama takaisin ' + filepath);
       return filepath
     }
   },
 
-  
+
+  generateCollapsedHeadline: function (DataFields) {
+        // (Added in 1.0.7)
+        // Gets template's datafields and generates a nice UI for the collapsed
+        // rundown item. This is being used both when rendering a controller view
+        // and while item is changed (with ajax call). I dig this :-)
+        // 
+        // require ... an array of datafields
+        // returns ... html snippet
+        //
+        var html = "";
+        var skip;
+        logger.debug('SPX.generateCollapsedHeadline() DataField (length: ' + DataFields.length + ')' ,DataFields);
+        let Iterations = DataFields.length;
+        var Counter = 0;
+        if (DataFields.length>0) { 
+          for (let fieldIndex = 0; fieldIndex < Iterations; fieldIndex++) {
+            if (Counter>2) { break };
+            let fType = DataFields[fieldIndex].ftype || '';
+            let fTitl = DataFields[fieldIndex].title || '';
+            let fValu = DataFields[fieldIndex].value || '';
+            skip = false;
+            switch ( fType ) {
+              case "hidden":
+                html += '<span id="datapreview_' + fieldIndex + '">' + this.shortifyString(fTitl) + '</span>';
+                Counter++;
+                break;
+
+              case "textfield":
+                html += '<span id="datapreview_' + fieldIndex + '">' + this.shortifyString(fValu) + '</span>';
+                Counter++;
+                break;
+
+              case "number":
+                html += '<span id="datapreview_' + fieldIndex + '">' + this.shortifyString(fValu) + '</span>';
+                Counter++;
+                break;
+
+              case "filelist":
+                html += '<span id="datapreview_' + fieldIndex + '">' + this.shortifyString(this.fileNameFromPath(fValu)) + '</span>';
+                Counter++;
+                break;
+
+              case "dropdown":
+                html += '<span id="datapreview_' + fieldIndex + '">' + this.shortifyString(fValu) + '</span>';
+                Counter++;
+                break;
+              
+              default:
+                skip = true
+                break;
+            }
+
+            if (skip == false && html != "") {
+              html += '<span class="delim"></span>';
+            }
+          } // for ended
+        }
+
+        // if (html=="") {
+        //   html = '';
+        // }
+        return html
+    },
+
+
 
   getFileList: function (FOLDER, EXTENSION) {
     try {

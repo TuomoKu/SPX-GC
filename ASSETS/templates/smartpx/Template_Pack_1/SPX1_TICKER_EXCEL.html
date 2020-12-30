@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+   	Need custom templates?
+	Let me know 😀
+
+-->
+
+<head>
+    <meta charset="utf-8" />
+    <title>EXCEL NEWS TICKER</title>
+    <script src="js/webcg-framework.umd.js"></script>
+    <script src="js/gsap3.2.6.min.js"></script>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/axios.min.js"></script>
+    <script type="text/javascript" src="js/spx_cmdhandler.1.2.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+    <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+    <link rel="stylesheet" type="text/css" href="customize.css" />
+    <script>
+        start = new Date().getTime();
+
+        function runAnimationIN() {
+            let dur = 0.8;
+            gsap.set("#line1", { opacity: 1 });
+            gsap.set("#TICKER", {display:"block"});
+            gsap.to("#TICKER",   0.5, {opacity: 1});
+            gsap.fromTo(
+                "#TICKER",
+                dur,
+                    {
+                        x:function(i, target)
+                            {
+                            var x = target.offsetWidth-3;
+                            target.style.left = x;
+                            return x;
+                            },
+                    },
+                    {
+                        x:0,
+                        ease: "power3.out"
+                    }
+                );
+            gsap.fromTo(
+                "#line1",
+                dur+0.2,
+                    {
+                        width:0
+                    },
+                    {
+                        delay: 0.7,
+                        width:function(i, target)
+                            {
+                            target.style.width = "auto"; 
+                            var width = target.offsetWidth-3;
+                            target.style.width = "0px";
+                            return width;
+                            },
+                        onComplete:function() { gsap.set("#line1", {width:"auto"});  },
+                        ease: "power3.inOut"
+                    }
+                );
+            gsap.fromTo("#line1", { borderRightWidth: 10 }, { delay: 1.4, duration: 0.1, borderRightWidth:  0,   ease: "Power3.easeOut" });
+        }
+
+        function runAnimationOUT() {
+            let dur = 0.7;
+            gsap.to("#line1",     { duration: dur + 0.00, width:    0, ease: "back.in(1.2)" });
+            gsap.set("#TICKER",   { delay:    dur, display: "none"});
+        }
+
+    </script>
+    <style>
+
+
+
+        .tickerZone{
+            position: absolute;
+            border: 0px solid yellow;
+            left: 3.2vw;
+            right: 3.2vw;
+            top: 85.5%;
+            z-index: 10;
+            padding: 0;
+        }
+
+        .tgpos{
+            position: relative;
+            transform-origin: top left;
+            border-left: 1.4rem solid var(--spx-accent-color);
+            display:block;
+            opacity: 1;
+        }
+
+
+        .ticker {
+            z-index: 1;
+            width: 100%;
+            border: 0px solid rgb(21, 255, 0);
+            border-left: 1.4rem;
+            /* float: left; */
+        }
+
+        .spxTicker {
+            color: var(--spx-txcol1-color);
+            position: relative;
+            bottom: 0.3rem;
+            font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+            font-size: 1.6rem;
+            padding: 0.9rem 1rem 0.1rem 1rem; 
+            line-height: 2.5rem;
+            text-transform: uppercase;
+            left: 1700px; /* It's a magic numba. */
+        }
+
+        .LastItem{
+            opacity: 0;
+        }
+
+        .tab{
+            position:           absolute;
+            display:            inline-block;
+            z-index:            20;
+            left:               -10px;;
+            background-color:   rgb(61, 61, 61);
+            height:             100%;
+            margin:             0px;
+            padding:            0.6rem 2rem 0.1rem 2rem;
+            opacity:            0;  
+            box-shadow:         black 10px 0px 30px;
+            background-color:   #941212;
+            color:              rgb(255, 255, 255);
+        }
+
+
+    </style>
+
+    <script>
+        window.SPXGCTemplateDefinition = {
+            "description": "Google Sheet Ticker",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "3",
+            "webplayout": "3",
+            "out": "manual",
+            "uicolor": "7",
+            "DataFields": [
+                {
+                    "ftype" :           "instruction",
+                    "value" :           "News ticker from Excel file. Names of worksheets will be used as separators. File will be read continuously while ticker is running."
+                },
+                {
+                    "field":            "f0",
+                    "ftype":            "filelist",
+                    "title":            "Choose Excel file",
+                    "assetfolder" :     "/excel/ticker/" ,
+                    "extension" :       "xlsx",
+                    "value":            "/excel/ticker/ticker_data_example.xlsx",
+                }        
+            ]
+        };
+    </script>
+</head>
+
+<body>
+    <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
+        <div style="display: none; font-size:3em;" id="f0"></div>
+        <div class="tickerZone region">
+            <div id="TICKER" class="tgpos region SKEW">
+                <div id="line1" class="color1 region accentRight">
+                    <div class="ticker" id="ticker" >
+                        <div class="font3 tab ANTISKEW" id="SectionHeader"></div>
+                        <div class="spxTicker ANTISKEW" id="spxTicker"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    
+    let ScrollSpeed = 3.25; // Typical speed approx 1.5 - 2.0
+    let TickerData=[];
+    let TickerStarted=0;
+    let SectionSelector = 1;
+
+    async function StartTicker(SectionSelector) {
+        // this function gets triggered onload and everytime
+        console.log('Starting ticker');
+        TickerStarted = new Date().getTime();
+        TickerData = await getSheetData()
+        await populateDom(TickerData,SectionSelector)
+        setTimeout(function(){ PlayTickerDOM() }, 1100);  // delayed start
+        TickerReady = new Date().getTime();
+        console.log('Ticker generation time: ' + (TickerReady-TickerStarted) + 'ms');
+    }; 
+
+
+
+    
+    function getSheetData() 
+      {
+        return new Promise(resolve => {
+            // let SectionData = {};
+            // SectionData.section = sectionName;
+            let workSheetsData, excelData = [];
+            let APIcall = "/api/readExcelData"; // Same host expected
+            let filename = document.getElementById('f0').innerText;
+            axios.post(APIcall,  {filename: filename})
+            .then(function (response) {
+                workSheetsData = response.data
+                workSheetsData.forEach((Book,index) => {
+                  bookRows = [];
+                  if (!Book.name.includes('#')) {
+                    excelData[index]=Book
+                    Book.data.forEach((row,index) => {
+                      if (index>0 && row[0]) {
+                        bookRows.push(row[1])
+                      }
+                    });
+                    excelData[index].data = bookRows;
+                  }
+                });
+                console.log('Got new data');
+                resolve(excelData);
+            })
+                .catch(function (error) {
+                console.log(error);
+            });
+            
+          }
+        )
+      }
+
+    function populateDom(TickerData,SectionSelector) 
+      {
+        let spxTicker = document.getElementById('spxTicker');
+        document.getElementById('spxTicker').innerHTML="";
+        return new Promise(resolve => {
+            console.log('TickerData[' + SectionSelector + ']:', TickerData[SectionSelector]);
+            let SectionName = TickerData[SectionSelector].name;
+            console.log('Section [' + SectionSelector + ']: ' + SectionName);
+            document.getElementById('SectionHeader').innerText = SectionName;
+            spxTicker.innerHTML="";
+            TickerData[SectionSelector].data.forEach((item,index) => {
+                if (index==0)
+                {
+                    spxTicker.innerHTML=item;
+                }
+                else
+                {
+                    spxTicker.innerHTML+='&nbsp;&nbsp;<span class="sheetTickerDelim" style="margin-left:0.5em;"></span>&nbsp;' + item;
+                }
+            });
+            spxTicker.innerHTML+='<span class="LastItem" id="LastItem">LAST</span>'
+            console.log('spxTicker position: ' + document.getElementById('spxTicker').offsetLeft);
+            resolve();
+          }
+        )
+      }
+
+    function PlayTickerDOM()
+        {
+            gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
+            gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
+            gsap.ticker.add(scrollToLeft);
+        }
+
+    function scrollToLeft() {
+            let spxTicker = document.getElementById('spxTicker');
+            let spxTiZone = document.getElementById('TICKER');
+            let LEFT = spxTicker.offsetLeft;
+            let LAST = document.getElementById('LastItem');
+            spxTicker.style.left = (LEFT-ScrollSpeed) + 'px';
+
+            var zoneRect = spxTiZone.getBoundingClientRect(),
+            elemRect = LAST.getBoundingClientRect(),
+            offset   = elemRect.left - zoneRect.left;
+            if ( offset < 200 ) {
+                gsap.ticker.remove(scrollToLeft);
+                gsap.fromTo("#SectionHeader",  { y:        0 }, { delay: 0.0, duration: 0.6, y:     100,   ease: "back.in(1.5)" }); 
+                gsap.fromTo("#SectionHeader",  { opacity:  1 }, { delay: 0.5, duration: 0.1, opacity: 0,   ease: "none" }); 
+                spxTicker.style.left = '100%';
+                if ( SectionSelector >= TickerData.length-1) // minus 2 because first index is DocID...
+                    {
+                        SectionSelector=1
+                    }
+                else
+                    {
+                        SectionSelector+=1
+                        // console.log('SectionSelector incremented to ' + SectionSelector);
+                    }
+                setTimeout(function(){ StartTicker(SectionSelector) }, 300);
+            }
+            else
+            {
+                // console.log('LAST distance from TickerZone start ' + offset);
+            }
+    }
+
+
+    setTimeout(function () {
+        StartTicker(SectionSelector) // the index number of sections in sourceConfig
+     },
+     50);
+
+
+
+
+
+    function stop() {
+        runAnimationOUT()
+    } // stop ed
+
+    function play() {
+        runAnimationIN()
+    } // stop ed
+     
+    $(document).ready(function() {
+        ready = new Date().getTime();
+        console.log('Template Load Time: ' + (ready-start) + 'ms');
+    });
+</script>
+
+
+</body>
+</html>
+
+
+

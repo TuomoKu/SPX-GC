@@ -81,9 +81,9 @@ module.exports = {
                     newcontrol1                                  = {}
                     newcontrol1.ftype                            = "button"
                     newcontrol1.description                      = "Custom control examples"
-                    newcontrol1.text                             = "Read docs"
+                    newcontrol1.text                             = "Open webpage"
                     newcontrol1.bgclass                          = "bg_grey"
-                    newcontrol1.fcall                            = "openWebpage('http://smartpx.fi/gc/help#globalextras')"
+                    newcontrol1.fcall                            = "openWebpage('http://smartpx.fi/gc/')"
                     cfg.globalExtras.CustomControls.push(newcontrol1)
 
                     // play gfx out

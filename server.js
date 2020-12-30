@@ -68,6 +68,7 @@ var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
 global.vers = vers;
+global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
 
 console.log('\nGC ' + vers + ' is starting. Closing this window/process will stop the server.\n');
 
@@ -485,10 +486,13 @@ app.engine('handlebars', exphbs({
 
 
     // preview span for collapsed view of each rundown item
-    generateCollapsedHeadline(DataFields)
-    {
+    generateCollapsedHeadline(DataFields) {
+        return spx.generateCollapsedHeadline(DataFields);
+
+    /*
+        // console.log('DataField (length: ' + DataFields.length + ')' ,DataFields);
+
         var html = "";
-        console.log('DataField (length: ' + DataFields.length + ')' ,DataFields);
         let Iterations = DataFields.length;
         var Counter = 0;
         if (DataFields.length>0) { 
@@ -508,8 +512,12 @@ app.engine('handlebars', exphbs({
                 Counter++;
                 break;
 
+              case "number":
+                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fValu) + '</span>';
+                Counter++;
+                break;
+
               case "filelist":
-                console.log('Kaivetaan polku: ' + fValu);
                 html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(spx.fileNameFromPath(fValu)) + '</span>';
                 Counter++;
                 break;
@@ -532,9 +540,9 @@ app.engine('handlebars', exphbs({
         if (html=="") {
           html = '<span id="datapreview_2"></span>';
         }
-        // console.log('HTML: ' + html);
         return html
-    },
+*/
+      },
 
 
     // generate radio buttons for show config templates
@@ -698,6 +706,9 @@ app.engine('handlebars', exphbs({
       if (fileList) {
         fileList.forEach((fileRef,index) => {
           fullFilePath = assetfolder + fileRef;
+          if (assetfolder.substr(assetfolder.length - 1)!="/") {
+            assetfolder = assetfolder + "/";
+          }
           sel = "";
           if (fullFilePath == selectedValue) {
             sel = 'selected';
@@ -751,6 +762,9 @@ global.user = "";
 // Router files
 const ROUTEfiles = require('./routes/routes-api.js');
 app.use('/api/', ROUTEfiles);
+
+const ROUTEpubAPIv1 = require('./routes/routes-api-v1.js');
+app.use('/api/v1/', ROUTEpubAPIv1);
 
 const ROUTEapp = require('./routes/routes-application.js');
 app.use('/', ROUTEapp);

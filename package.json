@@ -1,6 +1,6 @@
 {
   "name": "spx-gc",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "SPX-GC | SmartPX Graphics Controller for CasparCG and streaming applications",
   "homepage": "https://github.com/TuomoKu",
   "main": "server.js",
@@ -11,7 +11,7 @@
       "static/**/*"
     ]
   },
-  "scripts": {
+    "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "devORG": "nodemon server.js -i config.json -i DATAROOT/",
     "dev": "nodemon server.js -i DATAROOT/* -i config.json",
@@ -37,6 +37,7 @@
     "moment": "^2.27.0",
     "morgan": "^1.9.1",
     "node-wav-player": "^0.1.0",
+    "node-xlsx": "^0.15.0",
     "open": "^7.1.0",
     "path": "^0.12.7",
     "rotating-file-stream": "^2.1.3",

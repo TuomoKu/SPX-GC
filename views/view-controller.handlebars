@@ -176,7 +176,7 @@
                           <TD class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
                             <span><!--item {{@index}} &nbsp;&middot;&nbsp;-->{{{ nameFromTemplatePath relpath }}}
                               {{#if description}}
-                              &nbsp;<span class="delim"></span><span style="opacity:0.5;">{{description}}</span>
+                              <span class="delim"></span> <span style="opacity:0.5;">{{description}}</span>
                               {{/if}}
                               </span>
                           </TD>
@@ -188,9 +188,6 @@
                       <div style="width:100%; " class="truncate">
 
                         {{{ generateCollapsedHeadline DataFields }}}
-
-  
-
 
                       </div>
                     </div>
@@ -216,8 +213,20 @@
                               </div>
 
 
+
+                              {{#ifValue ftype "number"}}
+                                <!-- "NUMBER" TYPE OF TEMPLATE FIELD (added in 1.0.7) --> 
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="number"></td></tr>
+                                  </table>
+                                </div>
+                                <input type="number"  name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                              {{/ifValue}}
+
+
                               {{#ifValue ftype "instruction"}}
-                                <!-- INSTRUCTION TYPE OF TEMPLATE FIELD -->
+                                <!-- "INSTRUCTION" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="instruction"></td></tr>
@@ -229,7 +238,7 @@
 
 
                               {{#ifValue ftype "caption"}}
-                                <!-- CAPTION TYPE OF TEMPLATE FIELD -->
+                                <!-- "CAPTION" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="caption"></td></tr>
@@ -241,7 +250,7 @@
 
 
                               {{#ifValue ftype "hidden"}}
-                                <!-- HIDDEN TYPE OF TEMPLATE FIELD -->
+                                <!-- "HIDDEN" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="hidden"></td></tr>
@@ -253,7 +262,7 @@
 
 
                               {{#ifValue ftype "textfield"}}
-                                <!-- TEXTFIELD TYPE OF TEMPLATE FIELD -->
+                                <!-- "TEXTFIELD" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
@@ -264,7 +273,7 @@
 
 
                               {{#ifValue ftype "textarea"}}
-                                <!-- TEXTAREA TYPE OF TEMPLATE FIELD -->
+                                <!-- "TEXTAREA" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textarea"></td></tr>
@@ -275,7 +284,7 @@
 
 
                               {{#ifValue ftype "dropdown"}}
-                                <!-- DROPDOWN TYPE OF TEMPLATE FIELD -->
+                                <!-- "DROPDOWN" TYPE OF TEMPLATE FIELD -->
                                 <!-- first, hidden fields -->
                                 <table class="HIDE wide brd spxTableHeadsmall">
                                   <tr><td class="aright">fType</td>  <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="dropdown"><BR><BR></td></tr>
@@ -295,7 +304,7 @@
 
 
                               {{#ifValue ftype "filelist"}}
-                                <!-- FILELIST TYPE OF TEMPLATE FIELD -->
+                                <!-- "FILELIST" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
@@ -314,7 +323,7 @@
 
 
                               {{#ifValue ftype "divider"}}
-                                <!-- DIVIDER TYPE OF TEMPLATE FIELD -->
+                                <!-- "DIVIDER" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="divider"></td></tr>
