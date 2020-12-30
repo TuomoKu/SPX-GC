@@ -549,6 +549,8 @@ http://localhost:5000/renderer/?layers=[2,4,20]
 
 ----
 # Control SPX-GC with external devices such as Elgato Stream Deck... <a id="controlApi"></a>
+
+<img align="left" width="100" height="100" src="screenshots/streamdeck.png">
 SPX-GC (v.1.0.8+) rundowns can be loaded and controlled with external devices with http-get commands. 
 See available commands here:
 

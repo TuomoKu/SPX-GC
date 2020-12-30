@@ -49,7 +49,7 @@ socket.on('SPXMessage2Controller', function (data) {
     // data.APIcmd as function identifier. Additional object values are payload.
     // Feature added in v.1.0.8.
 
-    console.log('SPXMessage2Controller received', data)
+    // console.log('SPXMessage2Controller received', data)
     let DomItemID;
     switch (data.APIcmd) {
 
