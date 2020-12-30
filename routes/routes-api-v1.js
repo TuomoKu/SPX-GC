@@ -55,7 +55,7 @@ router.get('/', function (req, res) {
             },
             {
               "param"   :     "stopAllLayers",
-              "info"    :     "A panic button. Clear all layers."
+              "info"    :     "Animate all layers (used by the current rundown) out, but does not clear layers."
             },
 
           ]

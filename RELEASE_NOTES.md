@@ -5,6 +5,11 @@
 ---
 ## **1.0.8** (Dec 30 2020)
 - Added `/api/v1` endpoint for external commands (for Elgato Stream Deck and other similar use cases)
+- Binary packages v1.0.8:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip)
+
 
 
 ## **1.0.7** (Dec 20 2020)
@@ -19,6 +24,10 @@
 ## **1.0.6** (Dec 18 2020)
 - Improved `filelist` field type functionality
 - Added `instruction` field type
+- Binary packages v1.0.6:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip)
 
 ## **1.0.5** (Oct 19 2020)
 - Added support for INVOKE handler for custom template commands.
@@ -40,14 +49,25 @@
 
 ## **1.0.2** (Sept 21 2020)
 - added support for multiline "textarea" fields
-
+- Binary packages v1.0.2:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_2_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_2_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_2_linux64.zip)
 ---
+
 ## **1.0.1** (Sept 5 2020)
 - fixes #4 (wrong output url)
 - show template folder at startup info
-
+- Binary packages v1.0.0.1:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_1_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_1_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_1_linux64.zip)
 ---
 
 ## **1.0.0** (Sept 05 2020)
 - Initial release. Known issues listed in README.md
+- Binary packages v1.0.0:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_0_linux64.zip)
 
