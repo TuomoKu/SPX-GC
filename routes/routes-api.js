@@ -56,7 +56,8 @@ router.post('/readExcelData', async (req, res) => {
   // Data parsing / logic must be implemented in the template
   // this just dumps data out as-is.
 
-  var excelFile = path.join(__dirname, '..', 'ASSETS', req.body.filename);
+  // var excelFile = path.join(__dirname, '..', 'ASSETS', req.body.filename); // fails when packaged
+  var excelFile = path.join(process.cwd(), 'ASSETS', req.body.filename);
   var workSheetsData;
   try {
 

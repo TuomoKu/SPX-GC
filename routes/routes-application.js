@@ -740,7 +740,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     let RundownData = ""  // file JSON
     let preventSave = false;
 
-    console.log(req.body.prepopulated);
+    // console.log(req.body.prepopulated);
 
     if (req.body.prepopulated && req.body.prepopulated=="true") {
       // data in pre-generated coming in. So we can just pass that along.
