@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Dec 30 2020. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.8).
+> Readme updated Jan 02 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.8).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -40,9 +40,7 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 ---
 <a id="demo"></a>
 ## Live demo
-See a **LIVE DEMO** of CG v1.0.6 at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
-
-_(Live demo was accidentally running with incorrect port number in Nov / Dec 2020 but it is up again normally. Sorry for the hickup.)_
+See a **LIVE DEMO** of CG v1.0.8 at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
 
 ---
 
@@ -263,7 +261,9 @@ An example `config.json` of the SPX-GC server
 **templatefolder** contains the HTML templates for SPX-GC. To make CasparCG work with these templates, the easiest way is to configure CasparCG to use this folder as it's template folder.
 See [this note](#fileprotocol).
 
-**langfile** is a filereference in locales-folder for a JSON file containing UI strings in that language. You can copy an existing file to another name and modify it's contents. Folder is scanned at server start and files are shown in the configuration as language options.
+**langfile** is a file reference in locales-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options.
+
+<img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
 
 **loglevel** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
 
@@ -592,7 +592,7 @@ Strikethrough items are done.
 ----
 
 # MIT License <a id="license"></a>
-Copyright 2020 Tuomo Kulomaa <tuomo@smartpx.fi>
+Copyright 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>
 
 This project is licensed under the terms of the MIT license.
 See [LICENSE.txt](LICENSE.txt)

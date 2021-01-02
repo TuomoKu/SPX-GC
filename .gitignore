@@ -20,9 +20,11 @@ devnotes.txt
 MEDIA/*
 DATAROOT/*
 DATAROOT_ORG/*
+DATAROOT_DEMO/*
 ASSETS/media/video/*
 ASSETS/template_stash/
 ASSETS/templates/smartpx_internal/
+ASSETS/templates/smartpx_demo/
 ASSETS/ExtraFunctions/spx_internal_demo_functions.js
 ASSETS/ExtraFunctions/smartpx_internal/*
 ASSETS/ExtraFunctions/modules/*
@@ -34,6 +36,7 @@ START_GC_IN_BACKGROUND.bat
 BUILD_PACKAGES.BAT
 BUILD_A_ZIP_PACK.BAT
 SPX_STARTER_MENU.bat
+RUN_DEV_DEMOROOT.BAT
 config*.json
 
 ######################
