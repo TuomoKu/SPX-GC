@@ -740,7 +740,7 @@ process.on('uncaughtException', function(err) {
 var server = app.listen(port, (err) => {
 
   let splash = 'START-UP INFORMATION:\n\n' + 
-  'SPX GC ................. Copyright 2020 SmartPX <tuomo@smartpx.fi>\n' +
+  'SPX GC ................. Copyright 2020-2021 SmartPX <tuomo@smartpx.fi>\n' +
   `Version ................ ${vers}\n` +  
   'Homepage ............... https://github.com/TuomoKu/SPX-GC\n' +
   `Config file ............ ${configfileref}\n`  +
