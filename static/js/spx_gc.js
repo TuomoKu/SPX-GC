@@ -2,7 +2,7 @@
 // Client javascript for SPX-GC
 // Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020 tuomo@smartpx.fi
+// (c) 2020-2021 tuomo@smartpx.fi
 // ***************************************
 
 
@@ -12,7 +12,6 @@
 */
 
 var socket = io();
-
 
 // Global App State
 let APPSTATE = "INIT";  // see AppState()
@@ -1056,14 +1055,12 @@ function playItem(itemrow='', forcedCommand='') {
         // value is numerical, so 
         if (data.command=="play" )
             {
-                // start an new timer and store id to attribute
+                // Changed in 1.0.9, failed in 1.0.8.
                 let TimeoutAsInt    = parseInt(TimeoutAsString);
-                // console.log('Will stop playlistitem [' + eleIndex + '] in ' + TimeoutAsInt + ' ms...');
-                AutoOutTimerID = setTimeout(function () { playItem(eleIndex); }, TimeoutAsInt);
+                console.log('Will stop playlistitem [' + itemrow + '] in ' + TimeoutAsInt + ' ms...');
+                AutoOutTimerID = setTimeout(function () { playItem(itemrow); }, TimeoutAsInt);
                 itemrow.setAttribute('data-spx-timerid',AutoOutTimerID);
-                document.getElementById('playIcon' + eleIndex).classList.add('playAuto');
-                document.getElementById('deleteSmall' + eleIndex).style.display="none";
-                document.getElementById('deleteLarge' + eleIndex).style.display="none";
+                itemrow.querySelector('[data-spx-name="icon"]').classList.add('playAuto');
             }
         else
             {
@@ -1598,7 +1595,7 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c SPX GC (c) 2020 <tuomo@smartpx.fi>', 'background: #6aF; color: #fff');
+    console.log('%c SPX GC (c) 2021 <tuomo@smartpx.fi>', 'background: #6aF; color: #fff');
 
 
     // Init sortable and saveData onEnd

@@ -6,10 +6,6 @@ const fs = require('fs');
 const path = require('path')
 const moment = require('moment');
 
-// 1.0.7:
-// const ip = require('ip') // for localhost IP address
-
-
 
 module.exports = {
 
@@ -73,7 +69,9 @@ module.exports = {
 
     // let GFX_Teml = data.relpathCCG; // before  1.0.7
     // let GFX_Teml = 'http://' + ip.address() + ':' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // changed to http in 1.0.7
-    let GFX_Teml = 'http://localhost:' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // changed to http in 1.0.7
+    // let GFX_Teml = 'http://localhost:' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // accidentally left to "localhost" in 1.0.8. Oops <:-O
+
+    let GFX_Teml = getCCGTemplateFilepath(data.relpathCCG); //  v.1.0.9 = Supports both FILE or HTTP template paths, see config>general.casparcg-template-folder
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;
@@ -81,7 +79,7 @@ module.exports = {
     let InvFunct = data.invoke;
     data.command = data.command.toUpperCase();
 
-    logger.info('CasparCG playoutController - command ' + data.command + "', Template: '" + GFX_Teml, "', CasparCG: " + GFX_Serv + ", " + GFX_Chan + ", " + GFX_Laye);
+    logger.info('CasparCG playoutController - command ' + data.command + ', Template: ' + GFX_Teml, ', CasparCG: ' + GFX_Serv + ', ' + GFX_Chan + ', ' + GFX_Laye);
     logger.debug('CasparCG playoutController ' + JSON.stringify(data,null,4));
     logger.debug('Generating DATA for CasparCG [command ' + data.command + '], source: ' +  JSON.stringify(data.fields,null,4));
     let TEMPLATEDATA = "";
@@ -128,7 +126,6 @@ module.exports = {
           break;
 
         case 'UPDATE':
-          // console.log('CasparGC UPDATING:', DataStr);
           global.CCGSockets[this.getSockIndex(data.playserver)].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' UPDATE 1 "' + DataStr + '"\r\n');
           break;
 
@@ -225,13 +222,22 @@ module.exports = {
     return serverIndex;
   }
 
-
-
-
-
-
-
-
-
 } // end of exports PlayoutCCG.<functionName>
 
+
+function getCCGTemplateFilepath(fileRef) {
+  // Added in 1.0.9.
+  // Return either the "simple filepath" or "full URL" for the CasparCG command.
+  const spx = require('./spx_server_functions.js');
+  let TemplateSource = spx.getTemplateSourcePath()
+  let TemplatePathForCasparCGServer
+
+  if ( TemplateSource.substring(0, 4)=='http' )
+    // HTTP
+    TemplatePathForCasparCGServer  = TemplateSource + ':' + config.general.port + '/templates/' + fileRef + '.html'; // 
+  else {
+    // FILE
+    TemplatePathForCasparCGServer =  fileRef; // as-is, a filepath in CasparCG server's own template-path directory
+  }
+  return TemplatePathForCasparCGServer
+}

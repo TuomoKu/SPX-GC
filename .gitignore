@@ -34,10 +34,14 @@ notes2/
 cg20.*
 START_GC_IN_BACKGROUND.bat
 BUILD_PACKAGES.BAT
+BUILD_PACKAGES_TO_OS_FOLDERS.BAT
 BUILD_A_ZIP_PACK.BAT
 SPX_STARTER_MENU.bat
 RUN_DEV_DEMOROOT.BAT
 config*.json
+README.pdf
+RELEASE_NOTES.pdf
+
 
 ######################
 # OS generated files #

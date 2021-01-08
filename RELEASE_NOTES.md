@@ -3,12 +3,27 @@
 > Most recent updates are at the top.
 
 ---
+## **1.0.9** (Jan 08 2021)
+- Fixes Mac binary package installation folder [issue (#3)](/../../issues/3).
+- Fixes a bug in timed Stop animations (in v1.0.4 - 1.0.8)
+- Fixes get-file-list bug (Excel file list) in binary package versions
+- Build process reconfigured. Some build zip files were corruputed in 1.0.8.
+- Added a configuration option `general.templatesource` to configure CasparCG template playout to use either file or http protocol: 
+  * `spxgc-ip-address` is the default and uses SPX-GC **http** server to host templates for both CasparCG and web playout
+  * `casparcg-template-path` uses CasparCG config's template-path and **file://** -protocol
+- Tiny other fixes and code cleanup
+- Binary packages v1.0.9:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip)
+
+
 ## **1.0.8** (Dec 30 2020)
 - Added `/api/v1` endpoint for external commands (for Elgato Stream Deck and other similar use cases)
 - Binary packages v1.0.8:
-    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_win64.zip),
-    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip),
-    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_6_linux64.zip)
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_8_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_8_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_8_linux64.zip)
 
 
 

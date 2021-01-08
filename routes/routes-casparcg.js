@@ -11,15 +11,9 @@ logger.debug('Caspar-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const open = require('open'); // open url in browser
 
-
 const ip = require('ip')
 const ipad = ip.address(); // my ip address
 const port = config.general.port || 5000;
-
-
-
-// NOTE: functions at the end of 'server.js'
-
 
 
 // ROUTES CCG -----------------------------------------------------------------------------------
@@ -175,8 +169,6 @@ router.get('/control/:data', (req, res) => {
       case 'UPDATE':
         console.log('TODO: This is probably not used to send update to CasparCG... See playout_casparCG.js instead! ** FIXME:**');
         global.CCGSockets[spx.getSockIndex(spx.getChannel(data))].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' UPDATE 1 "' + DataStr + '"\r\n');
-        // CG 1-20 UPDATE 1 "<templateData><componentData id=\"f0\"><data id=\"text\" value=\"Kakka\"/></componentData><componentData id=\"f1\"><data id=\"text\" value=\"Kepponen\"/></componentData></templateData>"\r\n
-        // CG 1-10 UPDATE 1 "<templateData><componentData id=\"f0\"><data id=\"text\" value=\"HELLO\"/></componentData><componentData id=\"f1\"><data id=\"text\" value=\"Kekkonen\"/></componentData></templateData>"\r\n
         break;
 
 
@@ -317,7 +309,7 @@ config.casparcg.servers.forEach((element,index) => {
         break;
 
       case "40":
-        logger.error('Error with ' + CurName + ": " + CCG_RETURN_TEXT);
+        logger.error('Error with ' + CurName + ": " + CCG_RETURN_TEXT + ' - Verify CasparCG\'s (' + CurName + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath() + '.');
         data = { spxcmd: 'updateStatusText', status: 'Error in comms with ' + CurName + '.' };
         io.emit('SPXMessage2Client', data);
         break;

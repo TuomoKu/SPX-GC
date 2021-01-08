@@ -25,9 +25,7 @@ try {
 }
 
 
-
 module.exports = {
-  
 
   checkServerConnections: function () {
     try {
@@ -252,6 +250,31 @@ module.exports = {
       return (error);
     }
   }, // getJSONFileList ended
+
+
+  getTemplateSourcePath: function () {
+    // Added in 1.0.9 
+    // Evaluate serversource from config > general.templatesource.
+    // Supported values
+    //  - 'casparcg-template-path' : Uses file protocol and CasparCG's template-path folder value during CassparCG playout
+    //  - 'spxgc-ip-address'       : Uses current SPX-GC server's IP address
+    //  - '
+    //
+    let TemplateSource = config.general.templatesource;
+    let TemplateServer = ''
+    if ( TemplateSource == 'casparcg-template-path') {
+      TemplateServer = "";
+      logger.verbose('Using filesystem and caspar.config for template-path.');
+    } else if ( !TemplateSource || TemplateSource == 'spxgc-ip-address') {
+      TemplateServer = 'http://' + ip.address(); // TODO: https one day? 
+      logger.verbose('Using ip.address() for TemplateServer IP address: ' + TemplateServer);
+    } else {
+      if (TemplateSource.substring(0, 4)!='http') {TemplateSource = 'http://' + TemplateSource}
+      TemplateServer = TemplateSource;
+      logger.verbose('A custom templateServer given in config. Using ' + TemplateServer);
+    }
+    return TemplateServer; // return empty for file system source or full server url with "http://" prefix
+  },
 
 
   hash: function (textToHash){
@@ -509,7 +532,7 @@ writeFile: function (filepath,data) {
         this.talk('Writing file');
         // this.playAudio('beep.wav', 'spx.writeFile');
         data.warning = "Modifications done in the GC will overwrite this file.";
-        data.smartpx = "(c) 2020 Tuomo Kulomaa <tuomo@smartpx.fi>";
+        data.smartpx = "(c) 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>";
         data.updated = new Date().toISOString();
 
         let filedata = JSON.stringify(data, null, 2);

@@ -3,7 +3,7 @@
 //
 // "SPX-GC" SmartPX Graphics Controller
 //
-// (c) 2020 tuomo@smartpx.fi 
+// (c) 2020-2021 tuomo@smartpx.fi 
 // https://github.com/TuomoKu
 // 
 // No front-end frameworks.
@@ -488,61 +488,7 @@ app.engine('handlebars', exphbs({
     // preview span for collapsed view of each rundown item
     generateCollapsedHeadline(DataFields) {
         return spx.generateCollapsedHeadline(DataFields);
-
-    /*
-        // console.log('DataField (length: ' + DataFields.length + ')' ,DataFields);
-
-        var html = "";
-        let Iterations = DataFields.length;
-        var Counter = 0;
-        if (DataFields.length>0) { 
-          for (let fieldIndex = 0; fieldIndex < Iterations; fieldIndex++) {
-            if (Counter>2) { break };
-            let fType = DataFields[fieldIndex].ftype || '';
-            let fTitl = DataFields[fieldIndex].title || '';
-            let fValu = DataFields[fieldIndex].value || '';
-            switch ( fType ) {
-              case "hidden":
-                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fTitl) + '</span>';
-                Counter++;
-                break;
-
-              case "textfield":
-                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fValu) + '</span>';
-                Counter++;
-                break;
-
-              case "number":
-                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fValu) + '</span>';
-                Counter++;
-                break;
-
-              case "filelist":
-                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(spx.fileNameFromPath(fValu)) + '</span>';
-                Counter++;
-                break;
-
-              case "dropdown":
-                html += '<span id="datapreview_' + fieldIndex + '">' + spx.shortifyString(fValu) + '</span>';
-                Counter++;
-                break;
-              
-              default:
-                break;
-            }
-
-            if (fieldIndex != 2 && html != "") {
-              html += '&nbsp;<span class="delim"></span>&nbsp;';
-            }
-          } // for ended
-        }
-
-        if (html=="") {
-          html = '<span id="datapreview_2"></span>';
-        }
-        return html
-*/
-      },
+    },
 
 
     // generate radio buttons for show config templates
@@ -693,7 +639,7 @@ app.engine('handlebars', exphbs({
 
     // This is used to populate filelist dropdown control type in templates.
     // Note: these files are returned as http-assets from SPX-GC server
-    // Feature added in 1.0.3. and improved in 1.0.6
+    // Feature added in 1.0.3. and improved in 1.0.6, 1.0.9
     PopulateFilelistOptions(assetfolder, extension, value){
       let html = "";
       let sel = "";
@@ -701,7 +647,8 @@ app.engine('handlebars', exphbs({
       let SERVER_URL = 'http://' + ip.address() + ':' + port;
       let assetPath = path.normalize(assetfolder || '');
       let selectedValue = value;
-      let fullPath = path.join(__dirname, 'ASSETS', assetPath);
+      // let fullPath = path.join(__dirname, 'ASSETS', assetPath); // failed in PKG version
+      let fullPath = path.join(process.cwd(), 'ASSETS', assetPath); // fixes the PKG get excel file list bug
       let fileList = spx.getFileList(fullPath, extension);
       if (fileList) {
         fileList.forEach((fileRef,index) => {
@@ -791,22 +738,37 @@ process.on('uncaughtException', function(err) {
 
 
 var server = app.listen(port, (err) => {
-  logger.info('START-UP INFORMATION:\n\n' + 
-  'SPX GC .............. Copyright 2020 SmartPX <tuomo@smartpx.fi>\n' +
-  `Version ............. ${vers}\n` +  
-  'Homepage ............ https://github.com/TuomoKu/SPX-GC\n' +
-  `Config file ......... ${configfileref}\n`  +
-  `Cfg / dataroot ...... ${config.general.dataroot}\n`  +  
-  `Cfg / templates ..... ${config.general.templatefolder}\n`  +  
-  `Cfg / logfolder ..... ${config.general.logfolder}\n` +
-  `Cfg / loglevel ...... ${config.general.loglevel} (error, warn, info, verbose, debug)\n` + 
-  `Cfg / locale ........ ${config.general.langfile}\n`  +
-  `SPX-GC url .......... http://${ipad}:${port}`);
 
-  console.log('\x1b[32m%s\x1b[0m', '\n\n────────────────────────────────');
-  console.log('\x1b[37m%s\x1b[1m', '  Open SPX-GC in browser:');
-  console.log('\x1b[33m%s\x1b[0m', `  http://${ipad}:${port}`);  //yellow
-  console.log('\x1b[32m%s\x1b[0m', '────────────────────────────────\n\n');
+  let splash = 'START-UP INFORMATION:\n\n' + 
+  'SPX GC ................. Copyright 2020 SmartPX <tuomo@smartpx.fi>\n' +
+  `Version ................ ${vers}\n` +  
+  'Homepage ............... https://github.com/TuomoKu/SPX-GC\n' +
+  `Config file ............ ${configfileref}\n`  +
+  `Cfg / locale ........... ${config.general.langfile}\n`  +
+  `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
+  `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
+  `Cfg / template files ... ${config.general.templatefolder}\n`  +  
+  `Cfg / logfolder ........ ${config.general.logfolder}\n`;
+
+  // Where are CasparCG templates loaded from (file:// or http://):
+  let TemplatesFromInfo;
+  let tmplSourceAddress = spx.getTemplateSourcePath();
+  if ( tmplSourceAddress == "") {
+    TemplatesFromInfo = "See caspar.config"
+  } else {
+    TemplatesFromInfo = tmplSourceAddress
+  }
+
+  splash +=
+  `Cfg / templatesource ... ${config.general.templatesource} (` + TemplatesFromInfo + ')\n'  +  
+  `SPX-GC server address .. http://${ipad}:${port}`;
+
+  logger.info(splash);
+
+  console.log('\x1b[32m%s\x1b[0m', '\n\n──────────────────────────────────');
+  console.log('\x1b[37m%s\x1b[1m', `     Open SPX-GC in a browser:`);
+  console.log('\x1b[33m%s\x1b[0m', `     http://${ipad}:${port}`);  //yellow
+  console.log('\x1b[32m%s\x1b[0m', '──────────────────────────────────\n\n');
 });
 
 

@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Jan 02 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.8).
+> Readme updated Jan 08 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.9).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -14,7 +14,7 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 ---
 
 ### Table of Contents
-- [LIVE DEMO](#demo) is online again 🔥
+- [LIVE DEMO](#demo) 🔥
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -37,18 +37,18 @@ Graphic templates are typical HTML templates used with CasparCG and other HTML c
 
 Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
 
+> If you need custom HTML templates or functionality get in touch tuomo@smartpx.fi.
+
 ---
 <a id="demo"></a>
-## Live demo
-See a **LIVE DEMO** of CG v1.0.8 at http://35.228.47.121:5000/ Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+## Live demo 
+SPX-GC running in the cloud: **http://35.228.47.121:5000**
 
----
-
-> For extra GC functionality, software integration or advanced custom graphics templates, do not hesitate to contact tuomo@smartpx.fi.
+Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
 
 
-
-| Screenshots<a id="screenshots"></a> |   |
+# Screenshots <a id="screenshots"></a>
+| | |
 | ------ | ------ |
 | ![animation](screenshots/spx-gc-ui-anim-v1-0.gif) | SPX-GC UI is browser based and can be operated with a mouse or keyboard. Additonal _extra controls_ can be added as _plugins_ to execute specific tasks or to trigger events in external devices. |
 | ![project list](screenshots/01-spx-gc-projectlist.png) | Content is managed in _projects_. Each project can have unlimited amount of _rundowns_ and _graphics templates_. Projects and their rundowns and settings are stored in _dataroot -folder_. |
@@ -66,9 +66,11 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 | Operating system | Zip file| Build date | Notes |
 | ------ | ------ | ----- | ----- |
-| Windows  | [SPX-GC_1_0_8_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_8_win64.zip   ) | Dec 30 2020 | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| MacOS    | [SPX-GC_1_0_8_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_8_macos64.zip ) | Dec 30 2020 | Dataroot and config.json may be generated to user's home directory at first launch and app will not run properly. Exit, move DATAROOT-, LOG-, locales- and ASSETS- folders to user's home directory, remove config.json and restart to generate a new config.json.  [Issue (#3)](/../../issues/3).
-| Linux   | [SPX-GC_1_0_8_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_8_linux64.zip ) | Dec 30 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| Windows  | [SPX-GC_1_0_9_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_win64.zip   ) | Dec 30 2020 | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| MacOS    | [SPX-GC_1_0_9_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_macos64.zip ) | Dec 30 2020 | 6% of current users are on Mac.
+| Linux   | [SPX-GC_1_0_9_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip ) | Dec 30 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+
+> Please [get in touch](#feedback) if you have problems downloading or installing these files.
 
 ## Option 1: **Install a pre-built package**
 * Download a zip-file for  your system using one of the links above.
@@ -219,7 +221,9 @@ An example `config.json` of the SPX-GC server
     "logfolder": "X:/GC-DEV/LOG/",
     "port": "5000",
     "dataroot": "X:/DATAROOT/",
-    "templatefolder": "X:/GC-DEV/ASSETS/templates/"
+    "templatefolder": "X:/GC-DEV/ASSETS/templates/",
+    "templatesource": "spxgc-ip-address"
+  },
   },
   "casparcg": {
     "servers": [
@@ -258,16 +262,27 @@ An example `config.json` of the SPX-GC server
 ```
 >**Please note**: the server will fail to start if config is not valid JSON. You can use [JSONLint](https://jsonlint.com/) to validate JSON data.
 
-**templatefolder** contains the HTML templates for SPX-GC. To make CasparCG work with these templates, the easiest way is to configure CasparCG to use this folder as it's template folder.
-See [this note](#fileprotocol).
+## Config parameters
 
-**langfile** is a file reference in locales-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options.
+**`general.username / password`** If _username_ is present but the _password_ is left blank, the app will ask for login policy, just as with [first launch](#firstlaunch). When both are entered the _password_ is saved here (encrypted) and a logic is required to start a session.
+
+<a id="templatesources"></a>
+
+**`general.templatefolder`** contains the HTML templates and their resource files (css, js, images, etc). This root folder is used by SPX-GC's template browser and 'Explore templates folder' menu command (Win only). For playout folder see _templatesource_ parameter below.
+
+**`general.templatesource`**  (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX-GC. Supported values are:
+* `spxgc-ip-address` to automatically use SPX-GC's IP address and http -protocol for playing out templates from SPX-GC's template folder. This is the default behaviour.
+* `casparcg-template-path` to playout templates from target CasparCG server's file system template-path. (See _caspar.config_ file) Note, in this workflow the templates *must be in two places*: in SPX-GC ASSETS/templates -folder *and* CasparCG's templates folder. And if a changes are done to either location, those changes should also be done to the other. `rsync` or other mirroring technique should be considered...
+* `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
+> Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
+
+**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options.
 
 <img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
 
-**loglevel** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
+**`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
 
-<a id="globalextras"></a> **globalExtras** are additional user interface controls, or _plugins_, shown below preview window in all project as opposed to [projectExtras](#projectextras) which are project specific. Each item has an UI component (a button) and associated function call available in the specified `javascript file`. When a new `config.json` is created it has some demo extra controls to introduce related consepts and possibilities.
+<a id="globalextras"></a> **`globalExtras{}`** are additional user interface controls, or _plugins_, shown below preview window in all project as opposed to [projectExtras](#projectextras) which are project specific. Each item has an UI component (a button) and associated function call available in the specified `javascript file`. When a new `config.json` is created it has some demo extra controls to introduce related consepts and possibilities.
 
 ----
 
@@ -385,6 +400,7 @@ Custom control's ftype can be
     - `caption` text of "value" is shown in UI. Useful with static graphics.
 
 
+
 ----
 
 # Templates
@@ -418,9 +434,13 @@ Recommended folder structure for templates
 ```
 > The templates must be within `ASSETS/templates` folder structure. It is preferred to have a single subfolder for all _your_ templates (myCompany in the example above) and futher subfolders for different _template packs_ or _visual styles_ within it (ProjectA, ProjectB in the example).
 
+SPX-GC user interface and web playout always loads templates from `ASSETS/templates` folder, but CasparCG playout can be [configured](#templatesources) to playout _copied_ templates from template-path folder configured in CasparCG Server caspar.config -file. 
+
+<!--
 > <a id="fileprotocol"></a>**CasparCG** does not support absolute file paths with HTML-templates using file protocol. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. [Video: template path configuration](https://www.youtube.com/watch?v=bjVzdaR9a0U).
 
 Another approach is to copy the templates to **both locations** but this can become cumbersome if changes are made to templates: the changes will need to be done to two places or those folders will need to be mirrorred somehow. See this [Wikipedia article](https://en.wikipedia.org/wiki/Comparison_of_file_synchronization_software).
+-->
 
 ## SPXGCTemplateDefinition -object in templates <a id="templatedefinition"></a>
 
@@ -534,6 +554,9 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 
 > **Note** additional user interface controls may be added in future releases.
 
+## Anatomy of an example rundown item
+![anatomy-of-an-item](screenshots/anatomy-of-an-item.png)
+
 
 ----
 # Using SPX-GC with OBS / vMix / Wirecast... <a id="streaming"></a>
@@ -583,10 +606,10 @@ A marketplace for SPX-GC compatible HTML -templates and plugins will open ~~by t
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | Mac install folder [issue (#3)](/../../issues/3) fix . Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. | Q1/2021 |
-| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration, global extras editor in appconfig, public API for controls, HTML template marketplace. Video tutorials. Knowledgebase. Forum. Slack support channel. Free lunches. | TBD |
+| 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. | Q1/2021 |
+| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration, global extras editor in appconfig, ~~public API for controls~~, **HTML template marketplace**. Video tutorials. Knowledgebase. Forum. Slack support channel. Free lunches. | TBD |
 
-Strikethrough items are done.
+Strikethrough items are already done.
 
 
 ----
