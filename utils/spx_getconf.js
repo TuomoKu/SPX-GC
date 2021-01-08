@@ -35,13 +35,18 @@ module.exports = {
         return new Promise(resolve => {
             try {
 
-                let CONFIG_FILE = path.join(process.cwd(), 'config.json'); // tested on ubuntu
-                // check 1st commandline argument (after node and script, that is)
+                // ARG! Mac defaults to Users' home folder when a packaged app is opened by
+                // doubleclicking. And to current folder when opened from Terminal commandline.
+            
+                var startUpPath = process.cwd();  //  FIXME: <-- this yields (incorrectly) "/Users/Tuomo" on a Mac in pkg binary upon doubleclick startup. (Issue #3)
+                var CURRENT_FOLDER = startUpPath; // TODO: Develop a path modification (?) to  support "Mac + pkg + doubleclick" -combo also ¯\_(ツ)_/¯
+
+                let CONFIG_FILE = path.join(CURRENT_FOLDER, 'config.json');
                 var myArgs = process.argv.slice(2);
                 var ConfigArg = myArgs[0] || '';
                 if (ConfigArg){
                     console.log('Command line arguments given: [' + process.argv + '], reading config from ' + ConfigArg + '.');
-                    CONFIG_FILE = path.join(process.cwd(), ConfigArg); // tested on ubuntu    
+                    CONFIG_FILE = path.join(CURRENT_FOLDER, ConfigArg);
                 }
                 
                 // check if config file exists
@@ -57,9 +62,9 @@ module.exports = {
                     cfg.general.loglevel                        = "info"
 
                     // below paths were __dirname but pkg did not like it
-                    cfg.general.logfolder                       = path.join(process.cwd(), 'LOG').replace(/\\/g, "/") + "/"
-                    cfg.general.dataroot                        = path.join(process.cwd(), 'DATAROOT').replace(/\\/g, "/") + "/"
-                    cfg.general.templatefolder                  = path.join(process.cwd(), 'ASSETS/templates').replace(/\\/g, "/")+ "/"
+                    cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
+                    cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
+                    cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"
                     cfg.general.templatesource                  = "spxgc-ip-address"
 
                     cfg.general.port                            = "5000"

@@ -4,7 +4,7 @@
 
 ---
 ## **1.0.9** (Jan 08 2021)
-- Fixes Mac binary package installation folder [issue (#3)](/../../issues/3).
+<!-- NOPE!!! Fixes Mac binary package installation folder [issue (#3)](/../../issues/3). -->
 - Fixes a bug in timed Stop animations (in v1.0.4 - 1.0.8)
 - Fixes get-file-list bug (Excel file list) in binary package versions
 - Build process reconfigured. Some build zip files were corruputed in 1.0.8.

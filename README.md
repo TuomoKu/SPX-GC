@@ -64,13 +64,14 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 ### **Available pre-built packages:** <a id="builds"></a>
 
-| Operating system | Zip file| Build date | Notes |
+| Package| Build date | Notes |
 | ------ | ------ | ----- | ----- |
-| Windows  | [SPX-GC_1_0_9_win64.zip](   https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_win64.zip   ) | Dec 30 2020 | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| MacOS    | [SPX-GC_1_0_9_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_macos64.zip ) | Dec 30 2020 | 6% of current users are on Mac.
-| Linux   | [SPX-GC_1_0_9_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip ) | Dec 30 2020 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| Windows<BR>[<nobr>SPX-GC_1_0_9_win64.zip</nobr>](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_win64.zip   ) | <nobr>Jan 08 2021</nobr> | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| MacOS<BR>[<nobr>SPX-GC_1_0_9_macos64.zip</nobr>]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_macos64.zip ) | <nobr>Jan 08 2021</nobr> | After unzipping use **commandline** and **do not doubleclick** file to start. Read _MAC_ISSUE_PLEASE_READ.txt_ file in the zip regarding [issue (#3)](/../../issues/3). 6% of current users are on Mac.|
+| Linux<BR>[<nobr>SPX-GC_1_0_9_linux64.zip</nobr>]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip ) | <nobr>Jan 08 2021</nobr> | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
 
-> Please [get in touch](#feedback) if you have problems downloading or installing these files.
+> For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
+ Please [get in touch](#feedback) if you have problems downloading or installing these files.
 
 ## Option 1: **Install a pre-built package**
 * Download a zip-file for  your system using one of the links above.
@@ -584,7 +585,7 @@ http://localhost:5000/api/v1
 
 
 # Issues and Feedback <a id="feedback"></a>
-Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A> or directly by email to tuomo@smartpx.fi.
+Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A> or directly by email to [tuomo@smartpx.fi](mailto:tuomo@smartpx.fi).
 
 >All constructive feedback is highly appreciated!
 
