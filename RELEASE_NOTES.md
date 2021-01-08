@@ -8,6 +8,7 @@
 - Fixes a bug in timed Stop animations (in v1.0.4 - 1.0.8)
 - Fixes get-file-list bug (Excel file list) in binary package versions
 - Build process reconfigured. Some build zip files were corruputed in 1.0.8.
+- Fixes a playout issue with other CasparCG servers than "localhost"
 - Added a configuration option `general.templatesource` to configure CasparCG template playout to use either file or http protocol: 
   * `spxgc-ip-address` is the default and uses SPX-GC **http** server to host templates for both CasparCG and web playout
   * `casparcg-template-path` uses CasparCG config's template-path and **file://** -protocol
