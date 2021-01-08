@@ -66,9 +66,9 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 | Package| Build date | Notes |
 |  ------ | ----- | ----- |
-| Windows<BR>[<nobr>SPX-GC_1_0_9_win64.zip</nobr>](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_win64.zip   ) | <nobr>Jan 08 2021</nobr> | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| MacOS<BR>[<nobr>SPX-GC_1_0_9_macos64.zip</nobr>]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_macos64.zip ) | <nobr>Jan 08 2021</nobr> | After unzipping use **commandline** and **do not doubleclick** file to start. Read _MAC_ISSUE_PLEASE_READ.txt_ file in the zip regarding [issue (#3)](/../../issues/3). 6% of current users are on Mac.|
-| Linux<BR>[<nobr>SPX-GC_1_0_9_linux64.zip</nobr>]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip ) | <nobr>Jan 08 2021</nobr> | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| **Windows**<BR>[SPX-GC_1_0_9_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_win64.zip   ) | Jan 08 2021 | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| **MacOS**<BR>[SPX-GC_1_0_9_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_macos64.zip ) | Jan 08 2021 | After unzipping use **commandline** and **do not doubleclick** file to start. Read _MAC_ISSUE_PLEASE_READ.txt_ file in the zip regarding [issue (#3)](/../../issues/3). 6% of current users are on Mac.|
+| **Linux**<BR>[SPX-GC_1_0_9_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_9_linux64.zip ) | Jan 08 2021 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
 
 > For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
  Please [get in touch](#feedback) if you have problems downloading or installing these files.
