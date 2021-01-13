@@ -4,18 +4,20 @@
   "description": "SPX-GC | SmartPX Graphics Controller for CasparCG and streaming applications",
   "homepage": "https://github.com/TuomoKu",
   "main": "server.js",
-  "bin": "server.js",
+  "bin": {
+    "spx-gc": "server.js"
+  },
   "pkg": {
     "assets": [
       "views/**/*",
       "static/**/*"
     ]
   },
-    "scripts": {
+  "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "devORG": "nodemon server.js -i config.json -i DATAROOT/",
     "dev": "nodemon server.js -i DATAROOT/* -i config.json",
-	  "devdemo": "nodemon server.js config_demodataroot.json -i DATAROOT_DEMO/* -i config_demodataroot.json",
+    "devdemo": "nodemon server.js config_demodataroot.json -i DATAROOT_DEMO/* -i config_demodataroot.json",
     "dev2": "nodemon server.js config2.json -i DATAROOT/* -i config2.json",
     "start": "pm2 start server.js --name GC",
     "stop": "pm2 stop server.js",
@@ -47,6 +49,11 @@
     "winston": "^3.3.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "nodemon": "^2.0.4",
+    "prettier": "^2.2.1"
   }
 }
