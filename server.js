@@ -87,8 +87,7 @@ global.CCGSockets = [];
 global.LastBrowsedTemplateFolder = '';
 
 macaddress.one(function (err, mc) {
-  let macaddress = String(mc);
-  let pseudomac = macaddress.split(':').join('').substring(0,8);
+  let pseudomac = String(mc).split(':').join('').substring(0,8);
   global.hwid = global.config.general.hostname || pseudomac;
   // console.log('(Pseudo) HardwareID for messaging service: ' + global.hwid);
 });
@@ -97,7 +96,7 @@ macaddress.one(function (err, mc) {
 
 // var logDirectory = path.join(__dirname, 'log')
 var logDirectory = path.normalize(global.config.general.logfolder);
-fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
+if(!fs.existsSync(logDirectory)) fs.mkdirSync(logDirectory);
 var accessLogStream = rfs.createStream('access.log', {
   interval: '1d', // rotate daily
   path: logDirectory
@@ -506,7 +505,6 @@ app.engine('handlebars', exphbs({
 
     // Returns IP for socket server of this app's IP address
     getServerAddress: function () {
-      var ip = require('ip');
       var myIP = ip.address() + ':' + port;
       return myIP;
     },
@@ -543,9 +541,7 @@ app.engine('handlebars', exphbs({
       if (value=="on"){
         return '<input type="checkbox" checked name="general[launchchromeatstartup]">';
       }
-      else {
-        return '<input type="checkbox" name="general[launchchromeatstartup]">';
-      }
+      return '<input type="checkbox" name="general[launchchromeatstartup]">';
     },
 
 
@@ -553,26 +549,14 @@ app.engine('handlebars', exphbs({
     playButtonClass(onair) {
       let value = onair || "false";
       let ONAIR = value.toUpperCase();
-      if (ONAIR=="TRUE") {
-        return "bg_red";
-      }
-      else
-      {
-        return "bg_green";
-      }
+      return ONAIR == "TRUE" ? "bg_red" : "bg_green";
     },
 
     // Get a correct class for a play button
     playButtonText(onair) {
       let value = onair || "false";
       let ONAIR = value.toUpperCase();
-      if (ONAIR=="TRUE") {
-        return spx.lang('button.stop');
-      }
-      else
-      {
-        return spx.lang('button.play');
-      }
+      return ONAIR == "TRUE" ? spx.lang('button.stop') : spx.lang('button.play');
     },
 
 
@@ -581,13 +565,7 @@ app.engine('handlebars', exphbs({
       // console.log('Play icon [' + onair + ']');
       let value = onair || "false";
       let ONAIR = value.toUpperCase();
-      if (ONAIR=="TRUE") {
-        return "playTrue";
-      }
-      else
-      {
-        return "playFalse";
-      }
+      return ONAIR == "TRUE" ? "playTrue" : "playFalse";
     },
 
 
@@ -653,7 +631,7 @@ app.engine('handlebars', exphbs({
         fileList.forEach((fileRef) => {
           fullFilePath = assetfolder + fileRef;
           if (assetfolder.substr(assetfolder.length - 1)!="/") {
-            assetfolder = assetfolder + "/";
+            assetfolder += "/";
           }
           sel = "";
           if (fullFilePath == selectedValue) {

@@ -33,8 +33,7 @@ module.exports = {
         return
       }
       logger.verbose('checkServerConnections -function excecuting...');
-      const data = { spxcmd: 'updateStatusText', status: 'Checking server connections...' };
-      global.io.emit('SPXMessage2Client', data);
+      global.io.emit('SPXMessage2Client', {spxcmd: 'updateStatusText', status: 'Checking server connections...'});
       global.config.casparcg.servers.forEach((element,i) => {
         let SrvName = element.name;
         let SocketIndex = PlayoutCCG.getSockIndex(SrvName);
@@ -86,14 +85,14 @@ module.exports = {
 
   fileNameFromPath: function (filepath) {
     // returns the last item from slashed string
+    // TODO: the below is a no-op (no assignment)
     filepath.split("\\").join("/"); // force forward slashes
     if (filepath.includes('/')) {
       let items = filepath.split('/');
-      let justFileName = items[items.length-1];
+      let justFileName = items[items.length - 1];
       return justFileName;
-    } else {
-      return filepath
     }
+    return filepath;
   },
 
 
@@ -301,6 +300,7 @@ module.exports = {
     try {
       const spxlangfile = global.config.general.langfile || 'english.json';
       const langpath = path.join(process.cwd(), 'locales', spxlangfile);
+      // eslint-disable-next-line import/no-dynamic-require
       const lang = require(langpath);
       return lang[str] || str;
     } catch (error) {
@@ -323,33 +323,26 @@ GetFilesAndFolders: function (datafolder) {
     if (fs.existsSync(datafolder)) {
       fs.readdirSync(datafolder).forEach((file) => {
         const curPath = path.join(datafolder, file);
-        if (fs.lstatSync(curPath).isDirectory())
-          { 
-            // it is folder
-            data.foldArr.push(path.basename(curPath));
-          }
-        else
-          {
+        if (fs.lstatSync(curPath).isDirectory()) {
+          // it is folder
+          data.foldArr.push(path.basename(curPath));
+        } else {
           // it is file
           let ext = path.extname(curPath).toUpperCase();
-          if (ext ==".HTM" || ext ==".HTML"){
-            data.fileArr.push(path.basename(curPath));        }
+          if (ext == ".HTM" || ext == ".HTML") {
+            data.fileArr.push(path.basename(curPath));
+          }
         }
       });
-      
+
       // Sort elements within arrays
       data.fileArr.sort();
       data.foldArr.sort();
       return data;
     }
-    else
-    {
-      return "not-found";
-    }
-    
+    return "not-found";
   } catch (error) {
     logger.error('ERROR in spx.GetFilesAndFolders (datafolder: ' + datafolder + '): ' + error);
-    
   }
 },
 
@@ -401,36 +394,35 @@ playAudio: async function (wavFileName, msg=''){
 talk: async function (message){
 
   logger.debug('FYI: spx.talk function is DISABLED. [' + message + ']')
-  return;
 
-  try {
-    // THIS ONLY WORKS ON WINDOWS!
-    // Usage:
-    //      this.talk('hello there');
-    //       spx.talk('All your base are belong to us');
-    var isWin = process.platform === "win32";
-    if (isWin==false){
-        logger.warn('Talk synthesis currently only works on Windows.');
-        return
-      }
-    let ScriptPath = path.join(process.cwd(), 'utils/talk.vbs');
-    let Executable = "wscript " + ScriptPath + " " + message;
-    logger.debug('spx.Talk [' + message + ']');
-    const { exec } = require("child_process");
-    exec(Executable, (error, stdout, stderr) => {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            return;
-        }
-        // console.log(`stdout: ${stdout}`);
-    });
-  } catch (error) {
-    logger.error('ERROR in spx.talk (message: ' + message + '): ' + error);
-  }
+  // try {
+  //   // THIS ONLY WORKS ON WINDOWS!
+  //   // Usage:
+  //   //      this.talk('hello there');
+  //   //       spx.talk('All your base are belong to us');
+  //   var isWin = process.platform === "win32";
+  //   if (isWin==false){
+  //       logger.warn('Talk synthesis currently only works on Windows.');
+  //       return
+  //     }
+  //   let ScriptPath = path.join(process.cwd(), 'utils/talk.vbs');
+  //   let Executable = "wscript " + ScriptPath + " " + message;
+  //   logger.debug('spx.Talk [' + message + ']');
+  //   const { exec } = require("child_process");
+  //   exec(Executable, (error, stdout, stderr) => {
+  //       if (error) {
+  //           console.log(`error: ${error.message}`);
+  //           return;
+  //       }
+  //       if (stderr) {
+  //           console.log(`stderr: ${stderr}`);
+  //           return;
+  //       }
+  //       // console.log(`stdout: ${stdout}`);
+  //   });
+  // } catch (error) {
+  //   logger.error('ERROR in spx.talk (message: ' + message + '): ' + error);
+  // }
 },
 
 
@@ -513,9 +505,9 @@ versInt: function (semver){
   // Returns a numeric value representing "1.0.0" formatted semantic version string.
   // This works as long as max value of each field is 99!
   let parts = semver.split(".");
-  let MajorInt = parseInt(parts[0].trim())*100000
-  let MinorInt = parseInt(parts[1].trim())*1000
-  let PatchInt = parseInt(parts[2].trim())
+  let MajorInt = parseInt(parts[0].trim(), 10)*100000
+  let MinorInt = parseInt(parts[1].trim(), 10)*1000
+  let PatchInt = parseInt(parts[2].trim(), 10)
   let versInt  = (MajorInt + MinorInt + PatchInt);
   // console.log('Semver ' + semver + ' = versInt ' + versInt);
   return versInt
@@ -570,7 +562,7 @@ function datarootSize () {
         let rundowns = 0;
         let filesArr = glob.sync(folderpath + "/**/*.json")
         filesArr.forEach((file) => {
-          if (file.includes('profile.json')) {projects = projects + 1}
+          if (file.includes('profile.json')) {projects += 1}
         });
         rundowns = (filesArr.length - projects); 
         logger.debug('datarootSize: projects ' + projects + ', rundowns ' + rundowns);

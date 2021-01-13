@@ -83,11 +83,10 @@ router.post('/readExcelData', async (req, res) => {
     
     logger.verbose('OK API read Excel data from ' + excelFile);
     res.status(200).send(workSheetsData); // ok 200 AJAX RESPONSE
-    return;
-  } catch (error) {
+  } catch (error) { // Server error
     logger.error('Error in api/readExcelData while reading Excel ' + excelFile + ": " + error);
-    res.status(500).send(error);  }; // Server error
-    return;
+    res.status(500).send(error);
+  }
 });
 
 
@@ -106,7 +105,7 @@ router.post('/savefile/:filebasename', async (req) => {
     await spx.writeFile(datafile,data);
   } catch (error) {
     logger.error('Error while saving ' + datafile + ': ' + error);
-  }; //file written
+  } //file written
 
   // let filedata = JSON.stringify(req.body, null, 2);
   // fs.writeFile(datafile, filedata, (err) => {
@@ -126,7 +125,6 @@ router.post('/savefile/:filebasename', async (req) => {
 async function GetDataFiles() {
   // Get files
   // const directoryPath = path.normalize("X:/01_Projects/Yle/CG/DEV/DATA_FOLDER/");
-  const directoryPath = path.normalize(global.config.general.dataroot);
   let jsonData = {};
   var key = 'files';
   jsonData.folder = directoryPath;

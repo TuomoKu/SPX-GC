@@ -47,7 +47,7 @@ router.post('/', spxAuth.CheckLogin, function (req, res) {
 });
 
 
-router.post('/saveauthpolicy', function (req, res) {
+router.post('/saveauthpolicy', async function (req, res) {
   // save settings to config and move on
   let configFile = global.configfileref; // './config.json';
 
@@ -68,25 +68,20 @@ router.post('/saveauthpolicy', function (req, res) {
   }
   
   try {
-    async function saveAndReadConfig(){
-      // console.log('Reading config');
-      configData = await GetJsonData(configFile);
-      // console.log('Changing values');
-      configData.general.username = user;
-      configData.general.password = pass;
-      // console.log('Writing config');
-      await spx.writeFile(configFile, configData);
-      // console.log('Re-reading config');
-      await cfg.readConfig();
-      res.redirect('/');
-    }; 
-    saveAndReadConfig(); 
-    }
-  catch (error)
-    {
-      logger.error('Error while saving file: ', error);
-      res.redirect('/');
-    };
+    // console.log('Reading config');
+    configData = await GetJsonData(configFile);
+    // console.log('Changing values');
+    configData.general.username = user;
+    configData.general.password = pass;
+    // console.log('Writing config');
+    await spx.writeFile(configFile, configData);
+    // console.log('Re-reading config');
+    await cfg.readConfig();
+    res.redirect('/');
+  } catch (error) {
+    logger.error('Error while saving file: ', error);
+    res.redirect('/');
+  }
 });
 
 
@@ -110,10 +105,11 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   let ConfigData = req.body;
   if (req.body.NewName && req.body.NewHost && req.body.NewPort){
     // new server was added
-    var obj = {};
-    obj["name"] = req.body.NewName;
-    obj["host"] = req.body.NewHost;
-    obj["port"] = req.body.NewPort;
+    var obj = {
+      name: req.body.NewName,
+      host: req.body.NewHost,
+      port: req.body.NewPort,
+    };
     if (!ConfigData.casparcg){
       // we are adding new servers to non-existing array
       ConfigData.casparcg={};
@@ -164,16 +160,12 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   logger.debug('Saving config file ' + datafile + '...');
  
   try {
-    async function saveAndReadConfig(){
-      // console.log('*** WRITING ***');
-      await spx.writeFile(datafile, ConfigData);
-      // console.log('*** READING ***');
-      await cfg.readConfig();
-      // console.log('*** RENDERING ***');
-      res.render('view-appconfig', { layout: false, config: global.config, message:'Changes saved', user: req.session.user});
-  }; 
-  // -----------------------------------------------------------------------------
-  saveAndReadConfig(); // a nice solution 
+    // console.log('*** WRITING ***');
+    await spx.writeFile(datafile, ConfigData);
+    // console.log('*** READING ***');
+    await cfg.readConfig();
+    // console.log('*** RENDERING ***');
+    res.render('view-appconfig', { layout: false, config: global.config, message:'Changes saved', user: req.session.user});
   } catch (error) {
     logger.error('Error while saving file: ', error);
     res.render('view-appconfig', { layout: false, config: global.config, error:'Error saving config: ' + error, user: req.session.user});
@@ -265,9 +257,10 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
 
   if (req.body.newTXT && req.body.newVAL){
     // new option was added
-    var obj = {};
-    obj["text"]  = req.body.newTXT;
-    obj["value"] = req.body.newVAL;
+    var obj = {
+      text: req.body.newTXT,
+      value: req.body.newVAL,
+    };
     if (profileData.showExtras.CustomControls[ExtraIndex].items){
       profileData.showExtras.CustomControls[ExtraIndex].items.push(obj);
     }
@@ -545,31 +538,29 @@ router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
   });
 });
 
+function deleteFolderRecursive(datafolder) {
+  if (fs.existsSync(datafolder)) {
+    fs.readdirSync(datafolder).forEach((file) => {
+      const curPath = path.join(datafolder, file);
+      logger.debug('Deleting ' + curPath);
+
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        logger.info('Deleted file: ' + curPath);
+        fs.unlinkSync(curPath);
+      }
+    });
+    logger.debug('Deleting folder ' + datafolder);
+    fs.rmdirSync(datafolder);
+  } else {
+    logger.warn('Folder ' + datafolder + ' did not exist, cannot delete.');
+  }
+}
 
 router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
   // delete a showfolder (an Ajax call, therefor the redirect does not work, must do from client side.)
   let datafolder = path.join(global.config.general.dataroot, req.params.foldername);
-  const deleteFolderRecursive = function(datafolder) {
-    if (fs.existsSync(datafolder)) {
-      fs.readdirSync(datafolder).forEach((file) => {
-        const curPath = path.join(datafolder, file);
-        logger.debug('Deleting ' + curPath);
-        
-        if (fs.lstatSync(curPath).isDirectory()) { // recurse
-          deleteFolderRecursive(curPath);
-        } else { // delete file
-          logger.info('Deleted file: ' + curPath);
-          fs.unlinkSync(curPath);
-        }
-      });
-      logger.debug('Deleting folder ' + datafolder);
-      fs.rmdirSync(datafolder);
-    }
-    else
-    {
-      logger.warn('Folder ' + datafolder + ' did not exist, cannot delete.');
-    }}
-
   try {
     deleteFolderRecursive(datafolder);
     logger.info('Deleted folder: ' + datafolder);
@@ -769,8 +760,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       RundownData = await GetJsonData(RundownFile);
 
       // Refactored: identify with epoch / itemID, not index.
-      req.body.templateindex
-      
+
       RundownData.templates.forEach((template,index) => {
         if (template.itemID == req.body.epoch) 
           {
@@ -1317,15 +1307,11 @@ async function GetJsonData(fileref) {
       // logger.debug('GetJsonData: returns data from [' + fileref + ']: ' + contents);
       return JSON.parse(contents);
     }
-    else{
-      logger.debug('GetJsonData: file does not exist [' + fileref + '], returning empty string.');
-      return;
-    }
-    
+    logger.debug('GetJsonData: file does not exist [' + fileref + '], returning empty string.');
   }
   catch (error) {
     logger.error('GetJsonData Error: ' + error);
-    return ('GetJsonData: error',error);
+    throw error;
   }
 } // GetJsonData ended
 

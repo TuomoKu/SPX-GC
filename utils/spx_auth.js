@@ -1,6 +1,6 @@
 
 const logger = require('./logger.js');
-const spx = require('../utils/spx_server_functions.js');
+const spx = require('./spx_server_functions.js');
 
 
 function CheckLogin(req,res,next) {

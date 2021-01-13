@@ -137,7 +137,6 @@ module.exports = {
                 let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING CONFIG, CANNOT CONTINUE. ' + error;
                 console.log(msg);  // note, LOGGER is not necessarily initialized yet.
                 global.configfileref = "";
-                return
             }
         });
     }

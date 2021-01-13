@@ -94,9 +94,7 @@ router.get('/clearchannels/:data', (req, res) => {
       });
     }
   }
-  const unique = (value, index, self) => {
-    return self.indexOf(value) === index
-  }
+  const unique = (value, index, self) => self.indexOf(value) === index
   const uniques = allChannels.filter(unique)
   uniques.forEach(item => {
     logger.verbose('ClearChannels / Clearing channel ' + item + ' on server ' + data.server);

@@ -3,9 +3,8 @@ const path = require('path')
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
-  return `${timestamp} [${label}] ${level}: ${message}`;
-});
+// eslint-disable-next-line no-shadow
+const myFormat = printf(({ level, message, label, timestamp }) => `${timestamp} [${label}] ${level}: ${message}`);
 
 
 // logger.error("hello world!, this is error 0");
