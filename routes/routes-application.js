@@ -17,7 +17,6 @@ const spxAuth = require('../utils/spx_auth.js');
 const jsdom = require("jsdom"); // for scanning js within templates
 const { JSDOM } = jsdom;
 const cors = require('cors');
-const directoryPath = path.normalize(global.config.general.dataroot);
 
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
 router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, function (req, res) {
@@ -552,7 +551,7 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
   let datafolder = path.join(global.config.general.dataroot, req.params.foldername);
   const deleteFolderRecursive = function(datafolder) {
     if (fs.existsSync(datafolder)) {
-      fs.readdirSync(datafolder).forEach((file, index) => {
+      fs.readdirSync(datafolder).forEach((file) => {
         const curPath = path.join(datafolder, file);
         logger.debug('Deleting ' + curPath);
         
@@ -688,8 +687,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       // CLONE TEMPLATE ITEM ON RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
 
       let freshID = data.cloneEpoch;
-      var newItemData = "";
-      var duplicateData = "";
       var duplicated = false;
 
       logger.info('Cloning item [' + data.sourceEpoch + '] to [' + freshID + '] in file [' + data.listname + '].');
@@ -1064,7 +1061,7 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
 
     global.showprofile = path.join(global.config.general.dataroot, req.body.foldername, 'profile.json');
     global.profileDataJSONobj = await GetJsonData(global.showprofile);
-    global.profileDataJSONobj.templates.forEach(function(template,index)
+    global.profileDataJSONobj.templates.forEach(function(template)
       {
         // Clear CasparCG's FIXME: This should move to playout_casparCG.js -library
         // anf FIXME: only send commands uniquely... For now: plaster all!
@@ -1273,7 +1270,8 @@ async function GetDataFiles(FOLDERstr) {
 
 
 
-
+// TODO: dead function?
+// eslint-disable-next-line no-unused-vars
 async function orgGetDataFiles(FOLDERstr) {
   // return a list of all json files in the dataroot folder
   logger.debug("Getting json files from " + FOLDERstr + "...");

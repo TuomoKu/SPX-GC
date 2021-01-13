@@ -2,9 +2,7 @@
 // ================== functions alphabetical order  ==================================================
 
 const logger = require('./logger.js');
-const fs = require('fs');
 const path = require('path')
-const moment = require('moment');
 const spx = require('../utils/spx_server_functions.js');
 
 module.exports = {
@@ -86,7 +84,7 @@ module.exports = {
     var DataStr = "";
     if (data.command == "ADD" || data.command == "UPDATE") {
         if (data.fields) {
-          data.fields.forEach((item,index) => {
+          data.fields.forEach((item) => {
             logger.debug('  DATA --> ' + item.field + ' : ' + item.value);
             if (DataType == 'xml'){
               // generate data in XML format
@@ -163,7 +161,6 @@ module.exports = {
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;
-    let GFX_File = data.relpath;
     let GFX_CCGf = data.relpathCCG;
     let GFX_OPTS = data.playoptions;
 

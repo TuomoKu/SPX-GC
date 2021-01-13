@@ -9,11 +9,7 @@ const path = require('path');
 const logger = require('../utils/logger');
 logger.debug('Caspar-route loading...');
 const spx = require('../utils/spx_server_functions.js');
-const open = require('open'); // open url in browser
 
-const ip = require('ip')
-const ipad = ip.address(); // my ip address
-const port = global.config.general.port || 5000;
 
 
 // ROUTES CCG -----------------------------------------------------------------------------------
@@ -140,10 +136,10 @@ router.get('/control/:data', (req, res) => {
   for (var i = 0; i < arr.length; i++) {
     var obj = arr[i];
     if (obj.name == data.profile) {
-      GFX_Teml = eval("obj.templates." + data.element + ".templatefile");
-      GFX_Serv = eval("obj.templates." + data.element + ".server");
-      GFX_Chan = eval("obj.templates." + data.element + ".channel");
-      GFX_Laye = eval("obj.templates." + data.element + ".layer");
+      GFX_Teml = obj.templates[data.element].templatefile;
+      GFX_Serv = obj.templates[data.element].server;
+      GFX_Chan = obj.templates[data.element].channel;
+      GFX_Laye = obj.templates[data.element].layer;
     }
   }
   logger.debug('CCG/Control - Profile ' + data.profile + "', Template: '" + GFX_Teml, "', CasparCG: " + GFX_Serv + ", " + GFX_Chan + ", " + GFX_Laye);
@@ -222,10 +218,10 @@ router.get('/controljson/:data', (req, res) => {
   for (var i = 0; i < arr.length; i++) {
     var obj = arr[i];
     if (obj.name == data.profile) {
-      GFX_Teml = eval("obj.templates." + data.element + ".templatefile");
-      GFX_Serv = eval("obj.templates." + data.element + ".server");
-      GFX_Chan = eval("obj.templates." + data.element + ".channel");
-      GFX_Laye = eval("obj.templates." + data.element + ".layer");
+      GFX_Teml = obj.templates[data.element].templatefile;
+      GFX_Serv = obj.templates[data.element].server;
+      GFX_Chan = obj.templates[data.element].channel;
+      GFX_Laye = obj.templates[data.element].layer;
       GFX_JSON = JSON.stringify(data.jsonData);
     }
   }
@@ -280,6 +276,7 @@ global.config.casparcg.servers.forEach((element,index) => {
   ServerData.push({ name: CurName, host: CurHost, port: CurPort });
 
   // next two lines creates a dynamic variable for this loop iteration
+  // TODO: but why?
   var CurCCG = CurName + "= undefined";
   eval(CurCCG);
   CurCCG = new net.Socket();

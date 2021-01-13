@@ -50,7 +50,7 @@ function CheckLogin(req,res,next) {
   }
 
 
-function Logout(req,res,next){
+function Logout(req,res){
   // logout user
   logger.info('CheckLogin: User "' + req.session.user + '" logged out.');
   req.session.user = '';

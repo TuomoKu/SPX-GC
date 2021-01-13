@@ -5,7 +5,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { rejects } = require('assert');
 
 module.exports = {
 

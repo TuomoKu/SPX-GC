@@ -9,12 +9,8 @@ const wavplayer = require('node-wav-player');
 const PlayoutCCG = require('./playout_casparCG.js');
 const glob = require("glob");
 const ip = require('ip')
-const { rejects } = require('assert');
-const axios = require('axios')
 
 const port = global.config.general.port || 5000;
-        
-let Connected=true; // used we messaging service
 
 // Use crypto instead of bcrypt:
 let crypto;
@@ -172,7 +168,7 @@ module.exports = {
       // Get files from a given folder and return an array of files
       const directoryPath = path.normalize(FOLDER);
       let fileList=[];
-      fs.readdirSync(directoryPath).forEach((file, index) => {
+      fs.readdirSync(directoryPath).forEach((file) => {
         // console.log(index + ': ' + file + '(' + path.extname(file) + ')');
         let TARGETFILETYPE = EXTENSION.toUpperCase()
         let CURRENTFILETYPE = path.extname(file).toUpperCase();
@@ -304,10 +300,9 @@ module.exports = {
   lang: function (str) {
     try {
       const spxlangfile = global.config.general.langfile || 'english.json';
-      let langpath = path.join(process.cwd(), 'locales', spxlangfile);
-      var lang = require(langpath);
-      const json = 'lang.' + str;
-      return eval(json) || str;  
+      const langpath = path.join(process.cwd(), 'locales', spxlangfile);
+      const lang = require(langpath);
+      return lang[str] || str;
     } catch (error) {
       logger.error('ERROR in spx.lang (str: ' + str + '): ' + error);
       return str + " missing from " + global.spxlangfile;
@@ -326,7 +321,7 @@ GetFilesAndFolders: function (datafolder) {
     };
 
     if (fs.existsSync(datafolder)) {
-      fs.readdirSync(datafolder).forEach((file, index) => {
+      fs.readdirSync(datafolder).forEach((file) => {
         const curPath = path.join(datafolder, file);
         if (fs.lstatSync(curPath).isDirectory())
           { 
@@ -566,17 +561,6 @@ function lPad(nro,len,char){
 }
 
 
-function checkInternetConnection(icheck) {
-  require('dns').lookup('google.com',function(err) {
-      if (err && err.code == "ENOTFOUND") {
-        icheck(false);
-      } else {
-        icheck(true);
-      }
-    })
-  }
-
-
 function datarootSize () {
     // counts projects and playlists
     return new Promise(resolve => {
@@ -585,7 +569,7 @@ function datarootSize () {
         let projects = 0;
         let rundowns = 0;
         let filesArr = glob.sync(folderpath + "/**/*.json")
-        filesArr.forEach((file,index) => {
+        filesArr.forEach((file) => {
           if (file.includes('profile.json')) {projects = projects + 1}
         });
         rundowns = (filesArr.length - projects); 

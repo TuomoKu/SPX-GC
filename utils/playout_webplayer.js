@@ -1,11 +1,6 @@
 
 // ================== functions alphabetical order  ==================================================
 
-const logger = require('./logger.js');
-const fs = require('fs');
-const path = require('path')
-const moment = require('moment');
-
 
 module.exports = {
 
@@ -14,11 +9,10 @@ module.exports = {
     // We pass the data object to be processed by the web renderer
     // First dataformat sanity check.
     // THIS FORMATS JSON AND SENDS IT FORWARDS in all cases: play, stop, update...
-    let DataType = data.dataformat;
     let TEMPLATEDATA = [];
     // console.log('Format [' + DataType + '] data.fields coming in before emit', data.fields);
     if (data.fields) {
-        data.fields.forEach((item,index) => {
+        data.fields.forEach((item) => {
           let tempObj={};
           tempObj[item.field] = item.value;
           TEMPLATEDATA.push(tempObj);

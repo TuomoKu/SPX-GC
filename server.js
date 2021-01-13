@@ -143,7 +143,7 @@ app.engine('handlebars', exphbs({
       let html="";
       let AvailableFormats=['json', 'xml'];
       
-      AvailableFormats.forEach((Option,i) => {
+      AvailableFormats.forEach((Option) => {
         let curFormat = Option.toLowerCase();
         let cfgFormat = currentDataformat.toLowerCase();
         let sel = "";
@@ -160,12 +160,12 @@ app.engine('handlebars', exphbs({
       let html="";
       let AvailableServers=['-'];
       if (global.config.casparcg){
-        global.config.casparcg.servers.forEach((element,i) => {
+        global.config.casparcg.servers.forEach((element) => {
           AvailableServers.push(element.name);
         });
       }
       
-      AvailableServers.forEach((serverOption,i) => {
+      AvailableServers.forEach((serverOption) => {
         let curSrv = serverOption.toUpperCase();
         let cfgSrv = currentServer.toUpperCase();
         let sel = "";
@@ -229,7 +229,7 @@ app.engine('handlebars', exphbs({
               html += '<tr><td width="60%">\n';
               html += '<select id="select' + index + '" class="wide btn ' + control.bgclass + '">\n';
               if (control.items) {
-                control.items.forEach((option,nro) => {
+                control.items.forEach((option) => {
                   html += '<option value="' + option.value + '">' + option.text + '</option>\n';
                 });
               }
@@ -336,7 +336,7 @@ app.engine('handlebars', exphbs({
           value:'bg_grey15'
         }
       ];
-      AvailableOptions.forEach((OptionItem,i) => {
+      AvailableOptions.forEach((OptionItem) => {
         let sel = "";
         if (OptionItem.value==currentValue){ sel="selected" }
         html += '<option value="' + OptionItem.value + '" ' + sel + '>' + OptionItem.text + '</option>';
@@ -456,7 +456,7 @@ app.engine('handlebars', exphbs({
         {value:'6000',     text:'In 6 seconds'},
         {value:'10000',    text:'In 10 seconds'}
       ];
-      AvailableOptions.forEach((outOption,i) => {
+      AvailableOptions.forEach((outOption) => {
         let sel = "";
         let CurVal = currentOut.toLowerCase();
         let CurOpt = outOption.value.toLowerCase();
@@ -473,7 +473,7 @@ app.engine('handlebars', exphbs({
       logger.debug('Generating webplayout options. This selection: ' + currentLayer + '.');
       let html="";
       let AvailableLayers=['-',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
-      AvailableLayers.forEach((layerOption,i) => {
+      AvailableLayers.forEach((layerOption) => {
         let curSrv = layerOption || '-';
         let cfgSrv = currentLayer || '-';
         let sel = "";
@@ -626,7 +626,7 @@ app.engine('handlebars', exphbs({
       let html = '';
       let sel = '';
       let fileListData = spx.getJSONFileList('./locales/');
-      fileListData.files.forEach((element,i) => {
+      fileListData.files.forEach((element) => {
         sel = '';
         if (element.name == global.config.general.langfile)
           {
@@ -644,14 +644,13 @@ app.engine('handlebars', exphbs({
       let html = "";
       let sel = "";
       let fullFilePath = "";
-      let SERVER_URL = 'http://' + ip.address() + ':' + port;
       let assetPath = path.normalize(assetfolder || '');
       let selectedValue = value;
       // let fullPath = path.join(__dirname, 'ASSETS', assetPath); // failed in PKG version
       let fullPath = path.join(process.cwd(), 'ASSETS', assetPath); // fixes the PKG get excel file list bug
       let fileList = spx.getFileList(fullPath, extension);
       if (fileList) {
-        fileList.forEach((fileRef,index) => {
+        fileList.forEach((fileRef) => {
           fullFilePath = assetfolder + fileRef;
           if (assetfolder.substr(assetfolder.length - 1)!="/") {
             assetfolder = assetfolder + "/";
@@ -717,10 +716,6 @@ const ROUTEapp = require('./routes/routes-application.js');
 app.use('/', ROUTEapp);
 
 const ROUTEccg = require('./routes/routes-casparcg.js');
-const { prependListener } = require('process'); // const { prependListener } = require('process') // DIFF?
-const { request } = require('http')
-const { data } = require('./utils/logger.js')
-const { Z_VERSION_ERROR } = require('zlib')
 app.use('/CCG', ROUTEccg);
 
 process.on('uncaughtException', function(err) {
@@ -738,6 +733,7 @@ process.on('uncaughtException', function(err) {
 
 
 var server = app.listen(port, (err) => {
+  if(err) throw err;
 
   let splash = 'START-UP INFORMATION:\n\n' + 
   'SPX GC ................. Copyright 2020-2021 SmartPX <tuomo@smartpx.fi>\n' +

@@ -30,9 +30,8 @@ router.get('/logger/', async (req, res) => {
   let source  = req.query.source
   let level   = req.query.level.toLowerCase()
   let channel = req.query.channel
-  let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message
-  // console.log(msg);
-  eval('logger.' + level + '(msg)'); // nasty, eh?
+  let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message;
+  logger[level].call(logger[level], msg);
   res.sendStatus(200)
 }); // files route ended
 
@@ -94,7 +93,7 @@ router.post('/readExcelData', async (req, res) => {
 
 
 
-router.post('/savefile/:filebasename', async (req, res) => {
+router.post('/savefile/:filebasename', async (req) => {
   // FIXME: Function not in use?
   spx.talk('Saving file ' + req.params.filebasename);
 

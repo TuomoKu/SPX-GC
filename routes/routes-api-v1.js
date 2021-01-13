@@ -14,14 +14,8 @@
 
 var express = require("express");
 const router = express.Router();
-const path = require('path');
-const fs = require('fs');
-const moment = require('moment');
 const logger = require('../utils/logger');
 logger.debug('API-v1 route loading...');
-const spx = require('../utils/spx_server_functions.js');
-const xlsx = require('node-xlsx').default;
-const directoryPath = path.normalize(global.config.general.dataroot);
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
