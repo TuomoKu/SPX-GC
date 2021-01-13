@@ -70,7 +70,7 @@ module.exports = {
                     cfg.general.port                            = "5000"
                     cfg.casparcg                                = {}
                     cfg.casparcg.servers                        = []
-                    newcasparcg                                 = {}
+                    const newcasparcg                                 = {}
                     newcasparcg.name                            = "OVERLAY"
                     newcasparcg.host                            = "localhost"
                     newcasparcg.port                            = "5250"
@@ -80,7 +80,7 @@ module.exports = {
                     cfg.globalExtras.CustomControls             = []
 
                     // link to docs
-                    newcontrol1                                  = {}
+                    const newcontrol1                                  = {}
                     newcontrol1.ftype                            = "button"
                     newcontrol1.description                      = "Custom control examples"
                     newcontrol1.text                             = "Open webpage"
@@ -89,7 +89,7 @@ module.exports = {
                     cfg.globalExtras.CustomControls.push(newcontrol1)
 
                     // play gfx out
-                    newcontrol2                                  = {}
+                    const newcontrol2                                  = {}
                     newcontrol2.ftype                            = "button"
                     newcontrol2.description                      = "Animate all graphics out"
                     newcontrol2.text                             = "Stop all"
@@ -98,7 +98,7 @@ module.exports = {
                     cfg.globalExtras.CustomControls.push(newcontrol2)
 
                     // panic button
-                    newcontrol3                                  = {}
+                    const newcontrol3                                  = {}
                     newcontrol3.ftype                            = "button"
                     newcontrol3.bgclass                          = "bg_black"
                     newcontrol3.text                             = "PANIC"
@@ -107,7 +107,7 @@ module.exports = {
                     cfg.globalExtras.CustomControls.push(newcontrol3)
 
                     // Write config file. Note, this does not use utility function.
-                    cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the GC will overwrite this file.";
+                    cfg.warning = "GENERATED DEFAULT global.config. Modifications done in the GC will overwrite this file.";
                     cfg.smartpx = "(c) 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>";
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
@@ -117,7 +117,7 @@ module.exports = {
                     if (err){
                         console.error("Error writing default config to [" + CONFIG_FILE + "]")
                         process.exit(2)
-                        throw error;
+                        throw err;
                         }
                     });
                 }

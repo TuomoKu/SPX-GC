@@ -12,7 +12,7 @@ const ip = require('ip')
 const { rejects } = require('assert');
 const axios = require('axios')
 
-const port = config.general.port || 5000;
+const port = global.config.general.port || 5000;
         
 let Connected=true; // used we messaging service
 
@@ -32,23 +32,24 @@ module.exports = {
       // SocketIO call to client
       // require ..... nothing
       // returns ..... sends socket.io instruction to client of each CCG server in config
-      if (!config.casparcg){
+      if (!global.config.casparcg){
         logger.verbose('No CasparCG servers in config so no connections to check, skipping.');
         return
       }
       logger.verbose('checkServerConnections -function excecuting...');
-      data = { spxcmd: 'updateStatusText', status: 'Checking server connections...' };
-      io.emit('SPXMessage2Client', data);
-      config.casparcg.servers.forEach((element,i) => {
+      const data = { spxcmd: 'updateStatusText', status: 'Checking server connections...' };
+      global.io.emit('SPXMessage2Client', data);
+      global.config.casparcg.servers.forEach((element,i) => {
         let SrvName = element.name;
         let SocketIndex = PlayoutCCG.getSockIndex(SrvName);
-        logger.verbose('Pinging ' +  SrvName + ': ' + CCGSockets[SocketIndex]);
-        data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + i, color: '#CC0000' };
+        let ccgSocket = global.CCGSockets[SocketIndex];
+        logger.verbose('Pinging ' +  SrvName + ': ' + ccgSocket);
+        const data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + i, color: '#CC0000' };
         let status = {}
         status.server = i + ':' + SrvName;
-        status.connecting = CCGSockets[SocketIndex].connecting;
-        status.isWritable = CCGSockets[SocketIndex].writable;
-        status.isReadable = CCGSockets[SocketIndex].readable;
+        status.connecting = ccgSocket.connecting;
+        status.isWritable = ccgSocket.writable;
+        status.isReadable = ccgSocket.readable;
         if (status.isWritable && status.isReadable){
           data.color = '#00CC00';
           logger.verbose("Connection OK to " + SrvName)
@@ -56,7 +57,7 @@ module.exports = {
         else{
           logger.verbose("Connection failed to " + SrvName)
         }
-        io.emit('SPXMessage2Client', data);
+        global.io.emit('SPXMessage2Client', data);
       })
     } catch (error) {
       logger.error('ERROR in spx.checkServerConnections()', error);
@@ -195,7 +196,7 @@ module.exports = {
       datarootSize()
       .then(function(sizeArr) {
         let paramstring =""
-        paramstring += "v="  + vers 
+        paramstring += "v="  + global.vers
         paramstring += "&o=" + lPad(process.platform, 8, ".")
         paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
         paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
@@ -260,7 +261,7 @@ module.exports = {
     //  - 'spxgc-ip-address'       : Uses current SPX-GC server's IP address
     //  - '
     //
-    let TemplateSource = config.general.templatesource;
+    let TemplateSource = global.config.general.templatesource;
     let TemplateServer = ''
     if ( TemplateSource == 'casparcg-template-path') {
       TemplateServer = "";
@@ -271,7 +272,7 @@ module.exports = {
     } else {
       if (TemplateSource.substring(0, 4)!='http') {TemplateSource = 'http://' + TemplateSource}
       TemplateServer = TemplateSource;
-      logger.verbose('A custom templateServer given in config. Using ' + TemplateServer);
+      logger.verbose('A custom templateServer given in global.config. Using ' + TemplateServer);
     }
     return TemplateServer; // return empty for file system source or full server url with "http://" prefix
   },
@@ -302,14 +303,14 @@ module.exports = {
 
   lang: function (str) {
     try {
-      const spxlangfile = config.general.langfile || 'english.json';
+      const spxlangfile = global.config.general.langfile || 'english.json';
       let langpath = path.join(process.cwd(), 'locales', spxlangfile);
       var lang = require(langpath);
-      json = 'lang.' + str;
+      const json = 'lang.' + str;
       return eval(json) || str;  
     } catch (error) {
       logger.error('ERROR in spx.lang (str: ' + str + '): ' + error);
-      return str + " missing from " + spxlangfile;
+      return str + " missing from " + global.spxlangfile;
     }
   },
 
@@ -369,7 +370,7 @@ playAudio: async function (wavFileName, msg=''){
 
     // EXTERNAL AUDIO PLAYER IS CURRENTLY DISABLED. -- See also view-appconfig.
     // let AudioPlayPath = path.normalize(config.general.audioplayer);
-    // let AudioPlayOpts = config.general.playerflags;
+    // let AudioPlayOpts = global.config.general.playerflags;
     // let AudioPlayExec = "\"" + AudioPlayPath + "\" " + AudioPlayOpts.replace('%FILE%', AudioFilePath);
     // logger.debug('spx.PlayAudio - message: [' + msg + '] Audio command: ' + AudioPlayExec);
     // const { exec } = require("child_process");
@@ -538,8 +539,8 @@ writeFile: function (filepath,data) {
         let filedata = JSON.stringify(data, null, 2);
         fs.writeFile(filepath, filedata, 'utf8', function (err) {
           if (err){
-            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);
-            throw error;
+            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+            throw err;
           }
           logger.verbose('spx.writeFile - File written OK: ' + filepath);
           resolve()
@@ -580,7 +581,7 @@ function datarootSize () {
     // counts projects and playlists
     return new Promise(resolve => {
       try {
-        let folderpath =  path.normalize(config.general.dataroot);
+        let folderpath =  path.normalize(global.config.general.dataroot);
         let projects = 0;
         let rundowns = 0;
         let filesArr = glob.sync(folderpath + "/**/*.json")

@@ -7,11 +7,11 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const moment = require('moment');
-const directoryPath = path.normalize(config.general.dataroot);
 const logger = require('../utils/logger');
 logger.debug('API-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
+const directoryPath = path.normalize(global.config.general.dataroot);
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -64,10 +64,10 @@ router.post('/readExcelData', async (req, res) => {
     let timenow = Date.now(); 
     // console.log('Excel cache age ' + (timenow - excel.readtime) + ' ms');
 
-    if ( excel.data && excel.filename == req.body.filename && (timenow - excel.readtime) <= 10000) {
+    if ( global.excel.data && global.excel.filename == req.body.filename && (timenow - global.excel.readtime) <= 10000) {
       // sama data requested less than a second ago, return data from memory
       logger.verbose('Returning cached Excel data from memory')
-      workSheetsData = excel.data;
+      workSheetsData = global.excel.data;
       // console.log('Returning CACHED Excel data.\n');
     } else {
       // get it from Excel file
@@ -106,7 +106,7 @@ router.post('/savefile/:filebasename', async (req, res) => {
   try {
     await spx.writeFile(datafile,data);
   } catch (error) {
-    logger.error('Error while saving ' + datafile + ': ' + err);
+    logger.error('Error while saving ' + datafile + ': ' + error);
   }; //file written
 
   // let filedata = JSON.stringify(req.body, null, 2);
@@ -127,7 +127,7 @@ router.post('/savefile/:filebasename', async (req, res) => {
 async function GetDataFiles() {
   // Get files
   // const directoryPath = path.normalize("X:/01_Projects/Yle/CG/DEV/DATA_FOLDER/");
-  const directoryPath = path.normalize(config.general.dataroot);
+  const directoryPath = path.normalize(global.config.general.dataroot);
   let jsonData = {};
   var key = 'files';
   jsonData.folder = directoryPath;
@@ -152,7 +152,7 @@ async function GetDataFiles() {
     return jsonData;
   }
   catch (error) {
-    logger.error('Error while reading files from ' + directoryPath + ': ' + err);
+    logger.error('Error while reading files from ' + directoryPath + ': ' + error);
     return (error);
   }
 } // GetDataFiles ended

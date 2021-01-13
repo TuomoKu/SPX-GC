@@ -26,7 +26,7 @@ module.exports = {
         data.fields=TEMPLATEDATA;
       }
     // console.log('data.fields going out for emit', data.fields);
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
   }
 
 

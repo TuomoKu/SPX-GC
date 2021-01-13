@@ -15,8 +15,8 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 // logger.debug("hello world!, this is debug 4");
 // logger.silly("hello world!, this is silly 5");
 
-let LOGLEVEL = config.general.loglevel || 'debug';
-let LOGFOLDER = config.general.logfolder || 'LOG';
+let LOGLEVEL = global.config.general.loglevel || 'debug';
+let LOGFOLDER = global.config.general.logfolder || 'LOG';
 var logFile = path.resolve(process.cwd(),LOGFOLDER, 'access.log');
 
 const logger = createLogger({

@@ -5,7 +5,7 @@ const logger = require('./logger.js');
 const fs = require('fs');
 const path = require('path')
 const moment = require('moment');
-
+const spx = require('../utils/spx_server_functions.js');
 
 module.exports = {
 
@@ -38,7 +38,7 @@ module.exports = {
     const uniques = allChannels.filter(unique)
     uniques.forEach(item => {
       logger.verbose('ClearChannels / Clearing channel ' + item + ' on server ' + data.server);
-      CCGclient = eval(data.server);
+      global.CCGclient = eval(data.server);
       global.CCGSockets[this.getSockIndex(data.server)].write('CLEAR ' + item + '\r\n');
     });
   
@@ -210,7 +210,7 @@ module.exports = {
     // returns .... CCG Server object INDEX (such as 0) 
     logger.debug('getSockIndex / Searching for Socket reference for connection "' + SERVERNAME + '"...');
     let serverIndex = "";
-    CCGSockets.forEach(function (item, index) {
+    global.CCGSockets.forEach(function (item, index) {
       if (global.CCGSockets[index].spxname == SERVERNAME) {
         serverIndex = index;
         logger.debug('getSockIndex found [' + global.CCGSockets[index].spxname + '] so index is [' + serverIndex + '].');
@@ -234,7 +234,7 @@ function getCCGTemplateFilepath(fileRef) {
 
   if ( TemplateSource.substring(0, 4)=='http' )
     // HTTP
-    TemplatePathForCasparCGServer  = TemplateSource + ':' + config.general.port + '/templates/' + fileRef + '.html'; // 
+    TemplatePathForCasparCGServer  = TemplateSource + ':' + global.config.general.port + '/templates/' + fileRef + '.html'; //
   else {
     // FILE
     TemplatePathForCasparCGServer =  fileRef; // as-is, a filepath in CasparCG server's own template-path directory

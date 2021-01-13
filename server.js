@@ -29,7 +29,7 @@ const fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const rfs = require('rotating-file-stream')
-var macaddress = require('macaddress');
+const macaddress = require('macaddress');
 // const axios = require('axios')
 
 
@@ -68,36 +68,35 @@ var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
 global.vers = vers;
-global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
+global.excel = {'readtime':0, 'filename':'', 'data':''}; // used as Excel cache
 
 console.log('\nGC ' + vers + ' is starting. Closing this window/process will stop the server.\n');
 
 
 // global.config
-const cfg = require('./utils/spx_getconf.js');
-cfg.readConfig()
-if (!configfileref){
+require('./utils/spx_getconf.js').readConfig();
+if (!global.configfileref){
     process.exit(1)
   }
 
 const logger = require('./utils/logger.js');
 const spx = require('./utils/spx_server_functions.js');
 
-const port = config.general.port || 5000;
+const port = global.config.general.port || 5000;
 global.CCGSockets = [];
 global.LastBrowsedTemplateFolder = '';
 
 macaddress.one(function (err, mc) {
   let macaddress = String(mc);
   let pseudomac = macaddress.split(':').join('').substring(0,8);
-  global.hwid = config.general.hostname || pseudomac;
+  global.hwid = global.config.general.hostname || pseudomac;
   // console.log('(Pseudo) HardwareID for messaging service: ' + global.hwid);
 });
 
 
 
 // var logDirectory = path.join(__dirname, 'log')
-var logDirectory = path.normalize(config.general.logfolder);
+var logDirectory = path.normalize(global.config.general.logfolder);
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
 var accessLogStream = rfs.createStream('access.log', {
   interval: '1d', // rotate daily
@@ -160,8 +159,8 @@ app.engine('handlebars', exphbs({
     {
       let html="";
       let AvailableServers=['-'];
-      if (config.casparcg){
-        config.casparcg.servers.forEach((element,i) => {
+      if (global.config.casparcg){
+        global.config.casparcg.servers.forEach((element,i) => {
           AvailableServers.push(element.name);
         });
       }
@@ -285,8 +284,8 @@ app.engine('handlebars', exphbs({
       let html="";
       // get show profile
       // iterate all templates
-      let profileFile = path.join(config.general.dataroot, currentShow, 'profile.json');
-      showProfileData = spx.GetJsonData(profileFile);
+      let profileFile = path.join(global.config.general.dataroot, currentShow, 'profile.json');
+      const showProfileData = spx.GetJsonData(profileFile);
       if(!showProfileData.templates) {
         // if no templates assigned to this project
         html += '<span style="display: inline-block; margin: 10px;padding: 0.6em 1.7em; background: #0000001c; color:#ffffff; font-size:0.7em; border-radius:2em; text-align:center;">' + spx.lang('warning.notemplates') + '</span>';
@@ -362,6 +361,7 @@ app.engine('handlebars', exphbs({
         // console.log('1. Yes, we have internet connection.');
         logger.verbose('Checking for new versions...');
         spx.datarootSize().then(function(sizeArr){
+          // eslint-disable-next-line no-undef
           axios({
             url: 'https://www.smartpx.fi/gc/messageservice',
             params:   {
@@ -538,7 +538,7 @@ app.engine('handlebars', exphbs({
     // "launchchromeatstartup":"false"
     // Feature most likely only works on Windows...?
     OpenChromeCheck(){
-      let value = config.general.launchchromeatstartup || "off";
+      let value = global.config.general.launchchromeatstartup || "off";
       value = value.toLowerCase();
       if (value=="on"){
         return '<input type="checkbox" checked name="general[launchchromeatstartup]">';
@@ -594,7 +594,7 @@ app.engine('handlebars', exphbs({
     // Show username / password in the login view
     ShowDemoLoginInfo() {
 
-      let showuserpass = config.general.showusercommapass || '';
+      let showuserpass = global.config.general.showusercommapass || '';
       if (showuserpass==""){
         return "<!-- not present config.general.showusercommapass:user,pass -->";
       }
@@ -628,7 +628,7 @@ app.engine('handlebars', exphbs({
       let fileListData = spx.getJSONFileList('./locales/');
       fileListData.files.forEach((element,i) => {
         sel = '';
-        if (element.name == config.general.langfile)
+        if (element.name == global.config.general.langfile)
           {
             sel = 'selected';
           }
@@ -669,8 +669,8 @@ app.engine('handlebars', exphbs({
     // Servers status check request
     ServerStatus() {
       let html = "";
-      if (config.casparcg){
-      config.casparcg.servers.forEach((element,i) => {
+      if (global.config.casparcg){
+      global.config.casparcg.servers.forEach((element,i) => {
         html += '<div class="dropdown serverbtn">';
         html += '<i id="indicator' + i + '" class="fas fa-check-circle" style="color: 00CC00;"></i>&nbsp;' + element.name;
         html += '  <div class="dropdown-content">';
@@ -743,12 +743,12 @@ var server = app.listen(port, (err) => {
   'SPX GC ................. Copyright 2020-2021 SmartPX <tuomo@smartpx.fi>\n' +
   `Version ................ ${vers}\n` +  
   'Homepage ............... https://github.com/TuomoKu/SPX-GC\n' +
-  `Config file ............ ${configfileref}\n`  +
-  `Cfg / locale ........... ${config.general.langfile}\n`  +
-  `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
-  `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
-  `Cfg / template files ... ${config.general.templatefolder}\n`  +  
-  `Cfg / logfolder ........ ${config.general.logfolder}\n`;
+  `Config file ............ ${global.configfileref}\n`  +
+  `Cfg / locale ........... ${global.config.general.langfile}\n`  +
+  `Cfg / loglevel ......... ${global.config.general.loglevel} (options: error | warn | info | verbose | debug )\n` +
+  `Cfg / dataroot ......... ${global.config.general.dataroot}\n`  +
+  `Cfg / template files ... ${global.config.general.templatefolder}\n`  +
+  `Cfg / logfolder ........ ${global.config.general.logfolder}\n`;
 
   // Where are CasparCG templates loaded from (file:// or http://):
   let TemplatesFromInfo;
@@ -760,7 +760,7 @@ var server = app.listen(port, (err) => {
   }
 
   splash +=
-  `Cfg / templatesource ... ${config.general.templatesource} (` + TemplatesFromInfo + ')\n'  +  
+  `Cfg / templatesource ... ${global.config.general.templatesource} (` + TemplatesFromInfo + ')\n'  +
   `SPX-GC server address .. http://${ipad}:${port}`;
 
   logger.info(splash);
@@ -774,7 +774,7 @@ var server = app.listen(port, (err) => {
 
 
 
-if (config.general.launchchromeatstartup=="on")
+if (global.config.general.launchchromeatstartup=="on")
 {
   (async () => {
     // Opens the URL in a specified browser.
@@ -787,13 +787,13 @@ if (config.general.launchchromeatstartup=="on")
 // io must be declared as 'global', so routes can access it.
 global.io = require('socket.io')(server);
 var clients = {}
-io.sockets.on('connection', function (socket) {
+global.io.sockets.on('connection', function (socket) {
 
-  logger.verbose('*** Socket connection (' + socket.id + ") Connections: " + io.engine.clientsCount);
+  logger.verbose('*** Socket connection (' + socket.id + ") Connections: " + global.io.engine.clientsCount);
   clients[socket.id] = socket;
 
   socket.on('disconnect', function () {
-    logger.verbose('*** Socket disconnected (' + socket.id + ") Connections: " + io.engine.clientsCount);
+    logger.verbose('*** Socket disconnected (' + socket.id + ") Connections: " + global.io.engine.clientsCount);
     delete clients[socket.id];
   }); // end disconnect
 
@@ -803,7 +803,7 @@ io.sockets.on('connection', function (socket) {
     // We shouldnt care about it here, but FIXME:
     // we must now forward that to client again...
     // console.log('SPXWebRendererMessage',data);
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
   });
 
 
