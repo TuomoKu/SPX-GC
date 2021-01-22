@@ -1192,7 +1192,7 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
     // console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
     await spx.writeFile(RundownFile,RundownData);
     var htmlSnippetForCollapse = spx.generateCollapsedHeadline(DataFieldsForCollapsePreview);
-    console.log('html' + htmlSnippetForCollapse);
+    // console.log('html' + htmlSnippetForCollapse);
     let response = ['Item changes saved', htmlSnippetForCollapse]
     res.status(200).send(response); // ok 200 AJAX RESPONSE
   } catch (error) {

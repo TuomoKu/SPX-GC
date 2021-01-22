@@ -212,8 +212,7 @@
                                   </table>
                               </div>
 
-
-
+                              
                               {{#ifValue ftype "number"}}
                                 <!-- "NUMBER" TYPE OF TEMPLATE FIELD (added in 1.0.7) --> 
                                 <div class="wide HIDE">
@@ -269,6 +268,34 @@
                                   </table>
                                 </div>
                                 <input type="text"  name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                              {{/ifValue}}
+
+
+                              {{#ifValue ftype "checkbox"}}
+                                <!-- "CHECKBOX" TYPE OF TEMPLATE FIELD (added in 1.0.10) --> 
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="checkbox"></td></tr>
+                                  </table>
+                                </div>
+                                <div class="gccheckboxdiv" style="white-space: nowrap;">
+
+                                  
+
+                                  <label class="gccheckcontainer">{{title}}
+                                    <BR>
+                                    {{#ifValue value "1"}}
+                                      <input type="checkbox" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" class="gccheckbox" checked>
+                                    {{else}}
+                                      <input type="checkbox" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" class="gccheckbox">
+                                    {{/ifValue}}
+                                    <span class="gccheckmark"></span>
+                                  </label>
+                                </div>
+                                <!--<div style="white-space: nowrap;">
+                                  <label for="checkbox{{@index}}">{{title}}</label><br>
+                                </div> -->
+
                               {{/ifValue}}
 
 

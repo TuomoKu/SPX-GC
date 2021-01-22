@@ -135,6 +135,75 @@
     box-sizing: border-box;
 }
 
+.gccheckcontainer {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.gccheckboxdiv label{
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.7)
+}
+
+/* Hide the browser's default checkbox */
+.gccheckcontainer input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+/* Create a custom checkbox */
+.gccheckmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 23px;
+    width: 23px;
+    background-color: rgb(163, 163, 163);
+    transform: none !important;
+  }
+
+/* On mouse-over, add a grey background color */
+.gccheckcontainer:hover input ~ .gccheckmark {
+    background-color: rgb(241, 236, 236);
+  }
+
+/* When the checkbox is checked, add a blue background */
+.gccheckcontainer input:checked ~ .gccheckmark {
+    background-color: #008000;
+  }
+  
+/* Create the checkmark/indicator (hidden when not checked) */
+.gccheckmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+
+/* Show the checkmark when checked */
+.gccheckcontainer input:checked ~ .gccheckmark:after {
+    display: block;
+  }
+
+/* Style the checkmark/indicator */
+.gccheckcontainer .gccheckmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+  }
 
 .gcinput{
     width: 100%;

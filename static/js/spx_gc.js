@@ -1426,6 +1426,13 @@ function saveTemplateItemChangesByElement(itemrow) {
                 let updatedObj = {}
                 updatedObj.field = input.getAttribute('data-update');
                 updatedObj.value = input.value;
+                if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        updatedObj.value = '1';
+                    } else {
+                        updatedObj.value = '0';
+                    }
+                }
                 data.DataFields.push(updatedObj)
             }
     });
