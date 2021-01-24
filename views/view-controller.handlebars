@@ -306,7 +306,7 @@
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textarea"></td></tr>
                                   </table>
                                 </div>
-                                <textarea rows="8" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" onkeypressXX="javascript:applyTextEditChanges(event,this);" class="gcinput">{{injectNewlines value}}</textarea><BR>
+                                <textarea rows="8" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" class="gcinput">{{injectNewlines value}}</textarea><BR>
                               {{/ifValue}}
 
 
@@ -317,7 +317,7 @@
                                   <tr><td class="aright">fType</td>  <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="dropdown"><BR><BR></td></tr>
                                 </table>
                                 <!-- then visible DOM elements -->
-                                  <select data-update="{{field}}" data-role="userEditable" class="gcinput" name="DropdownValues[{{field}}]">
+                                  <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="DropdownValues[{{field}}]">
                                     <option disabled>{{title}}:</option>
                                     {{#each items}}
                                       {{#ifValue value ../value}}
@@ -340,10 +340,11 @@
                                   </table>
                                 </div>
                                 <!-- then render visible DOM elements with a helper-->
-                                <select data-update="{{field}}" data-role="userEditable" class="gcinput" name="FilelistValues[{{field}}]">
+                                <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="FilelistValues[{{field}}]">
                                   <option disabled>{{title}} {{lang 'general.fromFolder'}}:</option>
                                   <option disabled>{{assetfolder}}</option>
                                   <option disabled></option>
+                                  <option value="none">-</option>
                                     {{{ PopulateFilelistOptions assetfolder extension value }}}
                                 </select>
                               {{/ifValue}}

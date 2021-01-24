@@ -1753,6 +1753,13 @@ function updateItem(itemrow) {
       let formField={};
       formField.field = item.getAttribute('data-update');
       formField.value = item.value;
+      if (item.type === 'checkbox') {
+        if (item.checked) { 
+            formField.value = '1'
+        } else {
+            formField.value = '0'
+        }
+        }
       data.fields.push(formField);
     });
 

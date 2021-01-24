@@ -208,7 +208,7 @@
 .gcinput{
     width: 100%;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
-    font-size: 1em;
+    font-size:1em;
     margin: 1px;
     margin-top: 5px;
     line-height: 132%;
@@ -223,6 +223,31 @@
     letter-spacing: 1px;
     }
 
+/* .select {
+    border-radius: 0.10em;
+    padding: 0.1em 0.2em;
+    font-size: 1.0rem;
+    line-height: 1.1;
+    background-color: rgb(230, 230, 230);
+} */
+
+.select {
+    /* -webkit-appearance: none;
+    -moz-appearance: none; */
+    /* background: transparent; */
+    /* background-image: url("data:image/svg+xml,<svg width='36' height='18' xmlns='http://www.w3.org/2000/svg'><path d='m0,6l12,12l12,-12l-24,0z'/><path fill='none' d='m0,0l24,0l0,24l-24,0l0,-24z'/></svg>");
+    background-repeat: no-repeat;
+    background-position-x: 98%;
+    background-position-y: 50%; */
+    /* border: 1px solid #cdf1ff; */
+    background-color: #ececec;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.7);
+    border-radius: 0.2rem;
+    margin-right: 2rem;
+    padding: 0.2rem;
+    padding-right: 2rem;
+    border-right: 10px solid #2768dab9;
+  }
 
 
 .tablineinput {
@@ -257,7 +282,7 @@
     color: white;
     font-size: 1.35em; /* <-------------------------- HEADLINE SIZE IN UI*/
 }
-
+ 
 .imsinput {
     flex: auto;
     flex-basis: 290px;

@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Jan 08 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.9).
+> Readme updated Jan 24 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.10).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -517,6 +517,12 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
                 "ftype": "number",
                 "title": "Rotation degrees",
                 "value": "45",
+            },
+            {
+                "field": "f5",
+                "ftype": "checkbox",
+                "title": "Show logo",
+                "value": "1",
             }
         ]
     };
@@ -551,6 +557,7 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 | `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | |
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
+| `checkbox` | `Title` is used as label in UI. _Value_ is "0" or "1" when checked. (Added in 1.0.10) | `[x] Show logo`  |
 
 
 > **Note** additional user interface controls may be added in future releases.

@@ -3,6 +3,10 @@
 > Most recent updates are at the top.
 
 ---
+
+## **1.0.10** (Jan 23 2021)
+- Added a "checkbox" ftype to template definition 
+
 ## **1.0.9** (Jan 08 2021)
 <!-- NOPE!!! Fixes Mac binary package installation folder [issue (#3)](/../../issues/3). -->
 - Fixes a bug in timed Stop animations (in v1.0.4 - 1.0.8)
