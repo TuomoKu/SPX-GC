@@ -20,6 +20,10 @@ try {
   logger.warn('Crypto support is disabled!');
 }
 
+function getByPath(obj, dottedName) {
+  return dottedName.split('.').reduce((leaf,name) => leaf ? leaf[name] : null, obj);
+}
+
 
 module.exports = {
 
@@ -302,7 +306,7 @@ module.exports = {
       const langpath = path.join(process.cwd(), 'locales', spxlangfile);
       // eslint-disable-next-line import/no-dynamic-require
       const lang = require(langpath);
-      return lang[str] || str;
+      return getByPath(lang, str) || str;
     } catch (error) {
       logger.error('ERROR in spx.lang (str: ' + str + '): ' + error);
       return str + " missing from " + global.spxlangfile;
