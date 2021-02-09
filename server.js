@@ -29,7 +29,7 @@ const fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const rfs = require('rotating-file-stream')
-var macaddress = require('macaddress');
+const macaddress = require('macaddress');
 // const axios = require('axios')
 
 
@@ -68,37 +68,35 @@ var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
 global.vers = vers;
-global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
+global.excel = {'readtime':0, 'filename':'', 'data':''}; // used as Excel cache
 
 console.log('\nGC ' + vers + ' is starting. Closing this window/process will stop the server.\n');
 
 
 // global.config
-const cfg = require('./utils/spx_getconf.js');
-cfg.readConfig()
-if (!configfileref){
+require('./utils/spx_getconf.js').readConfig();
+if (!global.configfileref){
     process.exit(1)
   }
 
 const logger = require('./utils/logger.js');
 const spx = require('./utils/spx_server_functions.js');
 
-const port = config.general.port || 5000;
+const port = global.config.general.port || 5000;
 global.CCGSockets = [];
 global.LastBrowsedTemplateFolder = '';
 
 macaddress.one(function (err, mc) {
-  let macaddress = String(mc);
-  let pseudomac = macaddress.split(':').join('').substring(0,8);
-  global.hwid = config.general.hostname || pseudomac;
+  let pseudomac = String(mc).split(':').join('').substring(0,8);
+  global.hwid = global.config.general.hostname || pseudomac;
   // console.log('(Pseudo) HardwareID for messaging service: ' + global.hwid);
 });
 
 
 
 // var logDirectory = path.join(__dirname, 'log')
-var logDirectory = path.normalize(config.general.logfolder);
-fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
+var logDirectory = path.normalize(global.config.general.logfolder);
+if(!fs.existsSync(logDirectory)) fs.mkdirSync(logDirectory);
 var accessLogStream = rfs.createStream('access.log', {
   interval: '1d', // rotate daily
   path: logDirectory
@@ -144,7 +142,7 @@ app.engine('handlebars', exphbs({
       let html="";
       let AvailableFormats=['json', 'xml'];
       
-      AvailableFormats.forEach((Option,i) => {
+      AvailableFormats.forEach((Option) => {
         let curFormat = Option.toLowerCase();
         let cfgFormat = currentDataformat.toLowerCase();
         let sel = "";
@@ -160,13 +158,13 @@ app.engine('handlebars', exphbs({
     {
       let html="";
       let AvailableServers=['-'];
-      if (config.casparcg){
-        config.casparcg.servers.forEach((element,i) => {
+      if (global.config.casparcg){
+        global.config.casparcg.servers.forEach((element) => {
           AvailableServers.push(element.name);
         });
       }
       
-      AvailableServers.forEach((serverOption,i) => {
+      AvailableServers.forEach((serverOption) => {
         let curSrv = serverOption.toUpperCase();
         let cfgSrv = currentServer.toUpperCase();
         let sel = "";
@@ -230,7 +228,7 @@ app.engine('handlebars', exphbs({
               html += '<tr><td width="60%">\n';
               html += '<select id="select' + index + '" class="wide btn ' + control.bgclass + '">\n';
               if (control.items) {
-                control.items.forEach((option,nro) => {
+                control.items.forEach((option) => {
                   html += '<option value="' + option.value + '">' + option.text + '</option>\n';
                 });
               }
@@ -285,8 +283,8 @@ app.engine('handlebars', exphbs({
       let html="";
       // get show profile
       // iterate all templates
-      let profileFile = path.join(config.general.dataroot, currentShow, 'profile.json');
-      showProfileData = spx.GetJsonData(profileFile);
+      let profileFile = path.join(global.config.general.dataroot, currentShow, 'profile.json');
+      const showProfileData = spx.GetJsonData(profileFile);
       if(!showProfileData.templates) {
         // if no templates assigned to this project
         html += '<span style="display: inline-block; margin: 10px;padding: 0.6em 1.7em; background: #0000001c; color:#ffffff; font-size:0.7em; border-radius:2em; text-align:center;">' + spx.lang('warning.notemplates') + '</span>';
@@ -337,7 +335,7 @@ app.engine('handlebars', exphbs({
           value:'bg_grey15'
         }
       ];
-      AvailableOptions.forEach((OptionItem,i) => {
+      AvailableOptions.forEach((OptionItem) => {
         let sel = "";
         if (OptionItem.value==currentValue){ sel="selected" }
         html += '<option value="' + OptionItem.value + '" ' + sel + '>' + OptionItem.text + '</option>';
@@ -362,6 +360,7 @@ app.engine('handlebars', exphbs({
         // console.log('1. Yes, we have internet connection.');
         logger.verbose('Checking for new versions...');
         spx.datarootSize().then(function(sizeArr){
+          // eslint-disable-next-line no-undef
           axios({
             url: 'https://www.smartpx.fi/gc/messageservice',
             params:   {
@@ -456,7 +455,7 @@ app.engine('handlebars', exphbs({
         {value:'6000',     text:'In 6 seconds'},
         {value:'10000',    text:'In 10 seconds'}
       ];
-      AvailableOptions.forEach((outOption,i) => {
+      AvailableOptions.forEach((outOption) => {
         let sel = "";
         let CurVal = currentOut.toLowerCase();
         let CurOpt = outOption.value.toLowerCase();
@@ -473,7 +472,7 @@ app.engine('handlebars', exphbs({
       logger.debug('Generating webplayout options. This selection: ' + currentLayer + '.');
       let html="";
       let AvailableLayers=['-',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
-      AvailableLayers.forEach((layerOption,i) => {
+      AvailableLayers.forEach((layerOption) => {
         let curSrv = layerOption || '-';
         let cfgSrv = currentLayer || '-';
         let sel = "";
@@ -506,7 +505,6 @@ app.engine('handlebars', exphbs({
 
     // Returns IP for socket server of this app's IP address
     getServerAddress: function () {
-      var ip = require('ip');
       var myIP = ip.address() + ':' + port;
       return myIP;
     },
@@ -538,14 +536,12 @@ app.engine('handlebars', exphbs({
     // "launchchromeatstartup":"false"
     // Feature most likely only works on Windows...?
     OpenChromeCheck(){
-      let value = config.general.launchchromeatstartup || "off";
+      let value = global.config.general.launchchromeatstartup || "off";
       value = value.toLowerCase();
       if (value=="on"){
         return '<input type="checkbox" checked name="general[launchchromeatstartup]">';
       }
-      else {
-        return '<input type="checkbox" name="general[launchchromeatstartup]">';
-      }
+      return '<input type="checkbox" name="general[launchchromeatstartup]">';
     },
 
 
@@ -553,26 +549,14 @@ app.engine('handlebars', exphbs({
     playButtonClass(onair) {
       let value = onair || "false";
       let ONAIR = value.toUpperCase();
-      if (ONAIR=="TRUE") {
-        return "bg_red";
-      }
-      else
-      {
-        return "bg_green";
-      }
+      return ONAIR == "TRUE" ? "bg_red" : "bg_green";
     },
 
     // Get a correct class for a play button
     playButtonText(onair) {
       let value = onair || "false";
       let ONAIR = value.toUpperCase();
-      if (ONAIR=="TRUE") {
-        return spx.lang('button.stop');
-      }
-      else
-      {
-        return spx.lang('button.play');
-      }
+      return ONAIR == "TRUE" ? spx.lang('button.stop') : spx.lang('button.play');
     },
 
 
@@ -581,20 +565,14 @@ app.engine('handlebars', exphbs({
       // console.log('Play icon [' + onair + ']');
       let value = onair || "false";
       let ONAIR = value.toUpperCase();
-      if (ONAIR=="TRUE") {
-        return "playTrue";
-      }
-      else
-      {
-        return "playFalse";
-      }
+      return ONAIR == "TRUE" ? "playTrue" : "playFalse";
     },
 
 
     // Show username / password in the login view
     ShowDemoLoginInfo() {
 
-      let showuserpass = config.general.showusercommapass || '';
+      let showuserpass = global.config.general.showusercommapass || '';
       if (showuserpass==""){
         return "<!-- not present config.general.showusercommapass:user,pass -->";
       }
@@ -626,9 +604,9 @@ app.engine('handlebars', exphbs({
       let html = '';
       let sel = '';
       let fileListData = spx.getJSONFileList('./locales/');
-      fileListData.files.forEach((element,i) => {
+      fileListData.files.forEach((element) => {
         sel = '';
-        if (element.name == config.general.langfile)
+        if (element.name == global.config.general.langfile)
           {
             sel = 'selected';
           }
@@ -644,17 +622,16 @@ app.engine('handlebars', exphbs({
       let html = "";
       let sel = "";
       let fullFilePath = "";
-      let SERVER_URL = 'http://' + ip.address() + ':' + port;
       let assetPath = path.normalize(assetfolder || '');
       let selectedValue = value;
       // let fullPath = path.join(__dirname, 'ASSETS', assetPath); // failed in PKG version
       let fullPath = path.join(process.cwd(), 'ASSETS', assetPath); // fixes the PKG get excel file list bug
       let fileList = spx.getFileList(fullPath, extension);
       if (fileList) {
-        fileList.forEach((fileRef,index) => {
+        fileList.forEach((fileRef) => {
           fullFilePath = assetfolder + fileRef;
           if (assetfolder.substr(assetfolder.length - 1)!="/") {
-            assetfolder = assetfolder + "/";
+            assetfolder += "/";
           }
           sel = "";
           if (fullFilePath == selectedValue) {
@@ -669,8 +646,8 @@ app.engine('handlebars', exphbs({
     // Servers status check request
     ServerStatus() {
       let html = "";
-      if (config.casparcg){
-      config.casparcg.servers.forEach((element,i) => {
+      if (global.config.casparcg){
+      global.config.casparcg.servers.forEach((element,i) => {
         html += '<div class="dropdown serverbtn">';
         html += '<i id="indicator' + i + '" class="fas fa-check-circle" style="color: 00CC00;"></i>&nbsp;' + element.name;
         html += '  <div class="dropdown-content">';
@@ -717,10 +694,6 @@ const ROUTEapp = require('./routes/routes-application.js');
 app.use('/', ROUTEapp);
 
 const ROUTEccg = require('./routes/routes-casparcg.js');
-const { prependListener } = require('process'); // const { prependListener } = require('process') // DIFF?
-const { request } = require('http')
-const { data } = require('./utils/logger.js')
-const { Z_VERSION_ERROR } = require('zlib')
 app.use('/CCG', ROUTEccg);
 
 process.on('uncaughtException', function(err) {
@@ -738,17 +711,18 @@ process.on('uncaughtException', function(err) {
 
 
 var server = app.listen(port, (err) => {
+  if(err) throw err;
 
   let splash = 'START-UP INFORMATION:\n\n' + 
   'SPX GC ................. Copyright 2020-2021 SmartPX <tuomo@smartpx.fi>\n' +
   `Version ................ ${vers}\n` +  
   'Homepage ............... https://github.com/TuomoKu/SPX-GC\n' +
-  `Config file ............ ${configfileref}\n`  +
-  `Cfg / locale ........... ${config.general.langfile}\n`  +
-  `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
-  `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
-  `Cfg / template files ... ${config.general.templatefolder}\n`  +  
-  `Cfg / logfolder ........ ${config.general.logfolder}\n`;
+  `Config file ............ ${global.configfileref}\n`  +
+  `Cfg / locale ........... ${global.config.general.langfile}\n`  +
+  `Cfg / loglevel ......... ${global.config.general.loglevel} (options: error | warn | info | verbose | debug )\n` +
+  `Cfg / dataroot ......... ${global.config.general.dataroot}\n`  +
+  `Cfg / template files ... ${global.config.general.templatefolder}\n`  +
+  `Cfg / logfolder ........ ${global.config.general.logfolder}\n`;
 
   // Where are CasparCG templates loaded from (file:// or http://):
   let TemplatesFromInfo;
@@ -760,7 +734,7 @@ var server = app.listen(port, (err) => {
   }
 
   splash +=
-  `Cfg / templatesource ... ${config.general.templatesource} (` + TemplatesFromInfo + ')\n'  +  
+  `Cfg / templatesource ... ${global.config.general.templatesource} (` + TemplatesFromInfo + ')\n'  +
   `SPX-GC server address .. http://${ipad}:${port}`;
 
   logger.info(splash);
@@ -774,7 +748,7 @@ var server = app.listen(port, (err) => {
 
 
 
-if (config.general.launchchromeatstartup=="on")
+if (global.config.general.launchchromeatstartup=="on")
 {
   (async () => {
     // Opens the URL in a specified browser.
@@ -787,13 +761,13 @@ if (config.general.launchchromeatstartup=="on")
 // io must be declared as 'global', so routes can access it.
 global.io = require('socket.io')(server);
 var clients = {}
-io.sockets.on('connection', function (socket) {
+global.io.sockets.on('connection', function (socket) {
 
-  logger.verbose('*** Socket connection (' + socket.id + ") Connections: " + io.engine.clientsCount);
+  logger.verbose('*** Socket connection (' + socket.id + ") Connections: " + global.io.engine.clientsCount);
   clients[socket.id] = socket;
 
   socket.on('disconnect', function () {
-    logger.verbose('*** Socket disconnected (' + socket.id + ") Connections: " + io.engine.clientsCount);
+    logger.verbose('*** Socket disconnected (' + socket.id + ") Connections: " + global.io.engine.clientsCount);
     delete clients[socket.id];
   }); // end disconnect
 
@@ -803,7 +777,7 @@ io.sockets.on('connection', function (socket) {
     // We shouldnt care about it here, but FIXME:
     // we must now forward that to client again...
     // console.log('SPXWebRendererMessage',data);
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
   });
 
 

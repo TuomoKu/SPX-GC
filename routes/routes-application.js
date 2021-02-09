@@ -7,7 +7,6 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const moment = require('moment');
-const directoryPath = path.normalize(config.general.dataroot);
 const logger = require('../utils/logger');
 logger.debug('Application-route loading...');
 const spx = require('../utils/spx_server_functions.js');
@@ -17,12 +16,12 @@ const PlayoutWEB = require('../utils/playout_webplayer.js');
 const spxAuth = require('../utils/spx_auth.js');
 const jsdom = require("jsdom"); // for scanning js within templates
 const { JSDOM } = jsdom;
-const cors = require('cors')
+const cors = require('cors');
 
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
 router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, function (req, res) {
-  let currVer = vers;
-  let greeting = config.general.greeting;
+  let currVer = global.vers;
+  let greeting = global.config.general.greeting;
   res.render('view-home', { layout: false, greeting:greeting, curVerInfo: req.curVerInfo, currVer: currVer, user: req.session.user });
 });
 
@@ -48,7 +47,7 @@ router.post('/', spxAuth.CheckLogin, function (req, res) {
 });
 
 
-router.post('/saveauthpolicy', function (req, res) {
+router.post('/saveauthpolicy', async function (req, res) {
   // save settings to config and move on
   let configFile = global.configfileref; // './config.json';
 
@@ -69,25 +68,20 @@ router.post('/saveauthpolicy', function (req, res) {
   }
   
   try {
-    async function saveAndReadConfig(){
-      // console.log('Reading config');
-      configData = await GetJsonData(configFile);
-      // console.log('Changing values');
-      configData.general.username = user;
-      configData.general.password = pass;
-      // console.log('Writing config');
-      await spx.writeFile(configFile, configData);
-      // console.log('Re-reading config');
-      await cfg.readConfig();
-      res.redirect('/');
-    }; 
-    saveAndReadConfig(); 
-    }
-  catch (error)
-    {
-      logger.error('Error while saving file: ', error);
-      res.redirect('/');
-    };
+    // console.log('Reading config');
+    configData = await GetJsonData(configFile);
+    // console.log('Changing values');
+    configData.general.username = user;
+    configData.general.password = pass;
+    // console.log('Writing config');
+    await spx.writeFile(configFile, configData);
+    // console.log('Re-reading config');
+    await cfg.readConfig();
+    res.redirect('/');
+  } catch (error) {
+    logger.error('Error while saving file: ', error);
+    res.redirect('/');
+  }
 });
 
 
@@ -95,7 +89,12 @@ router.post('/saveauthpolicy', function (req, res) {
 
 router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
-  res.render('view-appconfig', { layout: false, config: config, user: req.session.user, configfile: configfileref});
+  res.render('view-appconfig', {
+    layout: false,
+    config: global.config,
+    user: req.session.user,
+    configfile: global.configfileref,
+  });
 });
 
 
@@ -106,10 +105,11 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   let ConfigData = req.body;
   if (req.body.NewName && req.body.NewHost && req.body.NewPort){
     // new server was added
-    var obj = {};
-    obj["name"] = req.body.NewName;
-    obj["host"] = req.body.NewHost;
-    obj["port"] = req.body.NewPort;
+    var obj = {
+      name: req.body.NewName,
+      host: req.body.NewHost,
+      port: req.body.NewPort,
+    };
     if (!ConfigData.casparcg){
       // we are adding new servers to non-existing array
       ConfigData.casparcg={};
@@ -146,7 +146,7 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
     }
   else
     {
-      // console.log('Not a single CasparCG server in config.');
+      // console.log('Not a single CasparCG server in global.config.');
     }
   
   // remove un-necessary temp-fields
@@ -160,19 +160,15 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   logger.debug('Saving config file ' + datafile + '...');
  
   try {
-    async function saveAndReadConfig(){
-      // console.log('*** WRITING ***');
-      await spx.writeFile(datafile, ConfigData);
-      // console.log('*** READING ***');
-      await cfg.readConfig();
-      // console.log('*** RENDERING ***');
-      res.render('view-appconfig', { layout: false, config: config, message:'Changes saved', user: req.session.user});
-  }; 
-  // -----------------------------------------------------------------------------
-  saveAndReadConfig(); // a nice solution 
+    // console.log('*** WRITING ***');
+    await spx.writeFile(datafile, ConfigData);
+    // console.log('*** READING ***');
+    await cfg.readConfig();
+    // console.log('*** RENDERING ***');
+    res.render('view-appconfig', { layout: false, config: global.config, message:'Changes saved', user: req.session.user});
   } catch (error) {
     logger.error('Error while saving file: ', error);
-    res.render('view-appconfig', { layout: false, config: config, error:'Error saving config: ' + err, user: req.session.user});
+    res.render('view-appconfig', { layout: false, config: global.config, error:'Error saving config: ' + error, user: req.session.user});
 }; //file written
 
 
@@ -181,34 +177,34 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
 
 router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
-  const folderListAsJSON = await GetSubfolders(config.general.dataroot);
+  const folderListAsJSON = await GetSubfolders(global.config.general.dataroot);
   res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user });
 });
 
 
 router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => {
   //  Show episodes (files in folder 'data')
-  const fileListAsJSON = await GetDataFiles(config.general.dataroot + "/" + req.params.foldername + "/data/");
+  const fileListAsJSON = await GetDataFiles(global.config.general.dataroot + "/" + req.params.foldername + "/data/");
   res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, errorMsg: '', user: req.session.user });
 });
 
 router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   //  Show Configuration
-  let datafile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
+  let datafile = path.join(global.config.general.dataroot, req.params.foldername, 'profile.json');
   const fileDataAsJSON = await GetJsonData(datafile);
 
   // lets try to implement "previous folder" functionality
   let treeData = '';
-  if (LastBrowsedTemplateFolder==''){
-    treeData = JSON.stringify(spx.GetFilesAndFolders(config.general.templatefolder));
+  if (global.LastBrowsedTemplateFolder==''){
+    treeData = JSON.stringify(spx.GetFilesAndFolders(global.config.general.templatefolder));
   }
   else {
-    treeData = JSON.stringify(spx.GetFilesAndFolders(LastBrowsedTemplateFolder));
+    treeData = JSON.stringify(spx.GetFilesAndFolders(global.LastBrowsedTemplateFolder));
   }
 
   let ERRCODE="";
   if (req.query.ERR){ ERRCODE='error.'+req.query.ERR };
-  res.render('view-showconfig', { layout: false, TemplateFiles: treeData, TemplateRootFolder: config.general.templatefolder, showconfig: fileDataAsJSON, folder: req.params.foldername, messageCode:'', errorCode:ERRCODE, user: req.session.user});
+  res.render('view-showconfig', { layout: false, TemplateFiles: treeData, TemplateRootFolder: global.config.general.templatefolder, showconfig: fileDataAsJSON, folder: req.params.foldername, messageCode:'', errorCode:ERRCODE, user: req.session.user});
 });
 
 
@@ -217,7 +213,7 @@ router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async
   logger.verbose('Removing template from profile ' + req.body.showFolder );
   let showFolder  = req.body.showFolder || "";
   let TemplateIdx = req.body.TemplIndex || 0;
-  let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
+  let ProfileFile = path.join(global.config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile);
   profileData.templates.splice(TemplateIdx,1);
   try {
@@ -234,7 +230,7 @@ router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (r
   logger.verbose('Removing extra from profile ' + req.body.showFolder );
   let showFolder  = req.body.showFolder || "";
   let ExtraIndex  = req.body.ExtraIndex || 0;
-  let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
+  let ProfileFile = path.join(global.config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile);
   profileData.showExtras.CustomControls.splice(ExtraIndex,1);
   // spx.talk('Remving extra.');
@@ -255,15 +251,16 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
   logger.verbose('Overwriting an extra settings in profile ' + req.body.showFolder + ' with updated values.');
   let showFolder  = req.body.showFolder || "";
   let ExtraIndex  = req.body.ExtraIndex || 0;
-  let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
+  let ProfileFile = path.join(global.config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile);
   profileData.showExtras.CustomControls[ExtraIndex]=req.body.extraData; // replace an item in array
 
   if (req.body.newTXT && req.body.newVAL){
     // new option was added
-    var obj = {};
-    obj["text"]  = req.body.newTXT;
-    obj["value"] = req.body.newVAL;
+    var obj = {
+      text: req.body.newTXT,
+      value: req.body.newVAL,
+    };
     if (profileData.showExtras.CustomControls[ExtraIndex].items){
       profileData.showExtras.CustomControls[ExtraIndex].items.push(obj);
     }
@@ -304,7 +301,7 @@ router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (
   logger.verbose('Overwriting a template in profile ' + req.body.showFolder + ' with updated values.');
   let showFolder  = req.body.showFolder || "";
   let TemplateIdx = req.body.TemplIndex || 0;
-  let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
+  let ProfileFile = path.join(global.config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile);
   profileData.templates[TemplateIdx]=req.body.templateData; // replace an item in array
 
@@ -347,7 +344,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
   let ftype        = req.body.ftype || "";
   let customscript = req.body.customscript || "";
   let TemplatePath = path.join(curFolder, template);
-  let ProfileFile  = path.join(config.general.dataroot, showFolder, 'profile.json');
+  let ProfileFile  = path.join(global.config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile) || {}; // or empty
 
   switch (command) {
@@ -381,7 +378,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
    
       let absPath = TemplatePath.split("\\").join("/");
-      let tmpRoot = config.general.templatefolder.split("\\").join("/");
+      let tmpRoot = global.config.general.templatefolder.split("\\").join("/");
       SPXGCTemplateDefinition.relpath = absPath.split(tmpRoot)[1];
       // console.log('New SPXGCTemplateDefinition',SPXGCTemplateDefinition);
 
@@ -396,7 +393,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
 
     case 'addshowextra':
       // ------------------------------------------------------------------- ADDING EXTRA -----------------
-      newExtra = {};
+      var newExtra = {};
       switch (ftype) {
         case 'button':
           newExtra.description='A new push button';
@@ -480,11 +477,11 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
 
 router.post('/shows/', spxAuth.CheckLogin, async (req, res) => {
   // add a new showfolder (with /data -subfolder) and open it for configuration
-  let targetFolder = path.join(config.general.dataroot, req.body.foldername);
-  let targetDataFo = path.join(config.general.dataroot, req.body.foldername, "data");
+  let targetFolder = path.join(global.config.general.dataroot, req.body.foldername);
+  let targetDataFo = path.join(global.config.general.dataroot, req.body.foldername, "data");
   let folderListAsJSON = ""
   if (fs.existsSync(targetFolder)){
-    folderListAsJSON = await GetSubfolders(config.general.dataroot);
+    folderListAsJSON = await GetSubfolders(global.config.general.dataroot);
     res.render('view-shows', { layout: false, folders: folderListAsJSON, error: 'Folder exists, try again with another name.', user: req.session.user });
   }
   else
@@ -499,14 +496,14 @@ router.post('/shows/', spxAuth.CheckLogin, async (req, res) => {
 
 router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
   // add a new json file and open it for editing
-  let datafile = path.join(config.general.dataroot + '/' + req.params.foldername + '/data/' + req.body.filebasename) + '.json';
+  let datafile = path.join(global.config.general.dataroot + '/' + req.params.foldername + '/data/' + req.body.filebasename) + '.json';
   logger.verbose('Creating file',datafile);
   
   // check if exist
   if (fs.existsSync(datafile)) {
     //file exists
     logger.warn('Episode file exists [' + datafile + '], going back to episode list.');
-    const fileListAsJSON = await GetDataFiles(config.general.dataroot + "/" + req.params.foldername + "/data/");
+    const fileListAsJSON = await GetDataFiles(global.config.general.dataroot + "/" + req.params.foldername + "/data/");
     res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, error: 'File exists, use another name.', user: req.session.user });
   }
   else {
@@ -527,7 +524,7 @@ router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
 
 router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
   res.send("would delete file " + req.params.folder + "/data/" + req.params.file + ".json");
-  let datatemp = path.join(config.general.dataroot, req.params.folder, "data", req.params.file) + '.json';
+  let datatemp = path.join(global.config.general.dataroot, req.params.folder, "data", req.params.file) + '.json';
   let datafile = path.normalize(datatemp);
   fs.unlink(datafile, function (err) {
      if (err) {
@@ -541,31 +538,29 @@ router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
   });
 });
 
+function deleteFolderRecursive(datafolder) {
+  if (fs.existsSync(datafolder)) {
+    fs.readdirSync(datafolder).forEach((file) => {
+      const curPath = path.join(datafolder, file);
+      logger.debug('Deleting ' + curPath);
+
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        logger.info('Deleted file: ' + curPath);
+        fs.unlinkSync(curPath);
+      }
+    });
+    logger.debug('Deleting folder ' + datafolder);
+    fs.rmdirSync(datafolder);
+  } else {
+    logger.warn('Folder ' + datafolder + ' did not exist, cannot delete.');
+  }
+}
 
 router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
   // delete a showfolder (an Ajax call, therefor the redirect does not work, must do from client side.)
-  let datafolder = path.join(config.general.dataroot, req.params.foldername);
-  const deleteFolderRecursive = function(datafolder) {
-    if (fs.existsSync(datafolder)) {
-      fs.readdirSync(datafolder).forEach((file, index) => {
-        const curPath = path.join(datafolder, file);
-        logger.debug('Deleting ' + curPath);
-        
-        if (fs.lstatSync(curPath).isDirectory()) { // recurse
-          deleteFolderRecursive(curPath);
-        } else { // delete file
-          logger.info('Deleted file: ' + curPath);
-          fs.unlinkSync(curPath);
-        }
-      });
-      logger.debug('Deleting folder ' + datafolder);
-      fs.rmdirSync(datafolder);
-    }
-    else
-    {
-      logger.warn('Folder ' + datafolder + ' did not exist, cannot delete.');
-    }}
-
+  let datafolder = path.join(global.config.general.dataroot, req.params.foldername);
   try {
     deleteFolderRecursive(datafolder);
     logger.info('Deleted folder: ' + datafolder);
@@ -575,7 +570,7 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
     logger.error('Error while deleting ' + datafolder + ': ' + error)
     res.send(error);
   }
-  const folderListAsJSON = await GetSubfolders(config.general.dataroot);
+  const folderListAsJSON = await GetSubfolders(global.config.general.dataroot);
   res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user });
 
 });
@@ -584,12 +579,22 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
 
 router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, res) => { 
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
-  let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
+  let datafile = path.join(global.config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
   const fileDataAsJSON = await GetJsonData(datafile);
-  let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
+  let showprofile = path.join(global.config.general.dataroot, req.params.foldername, 'profile.json');
   const profileDataJSONobj = await GetJsonData(showprofile);
   let profileData = JSON.stringify(profileDataJSONobj);
-  res.render('view-controller', { layout: false, globalExtras:config.globalExtras, filedata: fileDataAsJSON, folder: req.params.foldername, datafile: datafile, filebasename: req.params.filename, profiledata: profileData, profiledataObj: profileDataJSONobj, user: req.session.user });
+  res.render('view-controller', {
+    layout: false,
+    globalExtras:global.config.globalExtras,
+    filedata: fileDataAsJSON,
+    folder: req.params.foldername,
+    datafile: datafile,
+    filebasename: req.params.filename,
+    profiledata: profileData,
+    profiledataObj: profileDataJSONobj,
+    user: req.session.user,
+  });
 });
 
 
@@ -610,7 +615,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       logger.verbose('Adding show profile template[' + data.templateindex + '] to rundown ' + data.listname );
       // console.log('Adding template index ' + data.templateindex + ' from show profile to rundown ' + data.listname );
       // * read template[index] from show profile
-      showprofile = path.join(config.general.dataroot, data.foldername, 'profile.json');
+      showprofile = path.join(global.config.general.dataroot, data.foldername, 'profile.json');
       profileDataJSONobj = await GetJsonData(showprofile);
       let TemplateModel = profileDataJSONobj.templates[data.templateindex];
 
@@ -673,8 +678,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       // CLONE TEMPLATE ITEM ON RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
 
       let freshID = data.cloneEpoch;
-      var newItemData = "";
-      var duplicateData = "";
       var duplicated = false;
 
       logger.info('Cloning item [' + data.sourceEpoch + '] to [' + freshID + '] in file [' + data.listname + '].');
@@ -757,8 +760,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       RundownData = await GetJsonData(RundownFile);
 
       // Refactored: identify with epoch / itemID, not index.
-      req.body.templateindex
-      
+
       RundownData.templates.forEach((template,index) => {
         if (template.itemID == req.body.epoch) 
           {
@@ -1043,13 +1045,13 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
     // There is also a clearAllLayer -command to clear a single layer.
     let dataOut = {};
     dataOut.spxcmd  = 'clearAllLayers';
-    io.emit('SPXMessage2Client', dataOut);
+    global.io.emit('SPXMessage2Client', dataOut);
 
 
 
-    showprofile = path.join(config.general.dataroot, req.body.foldername, 'profile.json');
-    profileDataJSONobj = await GetJsonData(showprofile);
-    profileDataJSONobj.templates.forEach(function(template,index)
+    global.showprofile = path.join(global.config.general.dataroot, req.body.foldername, 'profile.json');
+    global.profileDataJSONobj = await GetJsonData(global.showprofile);
+    global.profileDataJSONobj.templates.forEach(function(template)
       {
         // Clear CasparCG's FIXME: This should move to playout_casparCG.js -library
         // anf FIXME: only send commands uniquely... For now: plaster all!
@@ -1124,7 +1126,7 @@ router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
   // TODO: kesken
   let foldname = req.body.foldname;
   let filename = req.body.filename;
-  let filerefe = path.normalize(path.join(config.general.dataroot,foldname, 'data', filename));
+  let filerefe = path.normalize(path.join(global.config.general.dataroot,foldname, 'data', filename));
   try {
     spx.duplicateFile(filerefe, ' copy') ;
     res.status(200).send('Item duplicated.'); // ok 200 AJAX RESPONSE
@@ -1143,7 +1145,7 @@ router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
   let foldnam = req.body.foldnam;
   let orgname = req.body.orgname;
   let newname = req.body.newname;
-  let fileref = path.normalize(path.join(config.general.dataroot,foldnam, 'data', orgname));
+  let fileref = path.normalize(path.join(global.config.general.dataroot,foldnam, 'data', orgname));
   try {
     spx.renameRundown(fileref, newname) ;
     res.status(200).send('Item renamed.'); // ok 200 AJAX RESPONSE
@@ -1258,7 +1260,8 @@ async function GetDataFiles(FOLDERstr) {
 
 
 
-
+// TODO: dead function?
+// eslint-disable-next-line no-unused-vars
 async function orgGetDataFiles(FOLDERstr) {
   // return a list of all json files in the dataroot folder
   logger.debug("Getting json files from " + FOLDERstr + "...");
@@ -1304,15 +1307,11 @@ async function GetJsonData(fileref) {
       // logger.debug('GetJsonData: returns data from [' + fileref + ']: ' + contents);
       return JSON.parse(contents);
     }
-    else{
-      logger.debug('GetJsonData: file does not exist [' + fileref + '], returning empty string.');
-      return;
-    }
-    
+    logger.debug('GetJsonData: file does not exist [' + fileref + '], returning empty string.');
   }
   catch (error) {
     logger.error('GetJsonData Error: ' + error);
-    return ('GetJsonData: error',error);
+    throw error;
   }
 } // GetJsonData ended
 

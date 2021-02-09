@@ -1,6 +1,6 @@
 
 const logger = require('./logger.js');
-const spx = require('../utils/spx_server_functions.js');
+const spx = require('./spx_server_functions.js');
 
 
 function CheckLogin(req,res,next) {
@@ -9,7 +9,7 @@ function CheckLogin(req,res,next) {
     // returns ..... true / false
     let USER = req.body.username || '';
     let PASS = req.body.password || '';
-    let AllowedUser = config.general.username || '';
+    let AllowedUser = global.config.general.username || '';
 
     // See if auth is used (if user in config is present)
     if (!AllowedUser){
@@ -20,7 +20,7 @@ function CheckLogin(req,res,next) {
     }
 
     // See if only user is present in config: ask for auth policy
-    if (AllowedUser && !config.general.password || AllowedUser && config.general.password==''){
+    if (AllowedUser && !global.config.general.password || AllowedUser && global.config.general.password==''){
       logger.verbose('CheckLogin: No password in config, prompt for auth policy...');
       res.render('view-authpolicy', { layout: false, user: AllowedUser});
       return;
@@ -36,7 +36,7 @@ function CheckLogin(req,res,next) {
 
     if (USER==AllowedUser)
       {
-        if (spx.hashcompare(PASS,config.general.password))
+        if (spx.hashcompare(PASS, global.config.general.password))
           {
             logger.info('CheckLogin: User "' + USER + '" logged in.');
             req.session.user = USER;
@@ -50,7 +50,7 @@ function CheckLogin(req,res,next) {
   }
 
 
-function Logout(req,res,next){
+function Logout(req,res){
   // logout user
   logger.info('CheckLogin: User "' + req.session.user + '" logged out.');
   req.session.user = '';

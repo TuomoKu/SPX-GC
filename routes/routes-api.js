@@ -7,11 +7,11 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const moment = require('moment');
-const directoryPath = path.normalize(config.general.dataroot);
 const logger = require('../utils/logger');
 logger.debug('API-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
+const directoryPath = path.normalize(global.config.general.dataroot);
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -30,9 +30,8 @@ router.get('/logger/', async (req, res) => {
   let source  = req.query.source
   let level   = req.query.level.toLowerCase()
   let channel = req.query.channel
-  let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message
-  // console.log(msg);
-  eval('logger.' + level + '(msg)'); // nasty, eh?
+  let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message;
+  logger[level].call(logger[level], msg);
   res.sendStatus(200)
 }); // files route ended
 
@@ -64,10 +63,10 @@ router.post('/readExcelData', async (req, res) => {
     let timenow = Date.now(); 
     // console.log('Excel cache age ' + (timenow - excel.readtime) + ' ms');
 
-    if ( excel.data && excel.filename == req.body.filename && (timenow - excel.readtime) <= 10000) {
+    if ( global.excel.data && global.excel.filename == req.body.filename && (timenow - global.excel.readtime) <= 10000) {
       // sama data requested less than a second ago, return data from memory
       logger.verbose('Returning cached Excel data from memory')
-      workSheetsData = excel.data;
+      workSheetsData = global.excel.data;
       // console.log('Returning CACHED Excel data.\n');
     } else {
       // get it from Excel file
@@ -84,17 +83,16 @@ router.post('/readExcelData', async (req, res) => {
     
     logger.verbose('OK API read Excel data from ' + excelFile);
     res.status(200).send(workSheetsData); // ok 200 AJAX RESPONSE
-    return;
-  } catch (error) {
+  } catch (error) { // Server error
     logger.error('Error in api/readExcelData while reading Excel ' + excelFile + ": " + error);
-    res.status(500).send(error);  }; // Server error
-    return;
+    res.status(500).send(error);
+  }
 });
 
 
 
 
-router.post('/savefile/:filebasename', async (req, res) => {
+router.post('/savefile/:filebasename', async (req) => {
   // FIXME: Function not in use?
   spx.talk('Saving file ' + req.params.filebasename);
 
@@ -106,8 +104,8 @@ router.post('/savefile/:filebasename', async (req, res) => {
   try {
     await spx.writeFile(datafile,data);
   } catch (error) {
-    logger.error('Error while saving ' + datafile + ': ' + err);
-  }; //file written
+    logger.error('Error while saving ' + datafile + ': ' + error);
+  } //file written
 
   // let filedata = JSON.stringify(req.body, null, 2);
   // fs.writeFile(datafile, filedata, (err) => {
@@ -127,7 +125,6 @@ router.post('/savefile/:filebasename', async (req, res) => {
 async function GetDataFiles() {
   // Get files
   // const directoryPath = path.normalize("X:/01_Projects/Yle/CG/DEV/DATA_FOLDER/");
-  const directoryPath = path.normalize(config.general.dataroot);
   let jsonData = {};
   var key = 'files';
   jsonData.folder = directoryPath;
@@ -152,7 +149,7 @@ async function GetDataFiles() {
     return jsonData;
   }
   catch (error) {
-    logger.error('Error while reading files from ' + directoryPath + ': ' + err);
+    logger.error('Error while reading files from ' + directoryPath + ': ' + error);
     return (error);
   }
 } // GetDataFiles ended

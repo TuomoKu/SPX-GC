@@ -9,12 +9,8 @@ const wavplayer = require('node-wav-player');
 const PlayoutCCG = require('./playout_casparCG.js');
 const glob = require("glob");
 const ip = require('ip')
-const { rejects } = require('assert');
-const axios = require('axios')
 
-const port = config.general.port || 5000;
-        
-let Connected=true; // used we messaging service
+const port = global.config.general.port || 5000;
 
 // Use crypto instead of bcrypt:
 let crypto;
@@ -22,6 +18,10 @@ try {
   crypto = require('crypto');
 } catch (err) {
   logger.warn('Crypto support is disabled!');
+}
+
+function getByPath(obj, dottedName) {
+  return dottedName.split('.').reduce((leaf,name) => leaf ? leaf[name] : null, obj);
 }
 
 
@@ -32,23 +32,23 @@ module.exports = {
       // SocketIO call to client
       // require ..... nothing
       // returns ..... sends socket.io instruction to client of each CCG server in config
-      if (!config.casparcg){
+      if (!global.config.casparcg){
         logger.verbose('No CasparCG servers in config so no connections to check, skipping.');
         return
       }
       logger.verbose('checkServerConnections -function excecuting...');
-      data = { spxcmd: 'updateStatusText', status: 'Checking server connections...' };
-      io.emit('SPXMessage2Client', data);
-      config.casparcg.servers.forEach((element,i) => {
+      global.io.emit('SPXMessage2Client', {spxcmd: 'updateStatusText', status: 'Checking server connections...'});
+      global.config.casparcg.servers.forEach((element,i) => {
         let SrvName = element.name;
         let SocketIndex = PlayoutCCG.getSockIndex(SrvName);
-        logger.verbose('Pinging ' +  SrvName + ': ' + CCGSockets[SocketIndex]);
-        data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + i, color: '#CC0000' };
+        let ccgSocket = global.CCGSockets[SocketIndex];
+        logger.verbose('Pinging ' +  SrvName + ': ' + ccgSocket);
+        const data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + i, color: '#CC0000' };
         let status = {}
         status.server = i + ':' + SrvName;
-        status.connecting = CCGSockets[SocketIndex].connecting;
-        status.isWritable = CCGSockets[SocketIndex].writable;
-        status.isReadable = CCGSockets[SocketIndex].readable;
+        status.connecting = ccgSocket.connecting;
+        status.isWritable = ccgSocket.writable;
+        status.isReadable = ccgSocket.readable;
         if (status.isWritable && status.isReadable){
           data.color = '#00CC00';
           logger.verbose("Connection OK to " + SrvName)
@@ -56,7 +56,7 @@ module.exports = {
         else{
           logger.verbose("Connection failed to " + SrvName)
         }
-        io.emit('SPXMessage2Client', data);
+        global.io.emit('SPXMessage2Client', data);
       })
     } catch (error) {
       logger.error('ERROR in spx.checkServerConnections()', error);
@@ -89,14 +89,14 @@ module.exports = {
 
   fileNameFromPath: function (filepath) {
     // returns the last item from slashed string
+    // TODO: the below is a no-op (no assignment)
     filepath.split("\\").join("/"); // force forward slashes
     if (filepath.includes('/')) {
       let items = filepath.split('/');
-      let justFileName = items[items.length-1];
+      let justFileName = items[items.length - 1];
       return justFileName;
-    } else {
-      return filepath
     }
+    return filepath;
   },
 
 
@@ -171,7 +171,7 @@ module.exports = {
       // Get files from a given folder and return an array of files
       const directoryPath = path.normalize(FOLDER);
       let fileList=[];
-      fs.readdirSync(directoryPath).forEach((file, index) => {
+      fs.readdirSync(directoryPath).forEach((file) => {
         // console.log(index + ': ' + file + '(' + path.extname(file) + ')');
         let TARGETFILETYPE = EXTENSION.toUpperCase()
         let CURRENTFILETYPE = path.extname(file).toUpperCase();
@@ -195,7 +195,7 @@ module.exports = {
       datarootSize()
       .then(function(sizeArr) {
         let paramstring =""
-        paramstring += "v="  + vers 
+        paramstring += "v="  + global.vers
         paramstring += "&o=" + lPad(process.platform, 8, ".")
         paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
         paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
@@ -260,7 +260,7 @@ module.exports = {
     //  - 'spxgc-ip-address'       : Uses current SPX-GC server's IP address
     //  - '
     //
-    let TemplateSource = config.general.templatesource;
+    let TemplateSource = global.config.general.templatesource;
     let TemplateServer = ''
     if ( TemplateSource == 'casparcg-template-path') {
       TemplateServer = "";
@@ -271,7 +271,7 @@ module.exports = {
     } else {
       if (TemplateSource.substring(0, 4)!='http') {TemplateSource = 'http://' + TemplateSource}
       TemplateServer = TemplateSource;
-      logger.verbose('A custom templateServer given in config. Using ' + TemplateServer);
+      logger.verbose('A custom templateServer given in global.config. Using ' + TemplateServer);
     }
     return TemplateServer; // return empty for file system source or full server url with "http://" prefix
   },
@@ -302,14 +302,14 @@ module.exports = {
 
   lang: function (str) {
     try {
-      const spxlangfile = config.general.langfile || 'english.json';
-      let langpath = path.join(process.cwd(), 'locales', spxlangfile);
-      var lang = require(langpath);
-      json = 'lang.' + str;
-      return eval(json) || str;  
+      const spxlangfile = global.config.general.langfile || 'english.json';
+      const langpath = path.join(process.cwd(), 'locales', spxlangfile);
+      // eslint-disable-next-line import/no-dynamic-require
+      const lang = require(langpath);
+      return getByPath(lang, str) || str;
     } catch (error) {
       logger.error('ERROR in spx.lang (str: ' + str + '): ' + error);
-      return str + " missing from " + spxlangfile;
+      return str + " missing from " + global.spxlangfile;
     }
   },
 
@@ -325,35 +325,28 @@ GetFilesAndFolders: function (datafolder) {
     };
 
     if (fs.existsSync(datafolder)) {
-      fs.readdirSync(datafolder).forEach((file, index) => {
+      fs.readdirSync(datafolder).forEach((file) => {
         const curPath = path.join(datafolder, file);
-        if (fs.lstatSync(curPath).isDirectory())
-          { 
-            // it is folder
-            data.foldArr.push(path.basename(curPath));
-          }
-        else
-          {
+        if (fs.lstatSync(curPath).isDirectory()) {
+          // it is folder
+          data.foldArr.push(path.basename(curPath));
+        } else {
           // it is file
           let ext = path.extname(curPath).toUpperCase();
-          if (ext ==".HTM" || ext ==".HTML"){
-            data.fileArr.push(path.basename(curPath));        }
+          if (ext == ".HTM" || ext == ".HTML") {
+            data.fileArr.push(path.basename(curPath));
+          }
         }
       });
-      
+
       // Sort elements within arrays
       data.fileArr.sort();
       data.foldArr.sort();
       return data;
     }
-    else
-    {
-      return "not-found";
-    }
-    
+    return "not-found";
   } catch (error) {
     logger.error('ERROR in spx.GetFilesAndFolders (datafolder: ' + datafolder + '): ' + error);
-    
   }
 },
 
@@ -369,7 +362,7 @@ playAudio: async function (wavFileName, msg=''){
 
     // EXTERNAL AUDIO PLAYER IS CURRENTLY DISABLED. -- See also view-appconfig.
     // let AudioPlayPath = path.normalize(config.general.audioplayer);
-    // let AudioPlayOpts = config.general.playerflags;
+    // let AudioPlayOpts = global.config.general.playerflags;
     // let AudioPlayExec = "\"" + AudioPlayPath + "\" " + AudioPlayOpts.replace('%FILE%', AudioFilePath);
     // logger.debug('spx.PlayAudio - message: [' + msg + '] Audio command: ' + AudioPlayExec);
     // const { exec } = require("child_process");
@@ -405,36 +398,35 @@ playAudio: async function (wavFileName, msg=''){
 talk: async function (message){
 
   logger.debug('FYI: spx.talk function is DISABLED. [' + message + ']')
-  return;
 
-  try {
-    // THIS ONLY WORKS ON WINDOWS!
-    // Usage:
-    //      this.talk('hello there');
-    //       spx.talk('All your base are belong to us');
-    var isWin = process.platform === "win32";
-    if (isWin==false){
-        logger.warn('Talk synthesis currently only works on Windows.');
-        return
-      }
-    let ScriptPath = path.join(process.cwd(), 'utils/talk.vbs');
-    let Executable = "wscript " + ScriptPath + " " + message;
-    logger.debug('spx.Talk [' + message + ']');
-    const { exec } = require("child_process");
-    exec(Executable, (error, stdout, stderr) => {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            return;
-        }
-        // console.log(`stdout: ${stdout}`);
-    });
-  } catch (error) {
-    logger.error('ERROR in spx.talk (message: ' + message + '): ' + error);
-  }
+  // try {
+  //   // THIS ONLY WORKS ON WINDOWS!
+  //   // Usage:
+  //   //      this.talk('hello there');
+  //   //       spx.talk('All your base are belong to us');
+  //   var isWin = process.platform === "win32";
+  //   if (isWin==false){
+  //       logger.warn('Talk synthesis currently only works on Windows.');
+  //       return
+  //     }
+  //   let ScriptPath = path.join(process.cwd(), 'utils/talk.vbs');
+  //   let Executable = "wscript " + ScriptPath + " " + message;
+  //   logger.debug('spx.Talk [' + message + ']');
+  //   const { exec } = require("child_process");
+  //   exec(Executable, (error, stdout, stderr) => {
+  //       if (error) {
+  //           console.log(`error: ${error.message}`);
+  //           return;
+  //       }
+  //       if (stderr) {
+  //           console.log(`stderr: ${stderr}`);
+  //           return;
+  //       }
+  //       // console.log(`stdout: ${stdout}`);
+  //   });
+  // } catch (error) {
+  //   logger.error('ERROR in spx.talk (message: ' + message + '): ' + error);
+  // }
 },
 
 
@@ -517,9 +509,9 @@ versInt: function (semver){
   // Returns a numeric value representing "1.0.0" formatted semantic version string.
   // This works as long as max value of each field is 99!
   let parts = semver.split(".");
-  let MajorInt = parseInt(parts[0].trim())*100000
-  let MinorInt = parseInt(parts[1].trim())*1000
-  let PatchInt = parseInt(parts[2].trim())
+  let MajorInt = parseInt(parts[0].trim(), 10)*100000
+  let MinorInt = parseInt(parts[1].trim(), 10)*1000
+  let PatchInt = parseInt(parts[2].trim(), 10)
   let versInt  = (MajorInt + MinorInt + PatchInt);
   // console.log('Semver ' + semver + ' = versInt ' + versInt);
   return versInt
@@ -538,8 +530,8 @@ writeFile: function (filepath,data) {
         let filedata = JSON.stringify(data, null, 2);
         fs.writeFile(filepath, filedata, 'utf8', function (err) {
           if (err){
-            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);
-            throw error;
+            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+            throw err;
           }
           logger.verbose('spx.writeFile - File written OK: ' + filepath);
           resolve()
@@ -565,27 +557,16 @@ function lPad(nro,len,char){
 }
 
 
-function checkInternetConnection(icheck) {
-  require('dns').lookup('google.com',function(err) {
-      if (err && err.code == "ENOTFOUND") {
-        icheck(false);
-      } else {
-        icheck(true);
-      }
-    })
-  }
-
-
 function datarootSize () {
     // counts projects and playlists
     return new Promise(resolve => {
       try {
-        let folderpath =  path.normalize(config.general.dataroot);
+        let folderpath =  path.normalize(global.config.general.dataroot);
         let projects = 0;
         let rundowns = 0;
         let filesArr = glob.sync(folderpath + "/**/*.json")
-        filesArr.forEach((file,index) => {
-          if (file.includes('profile.json')) {projects = projects + 1}
+        filesArr.forEach((file) => {
+          if (file.includes('profile.json')) {projects += 1}
         });
         rundowns = (filesArr.length - projects); 
         logger.debug('datarootSize: projects ' + projects + ', rundowns ' + rundowns);

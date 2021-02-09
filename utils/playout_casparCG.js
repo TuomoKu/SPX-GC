@@ -2,10 +2,8 @@
 // ================== functions alphabetical order  ==================================================
 
 const logger = require('./logger.js');
-const fs = require('fs');
 const path = require('path')
-const moment = require('moment');
-
+const spx = require('./spx_server_functions.js');
 
 module.exports = {
 
@@ -32,13 +30,11 @@ module.exports = {
         });
       }
     }
-    const unique = (value, index, self) => {
-      return self.indexOf(value) === index
-    }
-    const uniques = allChannels.filter(unique)
+    const unique = (value, index, self) => self.indexOf(value) === index;
+    const uniques = allChannels.filter(unique);
     uniques.forEach(item => {
       logger.verbose('ClearChannels / Clearing channel ' + item + ' on server ' + data.server);
-      CCGclient = eval(data.server);
+      global.CCGclient = eval(data.server);
       global.CCGSockets[this.getSockIndex(data.server)].write('CLEAR ' + item + '\r\n');
     });
   
@@ -86,7 +82,7 @@ module.exports = {
     var DataStr = "";
     if (data.command == "ADD" || data.command == "UPDATE") {
         if (data.fields) {
-          data.fields.forEach((item,index) => {
+          data.fields.forEach((item) => {
             logger.debug('  DATA --> ' + item.field + ' : ' + item.value);
             if (DataType == 'xml'){
               // generate data in XML format
@@ -138,7 +134,7 @@ module.exports = {
           break;
 
         case 'INVOKE':
-            global.CCGSockets[this.getSockIndex(data.playserver)].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' INVOKE 1 \"' + InvFunct + '\"\r\n');
+            global.CCGSockets[this.getSockIndex(data.playserver)].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' INVOKE 1 "' + InvFunct + '"\r\n');
             break;
 
         default:
@@ -163,7 +159,6 @@ module.exports = {
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;
-    let GFX_File = data.relpath;
     let GFX_CCGf = data.relpathCCG;
     let GFX_OPTS = data.playoptions;
 
@@ -210,13 +205,13 @@ module.exports = {
     // returns .... CCG Server object INDEX (such as 0) 
     logger.debug('getSockIndex / Searching for Socket reference for connection "' + SERVERNAME + '"...');
     let serverIndex = "";
-    CCGSockets.forEach(function (item, index) {
+    global.CCGSockets.forEach(function (item, index) {
       if (global.CCGSockets[index].spxname == SERVERNAME) {
         serverIndex = index;
         logger.debug('getSockIndex found [' + global.CCGSockets[index].spxname + '] so index is [' + serverIndex + '].');
       }
       else {
-        logger.debug('getSockIndex skipping ' + global.CCGSockets[index].spxname) + '...';
+        logger.debug('getSockIndex skipping ' + global.CCGSockets[index].spxname);
       }
     });
     return serverIndex;
@@ -228,13 +223,12 @@ module.exports = {
 function getCCGTemplateFilepath(fileRef) {
   // Added in 1.0.9.
   // Return either the "simple filepath" or "full URL" for the CasparCG command.
-  const spx = require('./spx_server_functions.js');
   let TemplateSource = spx.getTemplateSourcePath()
   let TemplatePathForCasparCGServer
 
   if ( TemplateSource.substring(0, 4)=='http' )
     // HTTP
-    TemplatePathForCasparCGServer  = TemplateSource + ':' + config.general.port + '/templates/' + fileRef + '.html'; // 
+    TemplatePathForCasparCGServer  = TemplateSource + ':' + global.config.general.port + '/templates/' + fileRef + '.html'; //
   else {
     // FILE
     TemplatePathForCasparCGServer =  fileRef; // as-is, a filepath in CasparCG server's own template-path directory

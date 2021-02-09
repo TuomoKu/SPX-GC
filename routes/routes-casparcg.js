@@ -9,11 +9,7 @@ const path = require('path');
 const logger = require('../utils/logger');
 logger.debug('Caspar-route loading...');
 const spx = require('../utils/spx_server_functions.js');
-const open = require('open'); // open url in browser
 
-const ip = require('ip')
-const ipad = ip.address(); // my ip address
-const port = config.general.port || 5000;
 
 
 // ROUTES CCG -----------------------------------------------------------------------------------
@@ -32,7 +28,7 @@ router.get('/system/:data', (req, res) => {
   //
   // NOTE: This ONLY WORKS in Windows!
   // 
-  data = JSON.parse(req.params.data);
+  const data = JSON.parse(req.params.data);
   let directoryPath = "";
   logger.verbose('System utilities / ' + JSON.stringify(data));
   res.sendStatus(200);
@@ -47,12 +43,12 @@ router.get('/system/:data', (req, res) => {
       // break;
 
     case 'DATAFOLDER':
-      directoryPath = path.normalize(config.general.dataroot);
+      directoryPath = path.normalize(global.config.general.dataroot);
       require('child_process').exec('start "" ' + directoryPath);
       break;
 
     case 'TEMPLATEFOLDER':
-      directoryPath = path.normalize(config.general.templatefolder);
+      directoryPath = path.normalize(global.config.general.templatefolder);
       require('child_process').exec('start "" ' + directoryPath);
       break;
 
@@ -72,10 +68,10 @@ router.get('/system/:data', (req, res) => {
 
 router.get('/clearchannels/:data', (req, res) => {
   // TODO: This has caused issues with secondary CCG servers at some point... 
-  data = JSON.parse(req.params.data);
+  const data = JSON.parse(req.params.data);
   logger.info('ClearChannels / ' + JSON.stringify(data));
   res.sendStatus(200);
-  const directoryPath = path.normalize(config.general.dataroot);
+  const directoryPath = path.normalize(global.config.general.dataroot);
   let profilefile = path.join(directoryPath, 'config', 'profiles.json');
   const profileDataAsJSON = spx.GetJsonData(profilefile);
 
@@ -98,13 +94,11 @@ router.get('/clearchannels/:data', (req, res) => {
       });
     }
   }
-  const unique = (value, index, self) => {
-    return self.indexOf(value) === index
-  }
+  const unique = (value, index, self) => self.indexOf(value) === index
   const uniques = allChannels.filter(unique)
   uniques.forEach(item => {
     logger.verbose('ClearChannels / Clearing channel ' + item + ' on server ' + data.server);
-    CCGclient = eval(data.server);
+    global.CCGclient = eval(data.server);
     global.CCGSockets[spx.getSockIndex(data.server)].write('CLEAR ' + item + '\r\n');
   });
 });
@@ -124,12 +118,12 @@ router.get('/control/:data', (req, res) => {
   // - server
   // - channel
   // - layer
-  data = JSON.parse(req.params.data);
+  const data = JSON.parse(req.params.data);
   logger.info('CCG/Control/ ' + JSON.stringify(data));
   res.sendStatus(200);
   var DataStr = "";
 
-  const directoryPath = path.normalize(config.general.dataroot);
+  const directoryPath = path.normalize(global.config.general.dataroot);
   let profilefile = path.join(directoryPath, 'config', 'profiles.json');
   const profileDataAsJSON = spx.GetJsonData(profilefile);
   var arr = profileDataAsJSON.profiles;
@@ -140,10 +134,10 @@ router.get('/control/:data', (req, res) => {
   for (var i = 0; i < arr.length; i++) {
     var obj = arr[i];
     if (obj.name == data.profile) {
-      GFX_Teml = eval("obj.templates." + data.element + ".templatefile");
-      GFX_Serv = eval("obj.templates." + data.element + ".server");
-      GFX_Chan = eval("obj.templates." + data.element + ".channel");
-      GFX_Laye = eval("obj.templates." + data.element + ".layer");
+      GFX_Teml = obj.templates[data.element].templatefile;
+      GFX_Serv = obj.templates[data.element].server;
+      GFX_Chan = obj.templates[data.element].channel;
+      GFX_Laye = obj.templates[data.element].layer;
     }
   }
   logger.debug('CCG/Control - Profile ' + data.profile + "', Template: '" + GFX_Teml, "', CasparCG: " + GFX_Serv + ", " + GFX_Chan + ", " + GFX_Laye);
@@ -155,8 +149,8 @@ router.get('/control/:data', (req, res) => {
         TEMPLATEDATA += spx.CGComponentFactory(item.id, item.value)
       });
     }
-    DataSta = "<templateData>";
-    DataEnd = "</templateData>";
+    const DataSta = "<templateData>";
+    const DataEnd = "</templateData>";
     DataStr = DataSta + TEMPLATEDATA + DataEnd;
   }
 
@@ -204,11 +198,11 @@ router.get('/control/:data', (req, res) => {
 
 
 router.get('/controljson/:data', (req, res) => {
-  data = JSON.parse(req.params.data);
+  const data = JSON.parse(req.params.data);
   logger.info('CCG/controljson ' + JSON.stringify(data));
   res.sendStatus(200);
 
-  const directoryPath = path.normalize(config.general.dataroot);
+  const directoryPath = path.normalize(global.config.general.dataroot);
   let profilefile = path.join(directoryPath, 'config', 'profiles.json');
   const profileDataAsJSON = spx.GetJsonData(profilefile);
   var arr = profileDataAsJSON.profiles;
@@ -222,10 +216,10 @@ router.get('/controljson/:data', (req, res) => {
   for (var i = 0; i < arr.length; i++) {
     var obj = arr[i];
     if (obj.name == data.profile) {
-      GFX_Teml = eval("obj.templates." + data.element + ".templatefile");
-      GFX_Serv = eval("obj.templates." + data.element + ".server");
-      GFX_Chan = eval("obj.templates." + data.element + ".channel");
-      GFX_Laye = eval("obj.templates." + data.element + ".layer");
+      GFX_Teml = obj.templates[data.element].templatefile;
+      GFX_Serv = obj.templates[data.element].server;
+      GFX_Chan = obj.templates[data.element].channel;
+      GFX_Laye = obj.templates[data.element].layer;
       GFX_JSON = JSON.stringify(data.jsonData);
     }
   }
@@ -271,15 +265,16 @@ router.get('/testfunction', (req, res) => {
 const net = require('net')
 let ServerData = [];
 
-if (config.casparcg){
+if (global.config.casparcg){
 
-config.casparcg.servers.forEach((element,index) => {
+global.config.casparcg.servers.forEach((element,index) => {
   const CurName = element.name;
   const CurHost = element.host;
   const CurPort = element.port;
   ServerData.push({ name: CurName, host: CurHost, port: CurPort });
 
   // next two lines creates a dynamic variable for this loop iteration
+  // TODO: but why?
   var CurCCG = CurName + "= undefined";
   eval(CurCCG);
   CurCCG = new net.Socket();
@@ -288,11 +283,11 @@ config.casparcg.servers.forEach((element,index) => {
 
   CurCCG.connect(CurPort, CurHost, function () {
     ServerData.push({ name: CurName, host: CurHost, port: CurPort });
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
-    io.emit('SPXMessage2Client', data);
+    let data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
+    global.io.emit('SPXMessage2Client', data);
 
     data = { spxcmd: 'updateStatusText', status: 'Communication established with ' + CurName + '.' };
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
 
     logger.verbose('GC connected to CasparCG as \'' + CurName + '\' at ' + CurHost + ":" + CurPort + '.');
   });
@@ -311,13 +306,13 @@ config.casparcg.servers.forEach((element,index) => {
       case "40":
         logger.error('Error with ' + CurName + ": " + CCG_RETURN_TEXT + ' - Verify CasparCG\'s (' + CurName + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath() + '.');
         data = { spxcmd: 'updateStatusText', status: 'Error in comms with ' + CurName + '.' };
-        io.emit('SPXMessage2Client', data);
+        global.io.emit('SPXMessage2Client', data);
         break;
 
       case "50":
         logger.error('Failed ' + CurName + ": " + CCG_RETURN_TEXT);
         data = { spxcmd: 'updateStatusText', status: CurName + ' failed.' };
-        io.emit('SPXMessage2Client', data);
+        global.io.emit('SPXMessage2Client', data);
         break;
 
       default:
@@ -329,27 +324,27 @@ config.casparcg.servers.forEach((element,index) => {
 
     // SocketIO call to client
     data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
     if (data.toString().endsWith('exit')) {
-      CCGclient.destroy();
+      global.CCGclient.destroy();
     }
   });
 
   CurCCG.on('close', function () {
     // SocketIO call to client
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#CC0000' };
-    io.emit('SPXMessage2Client', data);
+    let data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#CC0000' };
+    global.io.emit('SPXMessage2Client', data);
     data = { spxcmd: 'updateStatusText', status: 'Connection to ' + CurName + ' was closed.' };
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
     logger.verbose('GC connection to CasparCG \'' + CurName + '\' closed (' + CurHost + ':' + CurPort + ').');
   });
 
   CurCCG.on('error', function (err) {
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#CC0000' };
-    io.emit('SPXMessage2Client', data);
+    let data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#CC0000' };
+    global.io.emit('SPXMessage2Client', data);
 
     data = { spxcmd: 'updateStatusText', status: 'Communication error with ' + CurName + '.' };
-    io.emit('SPXMessage2Client', data);
+    global.io.emit('SPXMessage2Client', data);
 
     logger.warn('GC socket error with CasparCG server ' + CurName + '. CasparCG running?\n', err);
   });
