@@ -346,7 +346,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
   let command      = req.body.command || "";
   let ftype        = req.body.ftype || "";
   let customscript = req.body.customscript || "";
-  let TemplatePath = path.join(curFolder, template);
+  let TemplatePath = path.join(curFolder, template).trim();
   let ProfileFile  = path.join(config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile) || {}; // or empty
 
