@@ -211,7 +211,7 @@ module.exports = {
     logger.debug('getSockIndex / Searching for Socket reference for connection "' + SERVERNAME + '"...');
     let serverIndex = "";
     CCGSockets.forEach(function (item, index) {
-      if (global.CCGSockets[index].spxname == SERVERNAME) {
+      if (global.CCGSockets[index].spxname.toLowerCase() == SERVERNAME.toLowerCase()) {
         serverIndex = index;
         logger.debug('getSockIndex found [' + global.CCGSockets[index].spxname + '] so index is [' + serverIndex + '].');
       }
