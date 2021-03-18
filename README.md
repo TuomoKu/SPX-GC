@@ -2,19 +2,21 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Jan 24 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.10).
+> Readme updated mar 18 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.10).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
 
 _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 
+▶ [spxgc.com](https://spxgc.com)
+
 ![snapshot](screenshots/00-spx-gc-principle2.png)
 
 ---
 
 ### Table of Contents
-- [LIVE DEMO](#demo) 🔥
+- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#website)
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -41,14 +43,28 @@ Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https
 
 ---
 <a id="demo"></a>
-## Live demo 
+## Live demo 🔥
 SPX-GC running in the cloud: **http://35.228.47.121:5000**
 
-Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+> Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+
+<a id="testdrive"></a>
+## Template Store & Testdrive 🔥
+A marketplace for free and premium SPX-GC templates and plugins is opened at [spxgc.com/store](https://spxgc.com/store). Each store item can be testdriven, see these examples:
+
+| Template | Type | TestDrive |
+| ------ | ------ | ------ |
+| **[Bug](https://www.spxgc.com/store/Bug-p291293870)** - You have logo. Why not show it?  | Free | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20Bug) |
+| **[ImageLayer](https://www.spxgc.com/store/ImageLayer-p291331877)** - Pick an image and play.  | Free | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20ImageLayer) |
+| **[Texter](https://www.spxgc.com/store/Texter-p291207513)** - An essential template for unbranded text.  | Premium | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20Texter) |
+| **[TwoTone](https://www.spxgc.com/store/Two-Tone-p245011856)** - You have logo. Why not show it?  | Premium | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20Two-Tone%20Pack) |
+| More ▶ [spxgc.com](https://www.spxgc.com/)  |  |  |
+<BR>
+> Please be aware: just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day.
 
 
 # Screenshots <a id="screenshots"></a>
-| | |
+|  | |
 | ------ | ------ |
 | ![animation](screenshots/spx-gc-ui-anim-v1-0.gif) | SPX-GC UI is browser based and can be operated with a mouse or keyboard. Additonal _extra controls_ can be added as _plugins_ to execute specific tasks or to trigger events in external devices. |
 | ![project list](screenshots/01-spx-gc-projectlist.png) | Content is managed in _projects_. Each project can have unlimited amount of _rundowns_ and _graphics templates_. Projects and their rundowns and settings are stored in _dataroot -folder_. |
@@ -594,6 +610,8 @@ http://localhost:5000/api/v1
 # Issues and Feedback <a id="feedback"></a>
 Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A> or directly by email to [tuomo@smartpx.fi](mailto:tuomo@smartpx.fi).
 
+**A Knowledge Base** is being prepared at [spxgc.tawk.help](https://spxgc.tawk.help/). It will be a growing collection of self-help articles in various SPX-GC related topics.
+
 >All constructive feedback is highly appreciated!
 
 ### _Gotcha's & Known Issues_ (things to be aware of)
@@ -607,15 +625,13 @@ Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used 
 # Roadmap <a id="roadmap"></a>
 New releases will try address found issues and bugs in older versions and they will also introduce new features and functionality. See table for some planned features and use [feedback](#feedback) to submit suggestions.
 
-A marketplace for SPX-GC compatible HTML -templates and plugins will open ~~by the end of 2020~~ soon. 
-
 > When a new version becomes available it will be promoted on the Welcome page of the application (if access to internet). Several versions can be installed (into different folders) and if there are no backwards compatibility issues between versions they can be configured to use the same dataroot and template -folder. 
 
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
 | 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. | Q1/2021 |
-| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI controller integration, global extras editor in appconfig, ~~public API for controls~~, **HTML template marketplace**. Video tutorials. Knowledgebase. Forum. Slack support channel. Free lunches. | TBD |
+| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI interface, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template marketplace~~. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
 
 Strikethrough items are already done.
 
