@@ -16,7 +16,7 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 ---
 
 ### Table of Contents
-- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#website)
+- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive)
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -52,7 +52,7 @@ SPX-GC running in the cloud: **http://35.228.47.121:5000**
 ## Template Store & Testdrive 🔥
 A marketplace for free and premium SPX-GC templates and plugins is opened at [spxgc.com/store](https://spxgc.com/store). Each store item can be testdriven, see these examples:
 
-| Template | Type | TestDrive |
+| Template | Type | Link |
 | ------ | ------ | ------ |
 | **[Bug](https://www.spxgc.com/store/Bug-p291293870)** - You have logo. Why not show it?  | Free | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20Bug) |
 | **[ImageLayer](https://www.spxgc.com/store/ImageLayer-p291331877)** - Pick an image and play.  | Free | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20ImageLayer) |
