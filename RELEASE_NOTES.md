@@ -10,6 +10,10 @@
 - Help feature points globally to Knowledge Base. Content sections ignored for now.
 - Added a "re-import template" functionality to templates in the project settings
 - A bunch of stability imporovements and minor bug fixes
+- Binary packages v1.0.11:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_11_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_11_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_11_linux64.zip)
 
 ## **1.0.10** (Jan 23 2021)
 - Added a "checkbox" ftype to template definition 
