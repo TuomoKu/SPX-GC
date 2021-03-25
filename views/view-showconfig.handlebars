@@ -42,6 +42,20 @@
         post('config/removeTemplate', data, 'post')
       }
 
+    function reimportTemplateIndex(nro)
+      {
+        // This is like "add" but we add replaceIndex number
+        // to the date which forces the post handler to replace
+        // data index instead of adding a new one to the end.
+        let data={};
+        data.command = 'addtemplate';
+        data.curFolder = document.getElementById('curfolder').innerText;
+        data.template = document.getElementById('templateIndex' + nro).value;
+        data.showFolder = document.getElementById('showfolder').value;
+        data.replaceIndex = nro;
+        post('', data, 'post');
+      }
+
 
     function RenderFolder(data)
       {
@@ -203,7 +217,7 @@
           pathItems.pop();
           let targetFolder = pathItems.join('/') + '/';
 
-          if (ConfigTemplateFolder.length > targetFolder.length ){
+          if (ConfigTemplateFolder.length > targetFolder.length ) {
             showMessage(document.getElementById('templaterootmassage').value);
             return;
           }
@@ -329,7 +343,7 @@
             <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
               <tr>
                 <td><span class="spxConfigHead">{{lang 'config.templatefile'}}</span></td>
-                <td><input type="text" class="wide bg_grey15 cfg" placeholder="Template file" name="templateData[relpath]" value="{{relpath}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
+                <td><input type="text" class="wide bg_grey15 cfg" id="templateIndex{{@index}}" placeholder="Template file" name="templateData[relpath]" value="{{relpath}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
               </tr>
               <tr>
                 <td><span class="spxConfigHead">{{lang 'config.description'}}</span></td>
@@ -404,6 +418,13 @@
                     onclick="removeTemplateIndex({{@index}});"
                     onmouseover="tip('{{lang 'hover.removetemplate'}}');"
                     >{{lang 'button.deletetemplate'}}</button>
+                </td>
+                <td width="25%">
+                  <button type="button"
+                    class="wide spxFlexItem btnsmall bg_grey10 ripple black"
+                    onclick="reimportTemplateIndex({{@index}});"
+                    onmouseover="tip('{{lang 'hover.replacetemplate'}}');"
+                    >{{lang 'button.replacetemplate'}}</button>
                 </td>
                 <td>&nbsp;</td>
                 <td width="25%" class="aright">
@@ -642,9 +663,8 @@
         });
       }
 
-
-
       spxInit('');
+      AppState("EDITING");
     }
   </script>
 </body>

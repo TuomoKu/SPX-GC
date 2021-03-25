@@ -25,11 +25,23 @@ router.get('/files', async (req, res) => {
 }); // files route ended
 
 router.get('/logger/', async (req, res) => {
-  // Minimalistic logger for template messages
+  // Minimalistic GET logger for template messages
   let message = req.query.message
   let source  = req.query.source
   let level   = req.query.level.toLowerCase()
   let channel = req.query.channel
+  let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message
+  // console.log(msg);
+  eval('logger.' + level + '(msg)'); // nasty, eh?
+  res.sendStatus(200)
+}); // files route ended
+
+router.post('/logger/', async (req, res) => {
+  // Minimalistic POST logger for template messages
+  let message = req.body.message
+  let source  = req.body.source
+  let level   = req.body.level.toLowerCase()
+  let channel = req.body.channel
   let msg = '(api/logger, ' + channel + ', ' + source + '): ' + message
   // console.log(msg);
   eval('logger.' + level + '(msg)'); // nasty, eh?

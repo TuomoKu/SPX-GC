@@ -346,95 +346,6 @@ app.engine('handlebars', exphbs({
     },
 
 
-      // "a new version available" messaging functionality. 
-      // TODO: REMOVE THIS HELPER. It's async and dont work with handlebars
-      // Must make a middleware and pass resulting data to handlebars. Doh!
-      getNotifications(){
-        let html = "<!-- notification service  -->";
-        spx.checkInternetConnection(function(online) {
-          if (!online) {
-            let msg = 'No internet connection available for version check.'
-            logger.verbose(msg);
-            return '<!-- ' + msg + ' -->';
-          }
-        });
-
-        // console.log('1. Yes, we have internet connection.');
-        logger.verbose('Checking for new versions...');
-        spx.datarootSize().then(function(sizeArr){
-          axios({
-            url: 'https://www.smartpx.fi/gc/messageservice',
-            params:   {
-                vers: vers,
-                osys: process.platform,
-                proj: spx.padstr(sizeArr[0],5),
-                rund: spx.padstr(sizeArr[1],5),
-                hwid: 'hwid not implemented in this version'
-            }
-          })
-        .then(function(response){
-          console.log('3: response from server', response.data)
-
-          // LATEST VERSION CHECK and NOTIFICATION
-          let latestversion = response.data.latest.vers;
-          if (spx.versInt(latestversion)>spx.versInt(vers)){
-            // we are currently NOT in the latest version of the app
-            console.log('There is newer available!');
-            let latestDate = response.data.latest.date;
-            let latestHead = response.data.latest.head;
-            let latestBody = response.data.latest.body;
-            let latestCall = response.data.latest.call;
-            let latestLink = response.data.latest.link;
-            let latestHref = response.data.latest.href;
-            html += '<!-- UPGRADE INFO -->\n'
-            html += '<div class="message-upgrade" id="upgradeinfo">\n'
-            html += '  <div class="messagedate" id="upgrade_date">' + latestDate + '</div>\n'
-            html += '  <div class="messageheadline" id="upgrade_headline">' + latestHead + '</div>\n'
-            html += '  <div class="messagebody" id="upgrade_body">' + latestBody + '</div>\n'
-            html += '  <BR>\n'
-            html += '  <div id="messagelink" class="message-upgrade"><span id="upgrade_calltoaction">' + latestCall + '</span><a href="' + latestHref + '" id="upgrade_link">' + latestLink + '</a></div>\n'
-            html += '</div>\n'
-            html += '<!-- end of upgrade info -->\n'
-          }
-          else
-          {
-            console.log('Were good');
-            html += "<!-- we are on latest version " + vers + ". -->\n";
-          }
-          // console.log('Latest version according to smartpx: ', response.data.latest.vers);
-
-          // OTHER ANNOUNCEMENTS ACTIVE?
-          if (response.data.notification && response.data.notification.type!="none"){
-            // yes, there is more to notify
-            console.log('There is something else to notify about!');
-            let notificationType = response.data.notification.type; // none | warn | info
-            let notificationDate = response.data.notification.date;
-            let notificationHead = response.data.notification.head;
-            let notificationBody = response.data.notification.body;
-            let notificationCall = response.data.notification.call;
-            let notificationLink = response.data.notification.link;
-            let notificationHref = response.data.notification.href;
-            html += '<!-- NOTIFICATION -->\n';
-            html += '<div class="message-' + notificationType + '" id="notificationinfo">\n';
-            html += '<div class="messagedate" id="notification_date">' + notificationDate + '</div>\n';
-            html += '<div class="messageheadline" id="notification_headline">' + notificationHead + '</div>\n';
-            html += '<div class="messagebody" id="notification_body">' + notificationBody + '</div>\n';
-            html += '<BR>\n';
-            html += '<div id="notificationlink" class="message-' + notificationType + '"><span id="notification_calltoaction">' + notificationCall + '</span><a href="' + notificationHref + '" id="notification_link">' + notificationLink + '</a></div>\n';
-            html += '</div>\n';
-            html += '<!-- end of notofication -->\n';
-          }
-
-          console.log('RETURNING ' + html);
-          return "Paskaa" //html
-
-        })
-        .catch((error) => {
-          console.error(error)
-        })
-      })
-  }, 
-
 
     // return username
     CurrentUserName()
@@ -509,6 +420,27 @@ app.engine('handlebars', exphbs({
       var ip = require('ip');
       var myIP = ip.address() + ':' + port;
       return myIP;
+    },
+
+
+    hookLoadControllerPlugins: function () {
+      // Loads init.js files from all sub folders of ASSETS/plugins/<plugName>/
+      let html = '';
+      try {
+        let BrowseFolder = path.join(__dirname, 'ASSETS', 'plugins');
+        const list = spx.GetFilesAndFolders(BrowseFolder);
+        list.foldArr.forEach(pluginName => {
+          if ( pluginName.charAt(0) == '_' || pluginName === 'lib' ) {
+            html += '<!-- Note: disabled plugin ' + pluginName + ' skipped. -->\n'
+          } else {
+            console.log('Loading plugin ' + pluginName );
+            html += '<script type="module" src="/plugins/' + pluginName + '/init.js"></script>\n'
+          }
+        })
+      } catch (error) {
+        html = '<!-- hookLoadControllerPlugins error: ' + error + ' -->';
+      }
+      return html
     },
 
     // Convert JSON \\n to newline for textarea
@@ -721,6 +653,8 @@ const { prependListener } = require('process'); // const { prependListener } = r
 const { request } = require('http')
 const { data } = require('./utils/logger.js')
 const { Z_VERSION_ERROR } = require('zlib')
+const { resolve } = require('path')
+const { rejects } = require('assert')
 app.use('/CCG', ROUTEccg);
 
 process.on('uncaughtException', function(err) {

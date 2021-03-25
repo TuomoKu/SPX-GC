@@ -85,9 +85,23 @@ function stopAll(){
             }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
         });
     }
+	
+function playAll(){
+    // Will send PLAY commands to all layers used by current rundown.
+    // Timeout here allows some time for server to handle the incoming commands. 
+    // TODO: Far from elegant but kind of works. A better approach would be to 
+    // develop a server-side function for this. 
+    let ITEMS = document.querySelectorAll('.itemrow');
+    ITEMS.forEach(function (templateItem, itemNro) {
+        console.log('iterate row ' + itemNro);
+        setTimeout(function(){ 
+			playItem(templateItem,'play')
+            }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
+        });
+    }
 
 
-function openWebpage(url='/help'){
+function openWebpage(url='https://spxgc.tawk.help/'){
     // Opens a new browser tab with url given.
     // let tabName = "_helper";
     console.log("Hello ", url);
@@ -169,6 +183,5 @@ function lottieBumber(){
     x = ajaxpost('/gc/playout',data,'true');                            // true is prepopulation
     console.log('Response:',x);
 }
-
 
 

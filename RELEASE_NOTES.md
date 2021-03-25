@@ -4,6 +4,13 @@
 
 ---
 
+## **1.0.11** (Mar 25 2021)
+- Added a "button" ftype to template definition 
+- Added ASSETS/plugins functionality for custom plugins. See README > plugins for info.
+- Help feature points globally to Knowledge Base. Content sections ignored for now.
+- Added a "re-import template" functionality to templates in the project settings
+- A bunch of stability imporovements and minor bug fixes
+
 ## **1.0.10** (Jan 23 2021)
 - Added a "checkbox" ftype to template definition 
 

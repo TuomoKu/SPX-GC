@@ -3,7 +3,6 @@
 (c) Copyright 2020 SmartPX <tuomo@smartpx.fi, www.smartpx.fi>
 -------------------------------------------------------------
 CasparCG / WebCG controller interface
-
 updated 05.11.2020
 -------------------------------------------------------------
 */
@@ -17,6 +16,7 @@ webcg.on('data', function (data) {
     var domElement = document.getElementById(fField);
     if (domElement) {
       let value = data[fField].text || data[fField] || '';
+      if (value == "undefined") value = ""; // Clear "undefined" which appears if a) data is empty and b) format is xml.
       if (value == "null") value = ""; // Clear "null" which appears if a) data is empty and b) format is xml.
       domElement.innerHTML = value;
     }

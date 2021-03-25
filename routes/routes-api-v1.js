@@ -10,6 +10,12 @@
 
   -WORK IN PROGRESS-
 
+  TODO:
+  New endpoints are needed for a direct playout of 
+  items without a need to have those on active rundown.
+  - play(options)
+  - stop(server/channel/layer)
+
 --------------------------------------------- */
 
 var express = require("express");

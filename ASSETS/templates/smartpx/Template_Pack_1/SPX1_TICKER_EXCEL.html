@@ -28,6 +28,7 @@
             gsap.set("#line1", { opacity: 1 });
             gsap.set("#TICKER", {display:"block"});
             gsap.to("#TICKER",   0.5, {opacity: 1});
+            gsap.fromTo(".tickerZone",     { opacity:    0 }, { delay: 0.05, duration: 0.1, opacity: 1,   ease: "none" }); 
             gsap.fromTo(
                 "#TICKER",
                 dur,
@@ -85,6 +86,7 @@
             top: 85.5%;
             z-index: 10;
             padding: 0;
+            opacity: 0; /* animated */
         }
 
         .tgpos{
@@ -131,7 +133,7 @@
             padding:            0.6rem 2rem 0.1rem 2rem;
             opacity:            0;  
             box-shadow:         black 10px 0px 30px;
-            background-color:   #941212;
+            background-color:   #53079b;
             color:              rgb(255, 255, 255);
         }
 
@@ -140,7 +142,7 @@
 
     <script>
         window.SPXGCTemplateDefinition = {
-            "description": "Google Sheet Ticker",
+            "description": "Excel Ticker",
             "playserver": "OVERLAY",
             "playchannel": "1",
             "playlayer": "3",
@@ -150,7 +152,7 @@
             "DataFields": [
                 {
                     "ftype" :           "instruction",
-                    "value" :           "News ticker from Excel file. Names of worksheets will be used as separators. File will be read continuously while ticker is running."
+                    "value" :           "News ticker from Excel file. Names of worksheets will be used as separators. File will be read at each section change while ticker is running. This is an example from the default template pack. For more templates see ▶ spxgc.com/store"
                 },
                 {
                     "field":            "f0",

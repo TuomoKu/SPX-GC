@@ -18,8 +18,8 @@
   <script src="/js/spx_gc.js"></script>
   <script src="/js/axios.min.js"></script>
   <script>
-    function github() {
-      window.open('https://github.com/TuomoKu/SPX-GC', '_github');
+    function website() {
+      window.open('https://spxgc.com', '_spxgccom');
     }
 
     function start() {
@@ -200,8 +200,8 @@
               <td>
                 <img src="/img/spx-gc-home-256.png" style="width: 64px; float:right; margin-right: 1em;">
                 <h1 style="padding:0px; margin:0px;">SPX-GC</h1>
-                SPX Graphics Controller <span style="opacity:0.5;">v.{{{ShowVersion}}}</span><BR>
-               <span class="spxTableHeadsmallXX spxInfotext" style="font-size: 0.8em; opacity:0.5;">
+                SmartPX Graphics Controller <BR>
+               <span class="spxInfotext" style="font-size: 0.8em; opacity:0.5;">
                 {{lang 'general.slogan'}}<BR>
 
                 {{#if greeting}}
@@ -230,17 +230,9 @@
                 <button onmouseover="tip('{{lang 'hover.navishows'}}');" class="spxformtext btn spxFlexItem bg_orange ripple" onclick="start();">{{lang 'button.launch'}}</button>
                 <button onmouseover="tip('{{lang 'hover.config'}}');" class="spxformtext btn spxFlexItem bg_grey15 ripple" onclick="appconfig()"><i class="fas fa-wrench"></i>&nbsp;{{lang 'button.config'}}</button>
                 <button onmouseover="tip('{{lang 'hover.docs'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="help('/')">{{lang 'button.help'}}</button>
-                <button onmouseover="tip('{{lang 'hover.github'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="github()">Github</button>
+                <button onmouseover="tip('{{lang 'hover.github'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="website()">spxgc.com</button>
               </div>
 
-<!--
-              <HR>
-              <h2>Rundown improvements in v.1.0.4</h2>
-              <P class="welcome">The inner workings of the rundown has been re-written for more stable operation and this change will help developing the app further. These changes <B>may</B> affect to rundowns which have been made in version 1.0.2 or older. <span style="color: orange">It is recommended to create new rundowns for this version.</span></P>
-              <P class="welcome">
-                User interface is simplified a little: <B>continue</B> and <b>update</b> buttons are moved to relevant part of the UI. Items can be duplicated with <i class="far fa-clone"></i> icon or Ctrl+D shortcut. And as always, use keyboard shortcuts <B>UP</B> and <B>DOWN</B> to change focus, <B>ENTER</B> to open items for editing and <B>SPACEBAR</B> to Play or Stop an item.</P>
-                <P class="welcome">Press F1 in the controller for a list of keyboard shortcuts.</P>
--->                
               <BR>
               <BR>
               <A href="https://youtu.be/e5LTFC9MlOI" target="_yt">Introduction video (v 1.0.0)</A>:<BR><BR>
@@ -285,7 +277,17 @@
         let currntVer = document.getElementById('footerVerDisplay').innerText;
         let latestVer = messages.latest.vers;
         let dbggreet  = messages.dbggreet || "";
-        if (messages.latest.vers && versInt(latestVer) > versInt(currntVer) || document.getElementById('greeting').innerText == dbggreet ){
+
+        // this has been broken until 1.0.11
+        let debugNotifications = false;
+        if ( document.getElementById('greeting') && document.getElementById('greeting').innerText!='' ) {
+          if ( dbggreet == document.getElementById('greeting').innerText ) {
+            // if config.greeting == message.greeting then debug it!
+            debugNotifications = true;
+          }
+        }
+        
+        if (messages.latest.vers && versInt(latestVer) > versInt(currntVer) || debugNotifications ){
           // Yes, there is new version available
           localStorage.setItem('SPX-GC-NewVersion',latestVer);
           document.getElementById('upgradeinfo').style.display="block";
@@ -297,7 +299,7 @@
           document.getElementById('upgrade_link').innerText=messages.latest.link;
         }
         
-        if (messages.notification.type && messages.notification.type!="none" || document.getElementById('greeting').innerText == dbggreet){
+        if (messages.notification.type && messages.notification.type!="none" || debugNotifications ){
           // Yes, there is something else to announce
           document.getElementById('messageinfo').style.display="block";
           document.getElementById('messageinfo').classList="message-" + messages.notification.type;
@@ -309,11 +311,7 @@
           document.getElementById('message_link').href=messages.notification.href;
           document.getElementById('message_link').innerText=messages.notification.link;
         }
-
-
-
-
-        console.log('Latest: ' + latestVer);
+        // console.log('Latest: ' + latestVer);
 
       })
       .catch((error) => console.log(error))
@@ -327,7 +325,7 @@
       let MinorInt = parseInt(parts[1].trim())*1000
       let PatchInt = parseInt(parts[2].trim())
       let versInt  = (MajorInt + MinorInt + PatchInt);
-      console.log('Semver ' + semver + ' = versInt ' + versInt);
+      // console.log('Semver ' + semver + ' = versInt ' + versInt);
       return versInt
     }
 

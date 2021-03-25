@@ -441,6 +441,7 @@ talk: async function (message){
 
 
 prettifyName: function (fullFilePath){
+  if (!fullFilePath) return "";
   try {
     // request ..... a long file name with some slashes ("c:/temp/some_file-name.html")
     // return ...... nice name ("some file name")
@@ -457,7 +458,8 @@ prettifyName: function (fullFilePath){
     niceStringOut = niceStringOut.split("-").join(" ");
     return niceStringOut;
   } catch (error) {
-    logger.error('ERROR in spx.prettifyName (fullFilePath: ' + fullFilePath + '): ' + error);  
+    logger.error('ERROR in spx.prettifyName (fullFilePath: ' + fullFilePath + '): ' + error);
+    return ""  
   }
 },
 

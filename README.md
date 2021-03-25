@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated mar 18 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.10).
+> Readme updated Mar 25 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.11).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -23,7 +23,7 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 - [Configuration](#config)
 - [Projects and rundowns](#dataroot)
 - [HTML templates](#templates) and [template definition](#templatedefinition)
-- [Custom controls](#projectextras)
+- [Custom controls](#projectextras) and [Plugins](#plugins)
 - [Using SPX-GC with OBS (or vMix, Wirecast, XSplit...)](#streaming)
 - [Control with external devices (Stream Deck etc)](#controlApi)
 - [Product roadmap](#roadmap)
@@ -300,6 +300,7 @@ An example `config.json` of the SPX-GC server
 **`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
 
 <a id="globalextras"></a> **`globalExtras{}`** are additional user interface controls, or _plugins_, shown below preview window in all project as opposed to [projectExtras](#projectextras) which are project specific. Each item has an UI component (a button) and associated function call available in the specified `javascript file`. When a new `config.json` is created it has some demo extra controls to introduce related consepts and possibilities.
+> **PLEASE NOTE:** Global extras will be replaced by [Plugins](#plugins) in future versions, since they are easier to install and maintain.
 
 ----
 
@@ -539,6 +540,13 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
                 "ftype": "checkbox",
                 "title": "Show logo",
                 "value": "1",
+            },
+            {
+                "field": "f6",
+                "ftype": "button",
+                "title": "Click me",
+                "descr": "Describe button function here",
+                "fcall": "myCustomHello('world')"
             }
         ]
     };
@@ -605,6 +613,12 @@ See available commands here:
 http://localhost:5000/api/v1
 ```
 
+# Plugins and Extensions <a id="plugins"></a>
+Version 1.0.10 introduced `ASSETS/plugins` -folder for additional functionality, such as custom function triggering `plugin buttons` and `extensions` which are additional user interfaces or panels. For instance [Scoreboard](https://www.spxgc.com/store/Scoreboard-plugin-p313595701) is a sports clock extension with an independent user interface. Another example is a SocialPlayout - an upcoming extension for moderating and LIVE playout of social messages from various social media platforms, such as Twitter, Instagram, Facebook, Youtube, etc.
+
+Each plugin has a subfolder with at least an init.js file and optionally other folders and files, such as html, css and js.
+
+plugins/lib -folder contains common SPX-GC user interface elements used by plugins. More functionality and UI controls will be added here in future releases. These can be checkboxes, dropdown selectors etc.
 
 
 # Issues and Feedback <a id="feedback"></a>

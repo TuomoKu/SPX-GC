@@ -26,23 +26,13 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
 
+  {{{ hookLoadControllerPlugins }}}
+
   <script>
     // See: js/spx_gc.js
   </script>
 </head>
 
-<!-- TODO: Refactoring task for the 1.1 release.
-
-    Refactor items to use unique ID's instead of DOM indexes.
-
-    The change will considerably simplify processes and remove
-    a lot of spagetti code and complexity. It's a major change
-    and will have an effect in many areas so it will also take
-    a bit of time to do properly, which I don't at the moment.
-
-    TK 21.08.2020
-
--->
 
 
 
@@ -299,6 +289,26 @@
                               {{/ifValue}}
 
 
+                              {{#ifValue ftype "button"}}
+                                <!-- "BUTTON" TYPE OF TEMPLATE FIELD (added in 1.0.11) --> 
+                                <div class="wide HIDE">
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="button"></td></tr>
+                                    <tr><td class="aright">fcall</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][fcall]" value="{{fcall}}"></td></tr>
+                                    <tr><td class="aright">title</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][title]" value="{{title}}"></td></tr>
+                                    <tr><td class="aright">descr</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][descr]" value="{{descr}}"></td></tr>
+                                  </table>
+                                </div>
+                                <div class="gcpluginbuttondiv" style="white-space: nowrap;">
+                                    <button type="button"
+                                      onClick="{{fcall}}" 
+                                      data-test="KOE: {{value}}-{{fcall}}-{{ftype}}-{{text}}"
+                                      class="btnsmall ripple bg_grey15"
+                                      >{{title}}</button>&nbsp; &nbsp;<span class="gcplugindescription">{{descr}}</span>
+                                </div>
+                              {{/ifValue}}
+
+
                               {{#ifValue ftype "textarea"}}
                                 <!-- "TEXTAREA" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -408,7 +418,12 @@
                           </TD>
                           <TD class="vtop center">
                             <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
-                            <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i>
+                            <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
+                            <!-- import export buttons: -->
+                            <!-- TODO:
+                            <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
+                            <i id="importCSV{{@index}}" class="l-icon fas fa-file-import" onClick="appendItemsFromCSV();"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i>
+                            -->
                           </TD>
                         </TR>
                         <TR>
@@ -498,9 +513,16 @@
           
           <HR id="previewWidthRuler"> <!-- ===========================================================  -->
 
-          <script src="{{profiledataObj.showExtras.customscript}}"></script>
-          {{{ GenerateCustomControls profiledataObj.showExtras.CustomControls }}}
-          <script src="{{globalExtras.customscript}}"></script>
+          <div id="controllerPluginButtons" style="border:0px dashed yellow">
+
+            <!-- plugins zone -->
+              
+
+          </div>
+
+          <!-- <script src="{{profiledataObj.showExtras.customscript}}"></script> -->
+          <!-- {{{ GenerateCustomControls profiledataObj.showExtras.CustomControls }}} -->
+          <script defer src="{{globalExtras.customscript}}"></script>
           {{{ GenerateCustomControls globalExtras.CustomControls }}}
 
         </div>

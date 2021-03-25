@@ -39,10 +39,10 @@
     <meta charset="utf-8" />
     <title>TICKER SCROLL</title>
     <script src="https://apis.google.com/js/api.js"></script>
-    <script src="js/webcg-framework.umd.js"></script>
-    <script src="js/gsap3.2.6.min.js"></script>
     <script src="js/jquery-3.3.1.min.js"></script>
-    <script type="text/javascript" src="js/spx_cmdhandler.1.2.js"></script>
+    <script src="js/gsap3.2.6.min.js"></script>
+    <script src="js/webcg-framework.umd.js"></script>
+    <script src="js/spx_cmdhandler.1.2.js"></script>
     <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
     <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
     <link rel="stylesheet" type="text/css" href="customize.css" />
@@ -173,22 +173,30 @@
             Name is formatted: ".SECTION_<name>" and must be available as template
             data in f2, such as "NEWS, SPORT, WEATHER", and also in the Google Sheet
             and a CSS class for each here.
+
+            Note, if Worksheet name has a space in it (such as "SPORT NEWS") the
+            class name must be "SECTION_SPORT_NEWS" (ie. with underscore as space)
         */
 
+        .SECTION_TOPICS {
+            background-color:   #000000;
+            color:              #ffffff;
+        }
+
         .SECTION_NEWS {
-            background-color:   #941212;
-            color:              rgb(255, 255, 255);
+            background-color:   #6f1a85;
+            color:              #ffffff;
         }
 
 
         .SECTION_TECHNOLOGY  {
-            background-color:   #dd9701;
-            color:              rgb(255, 255, 255);
+            background-color:   #790334;
+            color:              #ffffff;
         }
 
         .SECTION_BUSINESS {
-            background-color:   #4c8814;
-            color:              rgb(255, 255, 255);
+            background-color:   #210849;
+            color:              #ffffff;
         }
 
 
@@ -200,7 +208,7 @@
 
     <script>
         window.SPXGCTemplateDefinition = {
-            "description": "News ticker from Spreadsheet",
+            "description": "News ticker from Google Sheet",
             "playserver": "OVERLAY",
             "playchannel": "1",
             "playlayer": "3",
@@ -210,10 +218,8 @@
             "uicolor": "7",
             "DataFields": [
                 {
-                    "field" : "info",
-                    "ftype" : "caption",
-                    "title" : "",
-                    "value" : "Ticker with Google Sheet as the data source. Please change API-KEY and DOCUMENT-ID to your own. Read sourcecode for comments. "
+                    "ftype" : "instruction",
+                    "value" : "Ticker with Google Sheet as the data source. Please change API-KEY and DOCUMENT-ID to your own. Read sourcecode for comments. This is an example from the default template pack. For more templates see ▶ spxgc.com/store"
                 },
                 {
                     "field" : "f0",
@@ -222,17 +228,21 @@
                     "value" : "1scpoPiIc7-Vi_BWW4KFndowM_4AD7isMZKIw1_fP7_0"
                 },
                 {
-                    "field" : "f1",
-                    "ftype" : "textfield",
-                    "title" : "Worksheets (tabs) to read",
-                    "value" : "NEWS, TECHNOLOGY, BUSINESS"
-                },
-                {
                     "field" : "f2",
                     "ftype" : "textfield",
                     "title" : "Google API-KEY",
                     "value" : "AIzaSyB9jTBHXWu5INdNgwyAAHZMPnuIqeXjks4"
                 },
+                {
+                    "ftype" : "instruction",
+                    "value" : "Below Worksheets will be read from the Google Sheet document. You can specify CSS colors for each."
+                },
+                {
+                    "field" : "f1",
+                    "ftype" : "textfield",
+                    "title" : "Worksheets (tabs) to read",
+                    "value" : "NEWS, TECHNOLOGY, BUSINESS"
+                }
             ]
         };
     </script>
@@ -255,9 +265,9 @@
 
     <!-- invisible are for incoming template values -->
     <div style="display: none;" data-info="Hidden placeholders for template data:">
-        <div id="f0" data-info="Document ID placeholder">1scpoPiIc7-Vi_BWW4KFndowM_4AD7isMZKIw1_fP7_0</div>
-        <div id="f1" data-info="Worksheets list placeholder">NEWS, TECHNOLOGY, BUSINESS</div><!-- NEWS, TECHNOLOGY, BUSINESS -->
-        <div id="f2" data-info="API-KEY placeholder">AIzaSyB9jTBHXWu5INdNgwyAAHZMPnuIqeXjks4</div>
+        <div id="f0" data-info="Document ID placeholder"></div>
+        <div id="f1" data-info="Worksheets list placeholder"></div>
+        <div id="f2" data-info="API-KEY placeholder"></div>
     </div>
 
 <script>
@@ -307,6 +317,8 @@
             SheetNames.forEach(worksheetName => {
                 rangesArray.push(`${worksheetName.trim()}!${SHEET_COL}${SHEET_ROW}:${SHEET_COL}`)
             });
+
+            console.log('RangesArray:', rangesArray);
 
             gapi.client.init({
                 'apiKey': document.getElementById('f2').innerText,
@@ -381,13 +393,19 @@
             console.log('PAUSED: Not playing Ticker')
             return
         }
-        let SectionName = TickerData[CurrentSectionIndex].section;
-        document.getElementById('SectionHeader').innerText = SectionName;
-        document.getElementById('SectionHeader').classList = "font3 tab ANTISKEW SECTION_" + SectionName.toUpperCase();
-        console.log('---- Playing section ' + SectionName);
-        gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
-        gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
-        gsap.ticker.add(scrollToLeft);
+        try {
+            if (TickerData) {
+                let SectionName = TickerData[CurrentSectionIndex].section || '';
+                document.getElementById('SectionHeader').innerText = SectionName;
+                document.getElementById('SectionHeader').classList = "font3 tab ANTISKEW SECTION_" + SectionName.toUpperCase().replace(' ', '_');
+                console.log('---- Playing section ' + SectionName);
+                gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
+                gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
+                gsap.ticker.add(scrollToLeft);
+            }
+        } catch (error) {
+            console.warn('Some problem playing ticker', error)
+        }
     }
 
     function scrollToLeft() {
@@ -429,10 +447,11 @@
     }
 
     function play() {
+        gapi.load('client', start);
         runAnimationIN()
     }
      
-    gapi.load('client', start);
+    
 </script>
 
 </body>

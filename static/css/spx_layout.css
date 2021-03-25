@@ -160,7 +160,22 @@ td.aright{
     margin: 0px 5px 0px 5px  !important;
 }
 
+.gcpluginbuttondiv {
+    display: flex;
+    align-items: center;
+    font-size: 0.6rem;
+    margin-top: 1em;
+    padding: 0.6em 0.4em 0.6em 0.4em;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0.1);
+    border-top: 1px solid rgba(0,0,0,0.7) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+}
 
+.gcplugindescription {
+    font-size: 0.5;
+    color:  rgba(255,255,255,0.5);
+}
 
 
 .center {

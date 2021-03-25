@@ -5,12 +5,6 @@
 // (c) 2020-2021 tuomo@smartpx.fi
 // ***************************************
 
-
-/*
-    Personal remarks
-    - if imported template is faulty it will clear profile.json?
-*/
-
 var socket = io();
 
 // Global App State
@@ -461,7 +455,9 @@ function checkKey(e) {
                     break;
                 
                 default: // any other key
-                    document.querySelector('.inFocus').setAttribute("data-spx-changed","true");
+                    if (document.querySelector('.inFocus')) {
+                        document.querySelector('.inFocus').setAttribute("data-spx-changed","true");
+                    }
                     break;
             }
             return;
@@ -883,6 +879,10 @@ function getLayerFromProfile(buttonName) {
 
 
 function help(section) {
+    //
+    // Help is massively a WORK-IN-PROGRESS thing!
+    // Wanna help? Let us know.
+    // 
     // Open help feature. This is a central location to 
     // handle help links. The 'section' argument is optional
     // and can redirect to desired pages/bookmarks...
@@ -890,7 +890,7 @@ function help(section) {
     // request ..... section or <empty>
     // returns ..... opens a tab with help content
 
-    let HELP_ROOT = "https://www.smartpx.fi/gc/help/"
+    let HELP_ROOT = "https://spxgc.tawk.help/"
     let HELP_PAGE = ""
     section = section.toUpperCase()
 
@@ -908,7 +908,8 @@ function help(section) {
         default: break;
     }
 
-    let FULL_URL = HELP_ROOT + HELP_PAGE;
+    // let FULL_URL = HELP_ROOT + HELP_PAGE;
+    let FULL_URL = HELP_ROOT;
     window.open(FULL_URL, 'GCHELP', '_blank,width=980,height=800,scrollbars=yes,location=yes,status=yes');
 } // help ended
  

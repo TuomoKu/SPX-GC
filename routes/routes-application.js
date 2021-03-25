@@ -348,16 +348,18 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
   let customscript = req.body.customscript || "";
   let TemplatePath = path.join(curFolder, template);
   let ProfileFile  = path.join(config.general.dataroot, showFolder, 'profile.json');
-  let profileData = await GetJsonData(ProfileFile) || {}; // or empty
+  let profileData  = await GetJsonData(ProfileFile) || {}; // or empty
+  let replaceIndex = req.body.replaceIndex || ""; // v.1.0.11 replace existing, a reimport
 
   switch (command) {
     case 'addtemplate':
-      // ------------------------------------------------------------------- ADDING TEMPLATE -----------------
+      // ------------------------------------------------------------- ADDING (or RE-ADDING) A TEMPLATE -----------------
 
       // save the folder to app globals for the next potential need...
       global.LastBrowsedTemplateFolder = curFolder;
 
       // scan the file for SPXConfig
+      console.log('File: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
       let templatehtml = templateContents.toString();
       const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
@@ -387,7 +389,13 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
 
       if (profileData.templates){
         // add to existing templates
-        profileData.templates.push(SPXGCTemplateDefinition);
+        if (replaceIndex) {
+          // v.1.0.11 Replace existing template item
+          profileData.templates[replaceIndex] = SPXGCTemplateDefinition;
+        } else {
+          // add new one to the end
+          profileData.templates.push(SPXGCTemplateDefinition);
+        }
       } else {
         // create new templates array
         profileData.templates=[SPXGCTemplateDefinition];
@@ -779,25 +787,26 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         // We pass data as custom JSON format and the format is changed
         // downstream in the playout controller as per renderer's needs.
         let FieldItem={};
-        if (item.field){
+        if ( item.field ) {  
             FieldItem.field = item.field;
-            // FieldItem.value = item.value;
-            let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
-            let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
 
+            if ( item.value ) { // TODO: bug alert (&& item.field.value) check if there IS value to begin with. Added 29.01.2021
+              // FieldItem.value = item.value;
+              let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
+              let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
 
-            // I am losing sleep over this - but it works! (Added 26.10.2020)
-            // console.log('Before HTMLentityfication: [' + temp2 + ']');
-            temp2 = temp2.replace(/&/g, "&amp;");
-            temp2 = temp2.replace(/>/g, "&gt;");
-            temp2 = temp2.replace(/</g, "&lt;");
-            temp2 = temp2.replace(/"/g, "&quot;");
-            temp2 = temp2.replace(/'/g, "&#039;");
-            temp2 = temp2.replace(/\\/g, "&#92;");
-            // console.log('After HTMLentityfication: [' + temp2 + ']');
+              // I am losing sleep over this - but it works! (Added 26.10.2020)
+              // console.log('Before HTMLentityfication: [' + temp2 + ']');
+              temp2 = temp2.replace(/&/g, "&amp;");
+              temp2 = temp2.replace(/>/g, "&gt;");
+              temp2 = temp2.replace(/</g, "&lt;");
+              temp2 = temp2.replace(/"/g, "&quot;");
+              temp2 = temp2.replace(/'/g, "&#039;");
+              temp2 = temp2.replace(/\\/g, "&#92;");
+              // console.log('After HTMLentityfication: [' + temp2 + ']');
 
-
-            FieldItem.value = temp2;
+              FieldItem.value = temp2;
+            }
             dataOut.fields.push(FieldItem);
         }
       });
@@ -808,7 +817,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     if ( req.body.command == 'playonce') {
       playOutCommand = "play";
       preventSave = true;
-      logger.verbose('Note playonce command received,  preventSave = true');
+      logger.verbose('Note playonce command received, preventSave = true');
     } else {
       playOutCommand = req.body.command;
     }
@@ -1102,7 +1111,8 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
       let RundownData = await GetJsonData(RundownFile);
       let TempArr = [];
       req.body.newTemplateOrderArr.forEach(function(sortIndex,index){
-        logger.verbose("Sorting. Taking item " + sortIndex + " (" + RundownData.templates[sortIndex].DataFields[0].value + ")-> pushing to index " + index );
+        logger.verbose("Sorting. Taking item " + sortIndex + " -> pushing to index " + index ); // BUG SQUASH. Following fails if there is no "[0].value"
+        // logger.verbose("Sorting. Taking item " + sortIndex + " (" + RundownData.templates[sortIndex].DataFields[0].value + ")-> pushing to index " + index );
         TempArr.push(RundownData.templates[sortIndex]);
       });
       RundownData.templates = TempArr;
