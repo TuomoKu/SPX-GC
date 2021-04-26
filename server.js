@@ -431,7 +431,7 @@ app.engine('handlebars', exphbs({
       // Loads init.js files from all sub folders of ASSETS/plugins/<plugName>/
       let html = '';
       try {
-        let BrowseFolder = path.join(__dirname, 'ASSETS', 'plugins');
+        let BrowseFolder = path.join(spx.getStartUpFolder(), 'ASSETS', 'plugins');
         const list = spx.GetFilesAndFolders(BrowseFolder);
         list.foldArr.forEach(pluginName => {
           if ( pluginName.charAt(0) == '_' || pluginName === 'lib' ) {

@@ -55,8 +55,7 @@ module.exports = {
     let CCGSERVER = global.CCGSockets[this.getSockIndex(data.playserver)];
     if (!CCGSERVER || typeof CCGSERVER === 'undefined')
       {
-        logger.warn('Template requests CasparCG server [' +data.playserver + '] but a server by that name was not found in SPX-GC configuration. Make sure app configuration and project settings match. This does not effect web playout.' )
-        logger.verbose('No CasparCG server configured in SPX-GC. Skipping CCG command ' + data.command);
+        logger.verbose('No CasparCG servers configured (or server [' + data.playserver + '] not found) in SPX-GC. Skipping CCG command ' + data.command);
         return
       }
 
@@ -65,8 +64,6 @@ module.exports = {
         logger.verbose('No CasparCG server configured in the template. Skipping CCG command ' + data.command);
         return
       }
-    
-
     let GFX_Teml = getCCGTemplateFilepath(data.relpathCCG); //  v.1.0.9 = Supports both FILE or HTTP template paths, see config>general.casparcg-template-folder
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
