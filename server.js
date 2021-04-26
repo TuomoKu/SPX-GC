@@ -56,11 +56,20 @@ process.on('exit', function(code) {
   return console.log(`\n\nSPX-GC exit! (Errorcode ${code}: ${codestr})\n\n`);
 });
 
+// global.config
+const cfg = require('./utils/spx_getconf.js');
+cfg.readConfig()
+if (!configfileref){
+    process.exit(1)
+  }
+
+const logger = require('./utils/logger.js');
+const spx = require('./utils/spx_server_functions.js');
+
 
 // STATICS
-app.use(express.static(path.join(__dirname,('static'))))  // the usual css/js stuff... embedded in pkg package
-app.use(express.static('ASSETS'))                         // http root
-
+app.use(express.static(path.join(__dirname,('static'))))                    // the usual css/js stuff... embedded in pkg package
+app.use(express.static(path.resolve(spx.getStartUpFolder(),'ASSETS')))      // http root in startup folder / ASSETS
 
 const ipad = ip.address();
 const open = require('open');
@@ -71,17 +80,6 @@ global.vers = vers;
 global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
 
 console.log('\nGC ' + vers + ' is starting. Closing this window/process will stop the server.\n');
-
-
-// global.config
-const cfg = require('./utils/spx_getconf.js');
-cfg.readConfig()
-if (!configfileref){
-    process.exit(1)
-  }
-
-const logger = require('./utils/logger.js');
-const spx = require('./utils/spx_server_functions.js');
 
 const port = config.general.port || 5000;
 global.CCGSockets = [];

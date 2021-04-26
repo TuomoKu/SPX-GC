@@ -5,23 +5,6 @@
 > Readme updated Apr 26 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.12).
 
 
----
-
-<center>
-
-# ** MAINTENANCE **
-
-**PLEASE NOTE**
-
-Files, links and assets are being modified **right now (2021-04-26)**.
-
-This remark will be taken out in couple of hours once changes completed.
-
-</center>
-
----
-
-
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
 
 _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
@@ -250,7 +233,7 @@ An example `config.json` of the SPX-GC server
 ```json
 {
   "general": {
-    "username": "welcome",
+    "username": "admin",
     "password": "",
     "hostname": "My main machine",
     "langfile": "english.json",

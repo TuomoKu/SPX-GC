@@ -64,7 +64,7 @@ module.exports = {
                     console.log('Please note, starting from v.1.0.12 CasparCG servers are NOT in the config by default and must be added for CasparCG playout to work. Please see the README file for more information.');
                     let cfg                                     = {}
                     cfg.general                                 = {}
-                    cfg.general.username                        = "welcome"
+                    cfg.general.username                        = "admin"
                     cfg.general.password                        = ""
                     cfg.general.hostname                        = ""
                     cfg.general.langfile                        = "english.json"
