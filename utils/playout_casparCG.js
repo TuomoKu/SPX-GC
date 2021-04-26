@@ -44,8 +44,6 @@ module.exports = {
 
   playoutController: function (data){
 
-    console.log('Huhuu');
-
     // We get data object which has
     // - data.command (ADD | STOP | UPDATE)
 
@@ -81,9 +79,6 @@ module.exports = {
     if ( !global.CCGSockets[this.getSockIndex(data.playserver)] ) {
       logger.warn('Server [' + GFX_Serv + '] not found in your config! Make sure configuration and project settings match.' )
     }
-
-    console.log('SRV ' + global.CCGSockets[this.getSockIndex(data.playserver)]);
-
 
     logger.verbose('CasparCG playoutController - command ' + data.command + ', Template: ' + GFX_Teml, ', CasparCG: ' + GFX_Serv + ', ' + GFX_Chan + ', ' + GFX_Laye);
     logger.debug('CasparCG playoutController ' + JSON.stringify(data,null,4));

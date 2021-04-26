@@ -118,13 +118,19 @@
             // 1.0.12 fixes issue #32
             const queryString   = window.location.search;
             const urlParams     = new URLSearchParams(queryString);
-            const limitLayers   = urlParams.get('layers').replace("[","").replace("]","").replace(" ", "").split(","); 
-            if ( !limitLayers || limitLayers.includes(LayerNro) ) {
+            const limitLayers   = urlParams.get('layers');
+            if (limitLayers) {
+                const limitItems   = limitLayers.replace("[","").replace("]","").replace(" ", "").split(","); 
+                if ( limitItems.includes(LayerNro) ) {
+                    console.log('Commands to layer ' + LayerNro + ' allowed.');
+                    return true;
+                }
+                else {
+                    console.log('Commands to layer ' + LayerNro + ' prevented.');
+                    return false;
+                }
+            } else {
                 return true
-            }
-            else {
-                console.log('Commands to layer ' + LayerNro + ' prevented.');
-                return false;
             }
         }
 	
