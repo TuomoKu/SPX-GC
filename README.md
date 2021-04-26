@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Mar 25 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.11).
+> Readme updated Apr 26 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.12).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -21,6 +21,7 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
+- [Add CasparCG server(s)](#addcaspar)
 - [Projects and rundowns](#dataroot)
 - [HTML templates](#templates) and [template definition](#templatedefinition)
 - [Custom controls](#projectextras) and [Plugins](#plugins)
@@ -82,19 +83,21 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 | Package| Build date | Notes |
 |  ------ | ----- | ----- |
-| **Windows**<BR>[SPX-GC_1_0_11_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_11_win64.zip   ) | Jan 08 2021 | The app is cross platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| **MacOS**<BR>[SPX-GC_1_0_11_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_11_macos64.zip ) | Jan 08 2021 | After unzipping use **commandline** and **do not doubleclick** file to start. Read _MAC_ISSUE_PLEASE_READ.txt_ file in the zip regarding [issue (#3)](/../../issues/3) or read this [Knowledge base article](https://spxgc.tawk.help/article/mac-wrong-folder). 6% of current users are on Mac.|
-| **Linux**<BR>[SPX-GC_1_0_11_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_11_linux64.zip ) | Jan 08 2021 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| **Windows**<BR>[SPX-GC_1_0_12_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_12_win64.zip   ) | Apr 26 2021 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| **MacOS**<BR>[SPX-GC_1_0_12_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_12_macos64.zip ) | Apr 26 2021 | The "wrong folder" macOS [issue (#3)](/../../issues/3) got fixed in v1.0.12. If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
+| **Linux**<BR>[SPX-GC_1_0_12_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_12_linux64.zip ) | Apr 26 2021 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
 
 > For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
  Please [get in touch](#feedback) if you have problems downloading or installing these files.
 
 ## Option 1: **Install a pre-built package**
-* Download a zip-file for  your system using one of the links above.
+* Download a zip-file for your system using one of the links above.
 * Create a new folder for the app (for example on Windows `C:/Program Files/SPXGC/`, or on Linux `/SPXGC` ).
 * Extract the zip-file to that folder.
-* Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX-GC server. A console window should open (and remain open) and show some startup information. When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX-GC does _not_ usually require admin priviledges.
-* On Linux or Mac add execute permission to the file (`chmod a+x SPX-GC_linux64 [or ...macos64]`) and launch it in a console (`./SPX-GC_linux64 [or ...macos64]`).
+* Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX-GC server. A console window should open (and remain open) and show some startup information.
+* Chrome browser should launch automatically at server start-up. This can be disabled with a setting in [config.json](#config).
+* When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX-GC does _not_ usually require admin priviledges.
+* On Linux or Mac you _may_ need to add execute permission to the file (`chmod a+x SPX-GC_linux64 [or ...macos64]`) and launch it in a console (`./SPX-GC_linux64 [or ...macos64]`). See this [KB article](https://spxgc.tawk.help/article/make-executable)
 * See next steps in section [first launch](#firstlaunch).
 
 ![files](screenshots/windows-installation.png)
@@ -239,7 +242,8 @@ An example `config.json` of the SPX-GC server
     "port": "5000",
     "dataroot": "X:/DATAROOT/",
     "templatefolder": "X:/GC-DEV/ASSETS/templates/",
-    "templatesource": "spxgc-ip-address"
+    "templatesource": "spxgc-ip-address",
+    "launchchrome": "true"
   },
   },
   "casparcg": {
@@ -293,14 +297,40 @@ An example `config.json` of the SPX-GC server
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
 
-**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options.
+**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
 
 <img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
+
+Localization credits:
+| Language | Contributor | Bundled in version |
+|  ------ | ----- | ----- |
+|  Dutch | Koen W., Netherlands | v1.0.12 |
+
+<BR>
+
 
 **`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
 
 <a id="globalextras"></a> **`globalExtras{}`** are additional user interface controls, or _plugins_, shown below preview window in all project as opposed to [projectExtras](#projectextras) which are project specific. Each item has an UI component (a button) and associated function call available in the specified `javascript file`. When a new `config.json` is created it has some demo extra controls to introduce related consepts and possibilities.
 > **PLEASE NOTE:** Global extras will be replaced by [Plugins](#plugins) in future versions, since they are easier to install and maintain.
+
+<br>
+
+## Adding CasparCG server(s)<a id="addcaspar"></a>
+Starting from v.1.0.12 SPX-GC does not have a CasparCG server assigned by default in the [configuration](#config). To add CasparCG server(s) go to Configuration and scroll down to CasparCG servers. Add a new server by giving it name such as `OVERLAY`, `ip-address` (or `localhost`) and a `port` number (5250 is CasparCG's default port). Click on Save at the bottom of the page and there will be an empty line to add another server. Add as many as you have in your production, such as OVERLAY (for CG's), VIDEOWALL, FULLSCREEN etc... 
+
+> The name `OVERLAY` is preferred, since this name is used in all [SPX-GC Store](https://spxgc.com/store) templates and the default template pack which comes with the application.
+
+<img src="./screenshots/ccgservers.png" align="right" width="450" style="vertical-align:middle;margin-right:10px; margin-top:10px">
+
+Each SPX-GC template has a setting for choosing a target CasparCG server. This server is assigned in the template settings within Project Settings. (Default value comes to the project from the HTML sourcecode of the template as the 'playserver' -parameter of the TemplateDefinition object.) The name must match with one of configured servers for the playout to work.
+
+During production if server name is not found there will be an error message on the console: 
+```js
+// Error message if CasparCG server is not configured
+Template requests CasparCG server [SERVERNAME] but a server by that name was not found in SPX-GC configuration. Make sure app configuration and project settings match. This does not effect web playout.
+```
+> **REMEMBER** SPX-GC server process must be restarted whenever changes are made to configuration. 
 
 ----
 
@@ -557,6 +587,9 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 * **playchannel**: CasparCG playout channel
 * **playlayer**: CasparCG playout layer
 * **webplayout**: a number between 1..20, or "-" for none
+
+> `Layer` is a number between 1..20. Layer 1 is at the very back and 20 is the highest ("closest to the camera"). Layers can be changed for each template in each project separately in the Project Settings.
+
 * **out**: how layer should be taken out:
   * `manual` default way: press STOP to animate out
   * `none` play only. Suitable for wipes / bumpers
@@ -606,7 +639,7 @@ http://localhost:5000/renderer/?layers=[2,4,20]
 # Control SPX-GC with external devices such as Elgato Stream Deck... <a id="controlApi"></a>
 
 <img align="left" width="100" height="100" src="screenshots/streamdeck.png">
-SPX-GC (v.1.0.8+) rundowns can be loaded and controlled with external devices with http-get commands. 
+SPX-GC (v.1.0.8+) rundowns can be loaded and controlled with external devices with http GET/ POST commands. 
 See available commands here:
 
 ```
@@ -622,7 +655,7 @@ plugins/lib -folder contains common SPX-GC user interface elements used by plugi
 
 
 # Issues and Feedback <a id="feedback"></a>
-Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A> or directly by email to [tuomo@smartpx.fi](mailto:tuomo@smartpx.fi).
+Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A>.
 
 **A Knowledge Base** is being prepared at [spxgc.tawk.help](https://spxgc.tawk.help/). It will be a growing collection of self-help articles in various SPX-GC related topics.
 
@@ -644,8 +677,8 @@ New releases will try address found issues and bugs in older versions and they w
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. Help page update, internal ~~logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. | Q1/2021 |
-| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), MIDI interface, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template marketplace~~. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
+| 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. Export/import CSV| Q2/2021 |
+| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template marketplace~~. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
 
 Strikethrough items are already done.
 

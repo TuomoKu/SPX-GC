@@ -72,6 +72,17 @@ socket.on('SPXMessage2Controller', function (data) {
         case 'RundownStopAll':
             stopAll()
             break;
+        
+        case 'RundownAllStatesToStopped':
+            console.log('Turn lights off and set DOM variables. Storage handled separately.')
+            let items = document.querySelectorAll('.itemrow');
+            items.forEach((item,index) => {
+                item.setAttribute('data-spx-onair', 'false');
+                item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+                item.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
+                item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+            });
+            break;
 
 
         // Item commands below
@@ -329,8 +340,6 @@ function AppState(NewState) {
     else{
             sortable.option("disabled", false);
     }
-
-
     APPSTATE = NewState;
     //
     // **********************************************************************
@@ -535,8 +544,9 @@ function clearUsedChannels(ServerName='') {
     // Will call a command over API which will clear passed
     // server or all by default.
     let data = {};
-    data.server     = ServerName;
+    data.server       = ServerName;
     data.foldername   = document.getElementById('foldername').value;
+    data.datafile      = document.getElementById('datafile').value;
     working('Clearing ALL graphic channels used by program [' + data.foldername + ']...');
     ajaxpost('/gc/clearPlayouts',data);
 } //clearUsedChannels
@@ -588,8 +598,38 @@ function continueUpdateStop(command, itemrow='') {
 } // ContinueUpdateStop() ended
 
 
+function revealItemID(button) {
+    // console.log('copyToClipboard', str);
+    let item = button.closest('.itemrow')
+    let ID = item.getAttribute('data-spx-epoch');
 
+    copyText(ID)
 
+    alert("Item ID " + ID + " was copied to clipboard.");
+
+}
+ 
+function copyText(txt) {
+    const temp = document.createElement('input');
+    // temp.style.display = 'none';
+    document.body.appendChild(temp);
+    temp.value = txt;
+    temp.select();
+    // var range = document.createRange();
+    // range.selectNode(temp);
+    // window.getSelection().addRange(range);
+    try
+    {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copy email command was ' + msg);
+    } 
+    catch (err)
+    {
+        console.log('Oops, unable to copy');
+    }
+    temp.parentNode.removeChild(temp);
+}
 
 
 function del() {
@@ -1057,10 +1097,16 @@ function playItem(itemrow='', forcedCommand='') {
         if (data.command=="play" )
             {
                 // Changed in 1.0.9, failed in 1.0.8.
-                let TimeoutAsInt    = parseInt(TimeoutAsString);
-                console.log('Will stop playlistitem [' + itemrow + '] in ' + TimeoutAsInt + ' ms...');
-                AutoOutTimerID = setTimeout(function () { playItem(itemrow); }, TimeoutAsInt);
-                itemrow.setAttribute('data-spx-timerid',AutoOutTimerID);
+                // 1.0.12: Fixed looping issue found by Koen.
+                let TimeoutAsInt = parseInt(TimeoutAsString);
+                console.log('Will stop playlistitem ' + itemrow.getAttribute('data-spx-epoch') + ' in ' + TimeoutAsInt + 'ms...');
+                var AutoOutTimerID = setTimeout(function () {
+                    if (itemrow.getAttribute('data-spx-onair')==='true'){
+                        playItem(itemrow, 'stop');
+                    }
+                    itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
+                }, TimeoutAsInt); 
+                itemrow.setAttribute('data-spx-timerid', AutoOutTimerID);
                 itemrow.querySelector('[data-spx-name="icon"]').classList.add('playAuto');
             }
         else
@@ -1304,6 +1350,9 @@ function removeItemFromRundown(itemrow)
   itemrow.remove();
   event.stopPropagation(); // prevent trying to set focus to a deleted item
 
+  // Update names for potential save at next sort
+  updateFormIndexes()
+
   // send server command
   working('Sending ' + data.command + ' request.');
   ajaxpost('',data);
@@ -1311,22 +1360,12 @@ function removeItemFromRundown(itemrow)
 } // removeItemFromRundown ended
 
 
-
-
-
-function SaveNewSortOrder() {
-    // This will save the rundown opened in GC, for instance when
-    // items dragged to new sorting order. Maybe other events also?
-    /*
-    - org function from Caspartool's simple f0/f1 list
-    - we need to collect all forms and generate json and save that...
-    */
-
-    // Collect forms from (newly sorted) DOM
-    working('saving');
+function updateFormIndexes() {
+    // This needs to run whenever items are sorted or removed.
+    // Sorting routine needs the IndexList for saving sorting to a file.
+    // When deleting, this is needed to reassing form names.
     var forms = document.forms;
     let IndexList = []
-   
     for (var i=0; i<forms.length; i++) 
         {
             let IndexValueFromName = forms[i].name;
@@ -1339,13 +1378,22 @@ function SaveNewSortOrder() {
             // lets rename the forms so the sorting works the next time also...
             forms[i].name = "templates[" + i + "]";
         }
+    console.log('New form list sort order before saving to file', IndexList);
+    return IndexList
+}
 
-    // console.log('New form sort order before saving to file', IndexList);
+
+
+function SaveNewSortOrder() {
+    // This will save the rundown opened in GC, for instance when
+    // items dragged to new sorting order. Maybe other events also?
+    working('saving');
     let data={};
-    data.newTemplateOrderArr = IndexList;
+    data.newTemplateOrderArr = updateFormIndexes(); // refactored to fix delete + sort bug.
     data.rundownfile = document.getElementById('datafile').value;
+    console.log('SaveNewSortOrder', data);
     ajaxpost('/gc/sortTemplates',data);
-    
+   
 } // SaveNewSortOrder ended
 
 
@@ -1475,7 +1523,6 @@ function saveTemplateItemChangesByElement(itemrow) {
 
 function setMasterButtonStates(itemrow, debugMessage='') {
     // this triggers when row focuses or when Play or Stop pressed or item changed.
-    // TODO: Add logic to maintain "data-spx-stepsleft" attribute of itemrow
 
     if (!document.getElementById('MasterTOGGLE')) return; // this page does not have buttons...
 

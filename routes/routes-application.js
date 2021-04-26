@@ -359,7 +359,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       global.LastBrowsedTemplateFolder = curFolder;
 
       // scan the file for SPXConfig
-      console.log('File: ' + TemplatePath);
+      logger.verbose('Added template: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
       let templatehtml = templateContents.toString();
       const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
@@ -543,7 +543,7 @@ router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
        // res.send(err);
      }
      else {
-      logger.info('Deleted file: ' + datafile);
+      logger.verbose('Deleted file: ' + datafile);
       // client will reload in 500ms
     }
   });
@@ -562,7 +562,7 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
         if (fs.lstatSync(curPath).isDirectory()) { // recurse
           deleteFolderRecursive(curPath);
         } else { // delete file
-          logger.info('Deleted file: ' + curPath);
+          logger.verbose('Deleted file: ' + curPath);
           fs.unlinkSync(curPath);
         }
       });
@@ -576,7 +576,7 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
 
   try {
     deleteFolderRecursive(datafolder);
-    logger.info('Deleted folder: ' + datafolder);
+    logger.verbose('Deleted folder: ' + datafolder);
     }
   catch (error) 
   {
@@ -663,7 +663,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         rundownDataJSONobj.templates.splice(templateIndex,1);
       }
 
-      
       try {
           await spx.writeFile(data.datafile, rundownDataJSONobj);
           res.status(200).send('Item removed ok.'); // ok 200 AJAX RESPONSE
@@ -739,8 +738,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // This will also persist the onair state to rundown file.
   let templateIndex = 0;
 
-
-
   try {
     let dataOut     = {}; // new object
     dataOut.fields  = []; // init it with an empty arr as placeholder
@@ -760,7 +757,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     else
     {
       // normal method of working. We collect data from showfile.
-      logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.templateindex + '] of [' + req.body.datafile + '].');
+      logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.epoch + '] of [' + req.body.datafile + '].');
       RundownFile = path.normalize(req.body.datafile);
       RundownData = await GetJsonData(RundownFile);
 
@@ -808,11 +805,11 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
               FieldItem.value = temp2;
             }
             dataOut.fields.push(FieldItem);
+            dataOut.fields.push({'field':'epochID', 'value':req.body.epoch}); // 1.0.12 eventID for "calling home"
         }
       });
     } // else
     
-
     let playOutCommand = "";
     if ( req.body.command == 'playonce') {
       playOutCommand = "play";
@@ -827,19 +824,19 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
       // == PLAY ======================================================
       case 'play':
-        
+
         // Send PlayoutCCG.functionCalls() if any ---------------------
-        if (dataOut.playserver!='-'){
+        if ( dataOut.playserver!='-' && spx.CCGServersConfigured ){
           dataOut.command="ADD";
           logger.verbose('CasparCG play: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
           PlayoutCCG.playoutController(dataOut);
-          if (!preventSave) {RundownData.templates[templateIndex].onair='true';}
         }
         else
         {
           logger.verbose('No CasparCG playout');
         }
         
+        if (!preventSave) {RundownData.templates[templateIndex].onair='true';} // moved from inside of CCG
 
         // Send PlayoutWEB.functionCalls() if any ---------------------
         if (dataOut.webplayout!='-') {
@@ -970,8 +967,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         } // else web 
         break;
     
-      // == UPDATE ======================================================
+      // == INVOKE ======================================================
       case 'invoke':
+        console.log('977');
         logger.verbose('Invoke [' + dataOut.invoke + ']');
         // Example of expected dataOut down stream from here:
         // dataOut.command = "invoke"
@@ -1037,36 +1035,28 @@ router.post('/gc/controlvideo', spxAuth.CheckLogin, async (req, res) => {
 
 
 
-
-
 router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
-
-  // TODO: This is not very pretty solution. Is there a command in CCG for it?
-  // Handles clearing all playout layers of current profile.
-  // Request: data with newTemplateOrderArr -array
-  // Returns: AJAX response
-  logger.verbose('Clearing all layers of show ' + req.body.foldername);
+  // Slightly improved in v.1.0.12
   try {
+    logger.verbose('Clearing all layers');
+    res.status(200).send('Graphics clear requests sent')  // ok 200 AJAX RESPONSE
 
-    // Webrenderer gets wiped clear in one go!
-    // There is also a clearAllLayer -command to clear a single layer.
-    let dataOut = {};
-    dataOut.spxcmd  = 'clearAllLayers';
-    io.emit('SPXMessage2Client', dataOut);
+    // Clear Webplayout ---------------------------
+    io.emit('SPXMessage2Client', {spxcmd: 'clearAllLayers'}); // clear webrenderers
+    io.emit('SPXMessage2Controller', {APIcmd:'RundownAllStatesToStopped'}); // stop UI and save stopped values to rundown
 
-
-
-    showprofile = path.join(config.general.dataroot, req.body.foldername, 'profile.json');
-    profileDataJSONobj = await GetJsonData(showprofile);
-    profileDataJSONobj.templates.forEach(function(template,index)
-      {
-        // Clear CasparCG's FIXME: This should move to playout_casparCG.js -library
-        // anf FIXME: only send commands uniquely... For now: plaster all!
-        // TODO:
-        global.CCGSockets[PlayoutCCG.getSockIndex(template.playserver)].write('CLEAR ' + template.playchannel + '\r\n');
-        // Clear webrenderer layer
-      });
-      res.status(200).send('Graphics cleared')  // ok 200 AJAX RESPONSE
+    // Change all items to offair on the playlist file
+    let RundownFile = path.normalize(req.body.datafile);
+    let RundownData = await GetJsonData(RundownFile);
+    RundownData.templates.forEach((item,index) => {
+      item.onair = "false"
+    });
+    RundownData.updated = new Date().toISOString();
+    await spx.writeFile(RundownFile,RundownData);
+    
+    // Clear CasparCG -------------------
+    if (!spx.CCGServersConfigured){ return } // exit early, no need to do any CasparCG work
+    PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
   }
   catch (error)
     {
@@ -1111,8 +1101,7 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
       let RundownData = await GetJsonData(RundownFile);
       let TempArr = [];
       req.body.newTemplateOrderArr.forEach(function(sortIndex,index){
-        logger.verbose("Sorting. Taking item " + sortIndex + " -> pushing to index " + index ); // BUG SQUASH. Following fails if there is no "[0].value"
-        // logger.verbose("Sorting. Taking item " + sortIndex + " (" + RundownData.templates[sortIndex].DataFields[0].value + ")-> pushing to index " + index );
+        logger.debug("Sorting. Taking item " + sortIndex + " -> pushing to index " + index );
         TempArr.push(RundownData.templates[sortIndex]);
       });
       RundownData.templates = TempArr;
@@ -1131,7 +1120,6 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
 router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
   // Create a duplicate 
   // Request: data obj
-  // TODO: kesken
   let foldname = req.body.foldname;
   let filename = req.body.filename;
   let filerefe = path.normalize(path.join(config.general.dataroot,foldname, 'data', filename));
@@ -1149,7 +1137,6 @@ router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
 router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
   // Rename a rundown file
   // Request: data obj
-  // TODO: kesken
   let foldnam = req.body.foldnam;
   let orgname = req.body.orgname;
   let newname = req.body.newname;

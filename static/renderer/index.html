@@ -115,9 +115,10 @@
             // like web conference: participant 1 = layer 1
             //   true = allow control
             //   false = do not allow control
+            // 1.0.12 fixes issue #32
             const queryString   = window.location.search;
             const urlParams     = new URLSearchParams(queryString);
-            const limitLayers   = urlParams.get('layers');
+            const limitLayers   = urlParams.get('layers').replace("[","").replace("]","").replace(" ", "").split(","); 
             if ( !limitLayers || limitLayers.includes(LayerNro) ) {
                 return true
             }

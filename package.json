@@ -1,6 +1,6 @@
 {
   "name": "spx-gc",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "SPX-GC | SmartPX Graphics Controller for CasparCG and streaming applications",
   "homepage": "https://spxgc.com",
   "main": "server.js",
@@ -14,7 +14,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "devORG": "nodemon server.js -i config.json -i DATAROOT/",
-    "dev": "nodemon server.js -i DATAROOT/* -i ASSETS/* -i config.json",
+    "dev": "nodemon server.js -i DATAROOT/* -i ASSETS/* -i config.json -i DATAROOT_VIDEO/*",
     "devdemo": "nodemon server.js config_demodataroot.json -i DATAROOT_DEMO/* -i config_demodataroot.json",
     "dev2": "nodemon server.js config2.json -i DATAROOT/* -i config2.json",
     "start": "pm2 start server.js --name GC",

@@ -254,9 +254,11 @@ app.engine('handlebars', exphbs({
 
 
     // generate a pretty string for each template to display playout configs
-    GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='')
+    GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='' , itemid='')
     {
       let html = '<div data-spx-name="playoutConfig">';
+      // html += '<input type="text" data-clipboard-action="copy" data-clipboard-target="#copy' + itemid + '">';
+
       if (playserver !="-")
         {
           html += "<span onmouseover=\"tip('" + spx.lang('hover.ccgserver') + "');\" data-name='srv'>" + playserver + "</span>-";
@@ -275,6 +277,8 @@ app.engine('handlebars', exphbs({
         {
           html += "<span onmouseover=\"tip('" + spx.lang('hover.outmode') + "');\" data-name='out'>" + out + "</span>";
         };
+
+      html += "<span id=\"copy" + itemid + "\" class=\"copyid\" onclick=\"revealItemID(this);\" onmouseover=\"tip('Copy ID " + itemid + "');\" data-name='id'>ID</span>";
       html += "</div>"
       return html
     },
@@ -433,7 +437,7 @@ app.engine('handlebars', exphbs({
           if ( pluginName.charAt(0) == '_' || pluginName === 'lib' ) {
             html += '<!-- Note: disabled plugin ' + pluginName + ' skipped. -->\n'
           } else {
-            console.log('Loading plugin ' + pluginName );
+            logger.verbose('Loading plugin ' + pluginName );
             html += '<script type="module" src="/plugins/' + pluginName + '/init.js"></script>\n'
           }
         })
@@ -580,7 +584,7 @@ app.engine('handlebars', exphbs({
       let assetPath = path.normalize(assetfolder || '');
       let selectedValue = value;
       // let fullPath = path.join(__dirname, 'ASSETS', assetPath); // failed in PKG version
-      let fullPath = path.join(process.cwd(), 'ASSETS', assetPath); // fixes the PKG get excel file list bug
+      let fullPath = path.join(spx.getStartUpFolder(), 'ASSETS', assetPath); // fixed (again in 1.0.12)
       let fileList = spx.getFileList(fullPath, extension);
       if (fileList) {
         fileList.forEach((fileRef,index) => {
@@ -674,16 +678,20 @@ process.on('uncaughtException', function(err) {
 var server = app.listen(port, (err) => {
 
   let splash = 'START-UP INFORMATION:\n\n' + 
-  'SPX GC ................. Copyright 2020-2021 SmartPX <tuomo@smartpx.fi>\n' +
+  'SPX GC ................. Copyright 2020-2021 SmartPX <info@smartpx.fi>\n' +
   `Version ................ ${vers}\n` +  
-  'Homepage ............... https://github.com/TuomoKu/SPX-GC\n' +
+  'License ................ MIT (see LICENSE.txt) \n' +
+  'Homepage ............... https://spxgc.com\n' +
+  'Template Store ......... https://spxgc.com/store\n' +
+  'Knowledge Base ......... https://spxgc.tawk.help\n' +
   `Config file ............ ${configfileref}\n`  +
   `Cfg / locale ........... ${config.general.langfile}\n`  +
   `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
   `Cfg / template files ... ${config.general.templatefolder}\n`  +  
-  `Cfg / logfolder ........ ${config.general.logfolder}\n`;
-
+  `Cfg / logfolder ........ ${config.general.logfolder}\n`+ 
+  `Cfg / lauchchrome ...... ${config.general.launchchrome}\n`;
+  
   // Where are CasparCG templates loaded from (file:// or http://):
   let TemplatesFromInfo;
   let tmplSourceAddress = spx.getTemplateSourcePath();
@@ -694,27 +702,27 @@ var server = app.listen(port, (err) => {
   }
 
   splash +=
-  `Cfg / templatesource ... ${config.general.templatesource} (` + TemplatesFromInfo + ')\n'  +  
-  `SPX-GC server address .. http://${ipad}:${port}`;
-
+  `Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
+  `See README.pdf and Knowledge Base for more info.`; 
+  
   logger.info(splash);
-
-  console.log('\x1b[32m%s\x1b[0m', '\n\n──────────────────────────────────');
+  console.log('\x1b[32m%s\x1b[0m', '\n──────────────────────────────────');
   console.log('\x1b[37m%s\x1b[1m', `     Open SPX-GC in a browser:`);
   console.log('\x1b[33m%s\x1b[0m', `     http://${ipad}:${port}`);  //yellow
   console.log('\x1b[32m%s\x1b[0m', '──────────────────────────────────\n\n');
+
+  if ( config.general.launchchrome==="true" )
+  {
+    (async () => {
+      // Opens the URL in a specified browser.
+      await open(`http://${ipad}:${port}/`, {app: 'chrome'});
+    })();
+  }
+  
+
 });
 
 
-
-
-if (config.general.launchchromeatstartup=="on")
-{
-  (async () => {
-    // Opens the URL in a specified browser.
-    await open(`http://${ipad}:${port}/`, {app: 'chrome'});
-  })();
-}
 
 
 
@@ -743,6 +751,7 @@ io.sockets.on('connection', function (socket) {
 
 
   socket.on('SPXMessage2Server', function (data) {
+    console.log('SPXMessage received', data);
     logger.verbose('SPXMessage received', data)
     switch (data.spxcmd) {
 

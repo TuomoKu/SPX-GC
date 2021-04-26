@@ -53,6 +53,7 @@
         data.template = document.getElementById('templateIndex' + nro).value;
         data.showFolder = document.getElementById('showfolder').value;
         data.replaceIndex = nro;
+        console.log('Sending request to reimport:', data);
         post('', data, 'post');
       }
 

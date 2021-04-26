@@ -1,11 +1,7 @@
-
-
 // Note, these functions execute BEFORE logger or utils are loaded
 // so none of those functions can be used here!
-
 const fs = require('fs');
 const path = require('path');
-const { rejects } = require('assert');
 
 module.exports = {
 
@@ -35,11 +31,23 @@ module.exports = {
         return new Promise(resolve => {
             try {
 
-                // ARG! Mac defaults to Users' home folder when a packaged app is opened by
-                // doubleclicking. And to current folder when opened from Terminal commandline.
-            
-                var startUpPath = process.cwd();  //  FIXME: <-- this yields (incorrectly) "/Users/Tuomo" on a Mac in pkg binary upon doubleclick startup. (Issue #3)
-                var CURRENT_FOLDER = startUpPath; // TODO: Develop a path modification (?) to  support "Mac + pkg + doubleclick" -combo also ¯\_(ツ)_/¯
+                // Issue #3 troubleshooting:
+                // var startUpPath = process.cwd();  //  Fails on macOS in pkg binary upon doubleclick startup. (Issue #3)
+                // var startUpPath = path.resolve(process.execPath + '/..');  // This works while in pkg, but not in Node, so here we go:
+
+                let startUpPath, runtime
+                if ( process.pkg ) {
+                    runtime = 'pkg'
+                    startUpPath = path.resolve(process.execPath + '/..');
+                } else {
+                    runtime = 'node'
+                    startUpPath = process.cwd();
+                }
+                // console.log('Startup folder while in ' + runtime + ': ' + startUpPath);
+
+                // Above solution is available as spx.getStartUpFolder() -function after load.
+
+                var CURRENT_FOLDER = startUpPath;
 
                 let CONFIG_FILE = path.join(CURRENT_FOLDER, 'config.json');
                 var myArgs = process.argv.slice(2);
@@ -53,6 +61,7 @@ module.exports = {
                 if (!fs.existsSync(CONFIG_FILE)) {
                     // config file not found, let's create the default one
                     console.log('** Config file (' + CONFIG_FILE + ') not found, generating defaults. **');
+                    console.log('Please note, starting from v.1.0.12 CasparCG servers are NOT in the config by default and must be added for CasparCG playout to work. Please see the README file for more information.');
                     let cfg                                     = {}
                     cfg.general                                 = {}
                     cfg.general.username                        = "welcome"
@@ -60,6 +69,7 @@ module.exports = {
                     cfg.general.hostname                        = ""
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
+                    cfg.general.launchchrome                    = "true"
 
                     // below paths were __dirname but pkg did not like it
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
@@ -71,10 +81,13 @@ module.exports = {
                     cfg.casparcg                                = {}
                     cfg.casparcg.servers                        = []
                     newcasparcg                                 = {}
-                    newcasparcg.name                            = "OVERLAY"
-                    newcasparcg.host                            = "localhost"
-                    newcasparcg.port                            = "5250"
-                    cfg.casparcg.servers.push(newcasparcg)
+
+                    // Default CCG server removed in 1.0.12
+                    // newcasparcg.name                            = "OVERLAY"
+                    // newcasparcg.host                            = "localhost"
+                    // newcasparcg.port                            = "5250"
+                    // cfg.casparcg.servers.push(newcasparcg)
+
                     cfg.globalExtras                            = {}
                     cfg.globalExtras.customscript               = "/ExtraFunctions/demoFunctions.js"
                     cfg.globalExtras.CustomControls             = []
@@ -82,10 +95,10 @@ module.exports = {
                     // link to docs
                     newcontrol1                                  = {}
                     newcontrol1.ftype                            = "button"
-                    newcontrol1.description                      = "Custom control examples"
-                    newcontrol1.text                             = "Open webpage"
+                    newcontrol1.description                      = "Custom control example"
+                    newcontrol1.text                             = "Open KnowledgeBase"
                     newcontrol1.bgclass                          = "bg_grey"
-                    newcontrol1.fcall                            = "openWebpage('http://smartpx.fi/gc/')"
+                    newcontrol1.fcall                            = "openWebpage('https://spxgc.tawk.help')"
                     cfg.globalExtras.CustomControls.push(newcontrol1)
 
                     // play gfx out
@@ -108,7 +121,7 @@ module.exports = {
 
                     // Write config file. Note, this does not use utility function.
                     cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the GC will overwrite this file.";
-                    cfg.smartpx = "(c) 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>";
+                    cfg.smartpx = "(c) 2020-2021 SmartPX <info@smartpx.fi>";
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);
