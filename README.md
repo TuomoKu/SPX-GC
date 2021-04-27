@@ -309,7 +309,7 @@ Localization credits:
 <BR>
 
 
-**`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). All log messages are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting.
+<a id="log"></a>**`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). Log messages are shown in the SPX-GC console window and are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting, `verbose` is the recommeded level for troubleshooting. If further analysis is needed `debug` level produces even more information. Remember to set log level back to `info` since heavy logging will increase disk usage and may effect software performance.
 
 <a id="globalextras"></a> **`globalExtras{}`** are additional user interface controls, or _plugins_, shown below preview window in all project as opposed to [projectExtras](#projectextras) which are project specific. Each item has an UI component (a button) and associated function call available in the specified `javascript file`. When a new `config.json` is created it has some demo extra controls to introduce related consepts and possibilities.
 > **PLEASE NOTE:** Global extras will be replaced by [Plugins](#plugins) in future versions, since they are easier to install and maintain.
@@ -325,11 +325,16 @@ Starting from v.1.0.12 SPX-GC does not have a CasparCG server assigned by defaul
 
 Each SPX-GC template has a setting for choosing a target CasparCG server. This server is assigned in the template settings within Project Settings. (Default value comes to the project from the HTML sourcecode of the template as the 'playserver' -parameter of the TemplateDefinition object.) The name must match with one of configured servers for the playout to work.
 
+If you have problems during playout it is recommeded to [set log level](#log) higher and observe SPX-GC console window messages for potential cause.
+
+<!-- 
 During production if server name is not found there will be an error message on the console: 
 ```js
 // Error message if CasparCG server is not configured
 Template requests CasparCG server [SERVERNAME] but a server by that name was not found in SPX-GC configuration. Make sure app configuration and project settings match. This does not effect web playout.
 ```
+-->
+
 > **REMEMBER** SPX-GC server process must be restarted whenever changes are made to configuration. 
 
 ----
