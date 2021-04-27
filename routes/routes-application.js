@@ -1093,16 +1093,21 @@ router.post('/gc/saveOnairState', spxAuth.CheckLogin, async (req, res) => {
 
 router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
   // Handles modification changes of a template in the rundown.
-  // Request: data with newTemplateOrderArr -array
+  // Request: data with newTemplateOrderArr -array (of epochs)
   // Returns: AJAX response
   logger.verbose('Sorting templates in ' + req.body.rundownfile + ' to ' + req.body.newTemplateOrderArr);
   try {
       let RundownFile = path.normalize(req.body.rundownfile);
       let RundownData = await GetJsonData(RundownFile);
       let TempArr = [];
-      req.body.newTemplateOrderArr.forEach(function(sortIndex,index){
-        logger.debug("Sorting. Taking item " + sortIndex + " -> pushing to index " + index );
-        TempArr.push(RundownData.templates[sortIndex]);
+      req.body.newTemplateOrderArr.forEach(function(sortedID,sortIndex) {
+        RundownData.templates.forEach(function(template, templateIndex) {
+          if (template.itemID === sortedID) {
+            logger.debug("Sorting. Saving to position " + templateIndex + " itemID " + sortedID );
+            TempArr.push(template);
+          }
+        })
+        
       });
       RundownData.templates = TempArr;
       RundownData.updated = new Date().toISOString();

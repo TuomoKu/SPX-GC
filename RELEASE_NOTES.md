@@ -3,6 +3,15 @@
 > Most recent updates are at the top.
 
 ---
+
+## **1.0.13** (Apr 27 2021)
+- Fixed a complex rundown issue when items duplicated + sorted. (Bug found right after v.1.0.12 release)
+- Binary packages v1.0.13:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_linux64.zip)
+
+
 ## **1.0.12** (Apr 25 2021)
 - Added new direct API commands, such as `invokeTemplateFunction` to enable custom template function triggering from StreamDeck
 - Added a welcomeOverlay -plugin for onboarding (localStorage flag 'SPXGC_WelcomeScreenDisplayed').

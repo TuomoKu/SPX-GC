@@ -34,11 +34,11 @@ router.get('/', function (req, res) {
           "commands": [
             {
               "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
-              "info"    :     "GET (v1.0.12+) Uses an invoke handler to call a function in a template. See required parameters in the example call above."
+              "info"    :     "GET (v1.0.12) Uses an invoke handler to call a function in a template. See required parameters in the example call above."
             },
             {
               "param"   :     "directplayout",
-              "info"    :     "POST (v1.0.12+) Execute a direct play/continue/stop -command to a template without current rundown. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"vendor/pack/templatefile.html\", \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX-GC application configurations."
+              "info"    :     "POST (v1.0.12) Execute a direct play/continue/stop -command to a template without current rundown. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"vendor/pack/templatefile.html\", \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX-GC application configurations."
             }
           ]
         },

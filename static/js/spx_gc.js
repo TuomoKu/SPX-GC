@@ -1309,6 +1309,10 @@ function duplicateRundownItem(rowitem)
     
     var newItem = rowitem.cloneNode(true);
     newItem.style.opacity=0;
+
+    // update table id's for sorting to keep up. A bug found right after 1.0.12 was released.
+    updateFormIndexes()
+
     setTimeout(function () { rowitem.classList.remove('inFocus'); }, 5);
     setTimeout(function () { newItem.setAttribute('data-spx-epoch', data.cloneEpoch); }, 15);
     setTimeout(function () { newItem.setAttribute('data-spx-onair', "false"); }, 20);
@@ -1363,22 +1367,16 @@ function removeItemFromRundown(itemrow)
 function updateFormIndexes() {
     // This needs to run whenever items are sorted or removed.
     // Sorting routine needs the IndexList for saving sorting to a file.
-    // When deleting, this is needed to reassing form names.
+    // When deleting, this is needed to re-assing form names.
+    // 1.0.13 refactored to use epochs and not item indexes.
     var forms = document.forms;
     let IndexList = []
-    for (var i=0; i<forms.length; i++) 
-        {
-            let IndexValueFromName = forms[i].name;
-            // console.log('Name str A: ' + IndexValueFromName);
-            IndexValueFromName = IndexValueFromName.split("]").join(""); // remove "]"
-            // console.log('Name str B: ' + IndexValueFromName);
-            IndexValueFromName = IndexValueFromName.split("[")[1];       // get NRO from string "templates[NRO"
-            // console.log('Name str C: ' + IndexValueFromName);
-            IndexList.push(IndexValueFromName.toString());
-            // lets rename the forms so the sorting works the next time also...
-            forms[i].name = "templates[" + i + "]";
-        }
-    console.log('New form list sort order before saving to file', IndexList);
+    let items = document.querySelectorAll('.itemrow');
+    items.forEach((item,index) => {
+        IndexList.push(item.getAttribute('data-spx-epoch'));
+        item.querySelector('form').name = "templates[" + index + "]";
+    });
+    // console.log('New form list sort order before saving to file', IndexList);
     return IndexList
 }
 
