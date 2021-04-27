@@ -21,6 +21,7 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 - Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
+- [UI localization](#locales)
 - [Add CasparCG server(s)](#addcaspar)
 - [Projects and rundowns](#dataroot)
 - [HTML templates](#templates) and [template definition](#templatedefinition)
@@ -297,7 +298,7 @@ An example `config.json` of the SPX-GC server
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
 
-**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
+<a id="locales"></a>**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
 
 <img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
 
