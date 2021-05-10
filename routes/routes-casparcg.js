@@ -223,9 +223,8 @@ router.get('/testfunction', (req, res) => {
 const net = require('net')
 let ServerData = [];
 
-if (config.casparcg){
-
 config.casparcg.servers.forEach((element,index) => {
+
   const CurName = element.name;
   const CurHost = element.host;
   const CurPort = element.port;
@@ -234,54 +233,51 @@ config.casparcg.servers.forEach((element,index) => {
   // next two lines creates a dynamic variable for this loop iteration
   var CurCCG = CurName + "= undefined";
   eval(CurCCG);
+
   CurCCG = new net.Socket();
-  global.CCGSockets.push(CurCCG); // --> PUSH Socket object to a global array for later use
+
   CurCCG.spxname = CurName; // give each entry a name for later searching!
+  CurCCG.CurHost = CurHost;
+  CurCCG.CurPort = CurPort;
+  CurCCG.server_index = index;
+  CurCCG.intervalConnect = false;
 
-  CurCCG.connect(CurPort, CurHost, function () {
-    ServerData.push({ name: CurName, host: CurHost, port: CurPort });
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
-    io.emit('SPXMessage2Client', data);
+  global.CCGSockets.push(CurCCG); // --> PUSH Socket object to a global array for later use
 
-    data = { spxcmd: 'updateStatusText', status: 'Communication established with ' + CurName + '.' };
-    io.emit('SPXMessage2Client', data);
-
-    logger.verbose('GC connected to CasparCG as \'' + CurName + '\' at ' + CurHost + ":" + CurPort + '.');
-  });
+  connect(CurCCG)
 
   CurCCG.on('data', function (data) {
-    logger.verbose('GC received data from CasparCG ' + CurName + ': ' + data);
+    logger.verbose('GC received data from CasparCG ' + CurCCG.spxname + ': ' + data);
 
     // we must parse the data so we can evaluate it...
     let CCG_RETURN_TEXT = String(data); // convert return object to string
     let CCG_RETURN_CODE = CCG_RETURN_TEXT.substring(0, 2); // first two chars
     switch (CCG_RETURN_CODE) {
       case "20":
-        logger.verbose('Comms good with ' + CurName + ": " + CCG_RETURN_TEXT);
+        logger.verbose('Comms good with ' + CurCCG.spxname + ": " + CCG_RETURN_TEXT);
         break;
 
       case "40":
-        logger.error('Error in CasparCG server ' + CurName + ': [' + CCG_RETURN_TEXT + ']');
-        logger.debug('Verify CasparCG\'s (' + CurName + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath());
-        data = { spxcmd: 'updateStatusText', status: 'Error in comms with ' + CurName + '.' };
+        logger.error('Error with ' + CurCCG.spxname + ": " + CCG_RETURN_TEXT + ' - Verify CasparCG\'s (' + CurCCG.spxname + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath() + '.');
+        data = { spxcmd: 'updateStatusText', status: 'Error in comms with ' + CurCCG.spxname + '.' };
         io.emit('SPXMessage2Client', data);
         break;
 
       case "50":
-        logger.error('Failed ' + CurName + ": " + CCG_RETURN_TEXT);
-        data = { spxcmd: 'updateStatusText', status: CurName + ' failed.' };
+        logger.error('Failed ' + CurCCG.spxname + ": " + CCG_RETURN_TEXT);
+        data = { spxcmd: 'updateStatusText', status: CurCCG.spxname + ' failed.' };
         io.emit('SPXMessage2Client', data);
         break;
 
       default:
-        logger.warn('Warning ' + CurName + ": " + CCG_RETURN_TEXT);
+        logger.warn('Warning ' + CurCCG.spxname + ": " + CCG_RETURN_TEXT);
         console.log('Unknown status value ' + CCG_RETURN_CODE);
         break;
     }
 
 
     // SocketIO call to client
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
+    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + CurCCG.server_index, color: '#00CC00' };
     io.emit('SPXMessage2Client', data);
     if (data.toString().endsWith('exit')) {
       CCGclient.destroy();
@@ -290,24 +286,52 @@ config.casparcg.servers.forEach((element,index) => {
 
   CurCCG.on('close', function () {
     // SocketIO call to client
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#CC0000' };
+    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + CurCCG.server_index, color: '#CC0000' };
     io.emit('SPXMessage2Client', data);
-    data = { spxcmd: 'updateStatusText', status: 'Connection to ' + CurName + ' was closed.' };
+    data = { spxcmd: 'updateStatusText', status: 'Connection to ' + CurCCG.spxname + ' was closed.' };
     io.emit('SPXMessage2Client', data);
-    logger.verbose('GC connection to CasparCG \'' + CurName + '\' closed (' + CurHost + ':' + CurPort + ').');
+    logger.verbose('GC connection to CasparCG \'' + CurCCG.spxname + '\' closed (' + CurCCG.CurHost + ':' + CurCCG.CurPort + ').');
+
+    launchIntervalConnect(CurCCG);
   });
 
   CurCCG.on('error', function (err) {
-    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#CC0000' };
+    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + CurCCG.server_index, color: '#CC0000' };
     io.emit('SPXMessage2Client', data);
 
-    data = { spxcmd: 'updateStatusText', status: 'Communication error with ' + CurName + '.' };
+    data = { spxcmd: 'updateStatusText', status: 'Communication error with ' + CurCCG.spxname + '.' };
     io.emit('SPXMessage2Client', data);
 
-    logger.warn('GC socket error with CasparCG server ' + CurName + '. CasparCG running?\n', err);
+    logger.warn('GC socket error with CasparCG server ' + CurCCG.spxname + '. CasparCG running?\n', err);
+  });
+
+  CurCCG.on('connect', function() {
+    data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + CurCCG.server_index, color: '#00CC00' };
+    io.emit('SPXMessage2Client', data);
+  
+    data = { spxcmd: 'updateStatusText', status: 'Communication established with ' + CurCCG.spxname + '.' };
+    io.emit('SPXMessage2Client', data);
+    logger.verbose('GC connected to CasparCG as \'' + CurCCG.spxname + '\' at ' + CurCCG.CurHost + ":" + CurCCG.CurPort + '.');
+    clearIntervalConnect(CurCCG);
   });
 });
-}; // end if 
+
+function connect(CurCCG) {
+  if (!CurCCG.connecting) {
+    CurCCG.connect(CurCCG.CurPort, CurCCG.CurHost)
+  }
+}
+
+function launchIntervalConnect(CurCCG) {
+  if (CurCCG.intervalConnect || CurCCG.connecting) return
+  CurCCG.intervalConnect = setInterval(connect, 1000, CurCCG)
+}
+
+function clearIntervalConnect(CurCCG) {
+  if (!CurCCG.intervalConnect) return;
+  clearInterval(CurCCG.intervalConnect)
+  CurCCG.intervalConnect = false
+}
 
 
 logger.debug('ServerData during init: ' + JSON.stringify(ServerData));
