@@ -11,6 +11,7 @@ const glob = require("glob");
 const ip = require('ip')
 const { rejects } = require('assert');
 const axios = require('axios')
+const http = require('http');
 
 const port = config.general.port || 5000;
         
@@ -27,15 +28,50 @@ try {
 
 module.exports = {
 
+  httpPost: function (JSONdata, endPoint) {
+    // Send a http POST to an endpoint on the GC server.
+    try {
+      JSONdata = JSON.stringify(JSONdata);
+      const options = { port: port, path: endPoint, method: 'POST', headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': JSONdata.length }
+      }
+      const httpreq = http.request(options, result => {
+        result.on('data', d => {
+          process.stdout.write(d)
+          return 'Sent request to server:' + port + ':' + endPoint + JSONdata
+        })
+      })
+      httpreq.on('error', error => {
+        logger.error(error)
+        return error
+      })
+      httpreq.write(JSONdata)
+      httpreq.end()
+    } catch (error) {
+      logger.error('ERROR in spx.httpPost()', error);
+    }
+  }, // httpPost
+  
+  CCGServersConfigured: function () {
+    // helper function which will return true / false
+    try {
+      let FirstServer = config.casparcg.servers;
+      logger.debug('CCGServersConfigured: Yes at least one CasparCG server in config.');
+      return true
+    } catch (error) {
+      logger.debug('CCGServersConfigured: No CasparCG servers available in config.');
+      return false
+    }
+  },
+
   checkServerConnections: function () {
     try {
       // SocketIO call to client
       // require ..... nothing
       // returns ..... sends socket.io instruction to client of each CCG server in config
-      if (!config.casparcg){
-        logger.verbose('No CasparCG servers in config so no connections to check, skipping.');
-        return
-      }
+      let CCGServers = this.CCGServersConfigured()
+      if (!CCGServers){ return  } // exit early, no need to do any CasparCG work
       logger.verbose('checkServerConnections -function excecuting...');
       data = { spxcmd: 'updateStatusText', status: 'Checking server connections...' };
       io.emit('SPXMessage2Client', data);
@@ -111,8 +147,17 @@ module.exports = {
         //
         var html = "";
         var skip;
-        logger.debug('SPX.generateCollapsedHeadline() DataField (length: ' + DataFields.length + ')' ,DataFields);
-        let Iterations = DataFields.length;
+
+        
+        if (!DataFields) {
+          console.log('DataFields was null!', DataFields);
+          logger.warn('generateCollapsedHeadline DataFields is falsy');
+          return
+        }
+
+        let Iterations = DataFields.length || 0; // bugfix? 
+        
+        logger.verbose('SPX.generateCollapsedHeadline() DataField (length: ' + Iterations + ')' ,DataFields);
         var Counter = 0;
         if (DataFields.length>0) { 
           for (let fieldIndex = 0; fieldIndex < Iterations; fieldIndex++) {
@@ -303,7 +348,8 @@ module.exports = {
   lang: function (str) {
     try {
       const spxlangfile = config.general.langfile || 'english.json';
-      let langpath = path.join(process.cwd(), 'locales', spxlangfile);
+      let langpath = path.join(this.getStartUpFolder(), 'locales', spxlangfile); // fails in pkg macOS
+
       var lang = require(langpath);
       json = 'lang.' + str;
       return eval(json) || str;  
@@ -312,6 +358,16 @@ module.exports = {
       return str + " missing from " + spxlangfile;
     }
   },
+
+getStartUpFolder: function () {
+  // a workaround to resolve the path to the current startup folder
+  // on this runtime session (node vs binary pkg)
+  if ( process.pkg ) {
+      return path.resolve(process.execPath + '/..');
+  } else {
+      return process.cwd();
+  }
+},
 
 
 GetFilesAndFolders: function (datafolder) {
@@ -364,7 +420,7 @@ playAudio: async function (wavFileName, msg=''){
     // request ..... a name of soundFX
     // return ...... plays audio on the server
     // Usage ....... spx. -or- this.playAudio('beep.wav', 'Log message');
-    let cwd = process.cwd();
+    let cwd = this.getStartUpFolder();
     let AudioFilePath = path.join(cwd, 'ASSETS', wavFileName);
 
     // EXTERNAL AUDIO PLAYER IS CURRENTLY DISABLED. -- See also view-appconfig.
@@ -417,7 +473,7 @@ talk: async function (message){
         logger.warn('Talk synthesis currently only works on Windows.');
         return
       }
-    let ScriptPath = path.join(process.cwd(), 'utils/talk.vbs');
+    let ScriptPath = path.join(this.getStartUpFolder(), 'utils/talk.vbs');
     let Executable = "wscript " + ScriptPath + " " + message;
     logger.debug('spx.Talk [' + message + ']');
     const { exec } = require("child_process");
@@ -536,7 +592,6 @@ writeFile: function (filepath,data) {
         data.warning = "Modifications done in the GC will overwrite this file.";
         data.smartpx = "(c) 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>";
         data.updated = new Date().toISOString();
-
         let filedata = JSON.stringify(data, null, 2);
         fs.writeFile(filepath, filedata, 'utf8', function (err) {
           if (err){

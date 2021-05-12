@@ -87,7 +87,11 @@
 
     <div class="modal_content content scroller" style="padding:2em;">
       <h3>{{lang 'pagetitle.shortcuts'}}</h3><BR>
-      <p>GC controller has some basic keyboard shortcuts for fast operation. For more information refer to <A href="#" onClick="help('controller')" style="text-decoration: underline;">help section</A>.</p><BR>
+      <p>
+        GC controller has some basic keyboard shortcuts for fast operation. For more information about the software, visit
+        <A href="#" onClick="help('controller')" style="text-decoration: underline;">SPX-GC Knowledge Base</A>.
+      </p>
+       <BR>
       <table class="wide KBHelptable">
           <TR>
             <th width="30%"><B>Key</B></th><th><B>Function</B></th>
@@ -132,6 +136,8 @@
 
                 <!-- GC ITEMS -->
                 {{#each filedata.templates}}
+
+                  {{#if DataFields}}
 
                   <div id="playlistitem{{@index}}"
                     class              = "itemrow row_accent{{uicolor}}"
@@ -428,7 +434,7 @@
                         </TR>
                         <TR>
                           <TD colspan="2" class="aright spxTableHeadsmall">
-                            {{{GeneratePlayoutInfo playserver playchannel playlayer webplayout out }}}
+                            {{{GeneratePlayoutInfo playserver playchannel playlayer webplayout out itemID}}}
                           </TD>
                           <TD>
                             &nbsp;
@@ -461,6 +467,9 @@
                   </div>
                   </form>
                   </div>
+                  {{else}}
+                  <!-- object had no DataFields, so it as skipped. NULL item? -->
+                  {{/if}}
                 {{/each}}
                 <!-- GC ITEMS ENDED -->
 
@@ -520,8 +529,9 @@
 
           </div>
 
-          <!-- <script src="{{profiledataObj.showExtras.customscript}}"></script> -->
-          <!-- {{{ GenerateCustomControls profiledataObj.showExtras.CustomControls }}} -->
+          <!-- showExtras generated here. In future releases this may move to plugins -->
+          <script src="{{profiledataObj.showExtras.customscript}}"></script>
+          {{{ GenerateCustomControls profiledataObj.showExtras.CustomControls }}}
           <script defer src="{{globalExtras.customscript}}"></script>
           {{{ GenerateCustomControls globalExtras.CustomControls }}}
 

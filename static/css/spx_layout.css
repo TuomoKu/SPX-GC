@@ -192,7 +192,19 @@ td.aright{
     }
     
 
+.copyid {
+    margin-left: 1em;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.2em 0.6em;
+    border-radius: 0.4em;
+    color:rgb(255, 255, 255);
+    transition: background-color 0.2s linear ;
+    }
 
+.copyid:hover {
+    background: rgba(255, 255, 255, 0.5);
+    }
+    
 .content {
     flex: 1;
     overflow: auto;

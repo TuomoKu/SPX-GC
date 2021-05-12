@@ -9,44 +9,23 @@ const moment = require('moment');
 
 module.exports = {
 
-  clearchannels: function (data) {
-    // TODO: This has caused issues with secondary CCG servers at some point... 
-    logger.info('ClearChannels / ' + JSON.stringify(data));
-    const directoryPath = path.normalize(process.env.ROOT_FOLDER);
-    let profilefile = path.join(directoryPath, 'config', 'profiles.json');
-    const profileDataAsJSON = spx.GetJsonData(profilefile);
-    // console.log(profileDataAsJSON);
-    let prfName = data.profile.toUpperCase();
-    let allChannels = [];
-    for (var i = 0; i < profileDataAsJSON.profiles.length; i++) {
-      let curName = profileDataAsJSON.profiles[i].name.toUpperCase();
-      logger.verbose('ClearChannels / curName / ' + curName);
-      if (curName == prfName) {
-        Object.keys(profileDataAsJSON.profiles[i].templates).forEach(function (key) {
-          logger.debug('ClearChannels / key / templates / ' + key);
-          allChannels.push(profileDataAsJSON.profiles[i].templates[key].channel);
+    clearChannelsFromGCServer: function (serverName='') {
+      let ClearAMCPCommand = 'CLEAR 1\r\n CLEAR 2\r\n CLEAR 3\r\n CLEAR 4\r\n CLEAR 5\r\n CLEAR 6\r\n CLEAR 7\r\n CLEAR 8\r\n';
+      if (serverName) {
+        // clear the given server
+        global.CCGSockets[this.getSockIndex(serverName)].write(ClearAMCPCommand);
+      } else {
+        // clear all configured servers
+        config.casparcg.servers.forEach((item,index) => {
+          global.CCGSockets[this.getSockIndex(item.name)].write(ClearAMCPCommand);
         });
-        Object.keys(profileDataAsJSON.profiles[i].FX).forEach(function (key) {
-          logger.debug('ClearChannels / key / FX / ' + key);
-          allChannels.push(profileDataAsJSON.profiles[i].FX[key].channel);
-        });
+        
+
       }
-    }
-    const unique = (value, index, self) => {
-      return self.indexOf(value) === index
-    }
-    const uniques = allChannels.filter(unique)
-    uniques.forEach(item => {
-      logger.verbose('ClearChannels / Clearing channel ' + item + ' on server ' + data.server);
-      CCGclient = eval(data.server);
-      global.CCGSockets[this.getSockIndex(data.server)].write('CLEAR ' + item + '\r\n');
-    });
-  
+    logger.verbose('Clearing CasparCG [server: ' + serverName + ']');
   },
 
-
-
-
+  
   CGComponentFactory: function (fieldID, value) {
     // Generate template data entry XML for CasparCG.
     // decodeURIComponent and UnSwapCharacters() added here to workaround issue #5.
@@ -64,6 +43,7 @@ module.exports = {
 
 
   playoutController: function (data){
+
     // We get data object which has
     // - data.command (ADD | STOP | UPDATE)
 
@@ -71,6 +51,19 @@ module.exports = {
     // let GFX_Teml = 'http://' + ip.address() + ':' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // changed to http in 1.0.7
     // let GFX_Teml = 'http://localhost:' + config.general.port + '/templates/' + data.relpathCCG + '.html'; // accidentally left to "localhost" in 1.0.8. Oops <:-O
 
+    // 1.0.12 - Check if we do have CCG servers configured
+    let CCGSERVER = global.CCGSockets[this.getSockIndex(data.playserver)];
+    if (!CCGSERVER || typeof CCGSERVER === 'undefined')
+      {
+        logger.verbose('No CasparCG servers configured (or server [' + data.playserver + '] not found) in SPX-GC. Skipping CCG command ' + data.command);
+        return
+      }
+
+    if (!data.playserver || data.playserver=='' || typeof data.playserver === 'undefined')
+      {
+        logger.verbose('No CasparCG server configured in the template. Skipping CCG command ' + data.command);
+        return
+      }
     let GFX_Teml = getCCGTemplateFilepath(data.relpathCCG); //  v.1.0.9 = Supports both FILE or HTTP template paths, see config>general.casparcg-template-folder
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
@@ -79,7 +72,12 @@ module.exports = {
     let InvFunct = data.invoke;
     data.command = data.command.toUpperCase();
 
-    logger.info('CasparCG playoutController - command ' + data.command + ', Template: ' + GFX_Teml, ', CasparCG: ' + GFX_Serv + ', ' + GFX_Chan + ', ' + GFX_Laye);
+    // Notify user
+    if ( !global.CCGSockets[this.getSockIndex(data.playserver)] ) {
+      logger.warn('Server [' + GFX_Serv + '] not found in your config! Make sure configuration and project settings match.' )
+    }
+
+    logger.verbose('CasparCG playoutController - command ' + data.command + ', Template: ' + GFX_Teml, ', CasparCG: ' + GFX_Serv + ', ' + GFX_Chan + ', ' + GFX_Laye);
     logger.debug('CasparCG playoutController ' + JSON.stringify(data,null,4));
     logger.debug('Generating DATA for CasparCG [command ' + data.command + '], source: ' +  JSON.stringify(data.fields,null,4));
     let TEMPLATEDATA = "";

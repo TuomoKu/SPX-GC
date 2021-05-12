@@ -70,45 +70,6 @@ router.get('/system/:data', (req, res) => {
 });
 
 
-router.get('/clearchannels/:data', (req, res) => {
-  // TODO: This has caused issues with secondary CCG servers at some point... 
-  data = JSON.parse(req.params.data);
-  logger.info('ClearChannels / ' + JSON.stringify(data));
-  res.sendStatus(200);
-  const directoryPath = path.normalize(config.general.dataroot);
-  let profilefile = path.join(directoryPath, 'config', 'profiles.json');
-  const profileDataAsJSON = spx.GetJsonData(profilefile);
-
-  console.log(profileDataAsJSON);
-
-
-  let prfName = data.profile.toUpperCase();
-  let allChannels = [];
-  for (var i = 0; i < profileDataAsJSON.profiles.length; i++) {
-    let curName = profileDataAsJSON.profiles[i].name.toUpperCase();
-    logger.verbose('ClearChannels / curName / ' + curName);
-    if (curName == prfName) {
-      Object.keys(profileDataAsJSON.profiles[i].templates).forEach(function (key) {
-        logger.debug('ClearChannels / key / templates / ' + key);
-        allChannels.push(profileDataAsJSON.profiles[i].templates[key].channel);
-      });
-      Object.keys(profileDataAsJSON.profiles[i].FX).forEach(function (key) {
-        logger.debug('ClearChannels / key / FX / ' + key);
-        allChannels.push(profileDataAsJSON.profiles[i].FX[key].channel);
-      });
-    }
-  }
-  const unique = (value, index, self) => {
-    return self.indexOf(value) === index
-  }
-  const uniques = allChannels.filter(unique)
-  uniques.forEach(item => {
-    logger.verbose('ClearChannels / Clearing channel ' + item + ' on server ' + data.server);
-    CCGclient = eval(data.server);
-    global.CCGSockets[spx.getSockIndex(data.server)].write('CLEAR ' + item + '\r\n');
-  });
-});
-
 
 router.get('/control/:data', (req, res) => {
   // Principle:
@@ -127,8 +88,10 @@ router.get('/control/:data', (req, res) => {
   data = JSON.parse(req.params.data);
   logger.info('CCG/Control/ ' + JSON.stringify(data));
   res.sendStatus(200);
-  var DataStr = "";
 
+  if (!spx.CCGServersConfigured){   return  } // exit early, no need to do any CasparCG work
+  
+  var DataStr = "";
   const directoryPath = path.normalize(config.general.dataroot);
   let profilefile = path.join(directoryPath, 'config', 'profiles.json');
   const profileDataAsJSON = spx.GetJsonData(profilefile);
@@ -192,22 +155,11 @@ router.get('/control/:data', (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 router.get('/controljson/:data', (req, res) => {
   data = JSON.parse(req.params.data);
   logger.info('CCG/controljson ' + JSON.stringify(data));
   res.sendStatus(200);
-
+  if (!spx.CCGServersConfigured){   return  } // exit early, no need to do any CasparCG work
   const directoryPath = path.normalize(config.general.dataroot);
   let profilefile = path.join(directoryPath, 'config', 'profiles.json');
   const profileDataAsJSON = spx.GetJsonData(profilefile);
@@ -309,7 +261,8 @@ config.casparcg.servers.forEach((element,index) => {
         break;
 
       case "40":
-        logger.error('Error with ' + CurName + ": " + CCG_RETURN_TEXT + ' - Verify CasparCG\'s (' + CurName + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath() + '.');
+        logger.error('Error in CasparCG server ' + CurName + ': [' + CCG_RETURN_TEXT + ']');
+        logger.debug('Verify CasparCG\'s (' + CurName + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath());
         data = { spxcmd: 'updateStatusText', status: 'Error in comms with ' + CurName + '.' };
         io.emit('SPXMessage2Client', data);
         break;

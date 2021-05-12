@@ -8,14 +8,6 @@
 
   Home route is a list of available commands.
 
-  -WORK IN PROGRESS-
-
-  TODO:
-  New endpoints are needed for a direct playout of 
-  items without a need to have those on active rundown.
-  - play(options)
-  - stop(server/channel/layer)
-
 --------------------------------------------- */
 
 var express = require("express");
@@ -29,10 +21,28 @@ logger.debug('API-v1 route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
 
+
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
   let functionsDoc = {
       "sections" : [
+
+        {
+          "section"   :     "Direct commands",
+          "info"      :     "Commands which does not require any specific rundown",
+          "endpoint"  :     "/api/v1/",
+          "commands": [
+            {
+              "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
+              "info"    :     "GET (v1.0.12) Uses an invoke handler to call a function in a template. See required parameters in the example call above."
+            },
+            {
+              "param"   :     "directplayout",
+              "info"    :     "POST (v1.0.12) Execute a direct play/continue/stop -command to a template without current rundown. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"vendor/pack/templatefile.html\", \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX-GC application configurations."
+            }
+          ]
+        },
+
 
         {
           "section"   :     "Rundown commands and navigation",
@@ -41,27 +51,27 @@ router.get('/', function (req, res) {
           "commands": [
             {
               "param"   :     "load?file=MyFirstProject/MyFirstRundown",
-              "info"    :     "Open rundown from project / file."
+              "info"    :     "GET Open rundown from project / file."
             },
             {
               "param"   :     "focusFirst",
-              "info"    :     "Move focus to the first item on the rundown."
+              "info"    :     "GET Move focus to the first item on the rundown."
             },
             {
               "param"   :     "focusNext",
-              "info"    :     "Move focus down to next item, will not circle back to top when end is reached."
+              "info"    :     "GET Move focus down to next item, will not circle back to top when end is reached."
             },
             {
               "param"   :     "focusPrevious",
-              "info"    :     "Move focus up to previous item, will not circle back to bottom when top is reached."
+              "info"    :     "GET Move focus up to previous item, will not circle back to bottom when top is reached."
             },
             {
               "param"   :     "focusLast",
-              "info"    :     "Move focus to the last item on the rundown."
+              "info"    :     "GET Move focus to the last item on the rundown."
             },
             {
               "param"   :     "stopAllLayers",
-              "info"    :     "Animate all layers (used by the current rundown) out, but does not clear layers."
+              "info"    :     "GET Animate all layers (used by the current rundown) out, but does not clear layers."
             },
 
           ]
@@ -74,27 +84,27 @@ router.get('/', function (req, res) {
           "commands": [
             {
               "param"   :     "play",
-              "info"    :     "Start focused item."
+              "info"    :     "GET Start focused item."
             },
             {
               "param"   :     "play/1234567890",
-              "info"    :     "Start item by ID on the active rundown."
+              "info"    :     "GET Start item by ID on the active rundown."
             },
             {
               "param"   :     "continue",
-              "info"    :     "Issue continue command to selected item. Notice this needs support from the template itself and does not work as play or stop."
+              "info"    :     "GET Issue continue command to selected item. Notice this needs support from the template itself and does not work as play or stop."
             },
             {
               "param"   :     "continue/1234567890",
-              "info"    :     "Continue to item by ID on the active rundown. Notice this needs support from the template itself and does not work as play or stop."
+              "info"    :     "GET Continue to item by ID on the active rundown. Notice this needs support from the template itself and does not work as play or stop."
             },
             {
               "param"   :     "stop",
-              "info"    :     "Stop focused item."
+              "info"    :     "GET Stop focused item."
             },
             {
               "param"   :     "stop/1234567890",
-              "info"    :     "Stop item by ID on the active rundown."
+              "info"    :     "GET Stop item by ID on the active rundown."
             }
           ]
         },
@@ -105,7 +115,45 @@ router.get('/', function (req, res) {
 });
 
 
-// RUNDOWN COMMANDS
+// DIRECT COMMANDS (bypassing rundown) ----------------------------------------------------------
+  router.get('/invokeTemplateFunction/', async (req, res) => {
+    // create a data object 
+    let dataOut = {};
+    dataOut.playserver   = req.query.playserver || 'OVERLAY';
+    dataOut.playchannel  = req.query.playchannel || '1';
+    dataOut.playlayer    = req.query.playlayer || '1';
+    dataOut.webplayout   = req.query.webplayout || '1';
+    dataOut.prepopulated = 'true'
+    dataOut.relpath      = 'we_need_some_filename_here_to_prevent_errors.html'
+    dataOut.command      = 'invoke';
+    dataOut.invoke       = req.query.function + '(\'' + req.query.params + '\')';
+    res.status(200).send('Sent request to SPX-GC server: ' + JSON.stringify(dataOut));
+    spx.httpPost(dataOut,'/gc/playout')
+  });
+
+
+  router.post('/directplayout', async (req, res) => {
+    let dataOut = {};
+    dataOut.playserver   = req.body.casparServer || 'OVERLAY';
+    dataOut.playchannel  = req.body.casparChannel || '1';
+    dataOut.playlayer    = req.body.casparLayer || '1';
+    dataOut.webplayout   = req.body.webplayoutLayer || '1';
+    dataOut.prepopulated = 'true';
+    dataOut.relpath      = req.body.relativeTemplatePath || '/vendor/pack/template.html';
+    dataOut.command      = req.body.command || 'play';
+    dataOut.dataformat   = req.body.dataformat || 'xml';
+    dataOut.fields       = req.body.DataFields || '{field: f0, value: "Lorem ipsum"}';
+    res.status(200).send('Sent request to SPX-GC server: ' + JSON.stringify(dataOut));
+    spx.httpPost(dataOut,'/gc/playout')
+  });
+
+  router.get('/directplayout', async (req, res) => {
+    res.status(404).send('Sorry, this endpoint only available as POST REQUEST with parameters, see the example text.');
+  });
+
+
+
+// RUNDOWN COMMANDS -----------------------------------------------------------------------------
     router.get('/rundown/load/', async (req, res) => {
       let file = req.query.file;
       let dataOut = {};
@@ -151,8 +199,7 @@ router.get('/', function (req, res) {
     });
 
 
-// ITEM COMMANDS
-
+// ITEM COMMANDS ------------------------------------------------------------------------------------
     router.get('/item/play', async (req, res) => {
       let dataOut = {};
       dataOut.APIcmd  = 'ItemPlay';
