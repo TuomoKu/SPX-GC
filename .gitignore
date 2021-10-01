@@ -2,6 +2,7 @@
 # SmartPX's unwanted files #
 ############################
 .vscode/
+.VSCodeCounter/
 node_modules/
 pkg-builds/
 zip_builds/
@@ -21,6 +22,7 @@ MEDIA/*
 DATAROOT/*
 DATAROOT_*
 
+ASSETS/csv/
 ASSETS/media/video/
 ASSETS/media/images/hd/
 ASSETS/media/images/bg/
@@ -29,22 +31,39 @@ ASSETS/media/images/logo/
 ASSETS/media/images/hd_org/
 ASSETS/media/images/logo_org/
 ASSETS/media/images/smartpx_internal/
-
 ASSETS/template_stash/
+ASSETS/hot_or_not
 
+
+#######################################
+# extensions and plugins are not public
+#######################################
 ASSETS/plugins/_*
+ASSETS/plugins/spxSocial
+ASSETS/plugins/scoreboard
+ASSETS/plugins/spxCasparCGMediaplayer
 
-ASSETS/templates/smartpx/faith
-ASSETS/templates/smartpx/elemento
 
-ASSETS/templates/smartpx_demo/
-ASSETS/templates/smartpx_internal/
-ASSETS/templates/smartpx/scoreboard/*
+#######################################
+# non-public templates
+#######################################
+ASSETS/templates/smartpx
+ASSETS/templates/smartpx_demo
+ASSETS/templates/smartpx_internal
+ASSETS/templates/smartpx/scoreboard
 
-ASSETS/ExtraFunctions/modules/*
-ASSETS/ExtraFunctions/smartpx_internal/*
+
+#######################################
+# extra functions
+#######################################
+ASSETS/ExtraFunctions/modules
+ASSETS/ExtraFunctions/smartpx_internal
 ASSETS/ExtraFunctions/spx_internal_demo_functions.js
 
+
+#######################################
+# misc stuff
+#######################################
 notes/
 notes2/
 cg20.*

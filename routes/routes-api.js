@@ -12,6 +12,7 @@ const logger = require('../utils/logger');
 logger.debug('API-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
+const { now } = require("moment");
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -49,7 +50,7 @@ router.post('/logger/', async (req, res) => {
 }); // files route ended
 
 
-router.post('/browseTemplates/', async (req, res) => {
+router.post('/browseFiles/', async (req, res) => {
   // This is axios ajax handler for file browser on dbl click on a folder
   // REQUEST: current folder and next folder name
   // RETURNS: json data with folder and file arrays
@@ -58,7 +59,7 @@ router.post('/browseTemplates/', async (req, res) => {
   let BrowseFolder = path.join(curFolder, tgtFolder);
   const fileListAsJSON = await spx.GetFilesAndFolders(BrowseFolder);
   res.send(fileListAsJSON);
-}); // browseTemplates API post request end
+}); // browseFiles API post request end
 
 
 
@@ -129,6 +130,99 @@ router.post('/savefile/:filebasename', async (req, res) => {
   //   }
   //   logger.info('Updated file ' + datafile);
   // });
+});
+
+
+router.post('/exportCSVfile', async (req, res) => {
+  console.log('Exporting CSV...');
+  logger.verbose('Creating CSV from itemID ' + req.body.itemID + ' and profile ' + req.body.showFolder + '...');
+  let showFolder  = req.body.showFolder || "";
+  let datafile    = req.body.datafile || "";
+  let dataJSONfile= path.join(showFolder, datafile);
+  console.log('Reading JSON...');
+  let rundownData = await spx.GetJsonData(dataJSONfile);
+  let CSVdata = ''
+
+  let item_description,
+      item_playserver,
+      item_playchannel,
+      item_playlayer,
+      item_webplayout,
+      item_out,
+      item_uicolor,
+      item_dataformat,
+      item_relpath
+
+  rundownData.templates.forEach((item,index) => {
+    console.log('Iterating template index ' + index);
+    if (item.itemID == req.body.itemID) {
+      // This is the template to process.
+      console.log('Exporting template ' + item.itemID);
+
+      item_description = item.description || '';
+      item_playserver  = item.playserver  || '';
+      item_playchannel = item.playchannel || '1';
+      item_playlayer   = item.playlayer || '10';
+      item_webplayout  = item.webplayout  || '10';
+      item_out         = item.out || 'manual';
+      item_uicolor     = item.uicolor || '0';
+      item_dataformat  = item.dataformat || 'json';
+      item_relpath     = item.relpath || '';
+
+      CSVdata  = '\r\n# SPX-GC Rundown item CSV example file. (More info: https://spxgc.tawk.help )\r\n\r\n' 
+      CSVdata += '# description: ' + item_description + '\r\n' 
+      CSVdata += '# playserver: ' + item_playserver + '\r\n'
+      CSVdata += '# playchannel: ' + item_playchannel + '\r\n'
+      CSVdata += '# playlayer: ' + item_playlayer + '\r\n'
+      CSVdata += '# webplayout: ' + item_webplayout + '\r\n'
+      CSVdata += '# out: ' + item_out + '\r\n'
+      CSVdata += '# uicolor: ' + item_uicolor + '\r\n'
+      CSVdata += '# dataformat: ' + item_dataformat + '\r\n'
+      CSVdata += '# relpath: ' + item_relpath + '\r\n'
+      CSVdata += '# onair: false\r\n'
+      CSVdata += '\r\n'
+
+      // print field titles
+      CSVdata += '# FieldName;'
+      item.DataFields.forEach((field,findex) => {
+        if (field.field && field.field!='' ) {
+          CSVdata += field.title + ';'
+        }
+      });
+      CSVdata += '\r\n'
+
+      // print field ID's
+      CSVdata += '# FieldID;'
+      item.DataFields.forEach((field,findex) => {
+        if (field.field && field.field!='' ) {
+          CSVdata += field.field + ';'
+        }
+      });
+      CSVdata += '\r\n\r\n'
+
+      // print field values
+      let itemData = 'auto-itemID;'
+      item.DataFields.forEach((field,findex) => {
+        if (field.field && field.field!='' ) {
+          itemData += field.value + ';'
+        }
+      });
+      CSVdata += itemData + '\r\n'
+
+      console.log(CSVdata);
+    }
+  });
+
+  try {
+    let timestamp  = spx.prettifyDate(new Date(), 'YYYY-MM-DD-HHMMSS');
+    let filenameref = item_relpath.split('.')[0].replace('\\', '/').split('/').slice(-1)[0];
+    let CSVfileRef = path.join(process.cwd(), 'ASSETS', 'csv', filenameref + '_' + timestamp + '.csv');
+    console.log('Writing file ' + CSVfileRef);
+    await spx.writeTextFile(CSVfileRef,CSVdata);
+    res.status(200).send('Yea man');
+  } catch (error) {
+      console.log('API error in exportCSVfile(): ', error);
+  }; //file written
 });
 
 

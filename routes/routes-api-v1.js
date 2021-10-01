@@ -20,7 +20,7 @@ const logger = require('../utils/logger');
 logger.debug('API-v1 route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
-
+const axios = require('axios')
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -35,6 +35,21 @@ router.get('/', function (req, res) {
             {
               "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
               "info"    :     "GET (v1.0.12) Uses an invoke handler to call a function in a template. See required parameters in the example call above."
+            },
+            {
+              "param"   :     "directplayout",
+              "info"    :     "POST (v1.0.12) Execute a direct play/continue/stop -command to a template without current rundown. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"vendor/pack/templatefile.html\", \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX-GC application configurations."
+            }
+          ]
+        },
+        {
+          "section"   :     "Helpers",
+          "info"      :     "Utility API calls",
+          "endpoint"  :     "/api/v1/",
+          "commands": [
+            {
+              "param"   :     "/feedproxy?url=http://corsfeed.net&format=xml",
+              "info"    :     "GET (v1.0.14) A proxy endpoint for passing feed data from CORS protected datasources. Implemented for SocialPlayoutr Extension."
             },
             {
               "param"   :     "directplayout",
@@ -147,6 +162,7 @@ router.get('/', function (req, res) {
     spx.httpPost(dataOut,'/gc/playout')
   });
 
+  
   router.get('/directplayout', async (req, res) => {
     res.status(404).send('Sorry, this endpoint only available as POST REQUEST with parameters, see the example text.');
   });
@@ -246,6 +262,27 @@ router.get('/', function (req, res) {
     });
 
 
+    router.get('/feedproxy', async (req, res) => {
+        // added in 1.0.14
+        axios.get(req.query.url)
+        .then(function (response) {
+          res.header('Access-Control-Allow-Origin', '*')
+          switch (req.query.format) {
+            case 'xml':
+              res.set('Content-Type', 'application/rss+xml')
+              break;
+
+            default:
+              res.set('Content-Type', 'application/json')
+              break
+          }
+          res.send(response.data)
+        })
+        .catch(function (error) {
+          console.log(error);
+          return res.status(500).json({ type: 'error', message: error.message })
+        });
+    });
 
 
 

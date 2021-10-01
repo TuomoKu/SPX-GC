@@ -16,7 +16,7 @@
 
 :root {
   /* BRAND ACCENT COLORS primary and secondary */
-  --spx-accent-color: rgb(165, 74, 200);
+  --spx-accent-color: #4492df;
   
   /* PLATE 1 */
   --spx-bgcol1-color: rgba(255, 255, 255, 0.952);
@@ -24,12 +24,12 @@
   --spx-txsha1-color: rgba(89, 27, 190, 0.0);
   
   /* PLATE 2 */
-  --spx-bgcol2-color: rgba(165, 74, 200, 0.9);
+  --spx-bgcol2-color: #366899;
   --spx-txcol2-color: rgb(255, 255, 255);
   --spx-txsha2-color: rgba(255, 255, 255,0);
 
   /* PLATE 3 */ 
-  --spx-bgcol3-color: rgba(91, 49, 107, 0.9);
+  --spx-bgcol3-color: #1d3b5a;
   --spx-txcol3-color: rgb(255, 255, 255);
   --spx-txsha3-color: rgba(8, 37, 71, 0.2);
 

@@ -11,6 +11,8 @@
   <script src="/js/fontawesome.all.min.js"></script>
   <script src="/js/Sortable.min.js"></script>
   <script src="/js/socket.io.js"></script>
+  <script src="/js/vanilla-js-tooltip.js"></script>
+  <script src="/js/spx_controllerImportFunctions.js"></script>
   <script>
     var socket = io();
   </script>
@@ -25,7 +27,9 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
-
+  <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
+  <link rel="stylesheet" type="text/css" href="/css/vanilla-js-tooltip.css" />
+  
   {{{ hookLoadControllerPlugins }}}
 
   <script>
@@ -62,12 +66,20 @@
     <div class="modal_content content scroller">
         <div id="treeview" class="filebrowser" style="padding: 2em;">
           {{{ generateTemplateList folder }}}
+
+
+          <div onClick="addSelectedTemplate(' + i + ');" class="addTemplateItem row_accent7">
+          <button type="button" class="addbtn bg_blue ripple" onClick="openImportDialog();" style="float:right; padding:0.2em 0.4em;"><i class="fas fa-file-import"></i></button>
+          <span class="templateName">Import items from a CSV-file</span><BR>
+          <span class="templateDesc">You should first export a base CSV-file from an existing rundown item</span>
+          </div>
+
         </div>
     </div>
   </div>
 </div><!-- overlay ended-->
 
-
+{{>partial-genericfilebrowsermodal}}
 
 <div class="overlay" id="overlayHelp">
   <!-- This is the keyboard shortcuts modal overlay -->
@@ -216,7 +228,7 @@
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="number"></td></tr>
                                   </table>
                                 </div>
-                                <input type="number"  name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                                <input type="number"  data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
                               {{/ifValue}}
 
 
@@ -260,10 +272,10 @@
                                 <!-- "TEXTFIELD" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
-                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"   class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
                                   </table>
                                 </div>
-                                <input type="text"  name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                                <input type="text" data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
                               {{/ifValue}}
 
 
@@ -322,7 +334,7 @@
                                     <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textarea"></td></tr>
                                   </table>
                                 </div>
-                                <textarea rows="8" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" class="gcinput">{{injectNewlines value}}</textarea><BR>
+                                <textarea rows="8" data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" class="gcinput">{{injectNewlines value}}</textarea><BR>
                               {{/ifValue}}
 
 
@@ -333,7 +345,7 @@
                                   <tr><td class="aright">fType</td>  <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="dropdown"><BR><BR></td></tr>
                                 </table>
                                 <!-- then visible DOM elements -->
-                                  <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="DropdownValues[{{field}}]">
+                                  <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="DropdownValues[{{field}}]" data-tooltip="{{title}}" data-position="right center">
                                     <option disabled>{{title}}:</option>
                                     {{#each items}}
                                       {{#ifValue value ../value}}
@@ -356,7 +368,7 @@
                                   </table>
                                 </div>
                                 <!-- then render visible DOM elements with a helper-->
-                                <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="FilelistValues[{{field}}]">
+                                <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="FilelistValues[{{field}}]" data-tooltip="{{title}} {{lang 'general.fromFolder'}}: {{assetfolder}}" data-position="right center">
                                   <option disabled>{{title}} {{lang 'general.fromFolder'}}:</option>
                                   <option disabled>{{assetfolder}}</option>
                                   <option disabled></option>
@@ -425,10 +437,13 @@
                           <TD class="vtop center">
                             <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
                             <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
-                            <!-- import export buttons: -->
-                            <!-- TODO:
-                            <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
-                            <i id="importCSV{{@index}}" class="l-icon fas fa-file-import" onClick="appendItemsFromCSV();"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i>
+                            
+                            <!-- export CSV button -->
+                            <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.exportitem'}}');"></i><BR>
+
+                            <!-- import CSV button (moved to add template view) -->
+                            <!--
+                            <i id="importCSV{{@index}}" class="l-icon fas fa-file-import" onClick="appendItemsFromCSV();"  onmouseover="tip('{{lang 'hover.importitems'}}');"></i>
                             -->
                           </TD>
                         </TR>
@@ -475,7 +490,7 @@
 
 
                 <div class="wide" style="text-align: center; padding:0.5rem;">
-                  <button type="button" class="addbtn bg_blue ripple" onClick="ModalOn('overlayTemplatePicker');" onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
+                  <button type="button" data-tooltip="{{lang 'hover.addrundownitem'}}" data-position="right center" class="addbtn bg_blue ripple" onClick="ModalOn('overlayTemplatePicker');" onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
                 </div>
             </div>
 
@@ -515,9 +530,17 @@
 
         </div>
 
+
+        <!-- TODO:
+          Add a fly-out menu to
+           * copy render address to streaming application
+           * detach the preview
+           * notify when used the first time 
+          
+        -->
         <div class="right pM">
           <div id="previewBG" style="background-color: rgb(0, 0, 0); width:100%; overflow: hidden; display:none;">
-            <iframe id="previewIF" src="/renderer"  class="renderer""></iframe>
+            <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
           </div>
           
           <HR id="previewWidthRuler"> <!-- ===========================================================  -->
@@ -546,6 +569,10 @@
 
   <script>
     // See spx_gc.js
+
+    console.log('Init tooltip');
+    var tooltip = new Tooltip();
+
 
     function pageInit(){
       resizePreview();

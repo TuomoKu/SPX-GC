@@ -3,6 +3,21 @@
 > Most recent updates are at the top.
 
 ---
+## **1.0.14** (Oct 01 2021)
+- Added functionality required by "SPX-GC CasparCG MediaPlayer -extension" (CCG commands)
+- Added tooltips to template fields in the editor view of the rundown
+- Added `/feedproxy` helper API-endpoint for CORS data sources with "SPX-GC SocialPlayout -extension".
+- Changed the rundown autoScroll parameters (to block: nearest, behavior: auto)
+- Fixed template re-import functionality (in project settings)
+- Fixed the "invisible rundown item -bug" when a template without DataFields was added
+- Added scalable webrender pop-up window command to controller menu
+- Added export CSV-file option to template editor (import function will be added in 1.0.15)
+- Disabled Chrome autostart by default in config.json ("launchchrome": false)
+- Binary packages v1.0.14:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_linux64.zip)
+
 
 ## **1.0.13** (Apr 27 2021)
 - Fixed a complex rundown issue when items duplicated + sorted. (Bug found right after v.1.0.12 release)

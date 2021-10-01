@@ -2,7 +2,7 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Apr 27 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.13).
+> Readme updated Oct 01 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.14).
 
 
 **SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
@@ -84,9 +84,9 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 | Package| Build date | Notes |
 |  ------ | ----- | ----- |
-| **Windows**<BR>[SPX-GC_1_0_13_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_win64.zip   ) | Apr 26 2021 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| **MacOS**<BR>[SPX-GC_1_0_13_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_macos64.zip ) | Apr 26 2021 | The "wrong folder" macOS [issue (#3)](/../../issues/3) got fixed in v1.0.12. If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
-| **Linux**<BR>[SPX-GC_1_0_13_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_linux64.zip ) | Apr 26 2021 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| **Windows**<BR>[SPX-GC_1_0_14_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_win64.zip   ) | Oct 01 2021 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| **MacOS**<BR>[SPX-GC_1_0_14_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_macos64.zip ) | Oct 01 2021 | The "wrong folder" macOS [issue (#3)](/../../issues/3) got fixed in v1.0.12. If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
+| **Linux**<BR>[SPX-GC_1_0_14_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_linux64.zip ) | Oct 01 2021 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
 
 > For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
  Please [get in touch](#feedback) if you have problems downloading or installing these files.
@@ -168,7 +168,7 @@ pm2 kill
 ```
 --------------------------------
   SPX-GC url:
-  http://192.148.1.22:5000
+  http://127.0.0.1:5000
 --------------------------------
 ```
 > Port 5000 is the default value in config and can be changed.

@@ -1,0 +1,28 @@
+
+:root {
+    --tooltipbg:    rgba(0, 0, 0, 0.7);
+}
+
+.b-tooltip {
+    font-size:      0.6em;
+	padding:        0.3em;
+    border-radius:  0.2em;
+    color:          rgba(255, 255, 255, 0.6);
+	text-align:     center;
+	position:       absolute;
+	background:     var(--tooltipbg);
+	display:        inline-block;
+    opacity:        1;
+	}
+
+
+.b-tooltip:after {
+    content: " ";
+    position: absolute;
+    left: -10px;
+    top: 4px;
+    border-top: 10px solid transparent;
+    border-right: 10px solid var(--tooltipbg);
+    border-left: none;
+    border-bottom: 10px solid transparent;
+    }

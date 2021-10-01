@@ -9,7 +9,35 @@ const moment = require('moment');
 
 module.exports = {
 
+  /*
+    requestInfo: async function(ccgServerName, scannerCommand, callback) {
+      try {
+        if (!global.CCGSockets[this.getSockIndex(ccgServerName)]) {
+          console.log('ONE');
+          callback('Server ' + ccgServerName + ' not configured', null)
+        }
+  
+        global.CCGSockets[this.getSockIndex(ccgServerName)].write(scannerCommand + '\r\n');
+        global.CCGSockets[this.getSockIndex(ccgServerName)].on('data', function (data) {
+            //this data is a Buffer object
+            console.log('TWOOO');
+            callback(null, data)
+        });
+      
+        global.CCGSockets[this.getSockIndex(ccgServerName)].on('error', function (error) {
+          console.log('THRIIII');
+            callback(error, null)
+        });
+        return
+        } catch (error) {
+        
+      }
+
+    },
+    */
+
     clearChannelsFromGCServer: function (serverName='') {
+      //TODO: add 2nd parameter an Array of layer numbers...
       let ClearAMCPCommand = 'CLEAR 1\r\n CLEAR 2\r\n CLEAR 3\r\n CLEAR 4\r\n CLEAR 5\r\n CLEAR 6\r\n CLEAR 7\r\n CLEAR 8\r\n';
       if (serverName) {
         // clear the given server
@@ -19,8 +47,6 @@ module.exports = {
         config.casparcg.servers.forEach((item,index) => {
           global.CCGSockets[this.getSockIndex(item.name)].write(ClearAMCPCommand);
         });
-        
-
       }
     logger.verbose('Clearing CasparCG [server: ' + serverName + ']');
   },
@@ -157,7 +183,7 @@ module.exports = {
     // - data.command (ADD | STOP | UPDATE)
       
      // handle video commands
-    // console.log('Handling VIDEO PLAYOUT');
+    console.log('Handling VIDEO PLAYOUT', data);
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;

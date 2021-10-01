@@ -15,14 +15,55 @@ const ip = require('ip')
 const ipad = ip.address(); // my ip address
 const port = config.general.port || 5000;
 
+const PlayoutCCG = require('../utils/playout_casparCG.js');
+
+// function getAllMediaFiles(serverName='') {
+//   this.pukkaa('OVERLAY', function(error, data){
+//       console.log('Received ALKAA------------' + data + "LOPPUI--------------")
+//       return data
+//   })
+// }
+
+
+
 
 // ROUTES CCG -----------------------------------------------------------------------------------
-router.get('/', function (reg, res) {
+router.get('/', function (req, res) {
   res.send('Nothing here. Go away!');
 });
 
-router.get('/system', function (reg, res) {
+router.get('/system', function (req, res) {
   res.send('Nothing here. Get lost.');
+});
+
+router.get('/requestInfo', async (req, res) => {
+  // Private API endpoint.
+  // http://localhost:5000/CCG/requestInfo?server=OVERLAY&command=CLS
+  // Try commands "INFO", "INFO 1", "CLS"
+  // These require scanner.exe be running on the server
+  // Response is plain text but some of them can be parsed as XML... 
+  // See https://github.com/CasparCG/help/wiki/AMCP-Protocol
+  // This creates a new temporary tcp/ip connection for the request.
+  var SERVER  = req.query.server;   // ?server=OVERLAY
+  var COMMAND = req.query.command;  // &command=INFO
+  console.log('requestInfo from ' + SERVER + ', cmd: ' + COMMAND);
+  const CCGHost = global.CCGSockets[PlayoutCCG.getSockIndex(SERVER)].spxhost;
+  const CCGPort = global.CCGSockets[PlayoutCCG.getSockIndex(SERVER)].spxport;
+  const net = require('net')
+  CasparRequest = new net.Socket();
+  CasparRequest.connect(CCGPort, CCGHost, function () {
+    CasparRequest.write(COMMAND + '\r\n');
+    CasparRequest.on('data', function (data) {
+      res.set('Content-Type', 'text/plain'); // format
+      res.status(200).send(data);
+      CasparRequest.destroy();
+    });
+
+    CasparRequest.on('error', function (error) {
+      return res.status(500).send(error);
+      CasparRequest.destroy();
+    });
+  });
 });
 
 
@@ -236,7 +277,9 @@ config.casparcg.servers.forEach((element,index) => {
   eval(CurCCG);
   CurCCG = new net.Socket();
   global.CCGSockets.push(CurCCG); // --> PUSH Socket object to a global array for later use
-  CurCCG.spxname = CurName; // give each entry a name for later searching!
+  CurCCG.spxname = CurName; // save each entry a name for later searching!
+  CurCCG.spxhost = CurHost; // save each entry a host for later searching! (v.1.0.14)
+  CurCCG.spxport = CurPort; // save each entry a port for later searching! (v.1.0.14)
 
   CurCCG.connect(CurPort, CurHost, function () {
     ServerData.push({ name: CurName, host: CurHost, port: CurPort });

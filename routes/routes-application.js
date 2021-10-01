@@ -321,14 +321,6 @@ router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (
 });
 
 
-
-
-
-
-
-
-
-
 router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => {
   // a POST handler for adding content to the <show>/profile.json.
   // 
@@ -381,6 +373,14 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
       if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "xml"};
       if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
+
+      // v.1.0.14 add note if no fields
+      if ( !SPXGCTemplateDefinition.DataFields ||  SPXGCTemplateDefinition.DataFields.length === 0) {
+        let emptyData = {}
+        emptyData.ftype = 'instruction'
+        emptyData.value = 'No editable fields'
+        SPXGCTemplateDefinition.DataFields = [emptyData];
+       }
    
       let absPath = TemplatePath.split("\\").join("/");
       let tmpRoot = config.general.templatefolder.split("\\").join("/");
@@ -423,7 +423,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
           newExtra.fcall='demo_toggle(this)';
           break;
 
-          case 'selectbutton':
+        case 'selectbutton':
           newExtra.description='Selectbutton demo';
           newExtra.ftype='selectbutton';
           newExtra.bgclass='bg_blue';

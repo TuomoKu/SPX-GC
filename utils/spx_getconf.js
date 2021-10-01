@@ -69,7 +69,7 @@ module.exports = {
                     cfg.general.hostname                        = ""
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
-                    cfg.general.launchchrome                    = "true"
+                    cfg.general.launchchrome                    = false
 
                     // below paths were __dirname but pkg did not like it
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"

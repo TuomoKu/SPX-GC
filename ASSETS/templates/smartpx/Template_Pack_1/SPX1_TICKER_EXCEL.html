@@ -25,6 +25,7 @@
 
         function runAnimationIN() {
             let dur = 0.8;
+            gsap.ticker.fps(25);
             gsap.set("#line1", { opacity: 1 });
             gsap.set("#TICKER", {display:"block"});
             gsap.to("#TICKER",   0.5, {opacity: 1});
@@ -133,7 +134,7 @@
             padding:            0.6rem 2rem 0.1rem 2rem;
             opacity:            0;  
             box-shadow:         black 10px 0px 30px;
-            background-color:   #53079b;
+            background-color:   #5c3f11;
             color:              rgb(255, 255, 255);
         }
 

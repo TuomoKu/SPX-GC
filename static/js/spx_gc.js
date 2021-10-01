@@ -546,7 +546,7 @@ function clearUsedChannels(ServerName='') {
     let data = {};
     data.server       = ServerName;
     data.foldername   = document.getElementById('foldername').value;
-    data.datafile      = document.getElementById('datafile').value;
+    data.datafile     = document.getElementById('datafile').value;
     working('Clearing ALL graphic channels used by program [' + data.foldername + ']...');
     ajaxpost('/gc/clearPlayouts',data);
 } //clearUsedChannels
@@ -722,7 +722,19 @@ function eps() {
 } // cas ended
 
 
-  
+function exportItemAsCSV(rowItem) {
+    // export an item as a CSV file, which then can be
+    // filled in and imported back, so it will auto-generate
+    // a bunch of graphics.
+    // Added in 1.0.15
+    let data = {};
+    data.foldername   = document.getElementById('foldername').value;
+    data.datafile     = document.getElementById('datafile').value;
+    data.itemID       = rowItem.getAttribute('data-spx-epoch');
+    working('Generating CSV file to ASSETS/csv -folder.');
+    ajaxpost('/api/exportCSVfile',data);
+
+} // exportItemAsCSV ended
 
 
 function ModalOn(modalID) {
@@ -763,9 +775,8 @@ function focusRow(rowitemOrIndex) {
     if (TargetElement){
         TargetElement.classList.add('inFocus');
         TargetElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "center"
+            behavior: "auto",
+            block: "nearest",
         });
     }
      setMasterButtonStates(TargetElement, 'from focusRow');
@@ -1608,10 +1619,18 @@ function spx_system(cmd,servername='') {
     let data = {};
     switch (sysCmd) {
         case 'OPENWEBRENDERER':
-            // data.command = 'WEBRENDERER';
-            // GC server not needed here, Just open a url, daah.
             window.open("/renderer", 'gcwebrender', 'width=1920,height=1080,scrollbars=yes,location=yes,status=yes');
             break;
+
+        case 'OPENWEBRENDERER_SCALABLE':
+            var w = 1280;
+            var h = 720;
+            var left = (screen.width/2)-(w/2);
+            var top = (screen.height/2)-(h/2);
+            var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
+            window.open('/renderer/preview.html', 'gcwebrender2', OPT);
+            break;
+
 
         case 'OPENDATAFOLDER':
             data.command = 'DATAFOLDER';

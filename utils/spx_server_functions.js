@@ -9,7 +9,7 @@ const wavplayer = require('node-wav-player');
 const PlayoutCCG = require('./playout_casparCG.js');
 const glob = require("glob");
 const ip = require('ip')
-const { rejects } = require('assert');
+// const { rejects } = require('assert');
 const axios = require('axios')
 const http = require('http');
 
@@ -383,18 +383,21 @@ GetFilesAndFolders: function (datafolder) {
     if (fs.existsSync(datafolder)) {
       fs.readdirSync(datafolder).forEach((file, index) => {
         const curPath = path.join(datafolder, file);
-        if (fs.lstatSync(curPath).isDirectory())
-          { 
+        if (fs.lstatSync(curPath).isDirectory()) { 
             // it is folder
             data.foldArr.push(path.basename(curPath));
           }
-        else
-          {
+        else {
           // it is file
           let ext = path.extname(curPath).toUpperCase();
-          if (ext ==".HTM" || ext ==".HTML"){
-            data.fileArr.push(path.basename(curPath));        }
-        }
+          // console.log('File ext is ' + ext + ' and search extension is ' + extension);
+          // if (ext.includes(extension)) {
+          //   data.fileArr.push(path.basename(curPath));
+          // }
+          if (ext ==".HTM" || ext ==".HTML") {
+            data.fileArr.push(path.basename(curPath));
+          }
+          }
       });
       
       // Sort elements within arrays
@@ -409,13 +412,11 @@ GetFilesAndFolders: function (datafolder) {
     
   } catch (error) {
     logger.error('ERROR in spx.GetFilesAndFolders (datafolder: ' + datafolder + '): ' + error);
-    
   }
 },
 
 
-playAudio: async function (wavFileName, msg=''){
-
+playAudio: async function (wavFileName, msg='') {
   try {
     // request ..... a name of soundFX
     // return ...... plays audio on the server
@@ -493,7 +494,32 @@ talk: async function (message){
   }
 },
 
+prettifyDate: function (d, presetName){
+  // prettify date format to a desired preset format
+  try {
+    let YEAR = d.getFullYear()
+    let MONT = (d.getMonth()+1).toString().padStart(2, '0')
+    let DNUM = d.getDate().toString().padStart(2, '0')
+    let HOUR = d.getHours().toString().padStart(2, '0')
+    let MINU = d.getMinutes().toString().padStart(2, '0')
+    let SECO = d.getSeconds().toString().padStart(2, '0')
 
+    switch (presetName) {
+      case 'YYYY-MM-DD-HHMMSS':
+        return YEAR + '-' + MONT + '-' + DNUM + '-' + HOUR + MINU + SECO; 
+        break;
+    
+      default:
+        return d
+        break;
+    }
+  } catch(error) {
+    logger.error('ERROR in spx.prettifyDate (d: ' + d + ', presetName: ' + presetName + ' ): ' + error);
+    return ""  
+  }
+
+
+},
 
 
 prettifyName: function (fullFilePath){
@@ -595,8 +621,9 @@ writeFile: function (filepath,data) {
         let filedata = JSON.stringify(data, null, 2);
         fs.writeFile(filepath, filedata, 'utf8', function (err) {
           if (err){
-            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);
-            throw error;
+            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+            return
+            // throw error;
           }
           logger.verbose('spx.writeFile - File written OK: ' + filepath);
           resolve()
@@ -606,7 +633,28 @@ writeFile: function (filepath,data) {
   } catch (error) {
     logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
   }
+},
+
+writeTextFile: function (filepath, filedata) {
+  console.log('writing text file ' + filepath);
+  try {
+      return new Promise(resolve => {
+        data.updated = new Date().toISOString();
+        fs.writeFile(filepath, filedata, 'utf8', function (err) { 
+          if (err) {
+            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+            return;
+            // throw err;
+          }
+          logger.verbose('spx.writeFile - File written OK: ' + filepath);
+          resolve()
+          });
+        }
+      )
+  } catch (error) {
+    logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
   }
+}
 
  
 } // end of exports (spx.)

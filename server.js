@@ -651,12 +651,12 @@ const ROUTEapp = require('./routes/routes-application.js');
 app.use('/', ROUTEapp);
 
 const ROUTEccg = require('./routes/routes-casparcg.js');
-const { prependListener } = require('process'); // const { prependListener } = require('process') // DIFF?
-const { request } = require('http')
-const { data } = require('./utils/logger.js')
-const { Z_VERSION_ERROR } = require('zlib')
-const { resolve } = require('path')
-const { rejects } = require('assert')
+// const { prependListener } = require('process'); // const { prependListener } = require('process') // DIFF?
+// const { request } = require('http')
+// const { data } = require('./utils/logger.js')
+// const { Z_VERSION_ERROR } = require('zlib')
+// const { resolve } = require('path')
+// const { rejects } = require('assert')
 app.use('/CCG', ROUTEccg);
 
 process.on('uncaughtException', function(err) {
@@ -684,6 +684,7 @@ var server = app.listen(port, (err) => {
   'Knowledge Base ......... https://spxgc.tawk.help\n' +
   `Config file ............ ${configfileref}\n`  +
   `Cfg / locale ........... ${config.general.langfile}\n`  +
+  `Cfg / hostname ......... ${config.general.hostname}\n`  +
   `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
   `Cfg / template files ... ${config.general.templatefolder}\n`  +  
@@ -709,14 +710,13 @@ var server = app.listen(port, (err) => {
   console.log('\x1b[33m%s\x1b[0m', `     http://${ipad}:${port}`);  //yellow
   console.log('\x1b[32m%s\x1b[0m', '──────────────────────────────────\n\n');
 
-  if ( config.general.launchchrome==="true" )
+  if ( config.general.launchchrome )
   {
     (async () => {
       // Opens the URL in a specified browser.
       await open(`http://${ipad}:${port}/`, {app: 'chrome'});
     })();
   }
-  
 
 });
 
