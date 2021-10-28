@@ -559,7 +559,7 @@ app.engine('handlebars', exphbs({
     DropdownOptionsLANG() {
       let html = '';
       let sel = '';
-      let fileListData = spx.getJSONFileList('./locales/');
+      let fileListData = spx.getJSONFileList(config.general.langfolder);
       fileListData.files.forEach((element,i) => {
         sel = '';
         if (element.name == config.general.langfile)
@@ -683,7 +683,9 @@ var server = app.listen(port, (err) => {
   'Template Store ......... https://spxgc.com/store\n' +
   'Knowledge Base ......... https://spxgc.tawk.help\n' +
   `Config file ............ ${configfileref}\n`  +
+  `Cfg / launch folder .... ${config.general.launchfolder}\n`  +
   `Cfg / locale ........... ${config.general.langfile}\n`  +
+  `Cfg / locale folder .... ${config.general.langfolder}\n`  +
   `Cfg / hostname ......... ${config.general.hostname}\n`  +
   `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
