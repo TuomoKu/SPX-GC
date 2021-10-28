@@ -13,6 +13,7 @@
   <script src="/js/socket.io.js"></script>
   <script src="/js/vanilla-js-tooltip.js"></script>
   <script src="/js/spx_controllerImportFunctions.js"></script>
+  <script src="/js/anime.min.js"></script>
   <script>
     var socket = io();
   </script>
@@ -42,84 +43,89 @@
 
 <body onload="pageInit();" onresize="resizePreview();" class="bg_body">
 
-    <input type="hidden" id="foldername" value="{{folder}}">            <!-- just the foldername "showname" -->
-    <input type="hidden" id="filebasename" value="{{filebasename}}">    <!-- just the filename "listname" -->
-    <input type="hidden" id="datafile" value="{{datafile}}">            <!-- full file path "C:/dataroot/showname/listname.json" -->
-    <input type="hidden" id="profiledata" value="{{profiledata}}">      <!-- full contents of the "gc_list.json" profilefile as stringified json -->
+  <input type="hidden" id="foldername" value="{{folder}}">            <!-- just the foldername "showname" -->
+  <input type="hidden" id="filebasename" value="{{filebasename}}">    <!-- just the filename "listname" -->
+  <input type="hidden" id="datafile" value="{{datafile}}">            <!-- full file path "C:/dataroot/showname/listname.json" -->
+  <input type="hidden" id="profiledata" value="{{profiledata}}">      <!-- full contents of the "gc_list.json" profilefile as stringified json -->
+  <input type="hidden" id="background" value="{{background}}">        <!-- background.png -->
+  <input type="hidden" id="csvlist" value="{{csvFileList}}">          <!-- tree data from ASSETS/csv -->
 
-<div class="overlay" id="overlayTemplatePicker">
-  <!-- This is the file browser modal overlay -->
-  <div class="modal wrapper">
-    <div class="modal_top height2">
-      <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
-        <tr style="background-color: rgba(255,255,255,0.2);">
-          <td valign="middle" style="font-size: 0.8em;">
-            &nbsp;{{lang 'pagetitle.picktemplate'}} &nbsp; <a href="/show/{{folder}}/config"><i class="fas fa-cog"></i></a></small>
-          </td>
-          <td valign="middle" class="aright">
-            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('overlayTemplatePicker');"></i>&nbsp;
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="modal_content content scroller">
-        <div id="treeview" class="filebrowser" style="padding: 2em;">
-          {{{ generateTemplateList folder }}}
+  <div id="messageSlider" class="infoMsg"></div>
 
 
-          <div onClick="addSelectedTemplate(' + i + ');" class="addTemplateItem row_accent7">
-          <button type="button" class="addbtn bg_blue ripple" onClick="openImportDialog();" style="float:right; padding:0.2em 0.4em;"><i class="fas fa-file-import"></i></button>
-          <span class="templateName">Import items from a CSV-file</span><BR>
-          <span class="templateDesc">You should first export a base CSV-file from an existing rundown item</span>
+  <div class="overlay" id="overlayTemplatePicker">
+    <!-- This is the file browser modal overlay -->
+    <div class="modal wrapper">
+      <div class="modal_top height2">
+        <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
+          <tr style="background-color: rgba(255,255,255,0.2);">
+            <td valign="middle" style="font-size: 0.8em;">
+              &nbsp;{{lang 'pagetitle.picktemplate'}} &nbsp; <a href="/show/{{folder}}/config"><i class="fas fa-cog"></i></a></small>
+            </td>
+            <td valign="middle" class="aright">
+              <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('overlayTemplatePicker');"></i>&nbsp;
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="modal_content content scroller">
+          <div id="treeview" class="filebrowser" style="padding: 2em;">
+            {{{ generateTemplateList folder }}}
+
+            <BR>
+            <div onClick="openImportDialog();" class="addTemplateItem row_accent7">
+            <button type="button" class="addbtn bg_blue ripple" onClick="openImportDialog();" style="float:right; padding:0.2em 0.4em;"><i class="fas fa-file-import"></i></button>
+            <span class="templateName">CSV-file import <span style="color: yellow;">BETA</span></span><BR>
+            <span class="templateDesc">Generate multiple rundown items &nbsp;<span class="tableheaderHelp2" title="{{lang 'general.help'}}" onClick="help('csv');"><i class="far fa-question-circle"></i>&nbsp;</span></span>
+            </div>
+
           </div>
-
-        </div>
+      </div>
     </div>
-  </div>
-</div><!-- overlay ended-->
+  </div><!-- overlay ended-->
 
-{{>partial-genericfilebrowsermodal}}
+  {{>partial-genericfilebrowsermodal}}
 
-<div class="overlay" id="overlayHelp">
-  <!-- This is the keyboard shortcuts modal overlay -->
-  <div class="modal wrapper">
-    <div class="modal_top height2">
-      <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
-        <tr style="background-color: rgba(255,255,255,0.2);">
-          <td valign="middle" style="font-size: 0.8em;">
-            &nbsp;{{lang 'pagetitle.shortcuts'}}</small>
-          </td>
-          <td valign="middle" class="aright">
-            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('overlayHelp');"></i>&nbsp;
-          </td>
-        </tr>
-      </table>
+  <div class="overlay" id="overlayHelp">
+    <!-- This is the keyboard shortcuts modal overlay -->
+    <div class="modal wrapper">
+      <div class="modal_top height2">
+        <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
+          <tr style="background-color: rgba(255,255,255,0.2);">
+            <td valign="middle" style="font-size: 0.8em;">
+              &nbsp;{{lang 'pagetitle.shortcuts'}}</small>
+            </td>
+            <td valign="middle" class="aright">
+              <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('overlayHelp');"></i>&nbsp;
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="modal_content content scroller" style="padding:2em;">
+        <h3>{{lang 'pagetitle.shortcuts'}}</h3><BR>
+        <p>
+          GC controller has some basic keyboard shortcuts for fast operation. For more information about the software, visit
+          <A href="#" onClick="help('controller')" style="text-decoration: underline;">SPX-GC Knowledge Base</A>.
+        </p>
+        <BR>
+        <table class="wide KBHelptable">
+            <TR>
+              <th width="30%"><B>Key</B></th><th><B>Function</B></th>
+            </TR>
+            <TR><td>F1</td>           <td>This :-)</td></TR>
+            <TR><td>Up / Down</td>    <td>Select previous / next item</td></TR>
+            <TR><td>Enter</td>        <td>Open / close selected item for editing</td></TR>
+            <TR><td>Space</td>        <td>Play / stop selected playlist item</td></TR>
+            <TR><td>Ctrl + D</td>     <td>Duplicate a template item.</td></TR>
+            <TR><td>Shift + Space</td><td>Continue animation to next step.<BR><small>Support for next -command must be implemented in the template.</small></td></TR>
+            <TR><td>F5</td>           <td>Send an instant update to the template (to fix typos, for instance).<BR><small>Support for update command must be implemented in the template.</small></td></TR>
+            <TR><td>Esc</td>          <td>Stop all layers used by current rundown.</td></TR>
+        </table>
+      </div>
     </div>
-
-    <div class="modal_content content scroller" style="padding:2em;">
-      <h3>{{lang 'pagetitle.shortcuts'}}</h3><BR>
-      <p>
-        GC controller has some basic keyboard shortcuts for fast operation. For more information about the software, visit
-        <A href="#" onClick="help('controller')" style="text-decoration: underline;">SPX-GC Knowledge Base</A>.
-      </p>
-       <BR>
-      <table class="wide KBHelptable">
-          <TR>
-            <th width="30%"><B>Key</B></th><th><B>Function</B></th>
-          </TR>
-          <TR><td>F1</td>           <td>This :-)</td></TR>
-          <TR><td>Up / Down</td>    <td>Select previous / next item</td></TR>
-          <TR><td>Enter</td>        <td>Open / close selected item for editing</td></TR>
-          <TR><td>Space</td>        <td>Play / stop selected playlist item</td></TR>
-          <TR><td>Ctrl + D</td>     <td>Duplicate a template item.</td></TR>
-          <TR><td>Shift + Space</td><td>Continue animation to next step.<BR><small>Support for next -command must be implemented in the template.</small></td></TR>
-          <TR><td>F5</td>           <td>Send an instant update to the template (to fix typos, for instance).<BR><small>Support for update command must be implemented in the template.</small></td></TR>
-          <TR><td>Esc</td>          <td>Stop all layers used by current rundown.</td></TR>
-      </table>
-    </div>
-  </div>
-</div><!-- help overlay ended-->
+  </div><!-- help overlay ended-->
 
 
 
@@ -536,11 +542,20 @@
            * copy render address to streaming application
            * detach the preview
            * notify when used the first time 
-          
         -->
+
+
         <div class="right pM">
-          <div id="previewBG" style="background-color: rgb(0, 0, 0); width:100%; overflow: hidden; display:none;">
-            <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
+
+            <!-- background: {{background}} -->
+
+            <div id="previewBG" style="background-color: rgb(0, 0, 0); width:100%; overflow: hidden; display:none;">
+
+              {{#if background}}
+                  <iframe id="previewIF" src="/renderer"  class="renderer" style="background-image: url('/{{background}}'); background-size: 100% 100%;"></iframe>
+              {{else}}
+                <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
+              {{/if}}
           </div>
           
           <HR id="previewWidthRuler"> <!-- ===========================================================  -->
@@ -573,8 +588,16 @@
     console.log('Init tooltip');
     var tooltip = new Tooltip();
 
+    function pageInit() {
 
-    function pageInit(){
+      // Check msg from URL
+      var url = new URL(window.location.href);
+      var msg = url.searchParams.get("msg");
+      if (msg) {
+        showMessageSlider(msg) // msg, info|warn|error
+      }
+      
+      RenderFolder(JSON.parse(document.getElementById('csvlist').value));
       resizePreview();
       spxInit('');
     }

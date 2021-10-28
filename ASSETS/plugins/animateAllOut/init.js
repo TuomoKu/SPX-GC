@@ -25,7 +25,7 @@ function PluginInstance() {
         ITEMS.forEach(function (templateItem, itemNro) {
             setTimeout(function(){ 
                 continueUpdateStop('stop', templateItem);
-                }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
+                }, (itemNro + 1)); // 50, 100, 150, 200ms etc...
         });
     }
 }

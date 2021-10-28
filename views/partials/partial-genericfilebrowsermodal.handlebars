@@ -1,5 +1,5 @@
 <!-- This is the file browser modal overlay (used by view-showconfig) -->
-<div class="overlay" id="fileoverlay" id="filebrowserModal">
+<div class="overlay" id="filebrowserModal">
    <div class="modal wrapper">
     <div class="modal_top height4">
       <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
@@ -8,7 +8,7 @@
             &nbsp;{{lang 'pagetitle.selectemplate'}}
           </td>
           <td valign="middle" class="aright">
-            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('fileoverlay')"></i>&nbsp;
+            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('filebrowserModal')"></i>&nbsp;
           </td>
         </tr>
       </table>
@@ -38,8 +38,8 @@
             <span id="browserMessage" class="browserMessage"></span>
           </td>
           <td class="spxFlexContainer aright" >
-            <button style="width:25%;" class="spxformtext btn spxFlexItem bg_grey15 ripple"  onClick="ModalOff('fileoverlay')">{{lang 'button.cancel'}}</button>
-            <button style="width:25%; opacity:0.2;" id="btnChooseTemplate" class="spxformtext btn spxFlexItem bg_blue ripple"  onClick="openSelectedFile();">{{lang 'button.selectemplate'}}</button>
+            <button style="width:25%;" class="spxformtext btn spxFlexItem bg_grey15 ripple"  onClick="ModalOff('filebrowserModal')">{{lang 'button.cancel'}}</button>
+            <button style="width:25%; opacity:0.2;" id="btnChooseTemplate" class="spxformtext btn spxFlexItem bg_blue ripple"  onClick="openSelectedCSVFile();">{{lang 'button.selectemplate'}}</button>
           </td>
         </tr>
       </table>

@@ -10,6 +10,7 @@
 		"help": "Help",
 		"yes": "Ja",
 		"no": "Nee",
+		"none": "None",
 		"fromFolder": "van map"
 	},
 	"color": {
@@ -20,7 +21,8 @@
 		"blue": "Blauw",
 		"black": "Zwart",
 		"light": "Licht",
-		"white": "Wit"
+		"white": "Wit",
+		"transparent": "Transparent"
 	},
 	"button": {
 		"add": "Nieuw",
@@ -86,6 +88,7 @@
 		"authpolicy": "Configuratie gbruikerstoegang. Gebruikersnaam en wachtwoord gebruiken?",
 		"authinfo": "Dit wordt getoond als er een gebruiksnaam is ingevoerd zonder een wachtwoord in het config-bestand.",
 		"authnone": "Gebruikersnaam of wachtwoord zijn niet vereist voor de applicatie.",
+		"backgroundImage": "Static background image (usually transparent)",
 		"playerflags": "Instellingen player",
 		"buttoncolor": "Buttonkleur",
 		"buttontext": "Buttontekst",
@@ -118,6 +121,7 @@
 		"loglevel": "Logniveau",
 		"openchrome": "Open Chrome bij herstarten",
 		"options": "Opties keuzelijst (tekst, waarde)",
+		"optionalBgImage": "Optional background image from folder",
 		"restartinfo": "SPX-GC moet opnieuw worden gestart om de wijzigingen door te voeren.",
 		"serverport": "Poort",
 		"showextras": "Extra functies project",

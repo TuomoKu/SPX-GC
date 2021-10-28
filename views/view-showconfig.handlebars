@@ -64,6 +64,50 @@
           </span><BR>
 -->
 
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.general'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projectgeneral');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <div class="configGeneralContent spxConfigHead" >
+              <form name="configGeneral" id="configGeneral" method="post" action="config/saveGeneralSettings">
+                <input type="hidden" name="showFolder" value="{{folder}}">
+
+              <!-- background option -->
+                <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                  <tr>
+                    <td width="50%"><span class="spxConfigHead">{{lang 'config.backgroundImage'}}</span></td>
+                    <td width="50%">
+                        <select style="width: 100%; color:#white; background-color: #656E7A;" class="drop" name="background"  onmouseover="tip('Choose an image');">
+                          <option value="">{{lang 'general.none'}} ({{lang 'color.transparent'}})</option>
+                          <option class="generalSettingDropdown" disabled></option>
+                          <option class="generalSettingDropdown" disabled>{{lang 'config.optionalBgImage'}}:</option>
+                          <option class="generalSettingDropdown" disabled>ASSETS/media/images/hd</option>
+                          <option class="generalSettingDropdown" disabled></option>
+                            {{{ PopulateFilelistOptions 'media/images/hd' 'png' showconfig.general.background }}}
+                        </select>
+                      </td>
+                  </tr>
+                </table>
+
+              <!-- future options here -->
+
+              <!-- save button -->
+              <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                <tr>
+                  <td width="50%">&nbsp;</td>
+                  <td width="50%">
+                    <button type="submit" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide btn bg_blue ripple">{{lang 'hover.saveprofile'}}</button>
+                  </td>
+                </tr>
+              </table>
+            </form>
+          </div>
+          <BR><BR>
+          
+
 
           <table class="wide" border=0>
             <TR>
@@ -77,118 +121,118 @@
 
           {{#each showconfig.templates}}
 
-          <div id="template{{@index}}">
-          <button class="collapsible bg_grey15 row_accent{{uicolor}}" type="button" onmouseover="tip('{{lang 'hover.confitem'}}');">
-              {{{nameFromTemplatePath relpath }}}
-              <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{playlayer}} | {{webplayout}}</SPAN>
-            </button>
-          <div class="collapsiblecontent spxConfigHead" >
-            <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">
-            <input type="hidden" name="showFolder" value="{{../folder}}">
-            <input type="hidden" name="TemplIndex" value="{{@index}}">
-            <input type="hidden" name="templateData[DataFields]" value="{{{DataToJSONString DataFields}}}">
-            <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
-              <tr>
-                <td><span class="spxConfigHead">{{lang 'config.templatefile'}}</span></td>
-                <td><input type="text" class="wide bg_grey15 cfg" id="templateIndex{{@index}}" placeholder="Template file" name="templateData[relpath]" value="{{relpath}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
-              </tr>
-              <tr>
-                <td><span class="spxConfigHead">{{lang 'config.description'}}</span></td>
-                <td><input type="text" class="wide bg_grey15 cfg" placeholder="Description" name="templateData[description]" value="{{description}}" onmouseover="tip('{{lang 'hover.templatedescr'}}');"></td>
-              </tr>
-              <tr>
-                <td><span class="spxConfigHead">{{lang 'config.inputfields'}}</span></td>
-                <td onmouseover="tip('{{lang 'hover.fields'}}');">
-                  <span class="spxConfigHead">
-                    {{DataFields.length}} {{lang 'general.pcs'}}   
-                    <!-- removed in 1.0.14
-                    {{#each DataFields}}
-                      &nbsp;{{title}}
-                    {{/each}}
-                    -->
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td width="40%"><span class="spxConfigHead">{{lang 'config.ccgplayout'}}</span></td>
-                <td>
-                  <div class="" style="width: 100%; border: 0px solid blue;">
-                    <select style="width: 50%;" class="drop bg_grey15" name="templateData[playserver]"  onmouseover="tip('{{lang 'hover.ccgserver'}}');">
-                      {{{generateCasparCgPlayoutOptions playserver}}}
+            <div id="template{{@index}}">
+            <button class="collapsible bg_grey15 row_accent{{uicolor}}" type="button" onmouseover="tip('{{lang 'hover.confitem'}}');">
+                {{{nameFromTemplatePath relpath }}}
+                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{playlayer}} | {{webplayout}}</SPAN>
+              </button>
+            <div class="collapsiblecontent spxConfigHead" >
+              <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">
+              <input type="hidden" name="showFolder" value="{{../folder}}">
+              <input type="hidden" name="TemplIndex" value="{{@index}}">
+              <input type="hidden" name="templateData[DataFields]" value="{{{DataToJSONString DataFields}}}">
+              <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                <tr>
+                  <td><span class="spxConfigHead">{{lang 'config.templatefile'}}</span></td>
+                  <td><input type="text" class="wide bg_grey15 cfg" id="templateIndex{{@index}}" placeholder="Template file" name="templateData[relpath]" value="{{relpath}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
+                </tr>
+                <tr>
+                  <td><span class="spxConfigHead">{{lang 'config.description'}}</span></td>
+                  <td><input type="text" class="wide bg_grey15 cfg" placeholder="Description" name="templateData[description]" value="{{description}}" onmouseover="tip('{{lang 'hover.templatedescr'}}');"></td>
+                </tr>
+                <tr>
+                  <td><span class="spxConfigHead">{{lang 'config.inputfields'}}</span></td>
+                  <td onmouseover="tip('{{lang 'hover.fields'}}');">
+                    <span class="spxConfigHead">
+                      {{DataFields.length}} {{lang 'general.pcs'}}   
+                      <!-- removed in 1.0.14
+                      {{#each DataFields}}
+                        &nbsp;{{title}}
+                      {{/each}}
+                      -->
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="40%"><span class="spxConfigHead">{{lang 'config.ccgplayout'}}</span></td>
+                  <td>
+                    <div class="" style="width: 100%; border: 0px solid blue;">
+                      <select style="width: 50%;" class="drop bg_grey15" name="templateData[playserver]"  onmouseover="tip('{{lang 'hover.ccgserver'}}');">
+                        {{{generateCasparCgPlayoutOptions playserver}}}
+                      </select>
+                      <input style="width: 23%;" type="text" class="bg_grey15 cfg" onmouseover="tip('{{lang 'hover.ccgchannel'}}');" placeholder="Channel" name="templateData[playchannel]" value="{{playchannel}}">
+                      <input style="width: 23%;" type="text" class="bg_grey15 cfg" onmouseover="tip('{{lang 'hover.ccglayer'}}');" placeholder="Layer" name="templateData[playlayer]" value="{{playlayer}}">
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="40%"><span class="spxConfigHead">{{lang 'config.dataformat'}}</span></td>
+                  <td>
+                    <select class="wide drop bg_grey15" name="templateData[dataformat]" onmouseover="tip('{{lang 'hover.dataformat'}}');">
+                      {{{generateDataFormatOptions dataformat}}}
                     </select>
-                    <input style="width: 23%;" type="text" class="bg_grey15 cfg" onmouseover="tip('{{lang 'hover.ccgchannel'}}');" placeholder="Channel" name="templateData[playchannel]" value="{{playchannel}}">
-                    <input style="width: 23%;" type="text" class="bg_grey15 cfg" onmouseover="tip('{{lang 'hover.ccglayer'}}');" placeholder="Layer" name="templateData[playlayer]" value="{{playlayer}}">
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td width="40%"><span class="spxConfigHead">{{lang 'config.dataformat'}}</span></td>
-                <td>
-                  <select class="wide drop bg_grey15" name="templateData[dataformat]" onmouseover="tip('{{lang 'hover.dataformat'}}');">
-                     {{{generateDataFormatOptions dataformat}}}
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td width="40%"><span class="spxConfigHead">{{lang 'config.webplayout'}}</span></td>
-                <td>
-                  <select class="wide drop bg_grey15" name="templateData[webplayout]" onmouseover="tip('{{lang 'hover.weblayer'}}');">
-                     {{{generateWebPlayoutOptions webplayout}}}
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td width="40%"><span class="spxConfigHead">{{lang 'config.stopmode'}}</span></td>
-                <td>
-                  <select class="wide drop bg_grey15" name="templateData[out]" onmouseover="tip('{{lang 'hover.outmode'}}');">
-                     {{{generateOutOptions out}}}
-                  </select>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="40%"><span class="spxConfigHead">{{lang 'config.webplayout'}}</span></td>
+                  <td>
+                    <select class="wide drop bg_grey15" name="templateData[webplayout]" onmouseover="tip('{{lang 'hover.weblayer'}}');">
+                      {{{generateWebPlayoutOptions webplayout}}}
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="40%"><span class="spxConfigHead">{{lang 'config.stopmode'}}</span></td>
+                  <td>
+                    <select class="wide drop bg_grey15" name="templateData[out]" onmouseover="tip('{{lang 'hover.outmode'}}');">
+                      {{{generateOutOptions out}}}
+                    </select>
+                  </td>
+                </tr>
 
 
-              <tr>
-                <td width="40%"><span class="spxConfigHead">{{lang 'config.coloraccent'}}</span></td>
-                <td  onmouseover="tip('{{lang 'hover.accent'}}');">
-                  {{{generateColorAccents uicolor @index}}}
-                </td>
-              </tr>
-            </table>
+                <tr>
+                  <td width="40%"><span class="spxConfigHead">{{lang 'config.coloraccent'}}</span></td>
+                  <td  onmouseover="tip('{{lang 'hover.accent'}}');">
+                    {{{generateColorAccents uicolor @index}}}
+                  </td>
+                </tr>
+              </table>
 
 
 
 
 
-            <table class="wide" style="padding: 10px; margin-bottom:10px;">
-              <tr>
-                <td width="25%">
-                  <button type="button"
-                    class="wide spxFlexItem btnsmall bg_grey10 ripple black"
-                    onclick="removeTemplateIndex({{@index}});"
-                    onmouseover="tip('{{lang 'hover.removetemplate'}}');"
-                    >{{lang 'button.deletetemplate'}}</button>
-                </td>
-                <td width="25%">
-                  <button type="button"
-                    class="wide spxFlexItem btnsmall bg_grey10 ripple black"
-                    onclick="reimportTemplateIndex({{@index}});"
-                    onmouseover="tip('{{lang 'hover.replacetemplate'}}');"
-                    >{{lang 'button.replacetemplate'}}</button>
-                </td>
-                <td>&nbsp;</td>
-                <td width="25%" class="aright">
-                  <button type="submit"
-                    class="wide spxFlexItem btnsmall bg_grey10 ripple black"
-                    onmouseover="tip('{{lang 'hover.saveprofile'}}');"
-                    >{{lang 'button.save'}}</button>
-                </td>
-              </tr>
-            </table>
-            </form>
+              <table class="wide" style="padding: 10px; margin-bottom:10px;">
+                <tr>
+                  <td width="25%">
+                    <button type="button"
+                      class="wide spxFlexItem btnsmall bg_grey10 ripple black"
+                      onclick="removeTemplateIndex({{@index}});"
+                      onmouseover="tip('{{lang 'hover.removetemplate'}}');"
+                      >{{lang 'button.deletetemplate'}}</button>
+                  </td>
+                  <td width="25%">
+                    <button type="button"
+                      class="wide spxFlexItem btnsmall bg_grey10 ripple black"
+                      onclick="reimportTemplateIndex({{@index}});"
+                      onmouseover="tip('{{lang 'hover.replacetemplate'}}');"
+                      >{{lang 'button.replacetemplate'}}</button>
+                  </td>
+                  <td>&nbsp;</td>
+                  <td width="25%" class="aright">
+                    <button type="submit"
+                      class="wide spxFlexItem btnsmall bg_grey10 ripple black"
+                      onmouseover="tip('{{lang 'hover.saveprofile'}}');"
+                      >{{lang 'button.save'}}</button>
+                  </td>
+                </tr>
+              </table>
+              </form>
 
-          </div><!--ended item -->
+            </div><!--ended item -->
 
-          </div><!-- index ended -->
+            </div><!-- index ended -->
           {{/each}}
           <!-- templates ended from showconfig =========================================================================  -->
 

@@ -17,10 +17,13 @@ const PlayoutWEB = require('../utils/playout_webplayer.js');
 const spxAuth = require('../utils/spx_auth.js');
 const jsdom = require("jsdom"); // for scanning js within templates
 const { JSDOM } = jsdom;
-const cors = require('cors')
+const cors = require('cors');
+const { constants } = require("buffer");
+// global.rundownData is introduced in server.js 
 
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
-router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, function (req, res) {
+router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, async function (req, res) {
+  await SaveRundownDataToDisc(); // Added in 1.0.15
   let currVer = vers;
   let greeting = config.general.greeting;
   res.render('view-home', { layout: false, greeting:greeting, curVerInfo: req.curVerInfo, currVer: currVer, user: req.session.user });
@@ -85,7 +88,7 @@ router.post('/saveauthpolicy', function (req, res) {
     }
   catch (error)
     {
-      logger.error('Error while saving file: ', error);
+      logger.error('saveAndReadConfig() Error while saving file: ', error);
       res.redirect('/');
     };
 });
@@ -95,6 +98,7 @@ router.post('/saveauthpolicy', function (req, res) {
 
 router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
+  await SaveRundownDataToDisc(); // Added in 1.0.15
   res.render('view-appconfig', { layout: false, config: config, user: req.session.user, configfile: configfileref});
 });
 
@@ -171,7 +175,7 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   // -----------------------------------------------------------------------------
   saveAndReadConfig(); // a nice solution 
   } catch (error) {
-    logger.error('Error while saving file: ', error);
+    logger.error('router.post/config - Error while saving file: ', error);
     res.render('view-appconfig', { layout: false, config: config, error:'Error saving config: ' + err, user: req.session.user});
 }; //file written
 
@@ -181,23 +185,26 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
 
 router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
+  await SaveRundownDataToDisc(); // Added in 1.0.15
   const folderListAsJSON = await GetSubfolders(config.general.dataroot);
   res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user });
 });
 
 
 router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => {
-  //  Show episodes (files in folder 'data')
+  // Show episodes (files in folder 'data')
   const fileListAsJSON = await GetDataFiles(config.general.dataroot + "/" + req.params.foldername + "/data/");
+  await SaveRundownDataToDisc(); // Added in 1.0.15
   res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, errorMsg: '', user: req.session.user });
 });
 
 router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   //  Show Configuration
+  await SaveRundownDataToDisc(); // Added in 1.0.15
   let datafile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
   const fileDataAsJSON = await GetJsonData(datafile);
 
-  // lets try to implement "previous folder" functionality
+  // a "previous folder" functionality
   let treeData = '';
   if (LastBrowsedTemplateFolder==''){
     treeData = JSON.stringify(spx.GetFilesAndFolders(config.general.templatefolder));
@@ -224,7 +231,7 @@ router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('Error while saving file: ', error);
+      console.log('removeTemplate Error while saving file: ', error);
   }; //file written
 });
 
@@ -242,7 +249,7 @@ router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (r
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('Error while saving file: ', error);
+      console.log('removeExtra Error while saving file: ', error);
   }; //file written
 });
 
@@ -291,7 +298,7 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('Error while saving file: ', error);
+      console.log('saveExtra Error while saving file: ', error);
   }; //file written
 });
 
@@ -299,7 +306,7 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
 
 
 router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (req, res) => {
-  //  Save template index (0 based)
+  // Save template index (0 based)
   // This runs when template is modified in show config
   logger.verbose('Overwriting a template in profile ' + req.body.showFolder + ' with updated values.');
   let showFolder  = req.body.showFolder || "";
@@ -316,7 +323,32 @@ router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('Error while saving file: ', error);
+      console.log('saveTemplate Error while saving file: ', error);
+  }; //file written
+});
+
+router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, async (req, res) => {
+  // Added in 1.0.15
+  // Save General Settigs of a project
+  // console.log("Profile: " + req.body.showFolder)
+  // console.log("Background value: " + req.body.background)
+  logger.verbose('Overwriting a profile ' + req.body.showFolder + ' with updated values.');
+  let showFolder  = req.body.showFolder || "";
+  let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
+  let profileData = await GetJsonData(ProfileFile);
+  profileData.general = {};
+  profileData.general.background = req.body.background;
+
+  io.emit('SPXMessage2Client', {
+    spxcmd: 'setRendererBackgroundImage',
+    background: req.body.background
+  });
+
+  try {
+      await spx.writeFile(ProfileFile,profileData);
+      res.redirect('/show/' + showFolder + '/config')
+  } catch (error) {
+      console.log('saveGeneralSettings Error while saving file: ', error);
   }; //file written
 });
 
@@ -478,7 +510,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
     await spx.writeFile(ProfileFile,profileData);
     res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('Error while saving file: ', error);
+      console.log('showconfig Error while saving file: ', error);
   }; //file written
 
 }); // browseTemplates API post request end
@@ -594,10 +626,49 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
   let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
   const fileDataAsJSON = await GetJsonData(datafile);
+  global.rundownData = fileDataAsJSON; // added in 1.0.15 populate rundown data to memory
+  global.rundownData.filepath = datafile;
+
   let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
   const profileDataJSONobj = await GetJsonData(showprofile);
   let profileData = JSON.stringify(profileDataJSONobj);
-  res.render('view-controller', { layout: false, globalExtras:config.globalExtras, filedata: fileDataAsJSON, folder: req.params.foldername, datafile: datafile, filebasename: req.params.filename, profiledata: profileData, profiledataObj: profileDataJSONobj, user: req.session.user });
+  let projectBackground = ''; // added in 1.0.15  
+
+  if ( profileDataJSONobj.general && profileDataJSONobj.general.background )  {
+    projectBackground = profileDataJSONobj.general.background;
+  }
+
+  // list of CSV files
+  // TODO:
+  let csvFileList = '';
+  csvFileList = JSON.stringify(spx.GetFilesAndFolders( path.resolve(spx.getStartUpFolder(),'ASSETS', 'csv'), 'csv' ));
+
+  res.render('view-controller', {
+    layout:         false,
+    globalExtras:   config.globalExtras,
+    filedata:       fileDataAsJSON,
+    folder:         req.params.foldername,
+    datafile:       datafile,
+    filebasename:   req.params.filename,
+    profiledata:    profileData,
+    profiledataObj: profileDataJSONobj,
+    user:           req.session.user,
+    background:     projectBackground,
+    csvFileList:    csvFileList
+  });
+
+  let bgImage = ''
+  if (profileDataJSONobj.general && profileDataJSONobj.general.background) {
+    bgImage = profileDataJSONobj.general.background
+  }
+
+  setTimeout(function () {
+    io.emit('SPXMessage2Client', {
+      spxcmd: 'setRendererBackgroundImage',
+      background: bgImage
+    });
+    }, 500);
+
 });
 
 
@@ -605,44 +676,231 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
   //
   // Can handle several commands from the controller page
   //
-  var rundownDataJSONobj="";
-  let profileDataJSONobj="";
+  var rundownDataJSONobj;
+  let profileDataJSONobj;
   let showprofile ="";
-
   let data = req.body;
   switch (data.command) {
 
+    case 'importCSVdata':
+      try {
+        // CSV IMPORT function. The source CSV must have been exported via the EXPORT function.
+        let fieldsFound = false; // check at the end
+        logger.verbose('Importing CSV from ' + data.curFolder + '/' + data.importFile + ' to be appended to ' + data.RundownFile);
+        rundownDataJSONobj = await GetJsonData( path.resolve(data.RundownFile) );
+        // console.log('Rundown data', rundownDataJSONobj);
+        if (!rundownDataJSONobj.templates) {
+          rundownDataJSONobj.templates = []
+        }
+        // now get the CSV file and start parsing line-by-line
+        let CSVfileData = await GetTextFileData( path.join(data.curFolder, data.importFile ))
+        // console.log('CSV content', CSVfileData.toString());
+
+        let startSeconds = String(Date.now());
+
+        let csvLines = CSVfileData.split('\n')
+
+        var t_description
+        var t_playserver
+        var t_playchannel
+        var t_playlayer
+        var t_webplayout
+        var t_out
+        var t_uicolor
+        var t_onair
+        var t_dataformat
+        var t_relpath
+
+
+        let curLineItems = []
+        var protoFields = [];
+        var protoFtypes = [];
+        var protoTitles = [];
+        var protoValues = [];
+        var dataFiProto = {}; // placeholder obj for fields
+        var templateTmp = []; // placeholder arr for objects
+        var fieldIndex = 0; // iterate 
+
+
+        // First we get METADATA (another lines forEach for content afterwards)
+        csvLines.forEach((line,lineindex) => {
+          if (line.trim()==='') { return; }
+          curLineItems = line.split(';')
+          // console.log('Line ' + lineindex, curLineItems);
+          switch ( curLineItems[0].trim() ){
+            case '# description #':
+              t_description = curLineItems[1].trim();
+              break;
+
+            case '# playserver #':
+              t_playserver = curLineItems[1].trim();
+              break;
+
+            case '# playchannel #':
+              t_playchannel = curLineItems[1].trim();
+              break;
+
+            case '# playlayer #':
+              t_playlayer = curLineItems[1].trim();
+              break;
+
+            case '# webplayout #':
+              t_webplayout = curLineItems[1].trim();
+              break;
+
+            case '# out #':
+              t_out = curLineItems[1].trim();
+              break;
+
+            case '# uicolor #':
+              t_uicolor = curLineItems[1].trim();
+              break;
+
+            case '# onair #':
+              t_onair = curLineItems[1].trim();
+              break;
+
+            case '# dataformat #':
+              t_dataformat = curLineItems[1].trim();
+              break;
+
+            case '# relpath #':
+              t_relpath = curLineItems[1].trim();
+              break;
+
+            case '# FieldUUIDs #':
+              // this line carries f-field ids (f0, f1, etc)
+              // and will generate required objects
+              fieldsFound = true;
+              for (let uuidindex = 1; uuidindex < curLineItems.length-1; uuidindex++) {
+                protoFields.push(curLineItems[uuidindex].trim());
+              }
+              break;
+
+            case '# FieldTypes #':
+              for (let typeindex = 1; typeindex < curLineItems.length-1; typeindex++) {
+                let thisFieldType = curLineItems[typeindex].trim()
+                protoFtypes.push(thisFieldType)
+              }
+              break;
+
+            case '# FieldTitls #':
+              for (let titindex = 1; titindex < curLineItems.length-1; titindex++) {
+                protoTitles.push(curLineItems[titindex].trim())
+              }
+              break;
+          } // switch line type
+        }); // for each line METADATA done
+
+
+        // Then iterate all CONTENT LINES and append template to OBJ array
+        var templateData
+        csvLines.forEach((line,loopIndex) => {
+          if (line.trim()==='') { return; } // empty line
+          curLineItems = line.split(';')
+          templateData = {}
+          templateData.DataFields = []
+
+          if (line.startsWith('# ID:')) {
+
+            fieldIndex++; // template counter for GUI message
+
+            for (let index = 1; index < curLineItems.length-1; index++) {
+              protoValues.push(curLineItems[index].trim())
+            }
+
+            // generate ID
+            if (line.startsWith('# ID:auto')) {
+              // generate EPOCH
+              templateData.itemID = startSeconds + loopIndex
+            } else {
+              // use the given value
+              templateData.itemID = curLineItems[0].trim().replace('# ID:', '').trim()
+            }
+
+            templateData.description  = t_description
+            templateData.playserver   = t_playserver
+            templateData.playchannel  = t_playchannel
+            templateData.playlayer    = t_playlayer
+            templateData.webplayout   = t_webplayout
+            templateData.out          = t_out
+            templateData.uicolor      = t_uicolor
+            templateData.onair        = t_onair
+            templateData.dataformat   = t_dataformat
+            templateData.relpath      = t_relpath
+
+            // Append warning
+            templateData.DataFields.push({
+                ftype: "instruction",
+                value: "⚠ WARNING: This item was generated with CSV import and typically is not intended for manual editing. Please use the original template for manual input."
+              });
+
+            // Then iterate all fields and assing values
+            for (let i = 0; i < protoFields.length; i++) {
+              dataFiProto={}            
+              dataFiProto.field = protoFields[i]
+              if (protoFtypes[i]=='textarea') {
+                dataFiProto.ftype = 'textarea'  // for multiline texts
+              } else {
+                dataFiProto.ftype = 'textfield' // protoFtypes[i] !forced!
+              }
+              // dataFiProto.ftype = "textfield" // protoFtypes[i] !forced!
+              dataFiProto.title = protoTitles[i]
+              dataFiProto.value = curLineItems[i+1].replace(/<BR>/g,'\n') // add newlines back
+              templateData.DataFields.push(dataFiProto);
+            }
+
+
+
+            rundownDataJSONobj.templates.push(templateData)
+          } // content line process ended 
+        });
+
+        // saving new items to disk
+        global.rundownData = rundownDataJSONobj;
+        global.rundownData.filepath = data.RundownFile;
+        await SaveRundownDataToDisc() // importCSVdata
+  
+        // response
+        if (fieldsFound) {
+          res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=Added ' + fieldIndex + ' templates.'); 
+          break;
+        } else {
+          res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=invalidCSV'); 
+        }
+      } catch (error) {
+        logger.error('importCSVdata Error: ', error);
+      }
+
+      break;
 
     case 'addItemToRundown': 
       // ADD TEMPLATE ITEM TO RUNDOWN ///////////////////////////////////////////////////////////////////////////////////////////////////
-      logger.verbose('Adding show profile template[' + data.templateindex + '] to rundown ' + data.listname );
-      // console.log('Adding template index ' + data.templateindex + ' from show profile to rundown ' + data.listname );
-      // * read template[index] from show profile
-      showprofile = path.join(config.general.dataroot, data.foldername, 'profile.json');
-      profileDataJSONobj = await GetJsonData(showprofile);
-      let TemplateModel = profileDataJSONobj.templates[data.templateindex];
+      try {      
+        logger.verbose('Adding show profile template[' + data.templateindex + '] to rundown ' + data.listname );
+        // console.log('Adding template[' + data.templateindex + '] from show profile to rundown file ' + data.datafile );
+        // * read template[index] from show profile
+        showprofile = path.join(config.general.dataroot, data.foldername, 'profile.json');
+        profileDataJSONobj = await GetJsonData(showprofile);
+        let TemplateModel = profileDataJSONobj.templates[data.templateindex];
 
-      TemplateModel.itemID = String(Date.now()); // Generate ID (epoch milliseconds) for this rundown item (from v. 0.9.8 onwards)
-                                                 // This will be used to control UI (play, remove, sort, etc...)
+        TemplateModel.itemID = String(Date.now());  // Generate ID (epoch milliseconds) for this rundown item (from v. 0.9.8 onwards)
+                                                    // This will be used to control UI (play, remove, sort, etc...)
 
-      // * append that to the show datafile and overwrite
-      rundownDataJSONobj = await GetJsonData(data.datafile);
-      
-      if (rundownDataJSONobj.templates){
-        // add to existing templates
+        // console.log('data', data);
+        // console.log('TemplateModel', TemplateModel);
+
+        rundownDataJSONobj = await GetJsonData(data.datafile);
+        if (!rundownDataJSONobj.templates) {
+          rundownDataJSONobj.templates=[];
+        }
         rundownDataJSONobj.templates.push(TemplateModel);
-      } else {
-        // create new templates array
-        rundownDataJSONobj.templates=[TemplateModel];
-      }
-
-      try {
-          await spx.writeFile(data.datafile, rundownDataJSONobj);
-          res.redirect('/gc/' + data.foldername + '/' + data.listname);  
-          return;
+        await spx.writeFile(data.datafile, rundownDataJSONobj);
+        res.redirect('/gc/' + data.foldername + '/' + data.listname);  
+        return;
       } catch (error) {
-          logger.error('Error while saving file: ', error);
-          // console.log('Error while saving file: ', error);
+          logger.error('addItemToRundown Error while saving file: ', error);
+          // console.log('addItemToRundown Error while saving file: ', error);
       }; //file written
       break;
 
@@ -669,8 +927,8 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
           // res.redirect('/gc/' + data.foldername + '/' + data.listname);  
           return;
       } catch (error) {
-          logger.error('Error while saving file: ', error);
-          // console.log('Error while saving file: ', error);
+          logger.error('removeItemFromRundown Error while saving file: ', error);
+          // console.log('removeItemFromRundown Error while saving file: ', error);
       }; //file written
       break;
 
@@ -708,8 +966,8 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
           res.status(200).send('Item duplicated ok.'); // ok 200 AJAX RESPONSE
           return;
       } catch (error) {
-          logger.error('Error while saving file: ', error);
-          // console.log('Error while saving file: ', error);
+          logger.error('duplicateRundownItem Error while saving file: ', error);
+          // console.log('duplicateRundownItem Error while saving file: ', error);
       }; //file written
       break;
 
@@ -736,6 +994,12 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // This function will collect data from datafile and will send out "stupid" playout commands
   // to all needed renderer interfaces.
   // This will also persist the onair state to rundown file.
+  // 
+  // 1.0.15 Performance improvements added by prioritizing memory usage over
+  //        disk I/O. Problem was with concurrent events. Now this is done
+  //        in memory and data is written to disk only when we SHOW folders
+  //        after being in the rundown view (so memory has been populated).
+
   let templateIndex = 0;
 
   try {
@@ -759,7 +1023,18 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // normal method of working. We collect data from showfile.
       logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.epoch + '] of [' + req.body.datafile + '].');
       RundownFile = path.normalize(req.body.datafile);
-      RundownData = await GetJsonData(RundownFile);
+      
+      // Refactored in 1.0.15 to prioritize memory over disk I/O
+      let notifyDataSource = ''
+      if ( Object.keys(global.rundownData).length === 0 ) {
+        notifyDataSource = 'from file:'
+        RundownData = await GetJsonData(RundownFile);
+      } else {
+        notifyDataSource = 'from memory:'
+        RundownData = global.rundownData; // use memory only 
+      }
+      // console.log('RundownData ' + notifyDataSource, RundownData);
+
 
       // Refactored: identify with epoch / itemID, not index.
       req.body.templateindex
@@ -969,7 +1244,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     
       // == INVOKE ======================================================
       case 'invoke':
-        console.log('977');
         logger.verbose('Invoke [' + dataOut.invoke + ']');
         // Example of expected dataOut down stream from here:
         // dataOut.command = "invoke"
@@ -995,7 +1269,8 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     if (!preventSave)
       {
       RundownData.updated = new Date().toISOString();
-      await spx.writeFile(RundownFile,RundownData);
+      // await spx.writeFile(RundownFile,RundownData);
+      global.rundownData = RundownData // memory only
       }
     res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
   } // end try
@@ -1067,27 +1342,27 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
 });
 
 
-
-router.post('/gc/saveOnairState', spxAuth.CheckLogin, async (req, res) => {
-  // FIXME: This is NOT in use, see --> playout()
-  // Stores onair=true/false state of a rundown item
-  // Request: data 
-  // Returns: AJAX response
-  logger.verbose('Save onair = ' + req.body.onair + ' of template[' + req.body.item + '] in file ' + req.body.rundownfile + '.');
-  try {
-      let RundownFile = path.normalize(req.body.rundownfile);
-      let RundownData = await GetJsonData(RundownFile);
-      RundownData.templates[req.body.item].onair = req.body.onair;
-      RundownData.updated = new Date().toISOString();
-      await spx.writeFile(RundownFile,RundownData);
-      res.status(200).send('Onair state saved.'); // ok 200 AJAX RESPONSE
-    }
-  catch (error)
-    {
-      logger.error('Error in /gc/saveOnairState. [' + error + '].');
-      res.status(500).send('Server error in  /gc/saveOnairState [' + error + '].')  // error 500 AJAX RESPONSE
-    };
-});
+// Will be removed during 1.0.15
+// router.post('/gc/saveOnairState', spxAuth.CheckLogin, async (req, res) => {
+//   // FIXME: This is NOT in use, see --> playout()
+//   // Stores onair=true/false state of a rundown item
+//   // Request: data 
+//   // Returns: AJAX response
+//   logger.verbose('Save onair = ' + req.body.onair + ' of template[' + req.body.item + '] in file ' + req.body.rundownfile + '.');
+//   try {
+//       let RundownFile = path.normalize(req.body.rundownfile);
+//       let RundownData = await GetJsonData(RundownFile);
+//       RundownData.templates[req.body.item].onair = req.body.onair;
+//       RundownData.updated = new Date().toISOString();
+//       await spx.writeFile(RundownFile,RundownData);
+//       res.status(200).send('Onair state saved.'); // ok 200 AJAX RESPONSE
+//     }
+//   catch (error)
+//     {
+//       logger.error('Error in /gc/saveOnairState. [' + error + '].');
+//       res.status(500).send('Server error in  /gc/saveOnairState [' + error + '].')  // error 500 AJAX RESPONSE
+//     };
+// });
 
 
 
@@ -1166,7 +1441,7 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
   // Request: form data as JSON
   // Returns: Ajax response
 
-  logger.info('Overwriting a template itemID [' + req.body.epoch + '] in rundown [' + req.body.rundownfile + '] with updated values.');
+  logger.verbose('Overwriting a template itemID [' + req.body.epoch + '] in rundown [' + req.body.rundownfile + '] with updated values.');
   try {
     // spx.talk('Saving template changes from rundown.');
 
@@ -1192,12 +1467,15 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
     });
 
     // console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
+    global.rundownData = RundownData; // push to memory also for next take
     await spx.writeFile(RundownFile,RundownData);
     var htmlSnippetForCollapse = spx.generateCollapsedHeadline(DataFieldsForCollapsePreview);
     // console.log('html' + htmlSnippetForCollapse);
+
     let response = ['Item changes saved', htmlSnippetForCollapse]
     res.status(200).send(response); // ok 200 AJAX RESPONSE
   } catch (error) {
+      console.error('ERROR', error);
       let errmsg = 'Server error in /gc/saveItemChanges [' + error + ']';
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
@@ -1297,17 +1575,63 @@ async function orgGetDataFiles(FOLDERstr) {
 } // GetDataFiles ended
 
 
-async function GetJsonData(fileref) {
-  // return json data from fileref
+async function SaveRundownDataToDisc() {
+  // Added in 1.0.15 to persists global rundown data from
+  // memory to disk. This is called from "show", "project" and "config" views,
+  // or where-ever user can "go" after making rundown changes...
+  // File is written if there is data in the memory.
+  try {
+
+    
+    if ( Object.keys(global.rundownData).length > 0 ) {
+      let RundownData = global.rundownData
+      // console.log('Saving RD to file ' + RundownData.filepath, RundownData);
+      RundownData.updated = new Date().toISOString();
+      await spx.writeFile(RundownData.filepath,RundownData);
+      // console.log('RundownData written to ' + RundownData.filepath);
+    } else {
+      // console.log('SaveRundownDataToDisc() called, no data to save.');
+    }
+  } catch (error) {
+    logger.error('SaveRundownDataToDisc Error: ' + error);
+    return ('SaveRundownDataToDisc: error',error);
+  }
+}
+
+
+async function GetTextFileData(fileref) {
+  // return text data from fileref
   try {
     if (fs.existsSync(fileref)) {
-      var contents = fs.readFileSync(fileref) || '';
+      var contents = fs.readFileSync(fileref, 'utf8') || '';
+      logger.debug('GetTextFileData: returns data from [' + fileref + ']');
+      return contents;
+    }
+    else{
+      logger.debug('GetTextFileData: file does not exist [' + fileref + '], returning empty string.');
+      return '';
+    }
+    
+  }
+  catch (error) {
+    logger.error('GetTextFileData Error: ' + error);
+    return ('GetTextFileData: error',error);
+  }
+} // GetTextFileData ended
+
+
+async function GetJsonData(fileref) {
+  // return json data from fileref
+  // console.log('Reading ', fileref);
+  try {
+    if (fs.existsSync(fileref)) {
+      var contents = fs.readFileSync(fileref, 'utf8') || '';
       logger.debug('GetJsonData: returns data from [' + fileref + ']');
-      // logger.debug('GetJsonData: returns data from [' + fileref + ']: ' + contents);
+      // console.log('GetJsonData: returns data from [' + fileref + ']:',contents);
       return JSON.parse(contents);
     }
     else{
-      logger.debug('GetJsonData: file does not exist [' + fileref + '], returning empty string.');
+      logger.debug('GetJsonData: file does not exist [' + fileref + '], returning null.');
       return;
     }
     

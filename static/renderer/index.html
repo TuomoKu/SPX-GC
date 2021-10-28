@@ -36,18 +36,20 @@
             }
 
             body, html {
-                background-color: transparent;
-                background-color: rgba(0,0,0,0);
                 margin: 0;
                 padding: 0px;
+                background-color: transparent;
+                background-color: rgba(0,0,0,0);
             }
 
             #root {
+                padding: 0px;
                 width: 1920px;
                 height: 1080px;
-                border: 0px dashed red;
                 position: relative;
-                padding: 0px;
+                border: 0px dashed red;
+                /* background-image: url('/media/images/hd/rocket.png'); */
+                background-size: 100% 100%;
             }
 
             .frame {
@@ -306,6 +308,19 @@
             case 'invokeFunction':
                 if (!allowLayerControl(data.webplayout)) return; // check layer param
                 eval("document.getElementById('layer' + data.webplayout).contentWindow." + data.invoke);
+                break;
+
+            case 'setRendererBackgroundImage':
+                // Added in 1.0.15. This function will be called everytime
+                // a project is loaded in the controller. This changes the
+                // renderer root background image
+                if (data.background != '' ) {
+                    // console.log('Background to [' + data.background + ']');
+                    document.getElementById('root').style.backgroundImage = 'url(/' + data.background + ')';
+                } else {
+                    // console.log('Background to transparent');
+                    document.getElementById('root').style.backgroundImage = '';
+                }
                 break;
 
             default:

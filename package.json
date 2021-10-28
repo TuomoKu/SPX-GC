@@ -1,7 +1,7 @@
 {
   "name": "spx-gc",
-  "version": "1.0.14",
-  "description": "SPX-GC | SmartPX Graphics Controller for CasparCG and streaming applications",
+  "version": "1.0.15",
+  "description": "SPX | SmartPX Graphics Controller for CasparCG and streaming applications",
   "homepage": "https://spxgc.com",
   "main": "server.js",
   "bin": "server.js",

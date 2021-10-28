@@ -366,6 +366,8 @@ File structure of dataroot:
 
 <a id="profile"></a>**Project specific settings**, such as assigned templates and project extras are stored into `profile.json` within each project folder.
 
+**A static background image** can be assigned to a project in the Project Settings. A use case for this might be a chroma image to help in chroma keying in a vision mixer such as ATEM. Another creative use is to have a logo or border or other design element onscreen all the time. A transparent PNG (with an alpha channel) can be used. The background image must be placed to ASSETS/media/image/hd folder and it will appear in the dropdown.
+
 **Templates** can be added to a project on the project settings page. When a template (a .html file) is browsed and selected, the system will scan the file and search for a [template definition](#definition) which will tell SPX-GC what kind of input fields should be generated for that template and how the template is planned to be played out. Template defaults are stored to project's `profile.json` (as "copy") and if HTML template's definition related details are changed afterwards the template must be imported to the project again. The system does not re-scan added templates.
 
 > If selected template does NOT have template definition it will cause an `error:templateDefinitionMissing` -message. See section [html templates](#templates).

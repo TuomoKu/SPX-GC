@@ -1,8 +1,23 @@
 
-# SPX-GC Release Notes
+# SPX Release Notes
 > Most recent updates are at the top.
 
+See also [Latest changes](https://spxgc.tawk.help/article/latest-changes) page for selected feature highlights.
+
 ---
+## **1.0.15** (Oct 24 2021)
+- Renamed the app from "SPX-GC" to "SPX". Website: http://spx.graphics
+- Added General Settings > Static Background Image to Project Settings (feature suggested by Rotem Kish)
+- Added rundown item rename functionality to the ID-button
+- Added "import CSV file" option to rundown > add template dialog
+- Improved performance by prioritizing memory usage over disk I/O (multiple code changes)
+- Added help section to Knowledge Base and linked help() -function to those
+- Binary packages v1.0.15:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_linux64.zip)
+
+
 ## **1.0.14** (Oct 01 2021)
 - Added functionality required by "SPX-GC CasparCG MediaPlayer -extension" (CCG commands)
 - Added tooltips to template fields in the editor view of the rundown

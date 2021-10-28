@@ -80,6 +80,15 @@
     background-color: rgba(0,0,0,0.1);
   }
 
+  .configGeneralContent {
+    box-sizing: border-box;
+    padding: 0px 10px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    font-size: 1rem;
+    background-color: rgba(0,0,0,0.1);
+  }
+
 
 
 /* Remove default bullets */

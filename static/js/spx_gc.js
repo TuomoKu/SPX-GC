@@ -74,7 +74,7 @@ socket.on('SPXMessage2Controller', function (data) {
             break;
         
         case 'RundownAllStatesToStopped':
-            console.log('Turn lights off and set DOM variables. Storage handled separately.')
+            // console.log('Turn lights off and set DOM variables. Storage handled separately.')
             let items = document.querySelectorAll('.itemrow');
             items.forEach((item,index) => {
                 item.setAttribute('data-spx-onair', 'false');
@@ -184,8 +184,7 @@ function tip(msg) {
 
 
 
-function addSelectedTemplate(idx)
-{
+function addSelectedTemplate(idx) {
   // alert('Selected index ' + idx);
   data={};
   data.command       = "addItemToRundown";
@@ -283,19 +282,24 @@ function addshow() {
 
 
 
-function AJAXGET(URL) {
+async function AJAXGET(URL) {
     // Sends a GET request to server.
+    // Async keyword added in 1.0.15.
     // require ..... URL (such as '/CCG/testfunction/' )
-    // returns ..... nothing
+    // returns ..... true/false based on HTTP status codes, such as
+    //               200 OK
+    //               409 Conflict
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             if (this.responseText) {
-                // console.log('AJAX completed succesfully.')
+                // console.log('AJAX completed succesfully: ' + this.responseText)
+                return true
             }
         }
         if (this.readyState == 4 && this.status != 200) {
             console.log('Ajax error, status: ' + this.status + ', state: ' + this.readyState);
+            return false
         }
     };
     xmlhttp.open("GET", URL);
@@ -330,7 +334,7 @@ function AppState(NewState) {
     //      AppState('INIT');       // ......... initialization of the page
     //      AppState('EDITING');    // ......... editing a text field (allow spaces)
     //
-    console.log('Old state: ' + APPSTATE, 'New state: ' + NewState);
+    // console.log('Old state: ' + APPSTATE, 'New state: ' + NewState);
 
     // disable sorting while editing:
     if (NewState == 'EDITING')
@@ -584,11 +588,11 @@ function continueUpdateStop(command, itemrow='') {
             break;
 
         case 'continue':
-            console.log('------not implemented-----');
+            console.log('------continue not implemented-----');
             break;
     
         case 'update':
-            console.log('------not implemented-----');
+            console.log('------update not implemented-----');
             break;
     
         default:
@@ -598,15 +602,38 @@ function continueUpdateStop(command, itemrow='') {
 } // ContinueUpdateStop() ended
 
 
-function revealItemID(button) {
-    // console.log('copyToClipboard', str);
+async function revealItemID(button) {
     let item = button.closest('.itemrow')
     let ID = item.getAttribute('data-spx-epoch');
-
     copyText(ID)
+    // alert("Item ID " + ID + " was copied to clipboard.");
+    var newID = prompt("Item ID " + ID + " was copied to clipboard.\nYou can change the ID here:", ID);
+    if (newID != null && newID != ID) {
+        // alert("New ID " + newID)
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemID?rundownfile=${file}&ID=${ID}&newID=${newID}`
+        let IDchanged
 
-    alert("Item ID " + ID + " was copied to clipboard.");
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item renamed to ' + newID)
+            item.setAttribute('data-spx-epoch', newID);
+            item.querySelector('.copyid').setAttribute('onmouseover', `tip('Copy ID ${newID}')`);
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to rename. Use unique ID and try again.', 'error')
+        });
 
+
+        // if (IDchanged) {
+        //     // success
+        //     item.setAttribute('data-spx-epoch', newID);
+        // } else {
+        //     alert("Unable to change ID to " + newID + " (" + IDchanged + ").\nMake sure the ID is unique and try again.");
+        // }
+    } else {
+        // alert("Same ID " + newID)
+    }
 }
  
 function copyText(txt) {
@@ -622,11 +649,11 @@ function copyText(txt) {
     {
         var successful = document.execCommand('copy');
         var msg = successful ? 'successful' : 'unsuccessful';
-        console.log('Copy email command was ' + msg);
+        // console.log('Copy command was ' + msg);
     } 
     catch (err)
     {
-        console.log('Oops, unable to copy');
+        // console.log('Oops, unable to copy');
     }
     temp.parentNode.removeChild(temp);
 }
@@ -733,19 +760,23 @@ function exportItemAsCSV(rowItem) {
     data.itemID       = rowItem.getAttribute('data-spx-epoch');
     working('Generating CSV file to ASSETS/csv -folder.');
     ajaxpost('/api/exportCSVfile',data);
+    showMessageSlider('CSV file generated to ASSETS/csv -folder.')
 
 } // exportItemAsCSV ended
-
 
 function ModalOn(modalID) {
     document.getElementById(modalID).style.display = "block";
   } //FileBrowserOn
 
-  function ModalOff(modalID) {
+function ModalOff(modalID) {
     document.getElementById(modalID).style.display = "none";
-  } //FileBrowserOff
+} //FileBrowserOff
 
-
+function openImportDialog() {
+    ModalOff('overlayTemplatePicker')
+    ModalOn('filebrowserModal')
+    // console.log('Opening File browser dialog');
+}
 
 
 function focusRow(rowitemOrIndex) {
@@ -946,21 +977,22 @@ function help(section) {
     section = section.toUpperCase()
 
     switch (section) {
-        case "INTRO":               HELP_PAGE = "#intro"            ; break;
-        case "PROJECTS":            HELP_PAGE = "#dataroot"         ; break;
-        case "PLAYLISTS":           HELP_PAGE = "#dataroot"         ; break;
-        case "CONFIG":              HELP_PAGE = "#config"           ; break;
-        case "WEBPLAYOUT":          HELP_PAGE = "#renderer"         ; break;
-        case "CASPARCG":            HELP_PAGE = "#casparcg"         ; break;
-        case "GLOBALEXTRAS":        HELP_PAGE = "#globalextras"     ; break;
-        case "PROJECTTEMPLATES":    HELP_PAGE = "#projecttemplates" ; break;
-        case "PROJECTEXTRAS":       HELP_PAGE = "#projectextras"    ; break;
-        case "CONTROLLER":          HELP_PAGE = "#controller"       ; break;
+        case "INTRO":               HELP_PAGE = "article/help-intro"                ; break;
+        case "PROJECTS":            HELP_PAGE = "article/help-dataroot"             ; break;
+        case "PLAYLISTS":           HELP_PAGE = "article/help-dataroot"             ; break;
+        case "CONFIG":              HELP_PAGE = "article/help-config-general"       ; break;
+        case "WEBPLAYOUT":          HELP_PAGE = "article/help-config-renderer"      ; break;
+        case "CASPARCG":            HELP_PAGE = "article/help-config-casparcg"      ; break;
+        case "GLOBALEXTRAS":        HELP_PAGE = "article/help-config-globalextras"  ; break;
+        case "PROJECTGENERAL":      HELP_PAGE = "article/help-project-general"      ; break;
+        case "PROJECTTEMPLATES":    HELP_PAGE = "article/help-project-templates"    ; break;
+        case "PROJECTEXTRAS":       HELP_PAGE = "article/help-project-extras"       ; break;
+        case "CONTROLLER":          HELP_PAGE = "article/help-controller"           ; break;
+        case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
         default: break;
     }
 
-    // let FULL_URL = HELP_ROOT + HELP_PAGE;
-    let FULL_URL = HELP_ROOT;
+    let FULL_URL = HELP_ROOT + HELP_PAGE;
     window.open(FULL_URL, 'GCHELP', '_blank,width=980,height=800,scrollbars=yes,location=yes,status=yes');
 } // help ended
  
@@ -1015,7 +1047,7 @@ function nextItem(itemrow='') {
     // decrease steps left
     var stepsleft= parseInt(itemrow.getAttribute('data-spx-stepsleft'))-1;
     itemrow.setAttribute('data-spx-stepsleft',stepsleft);
-    console.log('Steps left: ' + stepsleft);
+    // console.log('Steps left: ' + stepsleft);
     if (stepsleft < 1) {
         // This should go somewhere else - because of DRY.
         // This duplicates some code from playItem
@@ -1043,7 +1075,7 @@ function playItem(itemrow='', forcedCommand='') {
     if (!itemrow) { itemrow = getFocusedRow();  }
 
     if (!itemrow) {
-        console.log('No active rows, skip command.');
+        // console.log('No active rows, skip command.');
         return;
     }
 
@@ -1110,7 +1142,7 @@ function playItem(itemrow='', forcedCommand='') {
                 // Changed in 1.0.9, failed in 1.0.8.
                 // 1.0.12: Fixed looping issue found by Koen.
                 let TimeoutAsInt = parseInt(TimeoutAsString);
-                console.log('Will stop playlistitem ' + itemrow.getAttribute('data-spx-epoch') + ' in ' + TimeoutAsInt + 'ms...');
+                // console.log('Will stop playlistitem ' + itemrow.getAttribute('data-spx-epoch') + ' in ' + TimeoutAsInt + 'ms...');
                 var AutoOutTimerID = setTimeout(function () {
                     if (itemrow.getAttribute('data-spx-onair')==='true'){
                         playItem(itemrow, 'stop');
@@ -1259,20 +1291,6 @@ function setItemButtonStates(itemrow, forcedCommand=''){
 
 
 
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
 function post(path, params, method) {
     // Creates a hidden form in DOM, populates it and posts it to server.
     // Feels dumb, but works, so what the heck.
@@ -1327,21 +1345,25 @@ function duplicateRundownItem(rowitem)
     setTimeout(function () { rowitem.classList.remove('inFocus'); }, 5);
     setTimeout(function () { newItem.setAttribute('data-spx-epoch', data.cloneEpoch); }, 15);
     setTimeout(function () { newItem.setAttribute('data-spx-onair', "false"); }, 20);
+    setTimeout(function () { newItem.querySelector('.copyid').setAttribute('onmouseover', `tip('Duplicated item ${data.cloneEpoch}')`); }, 30);
+
     
     // reset play icon and play button
-    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'); }, 30);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'); }, 40);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'); }, 50);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'); }, 60);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'); }, 70);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'); }, 40);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'); }, 50);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'); }, 60);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'); }, 70);
+    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'); }, 80);
         
     rowitem.after(newItem);
     setTimeout(function () { newItem.style.opacity=1; }, 100);
     setTimeout(function () { newItem.classList.add('inFocus'); }, 110);
 
-    var FirstInput = newItem.querySelectorAll('[data-role="userEditable"]')[0];
-    FirstInput.focus();
-    FirstInput.select();
+    // var FirstInput = newItem.querySelectorAll('[data-role="userEditable"]')[0] || null;
+    // if (FirstInput) {
+    //     FirstInput.focus();
+    //     FirstInput.select();
+    // }
 
     // send server command
     working('Sending ' + data.command + ' request.');
@@ -1400,7 +1422,7 @@ function SaveNewSortOrder() {
     let data={};
     data.newTemplateOrderArr = updateFormIndexes(); // refactored to fix delete + sort bug.
     data.rundownfile = document.getElementById('datafile').value;
-    console.log('SaveNewSortOrder', data);
+    // console.log('SaveNewSortOrder', data);
     ajaxpost('/gc/sortTemplates',data);
    
 } // SaveNewSortOrder ended
@@ -1554,7 +1576,7 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 
     // this gfx only has in-animation
     if ( itemrow.querySelector('input[name="RundownItem[out]"]') && itemrow.querySelector('input[name="RundownItem[steps]"]').value=="none" ) {
-        console.log('This items outmode = none, so not changing button states');
+        // console.log('This items outmode = none, so not changing button states');
         // maybe add a play and setTimeout to reset quickly...
         return;
     }
@@ -1609,6 +1631,44 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 } // setTGButtonStates ended 
 
 
+function showMessageSlider(msg, type='info') {
+    // show a sliding message at the top of the page
+
+    let txt = msg;
+    let typ = type; // info, warn, error
+
+    switch (msg) {
+        case 'invalidCSV':
+          txt = 'Invalid CSV. See help: import and export'
+          typ = 'error'
+      }
+
+    document.getElementById('messageSlider').innerHTML = txt;
+    document.getElementById('messageSlider').classList =  typ + 'Msg';
+    document.getElementById('messageSlider').style.transform = 'translateX(-50%)'; // init pos
+    document.getElementById('messageSlider').style.opacity = 0;
+    anime({
+        targets:        '#messageSlider',
+        opacity:        [0,1],
+        translateY:     [-200,0],
+        translateX:     '-50%',
+        delay:          200,
+        duration:       300,
+        easing:         'easeOutCubic'
+    });
+
+    setTimeout(() => {
+        anime({
+            targets:        '#messageSlider',
+            opacity:        [1,0],
+            translateY:     [0,-200],
+            translateX:     '-50%',
+            duration:       300,
+            easing:         'easeInCubic'
+        });
+    }, 3000);
+
+}
 
 
 
@@ -1630,7 +1690,6 @@ function spx_system(cmd,servername='') {
             var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
             window.open('/renderer/preview.html', 'gcwebrender2', OPT);
             break;
-
 
         case 'OPENDATAFOLDER':
             data.command = 'DATAFOLDER';
@@ -1667,7 +1726,7 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c SPX GC (c) 2021 <tuomo@smartpx.fi>', 'background: #6aF; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2021 SmartPX  ', 'background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd
@@ -1836,7 +1895,7 @@ function updateItem(itemrow) {
 
 
 function playServerAudio(sfx,message=''){
-    console.log('%cPlaying sound (' + sfx + ') on server. Log: ' + message + '.', 'background: #622; color: #fff');
+    // console.log('%cPlaying sound (' + sfx + ') on server. Log: ' + message + '.', 'background: #622; color: #fff');
     data = {};
     data.sound = sfx;
     data.info  = message;

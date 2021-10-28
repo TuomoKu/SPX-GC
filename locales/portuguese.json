@@ -10,6 +10,7 @@
 		"help": "Ajuda",
 		"yes": "Sim",
 		"no": "Não",
+		"none": "None",
 		"fromFolder": "da pasta"
 	},
 	"color": {
@@ -20,7 +21,8 @@
 		"blue": "Azul",
 		"black": "Preto",
 		"light": "Claro",
-		"white": "Branco"
+		"white": "Branco",
+		"transparent": "Transparent"
 	},
 	"button": {
 		"add": "Novo",
@@ -87,6 +89,7 @@
 		"authpolicy": "Configuração de acesso de utilizador. Deverão ser utilizados nome de utilizador e palavra-passe?",
 		"authinfo": "Esta caixa de diálogo será apresentada se houver um utilizador sem palavra-passe definida em config-file.",
 		"authnone": "A apliação não necessida de nome de utilizador ou palavra-passe.",
+		"backgroundImage": "Static background image (usually transparent)",
 		"playerflags": "Parametros do player",
 		"buttoncolor": "Cor do botão",
 		"buttontext": "Texto do botão",
@@ -119,6 +122,7 @@
 		"loglevel": "Nível Log",
 		"openchrome": "Abrir o Chrome ao reiniciar",
 		"options": "Opções de menu (texto, valor)",
+		"optionalBgImage": "Optional background image from folder",
 		"restartinfo": "Os processos do SPX-GC irão necessitar de reiniciar para que as alterações tenham efeito",
 		"serverport": "Porta",
 		"showextras": "Extras do projeto",

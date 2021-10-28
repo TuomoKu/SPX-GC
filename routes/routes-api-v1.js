@@ -285,5 +285,45 @@ router.get('/', function (req, res) {
     });
 
 
+    router.get('/changeItemID', async (req, res) => {
+      // Added in 1.0.15 - undocumented intentionally
+      // ID button in SPX controller uses this API endpoint:
+      // /api/v1/changeItemID?rundownfile=C:/SPX/DATAROOT/PROJECT/data/list.json&ID=0000001&newID=0000002
+
+      try {
+        let file = req.query.rundownfile || '';
+        let oldI = req.query.ID || '';
+        let newI = req.query.newID || '';
+
+        let datafile = path.normalize(file);
+        const RundownData = await spx.GetJsonData(datafile);
+
+        // First check for conflicts
+        RundownData.templates.forEach((item,index) => {
+          if (item.itemID === newI) {
+            logger.verbose('ID not changed')
+            throw 'ID conflict'
+          }
+        });
+
+        RundownData.templates.forEach((item,index) => {
+          if (item.itemID === oldI) {
+            item.itemID = newI
+          }
+        });
+
+        RundownData.updated = new Date().toISOString();
+        global.rundownData = RundownData; // push to memory also for next take
+        await spx.writeFile(RundownData.filepath,RundownData);
+        // console.log('Saved');
+        logger.verbose('Changed item ID to ' + newI);
+        return res.status(200).send('ID changed to ' + newI);
+      } catch (error) {
+        console.log('Error', error);
+        logger.error('changeItemID error', error)  ;
+        return res.status(409).send('ID not changed');
+      }
+});
+
 
 module.exports = router;

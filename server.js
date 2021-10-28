@@ -79,7 +79,13 @@ const vers = process.env.npm_package_version || packageversion || 'X.X.X';
 global.vers = vers;
 global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
 
-console.log('\nGC ' + vers + ' is starting. Closing this window/process will stop the server.\n');
+// Added in 1.0.15. An memory persistent object to handle -------------
+// rundown state to avoid unnecessary disk I/O and improve performance. 
+global.rundownData = {} 
+// --------------------------------------------------------------------
+
+
+console.log('\n\n\n  SPX Graphics Controller v.' + vers + ' is starting...\n  Closing this window/process will stop the server.\n');
 
 const port = config.general.port || 5000;
 global.CCGSockets = [];
@@ -281,9 +287,47 @@ app.engine('handlebars', exphbs({
       return html
     },
 
+    // populate filelist for the controller add CSV file view (for instance)
+    generateFileList(requestType) {
+
+      let folder = '' // folder to start to scan
+      let filter = '' // extensions to show ('csv' for example)
+      // requestType = search command, such as "CSV"
+
+      switch (requestType) {
+        case 'CSV':
+          folder = path.join(config.general.dataroot, currentShow, 'profile.json');
+          filter = 'csv';
+          break;
+
+        default:
+          logger.error('Unknown requestType ' + requestType + ', doing nothing');
+          return; // exit function
+          break;
+      }
+
+      let html="";
+      // get show profile
+      // iterate all templates
+      let profileFile = path.join(config.general.dataroot, currentShow, 'profile.json');
+      showProfileData = spx.GetJsonData(profileFile);
+      if(!showProfileData.templates) {
+        // if no templates assigned to this project
+        html += '<span style="display: inline-block; margin: 10px;padding: 0.6em 1.7em; background: #0000001c; color:#ffffff; font-size:0.7em; border-radius:2em; text-align:center;">' + spx.lang('warning.notemplates') + '</span>';
+        return html
+      } 
+      showProfileData.templates.forEach((template,i) => {
+        html += '<div onClick="addSelectedTemplate(' + i + ');" class="addTemplateItem row_accent' + template.uicolor + '">\n';
+        html += '<button type="button" class="addbtn bg_blue ripple" onClick="addSelectedTemplate(' + i + ');" style="float:right;">+</button>\n';
+        html += '<span class="templateName">' + spx.prettifyName(template.relpath) + '</span><BR>\n';
+        html += '<span class="templateDesc">' + template.description + '&nbsp;</span>\n';
+        html += '</div>\n';
+      });
+      return html
+    },
+
     // populate templatelist for the controller add template view
-    generateTemplateList(currentShow)
-    {
+    generateTemplateList(currentShow) {
       let html="";
       // get show profile
       // iterate all templates
@@ -581,6 +625,7 @@ app.engine('handlebars', exphbs({
       let SERVER_URL = 'http://' + ip.address() + ':' + port;
       let assetPath = path.normalize(assetfolder || '');
       let selectedValue = value;
+
       // let fullPath = path.join(__dirname, 'ASSETS', assetPath); // failed in PKG version
       let fullPath = path.join(spx.getStartUpFolder(), 'ASSETS', assetPath); // fixed (again in 1.0.12)
       let fileList = spx.getFileList(fullPath, extension);
@@ -675,21 +720,20 @@ process.on('uncaughtException', function(err) {
 
 var server = app.listen(port, (err) => {
 
-  let splash = 'START-UP INFORMATION:\n\n' + 
-  'SPX GC ................. Copyright 2020-2021 SmartPX <info@smartpx.fi>\n' +
-  `Version ................ ${vers}\n` +  
-  'License ................ MIT (see LICENSE.txt) \n' +
-  'Homepage ............... https://spxgc.com\n' +
-  'Template Store ......... https://spxgc.com/store\n' +
-  'Knowledge Base ......... https://spxgc.tawk.help\n' +
-  `Config file ............ ${configfileref}\n`  +
-  `Cfg / locale ........... ${config.general.langfile}\n`  +
-  `Cfg / hostname ......... ${config.general.hostname}\n`  +
-  `Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
-  `Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
-  `Cfg / template files ... ${config.general.templatefolder}\n`  +  
-  `Cfg / logfolder ........ ${config.general.logfolder}\n`+ 
-  `Cfg / lauchchrome ...... ${config.general.launchchrome}\n`;
+  let splash = '  Copyright 2020-2021 SmartPX\n\n' +
+  `  Version ................ ${vers}\n` +  
+  '  License ................ See LICENSE.txt\n' +
+  '  Homepage ............... http://spx.graphics\n' +
+  '  Template Store ......... http://spxgc.com/store\n' +
+  '  Knowledge Base ......... http://spxgc.tawk.help\n' +
+  `  Config file ............ ${configfileref}\n`  +
+  `  Cfg / locale ........... ${config.general.langfile}\n`  +
+  `  Cfg / hostname ......... ${config.general.hostname}\n`  +
+  `  Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
+  `  Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
+  `  Cfg / template files ... ${config.general.templatefolder}\n`  +  
+  `  Cfg / logfolder ........ ${config.general.logfolder}\n`+ 
+  `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n`;
   
   // Where are CasparCG templates loaded from (file:// or http://):
   let TemplatesFromInfo;
@@ -701,21 +745,44 @@ var server = app.listen(port, (err) => {
   }
 
   splash +=
-  `Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
-  `See README.pdf and Knowledge Base for more info.`; 
+  `  Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
+  `  See README.pdf and Knowledge Base for more info\n` + 
+  `  and please visit`; 
   
-  logger.info(splash);
-  console.log('\x1b[32m%s\x1b[0m', '\n──────────────────────────────────');
-  console.log('\x1b[37m%s\x1b[1m', `     Open SPX-GC in a browser:`);
-  console.log('\x1b[33m%s\x1b[0m', `     http://${ipad}:${port}`);  //yellow
-  console.log('\x1b[32m%s\x1b[0m', '──────────────────────────────────\n\n');
+  console.log(splash, '\x1b[32m', 'spxgc.com/store', '\x1b[37m', 'to support us.');
 
-  if ( config.general.launchchrome )
-  {
-    (async () => {
-      // Opens the URL in a specified browser.
-      await open(`http://${ipad}:${port}/`, {app: 'chrome'});
-    })();
+  let prompt = 'Open SPX in a browser:';
+  let spxUrl = `http://${ipad}:${port}`;
+  let urLeng = spxUrl.length;
+  let prLeng = prompt.length;
+  let maxWid = Math.max(urLeng, prLeng)
+  let minWid = Math.min(urLeng, prLeng)
+  let line1s = '╭' + "─".repeat(maxWid+4) + "╮"
+  let line2s = prompt + " ".repeat(maxWid-prLeng)
+  let line3s = '╰' + "─".repeat(maxWid+4) + "╯"
+  let spaCnt, spacer
+  if (urLeng > prLeng) {
+    spacer = ""
+  } else {
+    spacer = " ".repeat(maxWid-minWid)
+  }
+  
+
+  console.log('\x1b[32m%s\x1b[40m', '\n  ' + line1s);
+  console.log('\x1b[32m%s\x1b[40m', `  │`,'\x1b[37m', line2s,'\x1b[32m', `│`);
+  console.log('\x1b[32m%s\x1b[40m', `  │`,'\x1b[32m', spxUrl + spacer,'\x1b[32m', `│`);
+  console.log('\x1b[32m%s\x1b[40m', '  ' + line3s);
+  console.log('\x1b[37m%s\x1b[40m', '');
+
+  if ( config.general.launchchrome ) {
+    try {
+      (async () => {
+        // Opens the URL in a specified browser.
+        await open(`http://${ipad}:${port}/`, {app: 'chrome'});
+      })();
+    } catch (error) {
+      console.warn('Could not open Chrome application')
+    }
   }
 
 });
@@ -746,10 +813,8 @@ io.sockets.on('connection', function (socket) {
     io.emit('SPXMessage2Client', data);
   });
 
-
-
   socket.on('SPXMessage2Server', function (data) {
-    console.log('SPXMessage received', data);
+    // console.log('SPXMessage received', data);
     logger.verbose('SPXMessage received', data)
     switch (data.spxcmd) {
 

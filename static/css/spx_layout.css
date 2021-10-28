@@ -344,6 +344,23 @@ div.curfolder{
         cursor: pointer;
     }
 
+.tableheaderHelp2
+    {
+        color: rgb(186, 226, 255);
+        font-family: "UI-Light", Arial, Helvetica, sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.5;
+    }
+
+.tableheaderHelp2:hover
+    {
+        color: rgb(255, 185, 33);
+        opacity: 1.0;
+        cursor: pointer;
+    }
+
 
 .hidden {
     opacity: 0;
@@ -842,4 +859,32 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     background-color: rgba(0, 0, 0, 0.1);
     box-shadow: rgba(218, 112, 13, 0.657) 0px 0px 10px;
     border-width: 2px 2px 2px 15px;
+}
+
+#messageSlider {
+    top: 0;
+    left: 50%;
+    opacity: 0; /* animated */
+    display: flex;
+    min-width: 10%;
+    font-size: 0.8em;
+    position: absolute;
+    padding: 0.5em 2em;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 1em 1em;
+    transform: translateX('-50%');
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.infoMsg {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.warnMsg {
+    background-color: rgba(143, 81, 0, 0.794);
+}
+
+.errorMsg {
+    background-color: rgba(82, 6, 6, 0.705);
 }

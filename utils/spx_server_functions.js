@@ -348,7 +348,7 @@ module.exports = {
   lang: function (str) {
     try {
       const spxlangfile = config.general.langfile || 'english.json';
-      let langpath = path.join(this.getStartUpFolder(), 'locales', spxlangfile); // fails in pkg macOS
+      let langpath = path.join(this.getStartUpFolder(), 'locales', spxlangfile);
 
       var lang = require(langpath);
       json = 'lang.' + str;
@@ -370,7 +370,7 @@ getStartUpFolder: function () {
 },
 
 
-GetFilesAndFolders: function (datafolder) {
+GetFilesAndFolders: function (datafolder, filter='HTM') {
   try {
     // This is used by the AJAX function and returns a data object with folders
     // and HTML files of a given sourcefolder
@@ -390,14 +390,16 @@ GetFilesAndFolders: function (datafolder) {
         else {
           // it is file
           let ext = path.extname(curPath).toUpperCase();
-          // console.log('File ext is ' + ext + ' and search extension is ' + extension);
-          // if (ext.includes(extension)) {
-          //   data.fileArr.push(path.basename(curPath));
-          // }
-          if (ext ==".HTM" || ext ==".HTML") {
+          let fil = filter.toUpperCase();
+
+          if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" ) {
             data.fileArr.push(path.basename(curPath));
           }
+
+          if (fil === 'CSV' && ext ==".CSV" ) {
+            data.fileArr.push(path.basename(curPath));
           }
+        }
       });
       
       // Sort elements within arrays
@@ -611,6 +613,7 @@ versInt: function (semver){
 
 
 writeFile: function (filepath,data) {
+  // console.log('Writing file ', filepath);
   try {
       return new Promise(resolve => {
         this.talk('Writing file');
@@ -636,10 +639,10 @@ writeFile: function (filepath,data) {
 },
 
 writeTextFile: function (filepath, filedata) {
-  console.log('writing text file ' + filepath);
+  // console.log('writing text file ' + filepath);
   try {
       return new Promise(resolve => {
-        data.updated = new Date().toISOString();
+        filedata.updated = new Date().toISOString();
         fs.writeFile(filepath, filedata, 'utf8', function (err) { 
           if (err) {
             logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);

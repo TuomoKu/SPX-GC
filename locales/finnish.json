@@ -10,6 +10,7 @@
 		"help": "Ohje",
 		"yes": "Kyllä",
 		"no": "Ei",
+		"none": "Ei mitään",
 		"fromFolder": "kansiosta"
 	},
 	"color": {
@@ -20,7 +21,8 @@
 		"blue": "Sininen",
 		"black": "Musta",
 		"light": "Vaalea",
-		"white": "Valkoinen"
+		"white": "Valkoinen",
+		"transparent": "Läpinäkyvä"
 	},
 	"button": {
 		"add": "Uusi",
@@ -88,7 +90,7 @@
 		"authpolicy": "Sisäänkirjautumisen määrittely: käytetäänkö käyttäjätunnusta ja salasanaa?",
 		"authinfo": "Tämä asetus tulee näkyiin, jos config -tiedostossa on määritettynä username mutta ei salasanaa.",
 		"authnone": "Sovelluksen käyttö ei vaadi käyttäjätunnusta ja salasanaa.",
-		"playerflags": "Player parametrit",
+		"backgroundImage": "Staattinen taustakuva (yleensä läpinäkyvä)",
 		"buttoncolor": "Painikkeen väri",
 		"buttontext": "Painikkeen teksti",
 		"buttontexts": "Painikkeen tekstit",
@@ -120,6 +122,8 @@
 		"loglevel": "Logitustaso",
 		"openchrome": "Avaa Chrome käynnistyksessä",
 		"options": "Valikon vaihtoehdot (teksti, arvo)",
+		"optionalBgImage": "Vaihtoehtoinen taustakuva kansiosta:",
+		"playerflags": "Player parametrit",
 		"restartinfo": "SPX-GC prosessi pitää uudelleenkäynnistää muutosten jälkeen.",
 		"serverport": "Tämän sovelluksen portti",
 		"showextras": "Projektin lisätoiminnot",

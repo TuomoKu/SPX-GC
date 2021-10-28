@@ -76,6 +76,9 @@ RUN_DEV_DEMOROOT.BAT
 config*.json
 README.pdf
 RELEASE_NOTES.pdf
+MILESTONES.txt
+ROADMAP_PRIVATE.md
+ROADMAP.md
 
 
 ######################
