@@ -1,15 +1,13 @@
-# SPX-GC | SmartPX Graphics Controller
+# SPX Graphics Controller
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Oct 01 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.14).
+> Readme updated Oct 30 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.15).
 
 
-**SPX-GC** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
+**SPX** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
 
-_SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
-
-▶ [spxgc.com](https://spxgc.com)
+**[spxgc.com](https://spxgc.com)**
 
 ![snapshot](screenshots/00-spx-gc-principle2.png)
 
@@ -26,33 +24,33 @@ _SPX-GC is pronounced __G.C.__ [dʒiː.siː] or just "geesee"_ 😉
 - [Projects and rundowns](#dataroot)
 - [HTML templates](#templates) and [template definition](#templatedefinition)
 - [Custom controls](#projectextras) and [Plugins](#plugins)
-- [Using SPX-GC with OBS (or vMix, Wirecast, XSplit...)](#streaming)
+- [Using SPX with OBS (or vMix, Wirecast, XSplit...)](#streaming)
 - [Control with external devices (Stream Deck etc)](#controlApi)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
 - [MIT License](#license)
 
 
-**SPX-GC** can be used to playout lower thirds, bumpers, logos and other on-screen graphics in live web streams or live TV broadcasts. Content for the graphic templates are entered into _elements_ which are stored on _rundowns_ within _projects_.
+**SPX Graphics Controller** can be used to playout lower thirds, bumpers, logos and other on-screen graphics in live web streams or live TV broadcasts. Content for the graphic templates are entered into _elements_ which are stored on _rundowns_ within _projects_.
 
 Software is based on a NodeJS server and can be run on Windows, Mac or Linux computers, on-premise or using cloud instances for remote work scenarios.
 
-Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX-GC is done by adding _a template definition_ (javascript-snippet) to them.
+Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX is done by adding _a template definition_ (javascript-snippet) to them.
 
-Originally SPX-GC was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
+Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
 
 > If you need custom HTML templates or functionality get in touch tuomo@smartpx.fi.
 
 ---
 <a id="demo"></a>
 ## Live demo 🔥
-SPX-GC running in the cloud: **http://35.228.47.121:5000**
+SPX running in the cloud: **http://35.228.47.121:5000**
 
 > Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
 
 <a id="testdrive"></a>
 ## Template Store & Testdrive 🔥
-A marketplace for free and premium SPX-GC templates and plugins is opened at [spxgc.com/store](https://spxgc.com/store). Each store item can be testdriven, see these examples:
+A marketplace for free and premium SPX templates and plugins is opened at [spxgc.com/store](https://spxgc.com/store). Each store item can be testdriven, see these examples:
 
 | Template | Type | Link |
 | ------ | ------ | ------ |
@@ -68,7 +66,7 @@ A marketplace for free and premium SPX-GC templates and plugins is opened at [sp
 # Screenshots <a id="screenshots"></a>
 |  | |
 | ------ | ------ |
-| ![animation](screenshots/spx-gc-ui-anim-v1-0.gif) | SPX-GC UI is browser based and can be operated with a mouse or keyboard. Additonal _extra controls_ can be added as _plugins_ to execute specific tasks or to trigger events in external devices. |
+| ![animation](screenshots/spx-gc-ui-anim-v1-0.gif) | SPX's UI is browser based and can be operated with a mouse or keyboard. Additonal _extra controls_ can be added as _plugins_ to execute specific tasks or to trigger events in external devices. |
 | ![project list](screenshots/01-spx-gc-projectlist.png) | Content is managed in _projects_. Each project can have unlimited amount of _rundowns_ and _graphics templates_. Projects and their rundowns and settings are stored in _dataroot -folder_. |
 | ![controller](screenshots/05-spx-gc-controller-rundown.png) | Main Controller: rundown with few items and a local preview. Items can be edited and controlled also with keyboard shortcuts. Fullscreen viewing mode recommended. Buttons below preview are customizeable. | 
 | [![intro video on Youtube](screenshots/yt_mockup.png)](https://www.youtube.com/watch?v=e5LTFC9MlOI) | An introduction video on Youtube. There are more images in the screenshots -folder.  | 
@@ -76,7 +74,7 @@ A marketplace for free and premium SPX-GC templates and plugins is opened at [sp
 ----
 # Installation <a id="install"></a>
 
-SPX-GC can be installed using a **ready-to-go binary package** which includes all required software components. Developers can alternatively get the full source code and run SPX-GC with `npm scripts`, see section [install source code](#npminstall).
+SPX can be installed using a **ready-to-go binary package** which includes all required software components. Developers can alternatively get the full source code and run SPX with `npm scripts`, see section [install source code](#npminstall).
 
 >Source is updated more frequently than binary packages. See [package.json](package.json) file for current version.
 
@@ -93,11 +91,11 @@ SPX-GC can be installed using a **ready-to-go binary package** which includes al
 
 ## Option 1: **Install a pre-built package**
 * Download a zip-file for your system using one of the links above.
-* Create a new folder for the app (for example on Windows `C:/Program Files/SPXGC/`, or on Linux `/SPXGC` ).
+* Create a new folder for the app (for example on Windows `C:/Program Files/SPX/`, or on Linux `/SPX` ).
 * Extract the zip-file to that folder.
-* Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX-GC server. A console window should open (and remain open) and show some startup information.
+* Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX server. A console window should open (and remain open) and show some startup information.
 * Chrome browser should launch automatically at server start-up. This can be disabled with a setting in [config.json](#config).
-* When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX-GC does _not_ usually require admin priviledges.
+* When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX does _not_ usually require admin priviledges.
 * On Linux or Mac you _may_ need to add execute permission to the file (`chmod a+x SPX-GC_linux64 [or ...macos64]`) and launch it in a console (`./SPX-GC_linux64 [or ...macos64]`). See this [KB article](https://spxgc.tawk.help/article/make-executable)
 * See next steps in section [first launch](#firstlaunch).
 
@@ -130,9 +128,9 @@ npm start
 ```
 
 ### Run multiple instances<a id="multipleinstances"></a> 
-* To run several instances of SPX-GC (on different ports) with `pm2` prepare a `ecosystem.config.js` -file to same folder as config.json with details of each instance, such as:
+* To run several instances of SPX (on different ports) with `pm2` prepare a `ecosystem.config.js` -file to same folder as config.json with details of each instance, such as:
 ```javascript
-// Example "ecosystem.config.js" file for pm2 to run multiple instances of SPX-GC.
+// Example "ecosystem.config.js" file for pm2 to run multiple instances of SPX.
 
 module.exports = {
   apps : [
@@ -164,10 +162,10 @@ pm2 kill
 
 ---
 # First launch <a id="firstlaunch"></a>
-* Open web browser (such as Chrome) and load SPX-GC gui from url shown in the console at the start-up:
+* Open web browser (such as Chrome) and load SPX gui from url shown in the console at the start-up:
 ```
 --------------------------------
-  SPX-GC url:
+  SPX url:
   http://127.0.0.1:5000
 --------------------------------
 ```
@@ -191,7 +189,7 @@ Start making [configuration changes](#config) or creating [projects](#dataroot) 
 
 **You can also follow these steps to get yourself familiarized with the application:**
 
-1. Open SPX-GC in browser, typically at http://localhost:5000
+1. Open SPX in browser, typically at http://localhost:5000
 2. Choose 'no login' policy by selecting **No** option and click **Save**
 3. Go to **Projects**
 4. Add a new project, for instance `My First Project`. (Project's settings opens.)
@@ -215,7 +213,7 @@ Congratulations! Now go back to your project's settings and add more templates t
 # App configuration options <a id="config"></a>
 > Application **DOES NOT** come with `config.json` and it will be generated at server start up.
 
-SPX-GC uses a `JSON file` to store configuration settings, such as folder paths, playout server settings or user interface language options. Most of the settings can be changed from the configuration page.
+SPX uses a `JSON file` to store configuration settings, such as folder paths, playout server settings or user interface language options. Most of the settings can be changed from the configuration page.
 
 ![animation](screenshots/08-spx-gc-appconfig.png)
 
@@ -230,7 +228,7 @@ SPX-GC_win64.exe myOtherConfig.json
 ```
 
 
-An example `config.json` of the SPX-GC server
+An example `config.json` of the SPX server
 ```json
 {
   "general": {
@@ -290,11 +288,11 @@ An example `config.json` of the SPX-GC server
 
 <a id="templatesources"></a>
 
-**`general.templatefolder`** contains the HTML templates and their resource files (css, js, images, etc). This root folder is used by SPX-GC's template browser and 'Explore templates folder' menu command (Win only). For playout folder see _templatesource_ parameter below.
+**`general.templatefolder`** contains the HTML templates and their resource files (css, js, images, etc). This root folder is used by SPX's template browser and 'Explore templates folder' menu command (Win only). For playout folder see _templatesource_ parameter below.
 
-**`general.templatesource`**  (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX-GC. Supported values are:
-* `spxgc-ip-address` to automatically use SPX-GC's IP address and http -protocol for playing out templates from SPX-GC's template folder. This is the default behaviour.
-* `casparcg-template-path` to playout templates from target CasparCG server's file system template-path. (See _caspar.config_ file) Note, in this workflow the templates *must be in two places*: in SPX-GC ASSETS/templates -folder *and* CasparCG's templates folder. And if a changes are done to either location, those changes should also be done to the other. `rsync` or other mirroring technique should be considered...
+**`general.templatesource`**  (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX. Supported values are:
+* `spxgc-ip-address` to automatically use SPX's IP address and http -protocol for playing out templates from SPX's template folder. This is the default behaviour.
+* `casparcg-template-path` to playout templates from target CasparCG server's file system template-path. (See _caspar.config_ file) Note, in this workflow the templates *must be in two places*: in SPX ASSETS/templates -folder *and* CasparCG's templates folder. And if a changes are done to either location, those changes should also be done to the other. `rsync` or other mirroring technique should be considered...
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
 
@@ -310,7 +308,7 @@ Localization credits:
 <BR>
 
 
-<a id="log"></a>**`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). Log messages are shown in the SPX-GC console window and are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting, `verbose` is the recommeded level for troubleshooting. If further analysis is needed `debug` level produces even more information. Remember to set log level back to `info` since heavy logging will increase disk usage and may effect software performance.
+<a id="log"></a>**`general.loglevel`** default value is `info`. Other possible values are `error` (least), `warn`, `verbose` and `debug` (most log data). Log messages are shown in the SPX console window and are stored into log files in logfolder. The active file is named `access.log`. Log files can be useful in troubleshooting, `verbose` is the recommeded level for troubleshooting. If further analysis is needed `debug` level produces even more information. Remember to set log level back to `info` since heavy logging will increase disk usage and may effect software performance.
 
 <a id="globalextras"></a> **`globalExtras{}`** are additional user interface controls, or _plugins_, shown below preview window in all project as opposed to [projectExtras](#projectextras) which are project specific. Each item has an UI component (a button) and associated function call available in the specified `javascript file`. When a new `config.json` is created it has some demo extra controls to introduce related consepts and possibilities.
 > **PLEASE NOTE:** Global extras will be replaced by [Plugins](#plugins) in future versions, since they are easier to install and maintain.
@@ -318,30 +316,33 @@ Localization credits:
 <br>
 
 ## Adding CasparCG server(s)<a id="addcaspar"></a>
-Starting from v.1.0.12 SPX-GC does not have a CasparCG server assigned by default in the [configuration](#config). To add CasparCG server(s) go to Configuration and scroll down to CasparCG servers. Add a new server by giving it name such as `OVERLAY`, `ip-address` (or `localhost`) and a `port` number (5250 is CasparCG's default port). Click on Save at the bottom of the page and there will be an empty line to add another server. Add as many as you have in your production, such as OVERLAY (for CG's), VIDEOWALL, FULLSCREEN etc... 
 
-> The name `OVERLAY` is preferred, since this name is used in all [SPX-GC Store](https://spxgc.com/store) templates and the default template pack which comes with the application.
+> ⚠ If SPX is used with CasparCG **version 2.3.x LTS is recommended.** See [CasparCG Releases](https://github.com/CasparCG/server/releases).
+
+Starting from v.1.0.12 SPX does not have a CasparCG server assigned by default in the [configuration](#config). To add CasparCG server(s) go to Configuration and scroll down to CasparCG servers. Add a new server by giving it name such as `OVERLAY`, `ip-address` (or `localhost`) and a `port` number (5250 is CasparCG's default port). Click on Save at the bottom of the page and there will be an empty line to add another server. Add as many as you have in your production, such as OVERLAY (for CG's), VIDEOWALL, FULLSCREEN etc... 
+
+> The name `OVERLAY` is preferred, since this name is used in all [SPX Store](https://spxgc.com/store) templates and the default template pack which comes with the application.
 
 <img src="./screenshots/ccgservers.png" align="right" width="450" style="vertical-align:middle;margin-right:10px; margin-top:10px">
 
-Each SPX-GC template has a setting for choosing a target CasparCG server. This server is assigned in the template settings within Project Settings. (Default value comes to the project from the HTML sourcecode of the template as the 'playserver' -parameter of the TemplateDefinition object.) The name must match with one of configured servers for the playout to work.
+Each SPX template has a setting for choosing a target CasparCG server. This server is assigned in the template settings within Project Settings. (Default value comes to the project from the HTML sourcecode of the template as the 'playserver' -parameter of the TemplateDefinition object.) The name must match with one of configured servers for the playout to work.
 
-If you have problems during playout it is recommeded to [set log level](#log) higher and observe SPX-GC console window messages for potential cause.
+If you have problems during playout it is recommeded to [set log level](#log) higher and observe SPX console window messages for potential cause.
 
 <!-- 
 During production if server name is not found there will be an error message on the console: 
 ```js
 // Error message if CasparCG server is not configured
-Template requests CasparCG server [SERVERNAME] but a server by that name was not found in SPX-GC configuration. Make sure app configuration and project settings match. This does not effect web playout.
+Template requests CasparCG server [SERVERNAME] but a server by that name was not found in SPX configuration. Make sure app configuration and project settings match. This does not effect web playout.
 ```
 -->
 
-> **REMEMBER** SPX-GC server process must be restarted whenever changes are made to configuration. 
+> **REMEMBER** SPX server process must be restarted whenever changes are made to configuration. 
 
 ----
 
 # Projects and rundowns <a id="dataroot"></a>
-All content in SPX-GC is stored as files in `dataroot` folder which is specified in the configuration.
+All content in SPX is stored as files in `dataroot` folder which is specified in the configuration.
 
 * **Projects** are _subfolders_ in the dataroot-folder
 * **Rundowns** are _files_ in project subfolders.
@@ -368,7 +369,7 @@ File structure of dataroot:
 
 **A static background image** can be assigned to a project in the Project Settings. A use case for this might be a chroma image to help in chroma keying in a vision mixer such as ATEM. Another creative use is to have a logo or border or other design element onscreen all the time. A transparent PNG (with an alpha channel) can be used. The background image must be placed to ASSETS/media/image/hd folder and it will appear in the dropdown.
 
-**Templates** can be added to a project on the project settings page. When a template (a .html file) is browsed and selected, the system will scan the file and search for a [template definition](#definition) which will tell SPX-GC what kind of input fields should be generated for that template and how the template is planned to be played out. Template defaults are stored to project's `profile.json` (as "copy") and if HTML template's definition related details are changed afterwards the template must be imported to the project again. The system does not re-scan added templates.
+**Templates** can be added to a project on the project settings page. When a template (a .html file) is browsed and selected, the system will scan the file and search for a [template definition](#definition) which will tell SPX what kind of input fields should be generated for that template and how the template is planned to be played out. Template defaults are stored to project's `profile.json` (as "copy") and if HTML template's definition related details are changed afterwards the template must be imported to the project again. The system does not re-scan added templates.
 
 > If selected template does NOT have template definition it will cause an `error:templateDefinitionMissing` -message. See section [html templates](#templates).
 
@@ -460,11 +461,11 @@ Custom control's ftype can be
 ----
 
 # Templates
-SPX-GC uses HTML templates for visuals.
+SPX uses HTML templates for visuals.
 
 Templates can have any features supported by the renderers, such as Canvas objects, WebGL animations, CSS transforms and animations, animation libraries, such as GSAP, ThreeJS, Anime, Lottie/Bodymovin and templates can utilize ajax calls for data visualizations and other advanced uses.
 
-SPX-GC comes with a starter template package for reference. See folder [ASSETS/templates/smartpx/Template_Pack_1](https://github.com/TuomoKu/SPX-GC/tree/master/ASSETS/templates/smartpx/Template_Pack_1)
+SPX comes with a starter template package for reference. See folder [ASSETS/templates/smartpx/Template_Pack_1](https://github.com/TuomoKu/SPX-GC/tree/master/ASSETS/templates/smartpx/Template_Pack_1)
 
 Video: [Use existing HTML templates](https://www.youtube.com/watch?v=AdZATSBByng).
 
@@ -490,7 +491,7 @@ Recommended folder structure for templates
 ```
 > The templates must be within `ASSETS/templates` folder structure. It is preferred to have a single subfolder for all _your_ templates (myCompany in the example above) and futher subfolders for different _template packs_ or _visual styles_ within it (ProjectA, ProjectB in the example).
 
-SPX-GC user interface and web playout always loads templates from `ASSETS/templates` folder, but CasparCG playout can be [configured](#templatesources) to playout _copied_ templates from template-path folder configured in CasparCG Server caspar.config -file. 
+SPX user interface and web playout always loads templates from `ASSETS/templates` folder, but CasparCG playout can be [configured](#templatesources) to playout _copied_ templates from template-path folder configured in CasparCG Server caspar.config -file. 
 
 <!--
 > <a id="fileprotocol"></a>**CasparCG** does not support absolute file paths with HTML-templates using file protocol. SPX-GC loads templates from ASSETS/templates -folder which acts as a http server. (Serving templates over http to CasparCG is planned for future version of SPX-GC.) **The simplest** way currently to configure CasparCG and SPX-GC together is to make ASSETS/templates folder the templates folder of CasparCG. To make this change, move your existing HTML-templates to ASSETS/templates and re-configure `caspar.config` to use that as `templates-folder`. [Video: template path configuration](https://www.youtube.com/watch?v=bjVzdaR9a0U).
@@ -502,14 +503,14 @@ Another approach is to copy the templates to **both locations** but this can bec
 
 > **IMPORTANT:** Each HTML template must have an `JSON data object` present in the HTML-files source code, within the HEAD section. [Video: use existing HTML templates](https://www.youtube.com/watch?v=AdZATSBByng) covers also this topic.
 
-TemplateDefinition configures how a template is supposed to work within SPX-GC; what kinds of controls are shown to the operator and how the graphic should playout, on which server and layer for instance. These values are template's `defaults` and can be changed in the Project Settings view after the template is added to the project.
+TemplateDefinition configures how a template is supposed to work within SPX; what kinds of controls are shown to the operator and how the graphic should playout, on which server and layer for instance. These values are template's `defaults` and can be changed in the Project Settings view after the template is added to the project.
 
 
 
 > See details about supported values below the snippet.
 
 ```html
-<!-- An example template definition object for SPX-GC. -->
+<!-- An example template definition object for SPX. -->
 <!-- Place it as the last item within the HEAD section -->
 
 <script>
@@ -562,25 +563,33 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
             {
                 "field": "f3",
                 "ftype": "filelist",
-                "title": "Choose background image",
+                "title": "Choose background image from global ASSETS-folder",
                 "assetfolder" : "/media/images/bg/" ,
                 "extension" : "png",
                 "value": "/media/images/bg/checker.png",
             },
             {
                 "field": "f4",
+                "ftype": "filelist",
+                "title": "Choose CSS stylesheet from template's relative styles-folder",
+                "assetfolder" : "./styles/" ,
+                "extension" : "css",
+                "value": "./styles/defaultStyle.css",
+            },
+            {
+                "field": "f5",
                 "ftype": "number",
                 "title": "Rotation degrees",
                 "value": "45",
             },
             {
-                "field": "f5",
+                "field": "f6",
                 "ftype": "checkbox",
                 "title": "Show logo",
                 "value": "1",
             },
             {
-                "field": "f6",
+                "field": "f7",
                 "ftype": "button",
                 "title": "Click me",
                 "descr": "Describe button function here",
@@ -607,7 +616,7 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
     - `xml` the default
     - `json` used in some special templates
 * **ftypes**
-    -  _ftypes_ (for field types) define template's GUI controls in SPX-GC controller
+    -  _ftypes_ (for field types) define template's GUI controls in SPX controller
     - the values of first two fileds are used as content preview in the rundown, so the order of fields should be considered for the ease of use
     - The developer of the HTML template can consider how to utilize these values, for instance a `dropdown` control can be used to pick the name of the show host, or it can drive other values via javascript in the templates. See /ASSETS/templates/smartpx -folder for some inspiration.
 
@@ -618,7 +627,7 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 | `textfield`  | A typical single line text input field. | `Firstname Lastname` |
 | `dropdown` | A dropdown selector list. Options is an _items_ array, each consisting of _text_ (which is visible) and the  _value_ (which the template will use). The default selection is defined as `value` and it must be one of the values in the _items_ array. See an example definition above. | `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]` |
 | `textarea`  | A multiline text control which accepts _return_ key for new lines. (Added in 1.0.2)| `First line \n Second line` |
-| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX-GC. This is useful for picking images or other media files in templates. (Added in 1.0.3) | `sport_logo.png, news_logo.png` |
+| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX. This is useful for picking images or other media files in templates. (Added in 1.0.3). Version 1.0.15 introduced _relative folders_. If `assetfolder` path value starts with `"./"` the path is considered relative to the template root folder. This is useful for optional CSS styles or alternative images. See examples of both path styles above. | `sport_logo.png, news_logo.png` |
 | `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | |
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
@@ -632,8 +641,8 @@ TemplateDefinition configures how a template is supposed to work within SPX-GC; 
 
 
 ----
-# Using SPX-GC with OBS / vMix / Wirecast... <a id="streaming"></a>
-SPX-GC's animated graphics and overlays can be integrated used in streaming and videoconferencing with any video- or streaming application which has a support for "Browser" or "HTML Sources". SPX-GC provides a URL address which is entered to the streaming software as a layer / input / source. In OBS use `Browser source`, in vMIX it's called `Web Browser input` and in XSplit it's a `Webpage source`... 
+# Using SPX with OBS / vMix / Wirecast... <a id="streaming"></a>
+SPX's animated graphics and overlays can be integrated used in streaming and videoconferencing with any video- or streaming application which has a support for "Browser" or "HTML Sources". SPX provides a URL address which is entered to the streaming software as a layer / input / source. In OBS use `Browser source`, in vMIX it's called `Web Browser input` and in XSplit it's a `Webpage source`... 
 ```
 http://localhost:5000/renderer
 ```
@@ -644,30 +653,36 @@ http://localhost:5000/renderer/?layers=[2,4,20]
 ```
 
 ----
-# Control SPX-GC with external devices such as Elgato Stream Deck... <a id="controlApi"></a>
+# Control SPX with external devices such as Elgato Stream Deck... <a id="controlApi"></a>
 
 <img align="left" width="100" height="100" src="screenshots/streamdeck.png">
-SPX-GC (v.1.0.8+) rundowns can be loaded and controlled with external devices with http GET/ POST commands. 
+SPX (v.1.0.8+) rundowns can be loaded and controlled with external devices with http GET/ POST commands. 
 See available commands here:
 
 ```
 http://localhost:5000/api/v1
 ```
 
+SPX can also be used with Bitfocus Companion, see https://bitfocus.io/companion. Companion version 2 will have a built in module with presets for SPX.
+
+> **OSC -protocol** is not supported in SPX 1.0.x but will be added in a future version.
+
 # Plugins and Extensions <a id="plugins"></a>
 Version 1.0.10 introduced `ASSETS/plugins` -folder for additional functionality, such as custom function triggering `plugin buttons` and `extensions` which are additional user interfaces or panels. For instance [Scoreboard](https://www.spxgc.com/store/Scoreboard-plugin-p313595701) is a sports clock extension with an independent user interface. Another example is a SocialPlayout - an upcoming extension for moderating and LIVE playout of social messages from various social media platforms, such as Twitter, Instagram, Facebook, Youtube, etc.
 
 Each plugin has a subfolder with at least an init.js file and optionally other folders and files, such as html, css and js.
 
-plugins/lib -folder contains common SPX-GC user interface elements used by plugins. More functionality and UI controls will be added here in future releases. These can be checkboxes, dropdown selectors etc.
+`plugins/lib` -folder contains common SPX user interface elements used by plugins. More functionality and UI controls will be added here in future releases. These can be checkboxes, dropdown selectors etc.
 
 
 # Issues and Feedback <a id="feedback"></a>
-Github [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A>.
 
-**A Knowledge Base** is being prepared at [spxgc.tawk.help](https://spxgc.tawk.help/). It will be a growing collection of self-help articles in various SPX-GC related topics.
+**A Knowledge Base** at [spxgc.tawk.help](https://spxgc.tawk.help/) is a growing collection of self-help articles in various SPX related topics.
 
->All constructive feedback is highly appreciated!
+
+**Github** [issue tracker](https://github.com/TuomoKu/SPX-GC/issues) should be used for bug reports. For other feedback such as feature requests or other comments (for now at least) please use Google Forms feedback form at <A href="https://forms.gle/T26xMFyNZt9E9S6d8">https://forms.gle/T26xMFyNZt9E9S6d8</A>. All constructive feedback is highly appreciated!
+
+
 
 ### _Gotcha's & Known Issues_ (things to be aware of)
 - If UI becomes wonky reload the view (F5 / Ctrl+R).
@@ -685,8 +700,8 @@ New releases will try address found issues and bugs in older versions and they w
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. Export/import CSV| Q2/2021 |
-| X.X  | Under consideration: mediafile picker, video playback control templates, additional preview modes (while editing, simulation, rtsp stream), ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template marketplace~~. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
+| 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. ~~Export/import CSV~~| TBD |
+| X.X  | Under consideration: OSC support, Built-in NDI support, mediafile picker, video playback control templates, graphics preview, ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template store~~,  community marketplace. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
 
 Strikethrough items are already done.
 

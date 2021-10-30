@@ -24,15 +24,15 @@ function reimportTemplateIndex(nro) {
   // data index instead of adding a new one to the end.
 
   let pathElements = document.getElementById('templateIndex' + nro).value.split("/");
-  let htmlFileName = pathElements[pathElements.length - 1];
 
   let data={}; 
   data.command = 'addtemplate';
-  data.curFolder = document.getElementById('curfolder').innerText;
+  let htmlFileName = pathElements.pop(); // separate last item (filename.ext)
+  data.curFolder = pathElements.join('/'); // keep just the path
   data.template = htmlFileName // document.getElementById('templateIndex' + nro).value; // bug fix 1.0.14
-  data.showFolder = document.getElementById('showfolder').value;
+  data.showFolder = document.getElementById('showfolder').value; // rundown file
   data.replaceIndex = nro;
-  // console.log('Sending request to reimport:', data);
+  console.log('Sending request to reimport:', data);
   post('', data, 'post');
 }
 
@@ -55,7 +55,7 @@ function RenderFolder(data) {
     var span = document.createElement("SPAN");
     span.classList.add("icon");
     span.classList.add("folder");
-    var textnode = document.createTextNode(folder + "/");
+    var textnode = document.createTextNode(folder); //  + "/"); changed in 1.0.15
     span.appendChild(textnode);
     node.appendChild(span);
     document.getElementById("folderList").appendChild(node);

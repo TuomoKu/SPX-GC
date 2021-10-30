@@ -618,17 +618,28 @@ app.engine('handlebars', exphbs({
     // This is used to populate filelist dropdown control type in templates.
     // Note: these files are returned as http-assets from SPX-GC server
     // Feature added in 1.0.3. and improved in 1.0.6, 1.0.9
-    PopulateFilelistOptions(assetfolder, extension, value){
-      let html = "";
-      let sel = "";
-      let fullFilePath = "";
+    // v1.0.15 adds relative assets (within template root folder).
+    PopulateFilelistOptions(assetfolder, extension, value, relpath=''){
+      let html = '';
+      let sel = '';
+      let fullFilePath = '';
+      let fullPath = '';
       let SERVER_URL = 'http://' + ip.address() + ':' + port;
-      let assetPath = path.normalize(assetfolder || '');
+      
+      if ( assetfolder.startsWith('./') ) {
+        // relative path support added in 1.0.15
+        let templateFile = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', relpath);
+        let templateRootFolder = path.dirname(templateFile)
+        fullPath = path.join(templateRootFolder, assetfolder)
+      } else {
+        // absolute path in ASSETS
+        let assetPath = path.normalize(assetfolder || '');
+        fullPath = path.join(spx.getStartUpFolder(), 'ASSETS', assetPath); // fixed (again in 1.0.12)
+      }
+      
       let selectedValue = value;
-
-      // let fullPath = path.join(__dirname, 'ASSETS', assetPath); // failed in PKG version
-      let fullPath = path.join(spx.getStartUpFolder(), 'ASSETS', assetPath); // fixed (again in 1.0.12)
       let fileList = spx.getFileList(fullPath, extension);
+      // console.log('files', fileList);
       if (fileList) {
         fileList.forEach((fileRef,index) => {
           fullFilePath = assetfolder + fileRef;

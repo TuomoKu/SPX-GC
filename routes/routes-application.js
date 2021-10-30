@@ -383,6 +383,14 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       global.LastBrowsedTemplateFolder = curFolder;
 
       // scan the file for SPXConfig
+      if ( replaceIndex ) {
+        // when replacing, the path does not come with absolute
+        // path, must append
+        TemplatePath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', TemplatePath)
+      }
+
+
+      console.log('Added template: ' + TemplatePath);
       logger.verbose('Added template: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
       let templatehtml = templateContents.toString();
@@ -922,13 +930,13 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       }
 
       try {
-          await spx.writeFile(data.datafile, rundownDataJSONobj);
-          res.status(200).send('Item removed ok.'); // ok 200 AJAX RESPONSE
-          // res.redirect('/gc/' + data.foldername + '/' + data.listname);  
-          return;
+        global.rundownData = rundownDataJSONobj;
+        await spx.writeFile(data.datafile, rundownDataJSONobj);
+        res.status(200).send('Item removed ok.'); // ok 200 AJAX RESPONSE
+        return;
       } catch (error) {
-          logger.error('removeItemFromRundown Error while saving file: ', error);
-          // console.log('removeItemFromRundown Error while saving file: ', error);
+        logger.error('removeItemFromRundown Error while saving file: ', error);
+        // console.log('removeItemFromRundown Error while saving file: ', error);
       }; //file written
       break;
 

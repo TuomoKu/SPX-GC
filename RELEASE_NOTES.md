@@ -10,8 +10,10 @@ See also [Latest changes](https://spxgc.tawk.help/article/latest-changes) page f
 - Added General Settings > Static Background Image to Project Settings (feature suggested by Rotem Kish)
 - Added rundown item rename functionality to the ID-button
 - Added "import CSV file" option to rundown > add template dialog
-- Improved performance by prioritizing memory usage over disk I/O (multiple code changes)
 - Added help section to Knowledge Base and linked help() -function to those
+- Added relative path (using template's root folder) filelist option, see README.
+- Improved performance by prioritizing memory usage over disk I/O (multiple code changes)
+- Fixed re-import bug (absolute file path was invalid)
 - Binary packages v1.0.15:
     [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_win64.zip),
     [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_linux64.zip),

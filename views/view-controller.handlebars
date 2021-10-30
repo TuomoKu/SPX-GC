@@ -20,7 +20,7 @@
   <script src="/js/spx_gc.js"></script>
 
 
-  <title>GC | {{lang 'pagetitle.controller'}}</title>
+  <title>SPX | {{lang 'pagetitle.controller'}}</title>
   <link rel="icon" type="image/png" href="/img/spx-gc.ico">
   <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
@@ -379,7 +379,7 @@
                                   <option disabled>{{assetfolder}}</option>
                                   <option disabled></option>
                                   <option value="none">-</option>
-                                    {{{ PopulateFilelistOptions assetfolder extension value }}}
+                                    {{{ PopulateFilelistOptions assetfolder extension value ../relpath }}}
                                 </select>
                               {{/ifValue}}
 

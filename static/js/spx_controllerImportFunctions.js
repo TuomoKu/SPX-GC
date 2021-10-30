@@ -18,7 +18,7 @@ function RenderFolder(data) {
     var span = document.createElement("SPAN");
     span.classList.add("icon");
     span.classList.add("folder");
-    var textnode = document.createTextNode(folder + "/");
+    var textnode = document.createTextNode(folder); //  + "/"); // changed in 1.0.15
     span.appendChild(textnode);
     node.appendChild(span);
     document.getElementById("folderList").appendChild(node);

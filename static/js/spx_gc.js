@@ -692,7 +692,7 @@ function delshow() {
 
 
 function delRow(e) {
-    //console.log('Would delete', e);
+    console.log('Would delete', e);
     if (!e){return};
     document.getElementById('itemList').removeChild(e);
     // save data 
