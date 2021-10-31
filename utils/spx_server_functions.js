@@ -619,7 +619,7 @@ writeFile: function (filepath,data) {
         this.talk('Writing file');
         // this.playAudio('beep.wav', 'spx.writeFile');
         data.warning = "Modifications done in the GC will overwrite this file.";
-        data.smartpx = "(c) 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>";
+        data.smartpx = "(c) 2020-2021 SmartPX";
         data.updated = new Date().toISOString();
         let filedata = JSON.stringify(data, null, 2);
         fs.writeFile(filepath, filedata, 'utf8', function (err) {

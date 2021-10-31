@@ -103,10 +103,16 @@ function playAll(){
 
 function openWebpage(url='https://spxgc.tawk.help/'){
     // Opens a new browser tab with url given.
-    // let tabName = "_helper";
     console.log("Hello ", url);
     window.open(url, '_blank');
     return false;
+    }
+
+
+function openSelectedURL(selectList){
+    // Gets an item from a "selectbutton" dropdown and navigates to a URL 
+    let URL = document.getElementById(selectList).value;
+    openWebpage(URL)
     }
 
 

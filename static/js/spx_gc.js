@@ -1,8 +1,8 @@
 // ***************************************
-// Client javascript for SPX-GC
+// Client javascript for SPX
 // Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2021 tuomo@smartpx.fi
+// (c) 2020-2021 SmartPX
 // ***************************************
 
 var socket = io();

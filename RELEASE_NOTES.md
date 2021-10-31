@@ -12,12 +12,14 @@ See also [Latest changes](https://spxgc.tawk.help/article/latest-changes) page f
 - Added "import CSV file" option to rundown > add template dialog
 - Added help section to Knowledge Base and linked help() -function to those
 - Added relative path (using template's root folder) filelist option, see README.
+- Added "imported timestamp" to profile items for future version comparisions on the rundowns.
 - Improved performance by prioritizing memory usage over disk I/O (multiple code changes)
+- Improved initialization and startup folder detection
 - Fixed re-import bug (absolute file path was invalid)
 - Binary packages v1.0.15:
-    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_win64.zip),
-    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_linux64.zip),
-    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_15_linux64.zip)
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_linux64.zip)
 
 
 ## **1.0.14** (Oct 01 2021)

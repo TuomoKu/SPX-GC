@@ -197,6 +197,20 @@
                     {{{generateColorAccents uicolor @index}}}
                   </td>
                 </tr>
+
+
+                {{#if imported}}
+                  <tr>
+                    <td width="40%"><span class="spxConfigHead">{{lang 'config.updated'}}</span></td>
+                    <td  onmouseover="tip('{{lang 'hover.updated'}}');">
+                      <span class="spxConfigHead">
+                        {{{generateTimestamp imported}}}
+                      </span>
+                    </td>
+                  </tr>
+                {{/if}}
+
+
               </table>
 
 

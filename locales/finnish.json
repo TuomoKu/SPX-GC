@@ -76,6 +76,7 @@
 		"select": "Valitse sisältötiedosto",
 		"selectshowextra": "Lisää projektiin lisätoiminto",
 		"selectemplate": "Valitse templatetiedosto (html htm)",
+		"selectfile": "Valitse tiedosto",
 		"shortcuts": "Pikakomennot",
 		"controller": "Controller",
 		"configapp": "Sovelluksen asetukset",
@@ -133,6 +134,7 @@
 		"templatepathinfo": "Huomaa, että templatet tulee olla käytettävissä sekä CasparCG- että GC-sovelluksille. Konfiguroi tästä CasparCG kansio tai tarvittaessa kopioi templatet molempien sovelluksien kansioihin.",
 		"templateroot": "HTML templates -kansio",
 		"text": "Näkyvä teksti",
+		"updated": "Päivitetty",
 		"value": "Arvo",
 		"webplayout": "Web playout taso",
 		"webplayurl": "Browser URL"
@@ -216,6 +218,7 @@
 		"templatedescr": "Elementin lyhyt kuvaus GC:n käyttöliittymässä",
 		"text": "Painikkeen teksti",
 		"text1": "Painikkeen teksti painettuna",
+		"updated": "Viimeisen tuonnin aikaleima",
 		"updatethis": "Päivitä tämä elementti",
 		"weblayer": "Webplayout kanava"
 	}

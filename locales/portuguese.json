@@ -75,6 +75,7 @@
 		"select": "Escolher rundown",
 		"selectshowextra": "Adicionar controlo extra ao projeto",
 		"selectemplate": "Escolher template (htm, html)",
+		"selectfile": "Choose a file",
 		"shortcuts": "Atalhos do teclado",
 		"controller": "Controlador",
 		"configapp": "Configurações da aplicação",
@@ -132,6 +133,7 @@
 		"templatepathinfo": "Nota: os modelos devem estar disponíveis para as aplicações CasparCG e GC. Configure esta pasta para ser a pasta de modelo CasparCG ou, se necessário, copie o modelo para a pasta de ambos os aplicativos.",
 		"templateroot": "Pasta de modelos HTML",
 		"text": "Texto visível",
+		"updated": "Updated",
 		"value": "Valor",
 		"webplayout": "Camada de playout web",
 		"webplayurl": "URL do browser"
@@ -215,6 +217,7 @@
 		"text": "Texto do botão",
 		"text1": "Texto do botão (quando ativo)",
 		"updatethis": "Atualizar este item",
+		"updated": "Timestamp when template was last imported",
 		"weblayer": "Camada / Canal / Layer de webplayout"
 	}
 }

@@ -15,13 +15,22 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 // logger.debug("hello world!, this is debug 4");
 // logger.silly("hello world!, this is silly 5");
 
+let rootPath  
+if ( process.pkg ) {
+  // PKG process
+  rootPath = path.resolve(process.execPath + '/..');
+} else {
+  // NODE process
+  rootPath = process.cwd();
+}
+
 let LOGLEVEL = config.general.loglevel || 'debug';
-let LOGFOLDER = config.general.logfolder || 'LOG';
-var logFile = path.resolve(process.cwd(),LOGFOLDER, 'access.log');
+let LOGFOLDER = config.general.logfolder || rootPath + '/LOG';
+var logFile = path.resolve(LOGFOLDER, 'access.log');
 
 const logger = createLogger({
   format: combine(
-    label({ label: 'SPX GC' }),
+    label({ label: 'SPX' }),
     timestamp(),
     myFormat
   ),

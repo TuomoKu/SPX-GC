@@ -70,7 +70,7 @@ router.post('/readExcelData', async (req, res) => {
   // this just dumps data out as-is.
 
   // var excelFile = path.join(__dirname, '..', 'ASSETS', req.body.filename); // fails when packaged
-  var excelFile = path.join(process.cwd(), 'ASSETS', req.body.filename);
+  var excelFile = path.join(spx.getStartUpFolder(), 'ASSETS', req.body.filename); // v.1.0.15: getStartUpFolder()
   var workSheetsData;
   try {
 

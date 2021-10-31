@@ -74,10 +74,10 @@
             {{{ generateTemplateList folder }}}
 
             <BR>
-            <div onClick="openImportDialog();" class="addTemplateItem row_accent7">
+            <div onClick="openImportDialog();" class="addTemplateItem row_accent0">
             <button type="button" class="addbtn bg_blue ripple" onClick="openImportDialog();" style="float:right; padding:0.2em 0.4em;"><i class="fas fa-file-import"></i></button>
-            <span class="templateName">CSV-file import <span style="color: yellow;">BETA</span></span><BR>
-            <span class="templateDesc">Generate multiple rundown items &nbsp;<span class="tableheaderHelp2" title="{{lang 'general.help'}}" onClick="help('csv');"><i class="far fa-question-circle"></i>&nbsp;</span></span>
+            <span class="templateName">CSV-file import</span><BR>
+            <span class="templateDesc">Generate multiple rundown items from a CSV file &nbsp;<span class="tableheaderHelp2" title="{{lang 'general.help'}}" onClick="help('csv');"><i class="far fa-question-circle"></i>&nbsp;</span></span>
             </div>
 
           </div>
@@ -475,6 +475,7 @@
                             <tr><td class="aright">out</td>         <td><input style="width: 100%;" type="text" id="out{{@index}}"         name="RundownItem[out]"             value="{{out}}"></td></tr>
                             <tr><td class="aright">uicolor</td>     <td><input style="width: 100%;" type="text" id="uicolor{{@index}}"     name="RundownItem[uicolor]"         value="{{uicolor}}"></td></tr>
                             <tr><td class="aright">steps</td>       <td><input style="width: 100%;" type="text" id="steps{{@index}}"       name="RundownItem[steps]"           value="{{steps}}"></td></tr>
+                            <tr><td class="aright">imported</td>    <td><input style="width: 100%;" type="text" id="imported{{@index}}"    name="RundownItem[imported]"        value="{{imported}}"></td></tr>
 
                             <!-- special event triggers -->
                             <tr><td class="aright">onPlay</td>     <td><input style="width: 100%;" type="text" id="onPlay{{@index}}"      name="RundownItem[function_onPlay]"  value="{{function_onPlay}}"></td></tr>

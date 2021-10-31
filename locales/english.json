@@ -76,6 +76,7 @@
 		"select": "Choose a rundown",
 		"selectshowextra": "Add extra control to the project",
 		"selectemplate": "Choose a template (htm, html)",
+		"selectfile": "Choose a file",
 		"shortcuts": "Keyboard shortcuts",
 		"controller": "Controller",
 		"configapp": "Configuration",
@@ -133,6 +134,7 @@
 		"templatepathinfo": "Note, templates must be available to both CasparCG and SPX -servers. Configure this to be the CasparCG template folder or copy templatefiles to both applications if necessary.",
 		"templateroot": "HTML templates -folder",
 		"text": "Visible text",
+		"updated": "Updated",
 		"value": "Value",
 		"webplayout": "Web playout layer",
 		"webplayurl": "Browser URL"
@@ -218,6 +220,7 @@
 		"templatedescr": "Short description of the item for the GUI",
 		"text": "Button text",
 		"text1": "Button text when active",
+		"updated": "Timestamp when template was last imported",
 		"updatethis": "Update this item",
 		"weblayer": "Webplayout layer"
 	}

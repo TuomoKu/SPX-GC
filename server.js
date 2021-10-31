@@ -1,7 +1,7 @@
 
 // ===============================================================
 //
-// "SPX-GC" SmartPX Graphics Controller
+// "SPX" SmartPX Graphics Controller
 //
 // (c) 2020-2021 tuomo@smartpx.fi 
 // https://github.com/TuomoKu
@@ -30,7 +30,8 @@ const morgan = require('morgan')
 const path = require('path')
 const rfs = require('rotating-file-stream')
 var macaddress = require('macaddress');
-// const axios = require('axios')
+
+console.log('\x1b[37m%s\x1b[40m', ''); // console colors to black
 
 
 // EXIT HANDLER
@@ -39,7 +40,7 @@ process.on('exit', function(code) {
   let codestr="Unspecified exit code";
   switch (code) {
     case 1:
-      codestr = "Config file not found"
+      codestr = "Error while reading config.json"
       break;
 
     case 2:
@@ -53,19 +54,18 @@ process.on('exit', function(code) {
     default:
       break;
   }
-  return console.log(`\n\nSPX-GC exit! (Errorcode ${code}: ${codestr})\n\n`);
+  return console.log(`\n\nSPX exit! (Errorcode ${code}: ${codestr})\n\n`);
 });
 
 // global.config
 const cfg = require('./utils/spx_getconf.js');
 cfg.readConfig()
-if (!configfileref){
+if (!configfileref) {
     process.exit(1)
   }
 
-const logger = require('./utils/logger.js');
 const spx = require('./utils/spx_server_functions.js');
-
+const logger = require('./utils/logger.js');
 
 // STATICS
 app.use(express.static(path.join(__dirname,('static'))))                    // the usual css/js stuff... embedded in pkg package
@@ -99,9 +99,9 @@ macaddress.one(function (err, mc) {
 });
 
 
-
-// var logDirectory = path.join(__dirname, 'log')
-var logDirectory = path.normalize(config.general.logfolder);
+// Setup Morgan
+let LOGFOLDER = config.general.logfolder || spx.getStartUpFolder() + '/LOG';
+var logDirectory = path.normalize(LOGFOLDER);
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
 var accessLogStream = rfs.createStream('access.log', {
   interval: '1d', // rotate daily
@@ -346,6 +346,16 @@ app.engine('handlebars', exphbs({
         html += '</div>\n';
       });
       return html
+    },
+
+    // convert timestamp (epoch) to locale date string "31.12.2021 17:45"
+    generateTimestamp(epoch) {
+
+      let date = new Date(parseInt(epoch));
+      let fDate = date.toLocaleDateString();
+      let fTime = date.toLocaleTimeString();
+
+      return fDate + ' ' + fTime;
     },
 
 
@@ -741,9 +751,9 @@ var server = app.listen(port, (err) => {
   `  Cfg / locale ........... ${config.general.langfile}\n`  +
   `  Cfg / hostname ......... ${config.general.hostname}\n`  +
   `  Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
-  `  Cfg / dataroot ......... ${config.general.dataroot}\n`  +  
-  `  Cfg / template files ... ${config.general.templatefolder}\n`  +  
-  `  Cfg / logfolder ........ ${config.general.logfolder}\n`+ 
+  `  Cfg / dataroot ......... ${path.resolve(config.general.dataroot)}\n`  +  
+  `  Cfg / template files ... ${path.resolve(config.general.templatefolder)}\n`  +  
+  `  Cfg / logfolder ........ ${logDirectory}\n`+ 
   `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n`;
   
   // Where are CasparCG templates loaded from (file:// or http://):

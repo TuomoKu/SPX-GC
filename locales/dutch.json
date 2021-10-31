@@ -74,6 +74,7 @@
 		"select": "Kies een rundown",
 		"selectshowextra": "Voeg een extra functie toe aan het project",
 		"selectemplate": "Kies een sjabloon (htm, html)",
+		"selectfile": "Choose a file",
 		"shortcuts": "Sneltoeten",
 		"controller": "Controller",
 		"configapp": "Instellingen applicatie",
@@ -131,6 +132,7 @@
 		"templatepathinfo": "Let op, sjablonen moeten beschikbaar zijn voor zowel CasparCG- als GC-applicaties. Configureer dit als de CasparCG-sjabloonmap of kopieer indien nodig sjabloonbestanden naar beide toepassingen.",
 		"templateroot": "HTML-sjablonenmap",
 		"text": "Zichtbare tekst",
+		"updated": "Updated",
 		"value": "Waarde",
 		"webplayout": "Web playout laag",
 		"webplayurl": "Browser URL"
@@ -213,6 +215,7 @@
 		"text": "Buttontekst",
 		"text1": "Buttontekst als actief",
 		"updatethis": "Update dit item",
+		"updated": "Timestamp when template was last imported",
 		"weblayer": "Webplayout laag"
 	}
 }

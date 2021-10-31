@@ -378,7 +378,6 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
   switch (command) {
     case 'addtemplate':
       // ------------------------------------------------------------- ADDING (or RE-ADDING) A TEMPLATE -----------------
-
       // save the folder to app globals for the next potential need...
       global.LastBrowsedTemplateFolder = curFolder;
 
@@ -389,8 +388,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         TemplatePath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', TemplatePath)
       }
 
-
-      console.log('Added template: ' + TemplatePath);
+      // console.log('Added template: ' + TemplatePath);
       logger.verbose('Added template: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
       let templatehtml = templateContents.toString();
@@ -413,6 +411,10 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
       if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "xml"};
       if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
+
+      // v.1.0.15 add imported timestamp
+      SPXGCTemplateDefinition.imported = String(Date.now()); // epoch. This COULD be used to compare template versions in profile/rundown.
+
 
       // v.1.0.14 add note if no fields
       if ( !SPXGCTemplateDefinition.DataFields ||  SPXGCTemplateDefinition.DataFields.length === 0) {
@@ -443,74 +445,74 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       break;
 
     case 'addshowextra':
-      // ------------------------------------------------------------------- ADDING EXTRA -----------------
-      newExtra = {};
-      switch (ftype) {
-        case 'button':
-          newExtra.description='A new push button';
-          newExtra.ftype='button';
-          newExtra.bgclass='bg_blue';
-          newExtra.text='Hello world';
-          newExtra.fcall="demo_popup('Hello world!')";
-          break;
-      
-        case 'togglebutton':
-          newExtra.description='A new toggle button';
-          newExtra.ftype='togglebutton';
-          newExtra.bgclass='bg_blue';
-          newExtra.text0='START ME';
-          newExtra.text1='STOP ME';
-          newExtra.fcall='demo_toggle(this)';
-          break;
+    // ------------------------------------------------------------------- ADDING EXTRA -----------------
+    newExtra = {};
+    switch (ftype) {
+      case 'button':
+        newExtra.description='A new push button';
+        newExtra.ftype='button';
+        newExtra.bgclass='bg_blue';
+        newExtra.text='Hello world';
+        newExtra.fcall="demo_popup('Hello world!')";
+        break;
+    
+      case 'togglebutton':
+        newExtra.description='A new toggle button';
+        newExtra.ftype='togglebutton';
+        newExtra.bgclass='bg_blue';
+        newExtra.text0='START ME';
+        newExtra.text1='STOP ME';
+        newExtra.fcall='demo_toggle(this)';
+        break;
 
-        case 'selectbutton':
-          newExtra.description='Selectbutton demo';
-          newExtra.ftype='selectbutton';
-          newExtra.bgclass='bg_blue';
-          newExtra.text='Play';
-          newExtra.fcall='playSelectedAudio';
-          newExtra.value='media/wav/applause.wav';
-          newExtra.items = [];
-          let option0 = {};
-          option0.text='Applause';
-          option0.value='media/wav/applause.wav';
-          newExtra.items.push(option0);
-          let option1 = {};
-          option1.text='No!';
-          option1.value='media/wav/no.wav';
-          newExtra.items.push(option1);
-          let option2 = {};
-          option2.text='Yesss!';
-          option2.value='media/wav/yes.wav';
-          newExtra.items.push(option2);
-          break;
-      
-        default:
-          logger.warn('Warning: Extra type ' + ftype + ' is unknown. Adding nothing to the profile-file.' );
-          break;
-      }
+      case 'selectbutton':
+        newExtra.description='Selectbutton demo';
+        newExtra.ftype='selectbutton';
+        newExtra.bgclass='bg_blue';
+        newExtra.text='Play';
+        newExtra.fcall='playSelectedAudio';
+        newExtra.value='media/wav/applause.wav';
+        newExtra.items = [];
+        let option0 = {};
+        option0.text='Applause';
+        option0.value='media/wav/applause.wav';
+        newExtra.items.push(option0);
+        let option1 = {};
+        option1.text='No!';
+        option1.value='media/wav/no.wav';
+        newExtra.items.push(option1);
+        let option2 = {};
+        option2.text='Yesss!';
+        option2.value='media/wav/yes.wav';
+        newExtra.items.push(option2);
+        break;
+    
+      default:
+        logger.warn('Warning: Extra type ' + ftype + ' is unknown. Adding nothing to the profile-file.' );
+        break;
+    }
+    if (!profileData.showExtras){
+      // lets add a showExtras section to profile
+      profileData.showExtras = {};
+      profileData.showExtras.CustomControls = [];
+    }
+    profileData.showExtras.CustomControls.push(newExtra);
+    break;
+
+    case 'addshowextrascript':
+      // ------------------------------------------------------------------- ADDING SHOW EXTRA SCRIPT -----------------
       if (!profileData.showExtras){
         // lets add a showExtras section to profile
         profileData.showExtras = {};
         profileData.showExtras.CustomControls = [];
       }
-      profileData.showExtras.CustomControls.push(newExtra);
+      profileData.showExtras.customscript=customscript;
       break;
-  
-      case 'addshowextrascript':
-        // ------------------------------------------------------------------- ADDING SHOW EXTRA SCRIPT -----------------
-        if (!profileData.showExtras){
-          // lets add a showExtras section to profile
-          profileData.showExtras = {};
-          profileData.showExtras.CustomControls = [];
-        }
-        profileData.showExtras.customscript=customscript;
-        break;
-  
-      default:
-        // ------------------------------------------------------------------- UNKNOWN COMMAND -----------------
-        logger.warn('Warning: Command ' + command + ' is unknown. Adding nothing to the profile-file.' );
-        break;
+
+    default:
+      // ------------------------------------------------------------------- UNKNOWN COMMAND -----------------
+      logger.warn('Warning: Command ' + command + ' is unknown. Adding nothing to the profile-file.' );
+      break;
   }
   
   // spx.talk('Saving profile changes.');
