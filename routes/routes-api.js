@@ -70,7 +70,7 @@ router.post('/readExcelData', async (req, res) => {
   // this just dumps data out as-is.
 
   // var excelFile = path.join(__dirname, '..', 'ASSETS', req.body.filename); // fails when packaged
-  var excelFile = path.join(process.cwd(), 'ASSETS', req.body.filename);
+  var excelFile = path.join(config.startUpPath, 'ASSETS', req.body.filename);
   var workSheetsData;
   try {
 
@@ -216,7 +216,8 @@ router.post('/exportCSVfile', async (req, res) => {
   try {
     let timestamp  = spx.prettifyDate(new Date(), 'YYYY-MM-DD-HHMMSS');
     let filenameref = item_relpath.split('.')[0].replace('\\', '/').split('/').slice(-1)[0];
-    let CSVfileRef = path.join(process.cwd(), 'ASSETS', 'csv', filenameref + '_' + timestamp + '.csv');
+    // let CSVfileRef = path.join(process.cwd(), 'ASSETS', 'csv', filenameref + '_' + timestamp + '.csv'); // failed in (at least, macos) PKG version
+    let CSVfileRef = path.join(config.startUpPath, 'ASSETS', 'csv', filenameref + '_' + timestamp + '.csv');
     console.log('Writing file ' + CSVfileRef);
     await spx.writeTextFile(CSVfileRef,CSVdata);
     res.status(200).send('Yea man');
