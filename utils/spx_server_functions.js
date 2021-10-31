@@ -362,11 +362,7 @@ module.exports = {
 getStartUpFolder: function () {
   // a workaround to resolve the path to the current startup folder
   // on this runtime session (node vs binary pkg)
-  if ( process.pkg ) {
-      return path.resolve(process.execPath + '/..');
-  } else {
-      return process.cwd();
-  }
+  return config.startUpPath;
 },
 
 

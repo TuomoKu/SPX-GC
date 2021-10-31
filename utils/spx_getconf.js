@@ -25,7 +25,7 @@ module.exports = {
             }
       },
 
-
+      
     readConfig: function () {
         // read config.json. Usage: "cfg.readConfig()"
         return new Promise(resolve => {
@@ -36,7 +36,7 @@ module.exports = {
                 // var startUpPath = path.resolve(process.execPath + '/..');  // This works while in pkg, but not in Node, so here we go:
 
                 let startUpPath, runtime
-                if ( process.pkg ) {
+                if ( typeof process.pkg !== 'undefined' && process.pkg  ) {
                     runtime = 'pkg'
                     startUpPath = path.resolve(process.execPath + '/..');
                 } else {
@@ -140,6 +140,9 @@ module.exports = {
                     let configFileStr = fs.readFileSync(CONFIG_FILE);
                     global.config = JSON.parse(configFileStr);
                 }
+
+                // added to avoid circular dependency in spx_server_functions when used spx.startUpPath()
+                global.config.startUpPath = startUpPath;
 
                 // folderchecks
                 this.makeFolderIfNotExist(global.config.general.logfolder);

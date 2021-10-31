@@ -17,7 +17,8 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 
 let LOGLEVEL = config.general.loglevel || 'debug';
 let LOGFOLDER = config.general.logfolder || 'LOG';
-var logFile = path.resolve(process.cwd(),LOGFOLDER, 'access.log');
+// var logFile = path.resolve(process.cwd(),LOGFOLDER, 'access.log'); // failed in (at least, macos) PKG version
+var logFile = path.resolve(config.startUpPath, LOGFOLDER, 'access.log');
 
 const logger = createLogger({
   format: combine(

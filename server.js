@@ -559,7 +559,8 @@ app.engine('handlebars', exphbs({
     DropdownOptionsLANG() {
       let html = '';
       let sel = '';
-      let fileListData = spx.getJSONFileList('./locales/');
+      // let fileListData = spx.getJSONFileList('./locales/'); // failed in (at least, macos) PKG version
+      let fileListData = spx.getJSONFileList(path.resolve(spx.getStartUpFolder(), './locales/'));
       fileListData.files.forEach((element,i) => {
         sel = '';
         if (element.name == config.general.langfile)
