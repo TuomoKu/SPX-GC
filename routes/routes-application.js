@@ -1591,7 +1591,7 @@ async function SaveRundownDataToDisc() {
   // or where-ever user can "go" after making rundown changes...
   // File is written if there is data in the memory.
   //
-  // Fix in 1.0.16, remove absPath from RundownData before storing json.
+  // Hotfix right after 1.0.15: remove absPath from RundownData before storing json.
   try {
 
     if ( Object.keys(global.rundownData).length > 0 ) {
@@ -1601,7 +1601,6 @@ async function SaveRundownDataToDisc() {
       // recently managed rundown file. This will not be stored
       // to the json file.
 
-      // First check it
       if (!RundownData.filepath) {
         throw('No RundownData.filepath in memory, cannot save!');
       }
