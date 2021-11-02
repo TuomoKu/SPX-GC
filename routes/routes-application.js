@@ -868,7 +868,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 
         // saving new items to disk
         global.rundownData = rundownDataJSONobj;
-        global.rundownData.filepath = data.RundownFile;
+        //global.rundownData.filepath = data.RundownFile; // Early bug in 1.0.15. AbsPath, why?
         await SaveRundownDataToDisc() // importCSVdata
   
         // response
@@ -1590,17 +1590,28 @@ async function SaveRundownDataToDisc() {
   // memory to disk. This is called from "show", "project" and "config" views,
   // or where-ever user can "go" after making rundown changes...
   // File is written if there is data in the memory.
+  //
+  // Fix in 1.0.16, remove absPath from RundownData before storing json.
   try {
 
-    
     if ( Object.keys(global.rundownData).length > 0 ) {
       let RundownData = global.rundownData
-      // console.log('Saving RD to file ' + RundownData.filepath, RundownData);
+
+      // The RundownData memory object carries path to the most
+      // recently managed rundown file. This will not be stored
+      // to the json file.
+
+      // First check it
+      if (!RundownData.filepath) {
+        throw('No RundownData.filepath in memory, cannot save!');
+      }
+
+      let AbsPath = RundownData.filepath;
+      delete RundownData.filepath;
       RundownData.updated = new Date().toISOString();
-      await spx.writeFile(RundownData.filepath,RundownData);
-      // console.log('RundownData written to ' + RundownData.filepath);
+      await spx.writeFile(AbsPath,RundownData); // 1.0.16
     } else {
-      // console.log('SaveRundownDataToDisc() called, no data to save.');
+      throw('No RundownData data in memory, cannot save!');
     }
   } catch (error) {
     logger.error('SaveRundownDataToDisc Error: ' + error);

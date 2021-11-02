@@ -5,6 +5,10 @@
 See also [Latest changes](https://spxgc.tawk.help/article/latest-changes) page for selected feature highlights.
 
 ---
+## **1.0.16** (Nov 02 2021)
+- Improved project file management by removing absolute path reference
+
+
 ## **1.0.15** (Oct 24 2021)
 - Renamed the app from "SPX-GC" to "SPX". Website: http://spx.graphics
 - Added General Settings > Static Background Image to Project Settings (feature suggested by Rotem Kish)
