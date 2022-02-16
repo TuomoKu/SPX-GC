@@ -707,7 +707,9 @@ Each plugin has a subfolder with at least an init.js file and optionally other f
 # Roadmap <a id="roadmap"></a>
 New releases will try address found issues and bugs in older versions and they will also introduce new features and functionality. See table for some planned features and use [feedback](#feedback) to submit suggestions.
 
-> When a new version becomes available it will be promoted on the Welcome page of the application (if access to internet). Several versions can be installed (into different folders) and if there are no backwards compatibility issues between versions they can be configured to use the same dataroot and template -folder. 
+> **DISCUSS FEATURES:** Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss and propose new features and vote them up 🚀
+
+<small>When a new version becomes available it will be promoted on the Welcome page of the application (if access to internet). Several versions can be installed (into different folders) and if there are no backwards compatibility issues between versions they can be configured to use the same dataroot -folder for projects/rundowns. </small>
 
 
 | Release | Planned features (subject to change)| Timeframe |
