@@ -10,4 +10,4 @@ app.get('/',function(req,res){
   res.sendFile(path.join(__dirname+'../index.html'));
 });
 app.listen(3333);
-console.log("Server running at http://localhost:3333?gc=192.168.1.44:5000 (note the IP might be wrong)");
+console.log("Server running at http://localhost:3333?gc=192.168.1.44:5656 (note the IP might be wrong)");

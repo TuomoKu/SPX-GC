@@ -1,0 +1,152 @@
+
+
+
+
+/*
+  Rec toggle switch and
+  volume sliders
+
+*/
+.gcinput {
+  margin: 0px !important;
+}
+
+:root {
+  --vc-off-color:             linear-gradient(190deg, rgba(0, 0, 0, 0.39) 5%, rgba(0, 0, 0, 0.157) 50%);
+  --vc-on-color:              #54AF3C;
+  --vc-animation-speed:       0.2s ease-out;
+  --vc-font-family:           "UI-BOLD";
+  --vc-font-size:             1.2em;
+  --vc-font-weight:           unset;
+  --vc-on-font-color:         rgba(47, 43, 43, 0.52);
+  --vc-off-font-color:        rgb(255, 255, 255);
+  --vc-label-position-off:    14px;
+  --vc-label-position-on:     14px;
+  --vc-height:                2.0em;
+  --vc-width:                 100%;
+  --vc-handle-width:          70%;
+  --vc-handle-height:         86%;
+  --vc-box-border-radius:     0px;
+  --vc-handle-border-radius:  0px;
+  --vc-handle-shadow:         0px 0px 5px rgba(0, 0, 0, 0.5);
+  --vc-handle-color:          rgb(61, 61, 61);
+  --vc-onclick-width:         90%;
+  --vc-handle-top:            0.2em;
+  --vc-handle-fontsize:       0.8em;
+  --vc-handle-lineHeight:     2.2em;
+}
+
+.toggle-container * {
+  font-family:                var(--vc-font-family);
+  transition:                 var(--vc-animation-speed);
+  cursor:                     pointer;
+}
+
+.vc-switch {
+  width:                      var(--vc-width);
+  height:                     var(--vc-height);
+  border:                     0px solid rgba(255, 255, 255, 0.198);
+}
+
+.toggle-container label {
+  position:                   relative;
+  display:                    inline-block;
+  vertical-align:             top;
+  border-radius:              var(--vc-box-border-radius);
+  /* cursor:                     pointer; */
+}
+
+.vc-switch-input {
+  position:                   absolute;
+  transform:                  translate3d(5px, 5px, 0);
+  opacity: 0;
+}
+
+.vc-switch-label {
+  position:                   relative;
+  display:                    block;
+  height:                     inherit;
+  font-size:                  var(--vc-font-size);
+  font-weight:                var(--vc-font-weight);
+  background:                 var(--vc-off-color);
+  border-radius:              inherit;
+}
+
+.vc-switch-label:before,
+.vc-switch-label:after {
+  position:                   absolute;
+  top:                        50%;
+  margin-top:                 -0.5em;
+  line-height:                1.1;
+}
+
+.vc-switch-label:before {
+  content:                    attr(data-off);
+  color:                      var(--vc-on-font-color);
+}
+
+.vc-switch-label:after {
+  content:                    attr(data-on);
+  color:                      var(--vc-off-font-color);
+  opacity:                    0;
+}
+
+.vc-switch-label:before {
+  right:                      var(--vc-label-position-off);
+  top:                        16px;
+}
+
+.vc-switch-label:after {
+  left:                       var(--vc-label-position-on);;
+}
+
+.vc-switch-input:checked ~ .vc-switch-label {
+  background:                 var(--vc-on-color);
+  text-shadow:                0px 0px 6px rgba(255, 255, 255, 0.6);
+}
+
+.vc-switch-input:checked ~ .vc-switch-label:before {
+  opacity:                    0;
+}
+
+.vc-switch-input:checked ~ .vc-switch-label:after {
+  opacity:                    1;
+}
+
+.vc-handle {
+  left:                       2px;
+  font-size:                  var(--vc-handle-fontsize);
+  position:                   absolute !important;
+  top:                        var(--vc-handle-top);
+  background:                 var(--vc-handle-color);
+  border-radius:              var(--vc-handle-border-radius);
+  box-shadow:                 var(--vc-handle-shadow);
+  width:                      var(--vc-handle-width);
+  height:                     var(--vc-handle-height);
+  line-height:                var(--vc-handle-lineHeight);
+}
+
+
+.vc-handle:before {
+  content:                    "";
+  top:                        50%;
+  left:                       50%;
+  position:                   absolute !important;
+  margin:                     -6px 0 0 -6px;
+  width:                      12px;
+  height:                     12px;
+  border-radius:              6px;
+}
+
+.vc-switch-label:active ~ .vc-handle, .vc-handle:active {
+  width:                    var(--vc-onclick-width);
+}
+
+.vc-switch-input:checked ~ .vc-handle {
+  left:                     unset;
+  right:                    2px;
+  color:                    #46f515;
+  text-shadow:              0 0 6px #52cf2f;
+}
+
+

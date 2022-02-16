@@ -46,15 +46,11 @@ function demo_toggle(eventButton) {
         }
     }
 
-
-
 function clearAllChannels() {
     // Will CLEAR all playout channels instantly, a "PANIC" button.
     console.log('Clearing gfx...');
     clearUsedChannels(); // <-- function in spx_gc.js
     }   
- 
- 
  
 function wipeClean() {
     let data = {};
@@ -70,7 +66,6 @@ function wipeClean() {
 		stopAll()
     }, 50);
 }
- 
  
 function stopAll(){
     // Will send STOP commands to all layers used by current rundown.
@@ -100,14 +95,12 @@ function playAll(){
         });
     }
 
-
 function openWebpage(url='https://spxgc.tawk.help/'){
     // Opens a new browser tab with url given.
     console.log("Hello ", url);
     window.open(url, '_blank');
     return false;
     }
-
 
 function openSelectedURL(selectList){
     // Gets an item from a "selectbutton" dropdown and navigates to a URL 

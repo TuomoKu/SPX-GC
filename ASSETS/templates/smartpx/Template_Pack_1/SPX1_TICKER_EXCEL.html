@@ -1,11 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <!--
 
-   	Need custom templates?
-	Let me know 😀
+   	Need custom templates? Get in touch! https://spxgc.com/contact
+
+    PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spxgc.com | Copyright 2022 SmartPX & Softpix
+    Version: 1.0.1 / Minor bug fixes
+    Build: Wed Jan 12 2022 08:37:41 GMT+0200 (GMT+02:00) 
+
+    CHANGES:
+    12.01.2022  Improved Excel ticker headline switch timing (thanks Brandon for the improvements)
 
 -->
 
@@ -77,65 +83,61 @@
     </script>
     <style>
 
-
-
         .tickerZone{
-            position: absolute;
-            border: 0px solid yellow;
-            left: 3.2vw;
-            right: 3.2vw;
-            top: 85.5%;
-            z-index: 10;
             padding: 0;
             opacity: 0; /* animated */
+            top: 85.5%;
+            z-index: 10;
+            left: 3.2vw;
+            right: 3.2vw;
+            position: absolute;
+            border: 0px solid yellow;
         }
 
         .tgpos{
+            opacity: 1;
+            display:block;
             position: relative;
             transform-origin: top left;
             border-left: 1.4rem solid var(--spx-accent-color);
-            display:block;
-            opacity: 1;
         }
 
 
         .ticker {
             z-index: 1;
             width: 100%;
-            border: 0px solid rgb(21, 255, 0);
             border-left: 1.4rem;
-            /* float: left; */
+            border: 0px solid rgb(21, 255, 0);
         }
 
         .spxTicker {
-            color: var(--spx-txcol1-color);
-            position: relative;
             bottom: 0.3rem;
-            font-family: "UI-Regular", Arial, Helvetica, sans-serif;
             font-size: 1.6rem;
-            padding: 0.9rem 1rem 0.1rem 1rem; 
+            position: relative;
             line-height: 2.5rem;
             text-transform: uppercase;
+            color: var(--spx-txcol1-color);
+            padding: 0.9rem 1rem 0.1rem 1rem; 
             left: 1700px; /* It's a magic numba. */
+            font-family: "UI-Regular", Arial, Helvetica, sans-serif;
         }
 
         .LastItem{
             opacity: 0;
         }
 
-        .tab{
+        .tab {
+            opacity:            0;  
+            z-index:            20;
+            margin:             0px;
+            height:             100%;
+            left:               -10px;;
             position:           absolute;
             display:            inline-block;
-            z-index:            20;
-            left:               -10px;;
-            background-color:   rgb(61, 61, 61);
-            height:             100%;
-            margin:             0px;
-            padding:            0.6rem 2rem 0.1rem 2rem;
-            opacity:            0;  
-            box-shadow:         black 10px 0px 30px;
-            background-color:   #5c3f11;
+            background-color:   rgb(33, 51, 110); /* <--- headline background color */
             color:              rgb(255, 255, 255);
+            padding:            0.6rem 2rem 0.1rem 2rem;
+            box-shadow:         rgba(0, 0, 0, 0.541) 10px 0px 30px;
         }
 
 
@@ -189,6 +191,7 @@
     let TickerData=[];
     let TickerStarted=0;
     let SectionSelector = 1;
+    let SectionName = '';
 
     async function StartTicker(SectionSelector) {
         // this function gets triggered onload and everytime
@@ -244,9 +247,9 @@
         document.getElementById('spxTicker').innerHTML="";
         return new Promise(resolve => {
             console.log('TickerData[' + SectionSelector + ']:', TickerData[SectionSelector]);
-            let SectionName = TickerData[SectionSelector].name;
+            SectionName = TickerData[SectionSelector].name;
             console.log('Section [' + SectionSelector + ']: ' + SectionName);
-            document.getElementById('SectionHeader').innerText = SectionName;
+            // document.getElementById('SectionHeader').innerText = SectionName;
             spxTicker.innerHTML="";
             TickerData[SectionSelector].data.forEach((item,index) => {
                 if (index==0)
@@ -267,6 +270,7 @@
 
     function PlayTickerDOM()
         {
+            document.getElementById('SectionHeader').innerText = SectionName;
             gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
             gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
             gsap.ticker.add(scrollToLeft);

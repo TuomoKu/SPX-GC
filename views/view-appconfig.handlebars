@@ -9,6 +9,7 @@
   <script src="/js/axios.min.js"></script>
   <script src="/js/fontawesome.all.min.js"></script>
   <script src="/js/Sortable.min.js"></script>
+  <script src="/js/anime.min.js"></script>
   <script src="/js/socket.io.js"></script>
   <script src="/js/spx_gc.js"></script>
   <title>SPX | {{lang 'pagetitle.configapp'}}</title>
@@ -153,13 +154,42 @@
                 <input type="text" class="wide bg_grey15 cfg" placeholder="Dataroot folder" name="general[dataroot]" value="{{config.general.dataroot}}">
               </td>
             </tr>
+            <tr onmouseover="tip('{{lang 'hover.preview'}}');">
+              <td class="vtop">
+                <span class="spxConfigHead">{{lang 'config.preview'}}</span>
+              </td>
+              <td>
+                <select class="wide drop bg_grey15" name="general[preview]">
+                  <!-- error, warn, info, verbose, debug -->
+                  <option value="next"     {{#ifValue config.general.preview "next"    }}selected{{/ifValue}}>Preview next item on play</option> 
+                  <option value="selected" {{#ifValue config.general.preview "selected"}}selected{{/ifValue}}>Preview selected item on focus</option><!-- this is the default -->
+                </select>
+                </P>
+              </td>
+            </tr>
+            <tr onmouseover="tip('{{lang 'hover.resolution'}}');">
+              <td class="vtop">
+                <span class="spxConfigHead">{{lang 'config.resolution'}}</span>
+              </td>
+              <td>
+                <select class="wide drop bg_grey15" name="general[resolution]">
+                  <!-- error, warn, info, verbose, debug -->
+                  <option value="HD" {{#ifValue config.general.resolution "HD"}}selected{{/ifValue}}>HD (1080p)</option> <!-- this is the default -->
+                  <option value="4K" {{#ifValue config.general.resolution "4K"}}selected{{/ifValue}}>4K (2160p)</option>
+                </select>
+                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;"><small>
+                  {{lang 'config.resolutioninfo'}}
+                  </small>
+                </P>
+              </td>
+            </tr>
             <tr onmouseover="tip('{{lang 'hover.htmlfolder'}}');">
               <td width="40%" class="vtop">
                 <span class="spxConfigHead">{{lang 'config.templateroot'}} *</span>
               </td>
               <td>
                 <input type="text" class="wide bg_grey15 cfg" placeholder="Template folder for browsing" name="general[templatefolder]" value="{{config.general.templatefolder}}">
-                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5;"><small><BR>
+                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;"><small>
                  {{lang 'config.templatepathinfo'}}
                   </small>
                 </P>
@@ -355,6 +385,22 @@
 
 
                         {{#ifValue ftype "button"}}
+                          <!-- something like click here -->
+                          <tr onmouseover="tip('{{lang 'hover.text'}}');">
+                            <td><span class="spxConfigHead">{{lang 'config.buttontext'}}</span></td>
+                            <td>
+                              <input type="text" class="wide bg_grey15 cfg" placeholder="Caption" name="globalExtras[CustomControls][{{@index}}][text]" value="{{text}}">
+                              </td>
+                          </tr>
+
+                          <tr onmouseover="tip('{{lang 'hover.fcall'}}');">
+                            <td><span class="spxConfigHead">{{lang 'config.functionhandler'}}</span></td>
+                            <td><input type="text" class="wide bg_grey15 cfg" placeholder="clickHandler()" name="globalExtras[CustomControls][{{@index}}][fcall]" value="{{fcall}}"></td>
+                          </tr>
+                        {{/ifValue}}
+
+                        {{#ifValue ftype "selectbutton"}}
+                          <!-- something like choose an item here -->
                           <tr onmouseover="tip('{{lang 'hover.text'}}');">
                             <td><span class="spxConfigHead">{{lang 'config.buttontext'}}</span></td>
                             <td>
@@ -370,6 +416,7 @@
 
 
                         {{#ifValue ftype "togglebutton"}}
+                          <!-- something like turn it on or off -->
                           <tr>
                             <td><span class="spxConfigHead">{{lang 'config.buttontexts'}}</span></td>
                             <td>

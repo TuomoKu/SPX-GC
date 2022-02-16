@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPX - PROGRAM EMULATOR</title>
+    <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+    <script src="/js/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        socket.on('connect', function () {
+            data={};
+            data.name   = 'SPX_PROGRAM'; // <---- Name of this socket connection
+            data.spxcmd = 'identifyClient';
+            socket.emit('SPXMessage2Server', data);
+        });
+
+        socket.on('SPXMessage2Client', function (data) {
+            // Handles messages coming from server to this client.
+            // All comms using 'SPXMessage2Client' as a conduit with data object and
+            // data.spxcmd as function identifier. Additional object values are payload.
+            // console.log('SPXMessage2Client received', data)
+            switch (data.spxcmd) {
+                case 'closeprogram':
+                    // console.log('Close program window request received from Controller');
+                    window.close();
+                    break;
+
+                default:
+                    // console.log('Unknown SPXMessage2Client command: ' + data.command);
+            }
+        }); // end SPXMessage2Client
+
+    </script>
+    <style>
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            color: white;
+            overflow: hidden;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            font-family: 'UI-Regular';
+            background-color: rgb(0,0,0);
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        .renderer  {
+            /* renderer size set by SPX to {{width}}x{{height}} */ 
+            width: {{width}}px;
+            height: {{height}}px;
+            background-image: url('/img/checker60.png'); /* bgimage for local preview */
+            background-size: 10vw;
+            transform-origin: top left;
+            border: 0px;
+            outline: 0px;
+            padding: 0;
+            margin: 0;
+        }
+
+        #toolbar {
+            flex-grow: 0;
+            width: 100%;
+            display: flex;
+            align-items: left;
+            flex-direction: row;
+            align-self: flex-start;
+            border: 1px solid yellow;
+        }
+
+    </style>
+</head>
+<body onresize="resizePreview();" > <!-- onunload="sendWinClosedMessage('unload');" onload="sendWinClosedMessage('load');" -->
+    <div id="toolbar">
+        <div>PROGRAM</div>
+        <div>Clear</div>
+        <div>Layers</div>
+    </div>
+
+    <div id="previewBG" style="background-color: rgb(0, 0, 0); overflow: hidden;">
+        <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
+    </div>
+
+    <script>
+
+        function resizePreview() {
+            // renderer size set by SPX to {{width}}x{{height}}
+            let DefaultX = {{width}};
+            let DefaultY = {{height}};
+
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+            let Wpx = vw// document.getElementById('previewWidthRuler').offsetWidth;
+            let Sca = Wpx/DefaultX;
+            let Hpx = parseInt(DefaultY * Sca);
+            document.getElementById('previewBG').style.width=Wpx+'px';
+            document.getElementById('previewBG').style.height=Hpx+'px';
+            document.getElementById('previewIF').style.transform="scale("+Sca+")";
+            document.getElementById('previewBG').style.display='block';
+            console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
+        }
+
+        resizePreview();
+
+    </script>
+    
+</body>
+</html>

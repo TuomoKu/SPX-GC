@@ -21,6 +21,7 @@ logger.debug('API-v1 route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
 const axios = require('axios')
+const PlayoutCCG = require('../utils/playout_casparCG.js');
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -29,7 +30,7 @@ router.get('/', function (req, res) {
 
         {
           "section"   :     "Direct commands",
-          "info"      :     "Commands which does not require any specific rundown",
+          "info"      :     "Commands which does not require rundown to be loaded",
           "endpoint"  :     "/api/v1/",
           "commands": [
             {
@@ -38,7 +39,11 @@ router.get('/', function (req, res) {
             },
             {
               "param"   :     "directplayout",
-              "info"    :     "POST (v1.0.12) Execute a direct play/continue/stop -command to a template without current rundown. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"vendor/pack/templatefile.html\", \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX-GC application configurations."
+              "info"    :     "POST (v1.0.12) Populate template and execute a play/continue/stop -command to it. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"/vendor/pack/template.html\", \"DataFields\": [{field: \"f0\", value: \"Lorem\"},{field: \"f1\", value: \"Ipsum\"}]; \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX configuration."
+            },
+            {
+              "param"   :     "controlRundownItemByID?file=HelloWorld-project/My%20first%20rundown&item=1616702200909&command=play",
+              "info"    :     "GET (v.1.0.16) Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
             }
           ]
         },
@@ -48,12 +53,12 @@ router.get('/', function (req, res) {
           "endpoint"  :     "/api/v1/",
           "commands": [
             {
-              "param"   :     "/feedproxy?url=http://corsfeed.net&format=xml",
-              "info"    :     "GET (v1.0.14) A proxy endpoint for passing feed data from CORS protected datasources. Implemented for SocialPlayoutr Extension."
+              "param"   :     "feedproxy?url=http://corsfeed.net&format=xml",
+              "info"    :     "GET (v1.0.14) A proxy endpoint for passing feed data from CORS protected datasources. Implemented for SPX SocialPlayout Extension."
             },
             {
-              "param"   :     "directplayout",
-              "info"    :     "POST (v1.0.12) Execute a direct play/continue/stop -command to a template without current rundown. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"vendor/pack/templatefile.html\", \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX-GC application configurations."
+              "param"   :     "panic",
+              "info"    :     "GET (v1.0.16) Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
             }
           ]
         },
@@ -87,7 +92,7 @@ router.get('/', function (req, res) {
             {
               "param"   :     "stopAllLayers",
               "info"    :     "GET Animate all layers (used by the current rundown) out, but does not clear layers."
-            },
+            }
 
           ]
         },
@@ -121,6 +126,7 @@ router.get('/', function (req, res) {
               "param"   :     "stop/1234567890",
               "info"    :     "GET Stop item by ID on the active rundown."
             }
+
           ]
         },
 
@@ -132,6 +138,11 @@ router.get('/', function (req, res) {
 
 // DIRECT COMMANDS (bypassing rundown) ----------------------------------------------------------
   router.get('/invokeTemplateFunction/', async (req, res) => {
+
+    // function fixedEncodeURIComponent (str) {
+    //   return encodeURIComponent(str).replace(/[!'()*]/g, escape); // encode single quote also!
+    // }
+
     // create a data object 
     let dataOut = {};
     dataOut.playserver   = req.query.playserver || 'OVERLAY';
@@ -141,8 +152,8 @@ router.get('/', function (req, res) {
     dataOut.prepopulated = 'true'
     dataOut.relpath      = 'we_need_some_filename_here_to_prevent_errors.html'
     dataOut.command      = 'invoke';
-    dataOut.invoke       = req.query.function + '(\'' + req.query.params + '\')';
-    res.status(200).send('Sent request to SPX-GC server: ' + JSON.stringify(dataOut));
+    dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(req.query.params) + '\")'; // encode added in v1.0.16
+    res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
     spx.httpPost(dataOut,'/gc/playout')
   });
 
@@ -158,15 +169,13 @@ router.get('/', function (req, res) {
     dataOut.command      = req.body.command || 'play';
     dataOut.dataformat   = req.body.dataformat || 'xml';
     dataOut.fields       = req.body.DataFields || '{field: f0, value: "Lorem ipsum"}';
-    res.status(200).send('Sent request to SPX-GC server: ' + JSON.stringify(dataOut));
+    res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
     spx.httpPost(dataOut,'/gc/playout')
   });
 
-  
   router.get('/directplayout', async (req, res) => {
-    res.status(404).send('Sorry, this endpoint only available as POST REQUEST with parameters, see the example text.');
+    res.status(404).send('Sorry, this endpoint only available as POST REQUEST with parameters, see the example text or see controlRundownItemByID -endpoint for basic play/stop controls.');
   });
-
 
 
 // RUNDOWN COMMANDS -----------------------------------------------------------------------------
@@ -212,6 +221,44 @@ router.get('/', function (req, res) {
       dataOut.APIcmd  = 'RundownStopAll';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+    });
+
+// HELPER COMMANDS ----------------------------------------------------------------------------------
+
+    router.get('/panic', async (req, res) => {
+      // This WILL NOT change playlist items onair to "false"!
+
+      // Clear Webplayout ---------------------------
+      io.emit('SPXMessage2Client', {spxcmd: 'clearAllLayers'}); // clear webrenderers
+      io.emit('SPXMessage2Controller', {APIcmd:'RundownAllStatesToStopped'}); // stop UI and save stopped values to rundown
+
+      // Clear CasparCG -----------------------------
+      if (!spx.CCGServersConfigured){ return } // exit early, no need to do any CasparCG work
+      PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
+      return res.status(200).json({ message: 'Panic executed. Layers cleared forcefully.' })
+
+    });
+
+    router.get('/feedproxy', async (req, res) => {
+      // added in 1.0.14
+      axios.get(req.query.url)
+      .then(function (response) {
+        res.header('Access-Control-Allow-Origin', '*')
+        switch (req.query.format) {
+          case 'xml':
+            res.set('Content-Type', 'application/rss+xml')
+            break;
+
+          default:
+            res.set('Content-Type', 'application/json')
+            break
+        }
+        res.send(response.data)
+      })
+      .catch(function (error) {
+        console.log(error);
+        return res.status(500).json({ type: 'error', message: error.message })
+      });
     });
 
 
@@ -262,26 +309,32 @@ router.get('/', function (req, res) {
     });
 
 
-    router.get('/feedproxy', async (req, res) => {
-        // added in 1.0.14
-        axios.get(req.query.url)
-        .then(function (response) {
-          res.header('Access-Control-Allow-Origin', '*')
-          switch (req.query.format) {
-            case 'xml':
-              res.set('Content-Type', 'application/rss+xml')
-              break;
+    router.get('/controlRundownItemByID', async (req, res) => {
+      // added in 1.0.16
 
-            default:
-              res.set('Content-Type', 'application/json')
-              break
+      // search for template file from rundown
+      let fold = req.query.file.split('/')[0];
+      let file = req.query.file.split('/')[1];
+      let RundownFile = path.join(config.general.dataroot, fold, 'data',  file + '.json');
+      let RundownData = await spx.GetJsonData(RundownFile);
+
+      let dataOut = {};
+      RundownData.templates.forEach((template,index) => {
+        if (template.itemID == req.query.item) {
+            // this is the item
+            dataOut.playserver   = template.playserver || 'OVERLAY';
+            dataOut.playchannel  = template.playchannel || '1';
+            dataOut.playlayer    = template.playlayer || '1';
+            dataOut.webplayout   = template.webplayout || '1';
+            dataOut.dataformat   = template.dataformat || 'xml';
+            dataOut.prepopulated = 'true';
+            dataOut.fields       = template.DataFields || '{field: f0, value: "Lorem ipsum"}';
+            dataOut.relpath      = template.relpath || '/vendor/pack/template.html';
+            dataOut.command      = req.query.command || 'play';
           }
-          res.send(response.data)
-        })
-        .catch(function (error) {
-          console.log(error);
-          return res.status(500).json({ type: 'error', message: error.message })
-        });
+      });
+      res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
+      spx.httpPost(dataOut,'/gc/playout')
     });
 
 
@@ -294,6 +347,12 @@ router.get('/', function (req, res) {
         let file = req.query.rundownfile || '';
         let oldI = req.query.ID || '';
         let newI = req.query.newID || '';
+
+        console.log('changeItemID - file [' + file + '], old [' + oldI + '], new [' + newI + ']')
+
+        if (!file || !oldI || !newI) {
+          console.warn('Missing data: file [' + file + '], old [' + oldI + '], new [' + newI + ']')
+        }
 
         let datafile = path.normalize(file);
         const RundownData = await spx.GetJsonData(datafile);
@@ -314,7 +373,8 @@ router.get('/', function (req, res) {
 
         RundownData.updated = new Date().toISOString();
         global.rundownData = RundownData; // push to memory also for next take
-        await spx.writeFile(RundownData.filepath,RundownData);
+        await spx.writeFile(datafile,RundownData);
+        // await spx.writeFile(RundownData.filepath,RundownData);
         // console.log('Saved');
         logger.verbose('Changed item ID to ' + newI);
         return res.status(200).send('ID changed to ' + newI);

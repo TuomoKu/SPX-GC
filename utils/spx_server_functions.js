@@ -13,7 +13,7 @@ const ip = require('ip')
 const axios = require('axios')
 const http = require('http');
 
-const port = config.general.port || 5000;
+const port = config.general.port || 5656;
         
 let Connected=true; // used we messaging service
 
@@ -369,6 +369,19 @@ getStartUpFolder: function () {
   }
 },
 
+getNotificationsMiddleware: async function(req,res,next){
+  datarootSize()
+  .then(function(sizeArr) {
+    let paramstring =""
+    paramstring += "v="  + vers 
+    paramstring += "&o=" + lPad(process.platform, 8, ".")
+    paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
+    paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
+    paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")
+    req.curVerInfo = paramstring;
+    next();
+  })
+}, 
 
 GetFilesAndFolders: function (datafolder, filter='HTM') {
   try {
@@ -574,6 +587,8 @@ shortifyString: function (fullString){
   try {
     // request ..... a long string
     // return ...... return just a short part
+    // Added in 1.0.16 to strip <TAGs> to prevent multiline strings in the SPX UI:
+    fullString = fullString.replace(/<\/?[^>]+(>|$)/g, "").replace(/\s+/g,' ');  // remove <TAGS> and double spaces
     let shorter = fullString.substring(0, 30);
     shorter = shorter.trim()
     if (fullString.length > (shorter.length+2)) {
@@ -618,8 +633,8 @@ writeFile: function (filepath,data) {
       return new Promise(resolve => {
         this.talk('Writing file');
         // this.playAudio('beep.wav', 'spx.writeFile');
-        data.warning = "Modifications done in the GC will overwrite this file.";
-        data.smartpx = "(c) 2020-2021 SmartPX";
+        data.warning = "Modifications done in the SPX will overwrite this file.";
+        data.smartpx = "(c) 2020-2022 SmartPX & Softpix";
         data.updated = new Date().toISOString();
         let filedata = JSON.stringify(data, null, 2);
         fs.writeFile(filepath, filedata, 'utf8', function (err) {

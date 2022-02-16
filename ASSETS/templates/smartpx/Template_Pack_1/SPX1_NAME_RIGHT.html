@@ -4,13 +4,23 @@
 <!--
 
     (C) 2020 tuomo@smartpx.fi (MIT License)
-    Demo template for SPX-GC. See SPXGCTemplateDefinition -object below for data field descriptions.
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
 
     This demo template does not have linked properties so all layers remain in their positions and
     do not "make space" for others.
 
-    Need custom templates?
-	Let me know 😀
+    Need custom templates? Get in touch! https://spxgc.com/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spxgc.com | Copyright 2022 SmartPX & Softpix
+    Version: 1.0.1 / Minor bug fixes
+    Build: Wed Jan 12 2022 08:37:41 GMT+0200 (GMT+02:00) 
+
+	----
+
+    CHANGES:
+    01.09.2020 Original version
+    22.12.2021 Added some delay to fix cropping of names from left side
 
 -->
 
@@ -70,7 +80,7 @@
         function runAnimationIN(IsLoop) {
             let dur = 0.8;
             initValues()
-            gsap.set("#TG", { opacity: 1 });
+            gsap.fromTo("#TG", 0.1, { opacity: 0 },{delay: 0.3, opacity: 1 });  // added a fade-in with a little delay
             gsap.set("#line1", { opacity: 1 });
             gsap.set("#line2", { display:"block" });
             gsap.fromTo(
@@ -82,18 +92,18 @@
                     },
                     {
                         // end value
-                        width:function(i, target)
-                            {
-                            target.style.width = "auto"; 
-                            var width = target.offsetWidth-6;
-                            target.style.width = "0px"; //now reset it to 0
-                            return width; //return the natural height
-                            },
+                        delay: 0.2, /*added some delay */
+                        width:function(i, target) {
+                          target.style.width = "auto"; 
+                          var width = target.offsetWidth-6;
+                          target.style.width = "0px"; //now reset it to 0
+                          return width; //return the natural height
+                        },
                         ease: "back.out(2.0)"
                     }
                 );
             
-            gsap.fromTo("#f0", { opacity:  0 }, { delay: 0.1, duration: dur - 0.2, opacity  : 1,       ease: "Power3.easeOut" });
+            gsap.fromTo("#f0", { opacity:  0 }, { delay: 0.2, duration: dur - 0.2, opacity  : 1,       ease: "Power3.easeOut" });
             gsap.fromTo("#f0", { x:      200 }, { delay: 0.1, duration: dur - 0.1, x        : 0,
                         //ease: "back.out(2.0)" });
                         ease: "Power3.easeOut" });
@@ -153,7 +163,7 @@
             position: absolute;
             border-right: 1.4rem solid var(--spx-accent-color);
             display:inline-block;
-            right: 3.2vw;
+            right: 3.2vw;  /* vw = viewportWidth in %, Default val 3.2vw. Try 50vw */
             top: 70%;
             z-index: 10;
             opacity:0;
@@ -200,11 +210,11 @@
     <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
         <div id="TG" class="tgpos SKEW RIGHTELEMENTS">
             <div id="line1" class="color1 accentLeft region fright">
-                <div class="font1 nowrap fright ANTISKEW" id="f0"></div>
+                <div class="font1 nowrap fright ANTISKEW" id="f0">IHAEKA</div>
             </div>
             <div id="line2" class="nowrap region fbreak">
-                <div id="f2_parent" class="color2 font2 fright" style="display: inline-block;"><div id="f2" class="ANTISKEW"></div></div>
-                <div id="f1_parent" class="color3 font2 fright" style="display: inline-block;"><div id="f1" class="ANTISKEW"></div></div>
+                <div id="f2_parent" class="color2 font2 fright" style="display: inline-block;"><div id="f2" class="ANTISKEW">EKA</div></div>
+                <div id="f1_parent" class="color3 font2 fright" style="display: inline-block;"><div id="f1" class="ANTISKEW">TOKA</div></div>
             </div>
         </div>
     </div>

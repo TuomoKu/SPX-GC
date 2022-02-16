@@ -2,11 +2,25 @@
 # SPX Release Notes
 > Most recent updates are at the top.
 
-See also [Latest changes](https://spxgc.tawk.help/article/latest-changes) page for selected feature highlights.
+See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 
 ---
-## **1.0.16** (Nov 02 2021)
-- Improved project file management by removing absolute path reference
+## **Version TBD** (list updated Feb 16 2022)
+> **WORK-IN-PROGRESS!** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
+
+<BR>
+
+- Changed default port to 5656 to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting :)
+- Added preview functionality (WIP, has bugs still)
+- Added 4K support to app config and renderer(s). Please note, most templates are done for fixed HD resolution and may appear in 1/4th size in the output.
+- Added filtering to Projects view (visible when there are 5 projects or more)
+- Added `/api/v1/controlRundownItemByID` -API endpoint (see http://localhost:5656/api/v1)
+- Added `/api/v1/panic` -API endpoint (see http://localhost:5656/api/v1)
+- Added the "options zone" below the renderer
+- Improved `/api/v1/invokeTemplateFunction` -API endpoint with url encoded strings.
+- Improved locale files (english, finnish, portuguese, dutch)
+- Improved "links to other stuff" globalExtra from config/createConfig to a plugin in ASSETS/plugins/spxLinks/
+- Fixed a bug in template browser dialog which prevented navigating up in certain situations
 
 
 ## **1.0.15** (Oct 24 2021)
@@ -19,6 +33,7 @@ See also [Latest changes](https://spxgc.tawk.help/article/latest-changes) page f
 - Added "imported timestamp" to profile items for future version comparisions on the rundowns.
 - Improved performance by prioritizing memory usage over disk I/O (multiple code changes)
 - Improved initialization and startup folder detection
+- Improved project file management by removing absolute path reference
 - Fixed re-import bug (absolute file path was invalid)
 - Binary packages v1.0.15:
     [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_win64.zip),

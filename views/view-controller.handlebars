@@ -30,6 +30,7 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
   <link rel="stylesheet" type="text/css" href="/css/vanilla-js-tooltip.css" />
+  <link rel="stylesheet" type="text/css" href="/css/toggle2.css">
   
   {{{ hookLoadControllerPlugins }}}
 
@@ -49,9 +50,7 @@
   <input type="hidden" id="profiledata" value="{{profiledata}}">      <!-- full contents of the "gc_list.json" profilefile as stringified json -->
   <input type="hidden" id="background" value="{{background}}">        <!-- background.png -->
   <input type="hidden" id="csvlist" value="{{csvFileList}}">          <!-- tree data from ASSETS/csv -->
-
-  <div id="messageSlider" class="infoMsg"></div>
-
+  <input type="hidden" id="previewMode" value="{{previewMode}}">      <!-- previewMode (next/selected) -->
 
   <div class="overlay" id="overlayTemplatePicker">
     <!-- This is the file browser modal overlay -->
@@ -546,20 +545,84 @@
         -->
 
 
-        <div class="right pM">
+        <div class="right pM scroller">
 
-            <!-- background: {{background}} -->
+          <!-- background: {{background}} -->
 
-            <div id="previewBG" style="background-color: rgb(0, 0, 0); width:100%; overflow: hidden; display:none;">
-
-              {{#if background}}
-                  <iframe id="previewIF" src="/renderer"  class="renderer" style="background-image: url('/{{background}}'); background-size: 100% 100%;"></iframe>
-              {{else}}
-                <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
-              {{/if}}
+          <div id="previewBG" style="background-color: rgb(0, 0, 0); width:100%; height:27%; overflow: hidden; opacity:0.1;">
+            {{#if background}}
+              <iframe width={{width}} height={{height}} id="previewIF" src="/renderer"  class="renderer" style="background-image: url('/{{background}}'); background-size: 100% 100%;"></iframe>
+            {{else}}
+              <iframe width={{width}} height={{height}}  id="previewIF" src="/renderer"  class="renderer"></iframe>
+            {{/if}}
+          <!-- options foldable -->
           </div>
-          
+
+          <!-- Functions Zone -->
+          <div id="controllerFunctionsZone" style="opacity:0;">
+            <div id="FoldableDemo">
+              <button id="localRendererCollapsiple" class="collapsibleZone {{{ GenerateLocalRendererOptions 'class' }}}" type="button">OPTIONS</button>
+              <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2);">
+                <table style="width: 100%;" cellspacing="4">
+
+                  <!-- Added in 1.0.16 but NOT in use yet 
+                  <tr>
+                    <td width="50%"><span class="spxTableHead">Local renderer type</span></td>
+                    <td>
+                      <select id="rendererStyle" class="btnsmall bg_grey" style="width: 99%;" onChange='saveRendererType(this.value);'>
+                        ///  GenerateLocalRendererOptions 'options' /// 
+                      </select>
+                    </td>
+                  </tr>
+                  -->
+                  <tr>
+                    <td width="50%"><span class="spxTableHead">Renderer pop-ups</span></td>
+                    <td style="vertical-align:middle;">
+                      <div style="display: flex;">
+                        <button type="button"
+                                id="previewToggleBtn"
+                                class="w50 spxFlexItem btnsmall bg_grey"
+                                data-spx-popup="preview"
+                                data-spx-status="false"
+                                onClick="toggleRendererPopup('previewToggleBtn', 'button')">PREVIEW</button>
+                        <button type="button"
+                                id="programToggleBtn"
+                                class="w50 spxFlexItem btnsmall bg_grey"
+                                data-spx-popup="program"
+                                data-spx-status="false"
+                                onClick="toggleRendererPopup('programToggleBtn', 'button')">PROGRAM</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="50%"><span class="spxTableHead">Renderer output URL</span></td>
+                    <td>
+                      <button type="button" class="wide spxFlexItem btnsmall ripple bg_grey" onClick="copyRendererUrl();">COPY TO CLIPBOARD</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="text-align: center;">
+                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spxgc.com">SPX Store</a> for more.</span></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div><!-- zone ended -->
+
+
+
+          <!-- PROMO TODO:
+          <div id="promo" style="position: relative; width: 100%; height:10vh; margin-top: 3px;">
+            <div id="closePromo" style="position: absolute; z-index:2; top: 2px; right: 2px; width: 20px; height: 20px; background-color:black;"></div>
+            <iframe src="https://smartpx.fi/gc/promo" style="position: relative; top: 0; width: 100%; height:100%;"></iframe>
+          </div>
+          -->
+
+
           <HR id="previewWidthRuler"> <!-- ===========================================================  -->
+
+
+
 
           <div id="controllerPluginButtons" style="border:0px dashed yellow">
 
@@ -591,6 +654,22 @@
 
     function pageInit() {
 
+     // COLLAPSIPLE HANDLERS
+      var coll = document.getElementsByClassName("collapsibleZone");
+      var i;
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("activeZone");
+          var content = this.nextElementSibling;
+          if (content.style.maxHeight){
+            content.style.maxHeight = null;
+          } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+          } 
+        });
+      }
+
+
       // Check msg from URL
       var url = new URL(window.location.href);
       var msg = url.searchParams.get("msg");
@@ -601,19 +680,23 @@
       RenderFolder(JSON.parse(document.getElementById('csvlist').value));
       resizePreview();
       spxInit('');
+
+
+
     }
 
-    function resizePreview()
-      {
-        let DefaultX = 1920;
-        let DefaultY = 1080;
+    function resizePreview() {
+        let DefaultX = {{width}}  // 1920 by default;
+        let DefaultY = {{height}} // 1080 by default;
         let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
         let Sca = Wpx/DefaultX;
         let Hpx = parseInt(DefaultY * Sca);
         document.getElementById('previewBG').style.width=Wpx+'px';
         document.getElementById('previewBG').style.height=Hpx+'px';
         document.getElementById('previewIF').style.transform="scale("+Sca+")";
-        document.getElementById('previewBG').style.display='block';
+        //document.getElementById('previewBG').style.display='block';
+        document.getElementById('previewBG').style.opacity=1;
+        document.getElementById('controllerFunctionsZone').style.opacity=1;
         // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
       }
 

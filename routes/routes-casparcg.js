@@ -13,7 +13,7 @@ const open = require('open'); // open url in browser
 
 const ip = require('ip')
 const ipad = ip.address(); // my ip address
-const port = config.general.port || 5000;
+const port = config.general.port || 5656;
 
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 
@@ -38,7 +38,7 @@ router.get('/system', function (req, res) {
 
 router.get('/requestInfo', async (req, res) => {
   // Private API endpoint.
-  // http://localhost:5000/CCG/requestInfo?server=OVERLAY&command=CLS
+  // http://localhost:5656/CCG/requestInfo?server=OVERLAY&command=CLS
   // Try commands "INFO", "INFO 1", "CLS"
   // These require scanner.exe be running on the server
   // Response is plain text but some of them can be parsed as XML... 

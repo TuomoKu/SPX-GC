@@ -3,7 +3,7 @@
 //
 // "SPX" SmartPX Graphics Controller
 //
-// (c) 2020-2021 tuomo@smartpx.fi 
+// (c) 2020-2022 tuomo@smartpx.fi 
 // https://github.com/TuomoKu
 // 
 // No front-end frameworks.
@@ -87,7 +87,7 @@ global.rundownData = {}
 
 console.log('\n\n\n  SPX Graphics Controller v.' + vers + ' is starting...\n  Closing this window/process will stop the server.\n');
 
-const port = config.general.port || 5000;
+const port = config.general.port || 5656;
 global.CCGSockets = [];
 global.LastBrowsedTemplateFolder = '';
 
@@ -143,8 +143,7 @@ app.engine('handlebars', exphbs({
     },
 
     // populate CasparCG options for show config templates
-    generateDataFormatOptions(currentDataformat='xml')
-    {
+    generateDataFormatOptions(currentDataformat='xml') {
       let html="";
       let AvailableFormats=['json', 'xml'];
       
@@ -160,8 +159,7 @@ app.engine('handlebars', exphbs({
 
 
     // populate CasparCG options for show config templates
-    generateCasparCgPlayoutOptions(currentServer)
-    {
+    generateCasparCgPlayoutOptions(currentServer) {
       let html="";
       let AvailableServers=['-'];
       if (config.casparcg){
@@ -682,7 +680,46 @@ app.engine('handlebars', exphbs({
       });
       }
       return html;
-    } // end serverstatus
+      // end serverstatus
+    },
+
+    // What renderer options to generate into controller options.
+    // This same function can return <options> or a CSS classname.
+    // Added in 1.0.16 but not using it yet:
+    GenerateLocalRendererOptions(mode) {
+      return '<!-- Added in 1.0.16 but LocalRendererOptions are not in use yet -->\n';
+      /* =============== NOT IN USE YET ==================================
+      let activeRendererOption = config.general.localrenderer || 'program' ;
+      let html = '';
+      let sele = '';
+
+      switch (mode) {
+        // return list of renderer options
+        case 'options':
+          let options = [
+            { 'value': 'program', 'text': 'PROGRAM' },
+            { 'value': 'preview', 'text': 'PREVIEW SELECTED' }
+          ];
+          options.forEach((opt,i) => {
+            sele = '';
+            if (opt.value == activeRendererOption) { sele = 'selected'};
+            html += '<option ' + sele + ' value=' + opt.value + '>' + opt.text + '</option>\n';
+          });
+          break;
+
+      case 'class':
+        // return just styling class for the collapsiple
+        html = 'edge_' + activeRendererOption; // add classes when needed 
+          
+        default:
+          break;
+      }
+      return html;
+      //============================ not in use YET =========== */
+    } // end LocalRendererOptions
+
+
+
   } // end helpers
 })); // end app.engine
 
@@ -717,6 +754,7 @@ const ROUTEapp = require('./routes/routes-application.js');
 app.use('/', ROUTEapp);
 
 const ROUTEccg = require('./routes/routes-casparcg.js');
+// const { data } = require('./utils/logger.js') // 1.0.16 WTF?
 // const { prependListener } = require('process'); // const { prependListener } = require('process') // DIFF?
 // const { request } = require('http')
 // const { data } = require('./utils/logger.js')
@@ -741,7 +779,7 @@ process.on('uncaughtException', function(err) {
 
 var server = app.listen(port, (err) => {
 
-  let splash = '  Copyright 2020-2021 SmartPX\n\n' +
+  let splash = '  Copyright 2020-2022 SmartPX & Softpix\n\n' +
   `  Version ................ ${vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
   '  Homepage ............... http://spx.graphics\n' +
@@ -820,9 +858,18 @@ io.sockets.on('connection', function (socket) {
   logger.verbose('*** Socket connection (' + socket.id + ") Connections: " + io.engine.clientsCount);
   clients[socket.id] = socket;
 
-  socket.on('disconnect', function () {
+  socket.on('disconnect', async function () {
+    let SPXClientName = clients[socket.id].SPXClientName || '** no name **';
+    console.log('[' + SPXClientName + '] disconnected (' + socket.id + "). Connections: " + io.engine.clientsCount);
     logger.verbose('*** Socket disconnected (' + socket.id + ") Connections: " + io.engine.clientsCount);
     delete clients[socket.id];
+
+    // Notify controller of other clients lost (such as renderers closed with X)
+    let data = {};
+    data.spxcmd = 'clientLostNotification'
+    data.source = 'windowClose'
+    data.clientName = SPXClientName
+    io.emit('SPXMessage2Client', data);
   }); // end disconnect
 
 
@@ -836,8 +883,13 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('SPXMessage2Server', function (data) {
     // console.log('SPXMessage received', data);
-    logger.verbose('SPXMessage received', data)
+    logger.verbose('SPXMessage2Server received', data)
     switch (data.spxcmd) {
+
+      case 'identifyClient':
+        socket.SPXClientName = data.name;
+        console.log('Identified [' + socket.id + '] as [' + data.name + ']');
+        break;
 
       case 'command-name-here':
         // action here

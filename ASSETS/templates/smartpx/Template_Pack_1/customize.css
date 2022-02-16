@@ -16,21 +16,21 @@
 
 :root {
   /* BRAND ACCENT COLORS primary and secondary */
-  --spx-accent-color: #4492df;
+  --spx-accent-color: rgb(9, 125, 202);
   
   /* PLATE 1 */
-  --spx-bgcol1-color: rgba(255, 255, 255, 0.952);
+  --spx-bgcol1-color: rgba(255, 255, 255, 0.781);
   --spx-txcol1-color: rgb(0, 0, 0);
-  --spx-txsha1-color: rgba(89, 27, 190, 0.0);
+  --spx-txsha1-color: rgba(27, 111, 190, 0.733);
   
   /* PLATE 2 */
-  --spx-bgcol2-color: #366899;
+  --spx-bgcol2-color: rgb(7, 93, 143);
   --spx-txcol2-color: rgb(255, 255, 255);
-  --spx-txsha2-color: rgba(255, 255, 255,0);
+  --spx-txsha2-color: rgba(255, 255, 255, 0.5);
 
   /* PLATE 3 */ 
-  --spx-bgcol3-color: #1d3b5a;
-  --spx-txcol3-color: rgb(255, 255, 255);
+  --spx-bgcol3-color: rgba(197, 219, 236, 0.856);
+  --spx-txcol3-color: rgb(47, 47, 47);
   --spx-txsha3-color: rgba(8, 37, 71, 0.2);
 
   /* SKEW degrees for angled backgrounds (try also negative values, such as -15deg)*/

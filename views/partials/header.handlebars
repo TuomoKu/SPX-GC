@@ -1,11 +1,31 @@
+        
+        <div id="messageSlider" style="opacity:0;"></div>
+        
         <table style="width: 100%; height: 100%; border: 0px solid cornsilk; padding:7px;" border="0">
-            <tr style="background-colorXXX: #666;">
+            <tr>
+                {{!-- <td width="1" style="vertical-align: middle;">
+                  <img src="/img/spx.svg" class="logo">
+                </td> --}}
                 <td>
                   <div class="dropdown">
-                    <i class="fas fa-home home-icon"></i>
-                    <div class="dropdown-content" style="white-space: nowrap;" )>
+                    <!-- <i class="fas fa-home home-icon" style="cursor: pointer;"></i> -->
+
+                    <!-- green and red icon caching -->
+                    <img src="/img/spx_offline.png" style="position: absolute; display:none;" id="logo_off">
+                    <img src="/img/spx_online.png"  style="position: absolute; display:none;" id="logo_on">
+
+                    <img src="/img/spx_online.png" id="logo" style="cursor: pointer;">
+                    <div class="dropdown-content" style="white-space: nowrap;">
+                      {{!-- <div style="width: 100%; text-align: center; padding: 1em; background-color: rgba(0,0,0,0.5);">
+                        <img src="/img/spx.svg" class="logo">
+                      </div> --}}
                       <A HREF="/"><i class="fas fa-home"></i>&nbsp; {{lang 'pagetitle.home'}}</A><br>
                       <A HREF="/shows/"><i class="fas fa-folder"></i>&nbsp; {{lang 'pagetitle.shows'}}...</A>
+
+                      <!-- TODO: A submenu with recent rundowns -->
+                      <!-- <BR><A HREF="/shows/"><i class="fas fa-bookmark"></i>&nbsp; {{lang 'pagetitle.RECENTS'}}...</A> -->
+                      <!-- XXXXXXXXXX -->
+
                       <BR>
                       <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A>
                       
@@ -29,12 +49,15 @@
 
 
                       <HR>
-                      <A HREF="" onClick="spx_system('restartServer');return false;"><i class="fas fa-power-off"></i>&nbsp; Kill (restart GC -server)</A>
+                      <A HREF="" onClick="spx_system('restartServer');return false;"><i class="fas fa-power-off"></i>&nbsp; Kill (restart SPX-server)</A>
 
                       <!--
                       <br>
                       <A HREF="" onClick="aFunctionTest();return false;">Debug: Ping servers</A>
                       -->
+                      <hr>
+                      <A HREF="https://spxgc.com/store" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; spxgc.com/store</A>
+                      <BR>
 
 
                       

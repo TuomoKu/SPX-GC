@@ -8,35 +8,34 @@
         <title>Empty</title>
         <style>
 			html, body {
-				background-color: rgba(255,255,255,0.0);
 				margin: 0px;
-				box-sizing: border-box;
 				height: 100%;
 				overflow: hidden;
+				box-sizing: border-box;
 				font-family: sans-serif;
+				background-color: rgba(255,255,255,0.0);
 			}
 
 			*, *:before, *:after {
-				box-sizing: inherit;
 				margin: 0;
 				padding: 0;
+				box-sizing: inherit;
 				}
 		</style>
 
 		<script>
-			function echo(msg)
-			{
+			function echo(msg) {
 				document.getElementById('debug').innerText=msg;
 			}
 
-			function play()   { emptyMessage('play') }
-			function stop()   { emptyMessage('stop') }
-			function invoke() { emptyMessage('invoke') }
-			function update() { emptyMessage('update') }
-			function data()   {	emptyMessage('data') }
+			function play()  	{ emptyMessage('play') }
+			function stop()   	{ emptyMessage('stop') }
+			function invoke() 	{ emptyMessage('invoke') }
+			function update() 	{ emptyMessage('update') }
+			function data()   	{ emptyMessage('data') }
+			function preview() 	{ emptyMessage('preview') }
 
-			function emptyMessage(cmd)
-				{
+			function emptyMessage(cmd) {
 					// console.log('**** INFO: empty received command "' + cmd + '", which is ignored ****');
 				}
 

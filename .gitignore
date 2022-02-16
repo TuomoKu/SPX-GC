@@ -34,6 +34,7 @@ ASSETS/media/images/logo_org/
 ASSETS/media/images/smartpx_internal/
 ASSETS/template_stash/
 ASSETS/hot_or_not
+ASSETS/xml/demo.xml
 
 
 #######################################
@@ -42,6 +43,9 @@ ASSETS/hot_or_not
 ASSETS/plugins/_*
 ASSETS/plugins/spxSocial
 ASSETS/plugins/scoreboard
+ASSETS/plugins/spxResultsboard
+ASSETS/plugins/spxProjectLogger
+ASSETS/plugins/spxResultsboard_4x
 ASSETS/plugins/spxCasparCGMediaplayer
 
 
@@ -113,3 +117,5 @@ RUN_DEV.BAT
 api-tester.rest
 config_ORGjson
 TESTAUS_CHECKLIST.txt
+TODO.md
+

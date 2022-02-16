@@ -55,14 +55,14 @@ module.exports = {
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
                     cfg.general.launchchrome                    = false
-
-                    // below paths were __dirname but pkg did not like it
+                    cfg.general.resolution                      = "HD"
+                    // cfg.general.localrenderer                = "program" /* Added while doing 1.0.16 but not going to use this now */
+                    cfg.general.preview                         = "selected"
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
                     cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"
                     cfg.general.templatesource                  = "spxgc-ip-address"
-
-                    cfg.general.port                            = "5000"
+                    cfg.general.port                            = "5656"
                     cfg.casparcg                                = {}
                     cfg.casparcg.servers                        = []
                     newcasparcg                                 = {}
@@ -77,43 +77,42 @@ module.exports = {
                     cfg.globalExtras.customscript               = "/ExtraFunctions/demoFunctions.js"
                     cfg.globalExtras.CustomControls             = []
 
+                    // EXTRAS MOVED to plugins from v.1.0.16
                     // play gfx out
-                    newcontrol2                                  = {}
-                    newcontrol2.ftype                            = "button"
-                    newcontrol2.description                      = "Animate all graphics out"
-                    newcontrol2.text                             = "Stop all"
-                    newcontrol2.bgclass                          = "bg_grey"
-                    newcontrol2.fcall                            = "stopAll()"
-                    cfg.globalExtras.CustomControls.push(newcontrol2)
+                    // newcontrol2                                  = {}
+                    // newcontrol2.ftype                            = "button"
+                    // newcontrol2.description                      = "Animate all graphics out"
+                    // newcontrol2.text                             = "Stop all"
+                    // newcontrol2.bgclass                          = "bg_grey"
+                    // newcontrol2.fcall                            = "stopAll()"
+                    // cfg.globalExtras.CustomControls.push(newcontrol2)
 
                     // panic button
-                    newcontrol3                                  = {}
-                    newcontrol3.ftype                            = "button"
-                    newcontrol3.bgclass                          = "bg_black"
-                    newcontrol3.text                             = "PANIC"
-                    newcontrol3.fcall                            = "clearAllChannels()"
-                    newcontrol3.description                      = "Clear playout channels"
-                    cfg.globalExtras.CustomControls.push(newcontrol3)
+                    // newcontrol3                                  = {}
+                    // newcontrol3.ftype                            = "button"
+                    // newcontrol3.bgclass                          = "bg_black"
+                    // newcontrol3.text                             = "PANIC"
+                    // newcontrol3.fcall                            = "clearAllChannels()"
+                    // newcontrol3.description                      = "Clear playout channels"
+                    // cfg.globalExtras.CustomControls.push(newcontrol3)
 
-
-                    // link to other stuff
-                    newcontrol1                                  = {}
-                    newcontrol1.ftype                            = "selectbutton"
-                    newcontrol1.description                      = "Free graphics and more"
-                    newcontrol1.text                             = "VISIT"
-                    newcontrol1.bgclass                          = "bg_green"
-                    newcontrol1.fcall                            = "openSelectedURL"
-                    newcontrol1.value                            = "https://spxgc.com/store"
-                    newcontrol1.items                            = []
-                    newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spxgc.com/store"});
-                    newcontrol1.items.push({text: "Knowledge Base &nbsp;",  "value": "https://spxgc.tawk.help"});
-                    newcontrol1.items.push({text: "Give feedback &nbsp;",   "value": "https://forms.gle/T26xMFyNZt9E9S6d8"});
-                    cfg.globalExtras.CustomControls.push(newcontrol1)
+                    // newcontrol1                                  = {}
+                    // newcontrol1.ftype                            = "selectbutton"
+                    // newcontrol1.description                      = "Free graphics and more"
+                    // newcontrol1.text                             = "VISIT"
+                    // newcontrol1.bgclass                          = "bg_green"
+                    // newcontrol1.fcall                            = "openSelectedURL"
+                    // newcontrol1.value                            = "https://spxgc.com/store"
+                    // newcontrol1.items                            = []
+                    // newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spxgc.com/store"});
+                    // newcontrol1.items.push({text: "Knowledge Base &nbsp;",  "value": "https://spxgc.tawk.help"});
+                    // newcontrol1.items.push({text: "Give feedback &nbsp;",   "value": "https://forms.gle/T26xMFyNZt9E9S6d8"});
+                    // cfg.globalExtras.CustomControls.push(newcontrol1)
 
 
                     // Write config file. Note, this does not use utility function.
                     cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the SPX will overwrite this file.";
-                    cfg.smartpx = "(c) 2020-2021 SmartPX";
+                    cfg.smartpx = "(c) 2020-2022 SmartPX & Softpix";
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);

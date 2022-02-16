@@ -4,7 +4,7 @@ function RenderFolder(data) {
   // will draw folder and files to the popup GUI
 
   if (!data.folder){
-    console.log('Folder unknown');
+    console.log('Controller Import Functions / Folder unknown');
     return
     }
 
@@ -124,20 +124,24 @@ function openSelectedCSVFile() {
 }
 
 function goUp() {
-    let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
-    let pathItems = document.getElementById('curfolder').innerText.split("/");
-    pathItems.pop();
-    pathItems.pop();
-    let targetFolder = pathItems.join('/') + '/';
+  // improved in 1.0.16. See also another goUp() function... Must merge these...
+  let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
+  let pathItems = document.getElementById('curfolder').innerText.split("/");
 
-    if (ConfigTemplateFolder.length > targetFolder.length ) {
-      showMessage(document.getElementById('templaterootmassage').value);
-      return;
-    }
+  // filter empties
+  temp = [];
+  for(let i of pathItems) i && temp.push(i); // copy each non-empty value to the 'temp' array
+  pathItems = temp;
+  pathItems.pop();
+  let targetFolder = pathItems.join('/') + '/';
 
-    // console.log('targetFolder',targetFolder);
+  if ( targetFolder.length < ConfigTemplateFolder.length  ) {
+    showMessage(document.getElementById('templaterootmassage').value);
+    return;
+  } else {
     openFolder(targetFolder, '');
   }
+}
 
 
 function showMessage(msg) {

@@ -2,8 +2,13 @@
 
 ## Manage and control graphics for CasparCG and streaming applications.
 
-> Readme updated Oct 31 2021. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes (v.1.0.15).
+<br>
 
+Readme updated Feb 16 2022.
+
+>  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.0.15** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
+
+<br>
 
 **SPX** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
 
@@ -11,12 +16,14 @@
 
 ![snapshot](screenshots/00-spx-gc-principle2.png)
 
----
+
+<br>
+
 
 ### Table of Contents
 - [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive)
 - [Screenshots](#screenshots)
-- Install [pre-built packages](#install) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
+- Install [pre-built packages](#builds) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
 - [UI localization](#locales)
@@ -91,11 +98,12 @@ SPX can be installed using a **ready-to-go binary package** which includes all r
 
 ## Option 1: **Install a pre-built package**
 * Download a zip-file for your system using one of the links above.
-* Create a new folder for the app (for example on Windows `C:/Program Files/SPX/`, or on Linux `/SPX` ).
+* Create a new folder for the app (for example on Windows `C:\SPX\`, or on Linux `/SPX` ).
+* >**PLEASE NOTE** if using `C:\Program Files\` folder on Windows you may need to start SPX with administrative priviledges, since SPX will generate files in that folder structure.  
 * Extract the zip-file to that folder.
-* Locate the executable (for example `SPX-GC_win64.exe` on Windows) and double click it to start the SPX server. A console window should open (and remain open) and show some startup information.
+* Locate the executable (for example `SPX_win64.exe` on Windows) and double click it to start the SPX server. A console window should open (and remain open) and show some startup information.
 * Chrome browser can be enabled to launch automatically at server start-up. See `launchcrome` setting in [config.json](#config).
-* When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX does _not_ usually require admin priviledges.
+* When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX does _not_ usually require admin priviledges (See note above).
 * **On Linux** you _may_ need to add execute permission to the file (`sudo chmod a+x SPX_linux64`) and launch it in a console (`./SPX_linux64`). See this [KB article](https://spxgc.tawk.help/article/make-executable)
 * **On MacOS** you _may_ need to add execute permission to the file (`sudo chmod a+x SPX_macos64`) and launch it in the Terminal (`./SPX_macos64`). See this [KB article](https://spxgc.tawk.help/article/make-executable)
 * See next steps in the section [first launch](#firstlaunch).
@@ -107,6 +115,9 @@ SPX can be installed using a **ready-to-go binary package** which includes all r
 ## Option 2: **Install from source code** <a id="npminstall"></a>
 
 Developers can get the source code from the repository with [git](https://git-scm.com/) and run the application using [NodeJS](https://nodejs.org/) and [npm](https://www.npmjs.com/).
+
+> **PLEASE NOTE:** The source code in this repository is always in a <span style="color:red;">WORK IN PROGRESS</span> state and features may or may not work. For production work it is recommended to always use known [prebuilt binaries](#builds), which are more carefully tested. See also [Release Notes](RELEASE_NOTES.md).
+
 * Create an empty folder on your system and fetch the source code using a `git clone` command:
 ```sh
 git clone https://github.com/TuomoKu/SPX-GC.git
@@ -167,10 +178,10 @@ pm2 kill
 ```
 --------------------------------
   SPX url:
-  http://127.0.0.1:5000
+  http://127.0.0.1:5656
 --------------------------------
 ```
-> Port 5000 is the default value in config and can be changed.
+> Port 5656 is the default value in config and can be changed.
 
 If installation and server start-up worked, you should see a Config screen in your browser asking a preference regarding user access.
 ![snapshot](screenshots/01-spx-loginpolicy.png)
@@ -190,7 +201,7 @@ Start making [configuration changes](#config) or creating [projects](#dataroot) 
 
 **You can also follow these steps to get yourself familiarized with the application:**
 
-1. Open SPX in browser, typically at http://localhost:5000
+1. Open SPX in browser, typically at http://localhost:5656
 2. Choose 'no login' policy by selecting **No** option and click **Save**
 3. Go to **Projects**
 4. Add a new project, for instance `My First Project`. (Project's settings opens.)
@@ -239,7 +250,7 @@ An example `config.json` of the SPX server
     "langfile": "english.json",
     "loglevel": "info",
     "logfolder": "X:/GC-DEV/LOG/",
-    "port": "5000",
+    "port": "5656",
     "dataroot": "X:/DATAROOT/",
     "templatefolder": "X:/GC-DEV/ASSETS/templates/",
     "templatesource": "spxgc-ip-address",
@@ -645,12 +656,12 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
 # Using SPX with OBS / vMix / Wirecast... <a id="streaming"></a>
 SPX's animated graphics and overlays can be integrated used in streaming and videoconferencing with any video- or streaming application which has a support for "Browser" or "HTML Sources". SPX provides a URL address which is entered to the streaming software as a layer / input / source. In OBS use `Browser source`, in vMIX it's called `Web Browser input` and in XSplit it's a `Webpage source`... 
 ```
-http://localhost:5000/renderer
+http://localhost:5656/renderer
 ```
 
 If you have several inputs (for instance for multiple presenters) you can limit which layers get's rendered to different screens with the `layers` parameter in Renderer url, for instance:
 ```
-http://localhost:5000/renderer/?layers=[2,4,20]
+http://localhost:5656/renderer/?layers=[2,4,20]
 ```
 
 ----
@@ -661,7 +672,7 @@ SPX (v.1.0.8+) rundowns can be loaded and controlled with external devices with 
 See available commands here:
 
 ```
-http://localhost:5000/api/v1
+http://localhost:5656/api/v1
 ```
 
 SPX can also be used with Bitfocus Companion, see https://bitfocus.io/companion. Companion version 2 will have a built in module with presets for SPX.

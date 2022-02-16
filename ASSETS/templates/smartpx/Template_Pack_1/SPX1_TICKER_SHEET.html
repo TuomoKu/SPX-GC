@@ -4,11 +4,9 @@
 
 <!--
 
-    (C) 2020-2021 tuomo@smartpx.fi (MIT License)
+    Ticker from Google Sheet data
 
-    Version 2 (07-Feb-2021)
-
-    Demo template for SPX-GC. See SPXGCTemplateDefinition -object below for data field descriptions and
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions and
     end of styles -section for customizing section header colors.
     
     This template is reading it's content from a Google Spreadsheet, which in turn is getting it's content
@@ -30,8 +28,18 @@
     (in the SPXGCTemplateDefinition object within the script tag below) to prevent operators from changing
     API-KEY and Google document ID values by accident... 
 
-    ________________
-   	tuomo@smartpx.fi
+    Need custom templates? Get in touch! https://spxgc.com/contact
+
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spxgc.com | Copyright 2022 SmartPX & Softpix
+    Version: 1.0.1 / Minor bug fixes
+    Build: Wed Jan 12 2022 08:37:41 GMT+0200 (GMT+02:00) 
+
+	----
+
+    CHANGES:
+    12.01.2022 Fixed Google Sheet tabs back to NEWS,TECHNOLOGY,BUSINESS. Changed tab colors.
 
 -->
 
@@ -178,28 +186,28 @@
             class name must be "SECTION_SPORT_NEWS" (ie. with underscore as space)
         */
 
-        .SECTION_TOPICS {
-            background-color:   #000000;
-            color:              #ffffff;
-        }
-
+        
         .SECTION_NEWS {
-            background-color:   #0ef107;
+            background-color:   #9e0606;
             color:              #ffffff;
         }
-
-
+        
+        
         .SECTION_TECHNOLOGY  {
-            background-color:   #790334;
+            background-color:   #ac064b;
             color:              #ffffff;
         }
-
+        
         .SECTION_BUSINESS {
             background-color:   #210849;
             color:              #ffffff;
         }
-
-
+        
+        .SECTION_TOPICS {
+            background-color:   #313131;
+            color:              #ffffff;
+        }
+        
         /* --- add your own section header names/styles above here  -- */
 
     </style>

@@ -10,7 +10,25 @@ var socket = io();
 // Global App State
 let APPSTATE = "INIT";  // see AppState()
 let sortable = "";      // a global sortable object so can be disabled at will, see spxinit()
+
+let messageSliderOutTimer // a global var for message slider timeout
 document.onkeydown = checkKey;
+
+
+socket.on('connect', function () {
+    // Added in 1.0.16:
+    if (document.getElementById('logo') && document.getElementById('logo-off')) {
+        document.getElementById('logo').src=document.getElementById('logo_on').src;
+        document.body.style="pointer-events: auto;" // restore clickability
+        hideMessageSlider();
+    }
+
+    data={};
+    data.name   = 'SPX_CONTROLLER'; // <---- Name of this socket connection
+    data.spxcmd = 'identifyClient';
+    socket.emit('SPXMessage2Server', data);
+
+}); // end connect
 
 socket.on('SPXMessage2Client', function (data) {
     // Handles messages coming from server to this client.
@@ -30,10 +48,25 @@ socket.on('SPXMessage2Client', function (data) {
             localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
             break;
 
+        case 'clientLostNotification':
+            switch (data.clientName) {
+                case 'SPX_PROGRAM':
+                    toggleRendererPopup('programToggleBtn', data.source, 'forceButtonOff')
+                    break;
+
+                case 'SPX_PREVIEW':
+                    toggleRendererPopup('previewToggleBtn', data.source, 'forceButtonOff')
+                    break;
+            
+                default:
+                    break;
+            }
+            break;
+
         default:
             // console.log('Unknown SPXMessage2Client command: ' + data.command);
     }
-});
+}); // end SPXMessage2Client
 
 socket.on('SPXMessage2Controller', function (data) {
 
@@ -42,7 +75,7 @@ socket.on('SPXMessage2Controller', function (data) {
     // data.APIcmd as function identifier. Additional object values are payload.
     // Feature added in v.1.0.8.
 
-    // console.log('SPXMessage2Controller received', data)
+    console.log('SPXMessage2Controller received', data)
     let DomItemID;
     switch (data.APIcmd) {
 
@@ -114,10 +147,16 @@ socket.on('SPXMessage2Controller', function (data) {
         default:
             console.log('Unknown SPXMessage2Controller command: ' + data.APIcmd, data);
     }
-});
+}); // end SPXMessage2Controller
 
-
-
+socket.on('disconnect', function () {
+    // Added in 1.0.16
+    if (document.getElementById('logo') && document.getElementById('logo-off')) {
+        document.getElementById('logo').src=document.getElementById('logo_off').src;
+        showMessageSlider('Disconnected from SPX server', type='error', true)
+        document.body.style="pointer-events: none;"  // disable clickability
+    }
+}); // end disconnect 
 
 // see also spxInit()
 // ##########################################################################################################
@@ -128,12 +167,7 @@ socket.on('SPXMessage2Controller', function (data) {
 function Test(routine) {
     // execute a test function on the server
     // this gets triggered by menu > ping
-
-    console.log('Test', routine);
-    
-
     let data = {};
-
     switch (routine) {
         case 'A':
             data.spxcmd     = 'loadTemplate';
@@ -413,7 +447,7 @@ function checkKey(e) {
 
     e = e || window.event;
 
-    // console.log('--- ' + e.keyCode + ' ---');
+    console.log('--- ' + e.keyCode + ' --- ' + APPSTATE);
 
     // FIRST GENERIC keycodes for all situations
     switch (e.keyCode)
@@ -475,9 +509,13 @@ function checkKey(e) {
             }
             return;
             break;
+        
+        case "INIT":
+            return;
+            break;
 
 
-            // OTHER MODES, (while editor closed)
+        // OTHER MODES, (while editor closed)
         default:
             switch (e.keyCode)
             {
@@ -635,24 +673,24 @@ async function revealItemID(button) {
         // alert("Same ID " + newID)
     }
 }
+
+function copyRendererUrl() {
+    var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + '/renderer/';
+    copyText(RendererUrl);
+    showMessageSlider('Copied URL to clipboard', 'happy');
+}
+
  
 function copyText(txt) {
     const temp = document.createElement('input');
-    // temp.style.display = 'none';
     document.body.appendChild(temp);
     temp.value = txt;
     temp.select();
-    // var range = document.createRange();
-    // range.selectNode(temp);
-    // window.getSelection().addRange(range);
-    try
-    {
+    try {
         var successful = document.execCommand('copy');
         var msg = successful ? 'successful' : 'unsuccessful';
         // console.log('Copy command was ' + msg);
-    } 
-    catch (err)
-    {
+    } catch (err) {
         // console.log('Oops, unable to copy');
     }
     temp.parentNode.removeChild(temp);
@@ -778,6 +816,33 @@ function openImportDialog() {
     // console.log('Opening File browser dialog');
 }
 
+function filterProjects() {
+    // Added in 1.0.16
+    // https://stackoverflow.com/questions/58098566/filtering-a-list-by-a-text-field
+    var input, filterPhrase, projList, li, itemValue, i, txtValue;
+    input = document.getElementById('projectFilter');
+    filterPhrase = input.value.toUpperCase();
+    projList = document.getElementById("allProjects");
+    optionItems = projList.getElementsByTagName('option');
+    lists.innerHTML=''; // clear
+    for (i = 0; i < optionItems.length; i++) {
+      // itemValue = optionItems[i].innerText;
+      txtValue = optionItems[i].innerText; // itemValue.textContent || itemValue.innerText;
+      let filters = filterPhrase.split(" ") 
+      filters = filters.filter(f => f.length)   
+      let shouldDisplay = true
+      filters.forEach(filterItem => {
+        shouldDisplay = shouldDisplay && txtValue.toUpperCase().includes(filterItem)
+      })
+      // optionItems[i].style.display = (shouldDisplay || filters.length === 0) ? "" : "none";
+      if (shouldDisplay || filters.length === 0) {
+        var opt = document.createElement('option');
+        opt.innerHTML = txtValue;
+        lists.appendChild(opt);
+      }
+    }
+  }
+
 
 function focusRow(rowitemOrIndex) {
     // will make TG item focused and will set masterbutton states.
@@ -809,7 +874,17 @@ function focusRow(rowitemOrIndex) {
             behavior: "auto",
             block: "nearest",
         });
+
+        // Added in 1.0.16:
+        if (document.getElementById('previewMode').value==='selected') {
+            previewItem(TargetElement); // preview selected item
+        }
+
     }
+
+
+
+
      setMasterButtonStates(TargetElement, 'from focusRow');
 } // focusRow ended
 
@@ -871,8 +946,7 @@ function getElementIdOfFocusedItem()
     }
 }
 
-function getFocusedRow()
-{
+function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
     for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
         if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
@@ -882,8 +956,7 @@ function getFocusedRow()
     }
 }
 
-function getElementByEpoch(itemID)
-{
+function getElementByEpoch(itemID) {
     // get element by epoch id (added in 1.0.8)
     let DomItemID;
     for (let index = 0; index < document.querySelectorAll('.itemrow').length; index++) {
@@ -1061,6 +1134,21 @@ function nextItem(itemrow='') {
   } // nextItem
 
 
+function previewItem(itemrow='') {
+    // Added in 1.0.16
+    // console.log('Itemrow: ', itemrow);
+    if (!itemrow) { itemrow = getFocusedRow();  }
+    if (!itemrow) { /* console.log('No active rows, skip command.');*/ return;}
+
+    data = {};
+    data.datafile      = document.getElementById('datafile').value;
+    data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
+    data.command       = 'preview'; // added in 1.0.16
+    working('Sending ' + data.command + ' request.');
+    ajaxpost('/gc/playout',data);
+
+}
+
 
 function playItem(itemrow='', forcedCommand='') {
     // Play item toggle.
@@ -1081,6 +1169,7 @@ function playItem(itemrow='', forcedCommand='') {
 
     data = {};
     data.datafile      = document.getElementById('datafile').value;
+    // data.localrenderer = document.getElementById('rendererStyle').value;    // Added in 1.0.16 to prevent preview to render locally in "preview" -mode // Not in use YET
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
     data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
@@ -1089,7 +1178,20 @@ function playItem(itemrow='', forcedCommand='') {
     // playonce (for out type=none) command acts on the server, but the state will not be saved to JSON
     // Check for function_onPlay:
     let isPlay = false;
-    if (data.command=="play" || data.command=="playonce") { isPlay = true; }
+    if (data.command=="play" || data.command=="playonce") {
+        isPlay = true;
+
+        // Added in 1.0.16 FIXME: This has some issues, previewing wrong items etc...
+        if (document.getElementById('previewMode').value==='next') {
+            console.log('Preview next on play ** THIS IS DISABLED DUE TO BUGS **');
+            /*
+            let nextRundownItem = getFocusedRow().nextElementSibling;
+            console.log('Next elementID ' + nextRundownItem.id, nextRundownItem);
+            previewItem(nextRundownItem);
+            */
+        }
+
+    }
      
     let onPlayField = itemrow.querySelector('[name="RundownItem[function_onPlay]"]');
     if (isPlay && onPlayField && onPlayField.value!="") {
@@ -1106,10 +1208,12 @@ function playItem(itemrow='', forcedCommand='') {
         ExecuteDelay      = parseInt(ArgsArray[5]) || 40; // 500 (ms)
         // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName + ', args: ', TempData);
 
+
+
         setTimeout(function () {
             window[FunctionName](TempData);
-            },
-            ExecuteDelay);
+            }, ExecuteDelay);
+
     }
     else{
         // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onPlay function.');
@@ -1631,11 +1735,23 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 } // setTGButtonStates ended 
 
 
-function showMessageSlider(msg, type='info') {
+function hideMessageSlider() {
+    if (!document.getElementById('messageSlider')) { return }
+    anime({
+        targets:        '#messageSlider',
+        opacity:        [1,0],
+        translateY:     [0,-200],
+        translateX:     '-50%',
+        duration:       300,
+        easing:         'easeInCubic'
+    });
+}
+
+function showMessageSlider(msg, type='info', persist=false) {
     // show a sliding message at the top of the page
 
     let txt = msg;
-    let typ = type; // info, warn, error
+    let typ = type; // happy, info, warn, error (classes happyMsg, infoMsg, warnMsg, errorMsg...)
 
     switch (msg) {
         case 'invalidCSV':
@@ -1652,12 +1768,18 @@ function showMessageSlider(msg, type='info') {
         opacity:        [0,1],
         translateY:     [-200,0],
         translateX:     '-50%',
-        delay:          200,
-        duration:       300,
+        delay:          100,
+        duration:       200,
         easing:         'easeOutCubic'
     });
 
-    setTimeout(() => {
+    if (persist) {return}; // do not animate out
+
+    if (messageSliderOutTimer) {
+        clearTimeout(messageSliderOutTimer)
+    }
+
+    messageSliderOutTimer = setTimeout(() => {
         anime({
             targets:        '#messageSlider',
             opacity:        [1,0],
@@ -1666,7 +1788,7 @@ function showMessageSlider(msg, type='info') {
             duration:       300,
             easing:         'easeInCubic'
         });
-    }, 3000);
+    }, 2000);
 
 }
 
@@ -1688,7 +1810,7 @@ function spx_system(cmd,servername='') {
             var left = (screen.width/2)-(w/2);
             var top = (screen.height/2)-(h/2);
             var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
-            window.open('/renderer/preview.html', 'gcwebrender2', OPT);
+            window.open('/renderer/scalable', 'gcwebrender2', OPT);
             break;
 
         case 'OPENDATAFOLDER':
@@ -1758,12 +1880,23 @@ function setProfile(profileName) {
     localStorage.SPX_CT_ProfileName = profileName;
 } // setProfile ended
 
+/* Added in 1.0.16 but not in use YET 
+function saveRendererType(value) {
+    // Save selected localRenderer type to config file for future use
+    data = {};
+    data.key = 'localrenderer'
+    data.val = value;
+    ajaxpost('/gc/saveConfigChanges',data);
+    showMessageSlider('Renderer changed to ' + value + '.')
+    document.getElementById('localRendererCollapsiple').classList = 'collapsibleZone activeZone edge_' + value; // 3 classes!
+
+    // Clear gfx from all (local renderer) layers:
+    document.getElementById('previewIF').src="/renderer";
+} */ 
 
 
 
-
-function statusbar(sMsg, sLevel="x")
-  {
+function statusbar(sMsg, sLevel="x") {
     /* Usage
         - statusbar('This is a normal message')
         - statusbar('Hot warning', "warn")
@@ -1917,3 +2050,82 @@ function working(StatusMsg){
     }
   } //working
 
+
+  function toggleRendererPopup(buttonID, source, forceState='nothing') {
+    // Open / close renderer popups
+    // require:
+    // 1: elementID
+    // 2: source (window, button)
+    // 3: optional target state
+    // does: change button UI and execute popup commands
+    // Spagetti warning. I was tired, this can be confusing. Sorry <:-/
+    let buttonRef = document.getElementById(buttonID);
+    let data = {}
+    data.source = source;
+    data.type = buttonRef.getAttribute('data-spx-popup');
+
+    // console.log('INFO - button: ' + buttonID + ', source: ' + source + ', current state: ' + buttonRef.getAttribute('data-spx-status') + ', force: ' + forceState);
+
+    if (forceState == 'forceButtonOff') {
+        // Just disable toggle button, do not make window commands!
+        // console.log('FORCE toggle to OFF');
+        buttonRef.setAttribute('data-spx-status',false);
+        buttonRef.classList.remove('toggleON');
+        return
+    } 
+
+    if (buttonRef.getAttribute('data-spx-status') == 'false') {
+        // toggle button ON
+        console.log('Turning toggle to ON');
+        buttonRef.classList.add('toggleON');
+        buttonRef.setAttribute('data-spx-status',true);
+        data.command = 'open';
+        handleRendererPopups(data); // execute window functions
+        return
+    }
+
+    if (buttonRef.getAttribute('data-spx-status') == 'true') {
+        // toggle button OFF
+        console.log('Turning toggle to OFF');
+        buttonRef.setAttribute('data-spx-status',false);
+        buttonRef.classList.remove('toggleON');
+        data.command = 'close';
+        handleRendererPopups(data); // execute window functions
+        return
+    }
+  }
+
+
+  function handleRendererPopups(data) {
+      // open / close renderer popups
+      // data: {type:preview}
+      
+      let URL;
+      let socketData = {};
+      var w = 1280;
+      var h = 720;
+      var left = (screen.width/2)-(w/2);
+      var top = (screen.height/2)-(h/2);
+      var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
+
+      if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
+      if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
+
+      if (data.command == 'open')  {
+        // open the popup
+        console.log('Sendin OPEN, source: ' + data.source);
+        window.open(URL, winRef, OPT);
+        return
+    } 
+    
+    if (data.command == 'close')  {
+        // send message request to close the popup
+        console.log('Sendin CLOUS, source: ' + data.source);
+        // send message to close the window without prompts (closeprogram closepreview)
+        // console.log('Sending ' + 'close' + data.type);
+        socketData.spxcmd = 'close' + data.type;
+        socket.emit('SPXWebRendererMessage', socketData);
+        return
+    } 
+
+  }

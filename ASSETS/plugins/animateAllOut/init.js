@@ -9,6 +9,7 @@ function PluginInstance() {
         console.log('PLUGIN animateAllOut appending to dom...');
         let options = {
             description: 'Animate all graphics out',
+            overToolTip: 'Send STOP command to all layers on this rundown',
             caption: 'STOP ALL',
             color: 'black'
         }

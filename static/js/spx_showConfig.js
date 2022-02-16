@@ -40,10 +40,12 @@ function reimportTemplateIndex(nro) {
 function RenderFolder(data) {
   // will draw folder and files to the popup GUI
 
-  if (!data.folder){
-    // console.log('Folder unknown');
+  console.log('showConfig.js --> RenderFolder', data );
+
+  if (!data.folder) {
+    console.log('ShowConfig / RenderFolder(): Folder unknown.');
     return
-    }
+  }
 
   document.getElementById('curfolder').innerText = data.folder.split("\\").join("/");
   document.getElementById("folderList").innerHTML="";
@@ -180,19 +182,23 @@ function openSelectedFile() {
 
 
 function goUp() {
+    // improved in 1.0.16. See also another goUp() function... Must merge these...
     let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
     let pathItems = document.getElementById('curfolder').innerText.split("/");
-    pathItems.pop();
+
+    // filter empties
+    temp = [];
+    for(let i of pathItems) i && temp.push(i); // copy each non-empty value to the 'temp' array
+    pathItems = temp;
     pathItems.pop();
     let targetFolder = pathItems.join('/') + '/';
 
-    if (ConfigTemplateFolder.length > targetFolder.length ) {
+    if ( targetFolder.length < ConfigTemplateFolder.length  ) {
       showMessage(document.getElementById('templaterootmassage').value);
       return;
+    } else {
+      openFolder(targetFolder, '');
     }
-
-    // console.log('targetFolder',targetFolder);
-    openFolder(targetFolder, '');
   }
 
 

@@ -12,7 +12,7 @@ display dialog "Starting SPX server in Terminal
 
 " & SPXapp & "
 
-Once SPX server process has started a web browser will open and navigate to the displayed URL, usually http://localhost:5000. Closing the Terminal window will stop the server." with title "SPX Graphics Controller"
+Once SPX server process has started a web browser will open and navigate to the displayed URL, usually http://localhost:5656. Closing the Terminal window will stop the server." with title "SPX Graphics Controller"
 
 tell application "Terminal"
 	activate
@@ -20,4 +20,4 @@ tell application "Terminal"
 end tell
 
 delay 5
-do shell script "open http://localhost:5000"
+do shell script "open http://localhost:5656"

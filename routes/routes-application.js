@@ -18,14 +18,15 @@ const spxAuth = require('../utils/spx_auth.js');
 const jsdom = require("jsdom"); // for scanning js within templates
 const { JSDOM } = jsdom;
 const cors = require('cors');
-const { constants } = require("buffer");
+// const { constants } = require("buffer");
+// const { config } = require("winston"); // <!-- this is auto-generated here by the IDE and will screw things up! Beware >:-[
 // global.rundownData is introduced in server.js 
 
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
 router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, async function (req, res) {
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let currVer = vers;
-  let greeting = config.general.greeting;
+  let greeting = config.general.greeting || '';
   res.render('view-home', { layout: false, greeting:greeting, curVerInfo: req.curVerInfo, currVer: currVer, user: req.session.user });
 });
 
@@ -39,6 +40,54 @@ router.get('/templates/empty.html', function (req, res) {
   // res.sendFile(emptyhtml);
   res.render('view-empty', { layout: false });
 });
+
+router.get(['/renderer/index.html','/renderer'], function (req, res) {
+  // Added in 1.0.16. Default resolution is HD.
+  let width   = '1920';
+  let height  = '1080';
+  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
+    width   = '3840';
+    height  = '2160';
+  }
+  res.render('view-renderer', { layout: false, width:width, height:height} );
+});
+
+router.get('/renderer/scalable', function (req, res) {
+  // Added in 1.0.16. Default resolution is HD.
+  let width   = '1920';
+  let height  = '1080';
+  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
+    width   = '3840';
+    height  = '2160';
+  }
+  res.render('view-rendererscalable', { layout: false, width:width, height:height} );
+});
+
+router.get('/renderwindow/:type', function (req, res) {
+  // Added in 1.0.16. 
+  // FIXME: This is not done yet!
+  let width   = '1920';
+  let height  = '1080';
+  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
+    width   = '3840';
+    height  = '2160';
+  }
+
+  let viewFile = '';
+  if (req.params.type === 'preview') { viewFile = 'view-renderwindow_preview'} ;
+  if (req.params.type === 'program') { viewFile = 'view-renderwindow_program'} ;
+
+  if (viewFile == '') {
+    res.send('Invalid URL');
+  } else {
+    res.render(viewFile, { layout: false, width:width, height:height} );
+  }
+
+
+  
+});
+
+
 
 router.get('/logout', spxAuth.Logout, function (req, res) {
   res.redirect('/');
@@ -392,6 +441,21 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       logger.verbose('Added template: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
       let templatehtml = templateContents.toString();
+
+
+      /*
+        FIXME: JSDOM loading via a promise
+
+        JSDOM is used to parse html template for the SPXGCTemplateDefinition.
+        Now it produces error messages for eventListeners in the template files
+        and potentially crashes SPX server if there are onLoad function calls
+        in template <body> tag.
+
+        Refactoring JSDOM call into a promise might do the job. Read this:
+        https://github.com/jsdom/jsdom/issues/2557
+
+      */
+
       const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
       let SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition || 'notFound'; // there must be "window.SPXGCTemplateDefinition{}" -object in template file!
 
@@ -653,6 +717,14 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let csvFileList = '';
   csvFileList = JSON.stringify(spx.GetFilesAndFolders( path.resolve(spx.getStartUpFolder(),'ASSETS', 'csv'), 'csv' ));
 
+  // Added in 1.0.16
+  let width   = 1920;
+  let height  = 1080;
+  if (config.general.resolution && config.general.resolution=='4K') {
+    width   = 3840;
+    height  = 2160;
+  }
+
   res.render('view-controller', {
     layout:         false,
     globalExtras:   config.globalExtras,
@@ -664,7 +736,10 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     profiledataObj: profileDataJSONobj,
     user:           req.session.user,
     background:     projectBackground,
-    csvFileList:    csvFileList
+    csvFileList:    csvFileList,
+    width:          width,
+    height:         height,
+    previewMode:    config.general.preview
   });
 
   let bgImage = ''
@@ -1028,8 +1103,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       dataOut.relpathCCG = req.body.relpath.split('.htm')[0]; // casparCG needs template path without extension
       preventSave = true;
     }
-    else
-    {
+    else {
       // normal method of working. We collect data from showfile.
       logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.epoch + '] of [' + req.body.datafile + '].');
       RundownFile = path.normalize(req.body.datafile);
@@ -1045,13 +1119,11 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       }
       // console.log('RundownData ' + notifyDataSource, RundownData);
 
-
       // Refactored: identify with epoch / itemID, not index.
-      req.body.templateindex
+      // req.body.templateindex // disabled line in 1.0.16
       
       RundownData.templates.forEach((template,index) => {
-        if (template.itemID == req.body.epoch) 
-          {
+        if (template.itemID == req.body.epoch) {
             templateIndex=index;
           }
       });
@@ -1107,6 +1179,21 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
     switch (playOutCommand) {
 
+      // == PREVIEW ======================================================
+      case 'preview':
+
+        // Send PlayoutWEB.functionCalls() if any ---------------------
+        if (dataOut.webplayout!='-') {
+          dataOut.webplayout = 1; // force to layer 1!
+          logger.verbose('Webplayout PREVIEW: ' + dataOut.webplayout);
+          dataOut.playmode = 'preview';
+          dataOut.spxcmd = 'playTemplate';
+          PlayoutWEB.webPlayoutController(dataOut);
+        } else {
+          logger.verbose('No Webplayout playout');
+        }
+        break;
+
       // == PLAY ======================================================
       case 'play':
 
@@ -1158,8 +1245,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             }
           });
         }
-
-
         break;
 
       // == NEXT / aka CONTINUE  ========================================
@@ -1282,7 +1367,8 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // await spx.writeFile(RundownFile,RundownData);
       global.rundownData = RundownData // memory only
       }
-    res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
+    // res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
+    res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try
   catch (error)
     {
@@ -1444,6 +1530,32 @@ router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
 
 
 
+router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
+  // Added in 1.0.16. Handles modification changes of given config items.
+  // Request: key / val pair as a data object.
+  // Returns: Ajax response
+
+  logger.verbose('Overwriting config with updated values.');
+  try {
+    var ConfigFile = global.configfileref;
+    var ConfigData = await GetJsonData(ConfigFile);
+    let key = req.body.key;
+    let val = req.body.val;
+    ConfigData.general[key] = val;
+    global.config = ConfigData; // update mem version also
+    await spx.writeFile(ConfigFile,ConfigData);
+    let response = ['Config changed']
+    res.status(200).send(response); // ok 200 AJAX RESPONSE
+  } catch (error) {
+      console.error('ERROR', error);
+      let errmsg = 'Server error in /gc/saveConfigChanges [' + error + ']';
+      logger.error(errmsg);
+      res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
+  };
+});
+
+
+
 
 
 router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
@@ -1592,6 +1704,7 @@ async function SaveRundownDataToDisc() {
   // File is written if there is data in the memory.
   //
   // Hotfix right after 1.0.15: remove absPath from RundownData before storing json.
+  // Function improved in 1.0.16.
   try {
 
     if ( Object.keys(global.rundownData).length > 0 ) {
@@ -1601,16 +1714,16 @@ async function SaveRundownDataToDisc() {
       // recently managed rundown file. This will not be stored
       // to the json file.
 
-      if (!RundownData.filepath) {
-        throw('No RundownData.filepath in memory, cannot save!');
+      if (RundownData.filepath && RundownData.filepath!='') {
+        let AbsPath = RundownData.filepath;
+        delete RundownData.filepath;
+        RundownData.updated = new Date().toISOString();
+        await spx.writeFile(AbsPath,RundownData); // 1.0.16
+      } else {
+        logger.verbose('No RundownData.filepath known in memory, cannot save.');
       }
-
-      let AbsPath = RundownData.filepath;
-      delete RundownData.filepath;
-      RundownData.updated = new Date().toISOString();
-      await spx.writeFile(AbsPath,RundownData); // 1.0.16
     } else {
-      throw('No RundownData data in memory, cannot save!');
+      logger.verbose('No RundownData data yet in memory, nothing to save.');
     }
   } catch (error) {
     logger.error('SaveRundownDataToDisc Error: ' + error);

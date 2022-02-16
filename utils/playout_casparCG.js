@@ -135,6 +135,7 @@ module.exports = {
           break;
 
         case 'INVOKE':
+            InvFunct = InvFunct.replace(/"/g, '\\"'); // replace " with \" globally. Added in 1.0.16.
             global.CCGSockets[this.getSockIndex(data.playserver)].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' INVOKE 1 \"' + InvFunct + '\"\r\n');
             break;
 

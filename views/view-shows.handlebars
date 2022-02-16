@@ -12,6 +12,7 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
   <script src="/js/fontawesome.all.min.js"></script>
+  <script src="/js/anime.min.js"></script>
   <script src="/js/socket.io.js"></script>
   <script src="/js/spx_gc.js"></script>
 </head>
@@ -39,11 +40,36 @@
           <table style="width: 100%;" cellspacing="10" border="0">
             <tr>
               <td>
+                <select id="allProjects" style="display:none;">
+                  {{#each folders}}
+                    <option>{{this}}</option>
+                  {{/each}}
+                </select>
+                {{#ifGreater folders.length 5}}
+                <!-- more than 5 projects (above), so enable filtering -->
+                <input  type="text"
+                        id="projectFilter"
+                        placeholder="{{lang 'button.filterprojects'}}"
+                        onkeyup="filterProjects()"
+                        class="wide gcinputFilter bg_grey40 spxformtext"
+                        style="color:white; border-radius: 0.2em; ::placeholder {color: rgb(156, 0, 0);}"
+                        autofocus>
+                {{/ifGreater}}
+              </td>
+            </tr>
+            <tr>
+              <td>
                 <select id="lists"
                 size=14 class="spxformtext bg_grey40"
                 style="width: 100%; height:100%; color:white; border:0px; padding:0.2em; line-height:3;"
                 onmouseover="tip('{{lang 'hover.showlist'}}');"
-                ondblclick="eps();" autofocus>
+                ondblclick="eps();"
+                {{#ifGreater folders.length 5}}
+                  <!-- filtering enabled -->
+                {{else}}
+                  autofocus
+                {{/ifGreater}}
+                >
                 {{#each folders}}
                 <option>{{this}}</option>
                 {{/each}}
