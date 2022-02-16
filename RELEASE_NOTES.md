@@ -4,14 +4,15 @@
 
 See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 
----
-## **Version TBD** (list updated Feb 16 2022)
-> **WORK-IN-PROGRESS!** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
-
 <BR>
 
+
+## **WORK IN PROGRESS** (list updated Feb 16 2022)
+> **PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
+
+
 - Changed default port to 5656 to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting :)
-- Added preview functionality (WIP, has bugs still)
+- Added preview functionality (`Currently disabled, has bugs still`)
 - Added 4K support to app config and renderer(s). Please note, most templates are done for fixed HD resolution and may appear in 1/4th size in the output.
 - Added filtering to Projects view (visible when there are 5 projects or more)
 - Added `/api/v1/controlRundownItemByID` -API endpoint (see http://localhost:5656/api/v1)
@@ -22,6 +23,13 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 - Improved "links to other stuff" globalExtra from config/createConfig to a plugin in ASSETS/plugins/spxLinks/
 - Fixed a bug in template browser dialog which prevented navigating up in certain situations
 
+<br>
+
+---
+
+<BR>
+
+Published releases:
 
 ## **1.0.15** (Oct 24 2021)
 - Renamed the app from "SPX-GC" to "SPX". Website: http://spx.graphics
@@ -40,6 +48,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
     [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_linux64.zip),
     [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_linux64.zip)
 
+<BR>
 
 ## **1.0.14** (Oct 01 2021)
 - Added functionality required by "SPX-GC CasparCG MediaPlayer -extension" (CCG commands)
@@ -56,6 +65,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
     [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_linux64.zip),
     [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_14_linux64.zip)
 
+<BR>
 
 ## **1.0.13** (Apr 27 2021)
 - Fixed a complex rundown issue when items duplicated + sorted. (Bug found right after v.1.0.12 release)
@@ -64,6 +74,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
     [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_linux64.zip),
     [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX-GC_1_0_13_linux64.zip)
 
+<BR>
 
 ## **1.0.12** (Apr 25 2021)
 - Added new direct API commands, such as `invokeTemplateFunction` to enable custom template function triggering from StreamDeck
