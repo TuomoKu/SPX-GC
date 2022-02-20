@@ -80,10 +80,17 @@ h2:first-of-type{
 
 
 hr {
-    margin: 20px 0px 20px 0px;
+    margin: 5px 0px 20px 0px;
     border: 1px solid rgba(0,0,0,0.0);
-    border-top: 2px solid rgba(0,0,0,0.2);
-    border-bottom: 2px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(138, 138, 138, 0.2);
+}
+
+hr.menuDivider {
+    margin: 5px 0;
+    border: 1px solid rgba(0,0,0,0.0);
+    border-top: 2px solid rgba(0,0,0,0.5);
+    border-bottom: 1px solid rgba(161, 161, 161, 0.2);
 }
 
 
@@ -252,7 +259,6 @@ td.aright{
 
 .dropdown-content {
     font-family: "UI-Light", Arial, Helvetica, sans-serif;
-    right: 0;
     display: none;
     position: absolute;
     background-color: #272833;
@@ -263,11 +269,26 @@ td.aright{
     font-size: 0.8em;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown-content-right {
+    right: 0;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    display: none;
+    position: absolute;
+    background-color: #272833;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 0.5em;
+    z-index: 1;
+    line-height: 2em;
+    font-size: 0.8em;
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown:hover .dropdown-content-right {
     display: block;
 }
 
-.dropdown-content a {
+.dropdown-content a,
+.dropdown-content-right a {
     white-space: nowrap;
 }
 

@@ -676,7 +676,7 @@ app.engine('handlebars', exphbs({
 
         html += '<div class="dropdown serverbtn">';
         html += '   <i id="indicator' + i + '" class="fas fa-check-circle" style="color: 00CC00;"></i>&nbsp;<span class="serverIndicator ' + disabledClass + '" id="server' + element.name + '">' + element.name + '</span>';
-        html += '   <div class="dropdown-content">';
+        html += '   <div class="dropdown-content-right">';
         html += '     <span style="display: block; opacity: 0.4; background-color: #000; width:100%;">' + element.host + ':' + element.port + '</span>';
         html += '     <A href="#" OnClick="spx_system(\'CHECKCONNECTIONS\');return false;">Connection check</A><br>';
         html += '     <A href="#" OnClick="clearUsedChannels(\'' + element.name + '\');">Clear all layers</A><br>';

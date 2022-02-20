@@ -28,7 +28,14 @@ router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, asyn
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let currVer = vers;
   let greeting = config.general.greeting || '';
-  res.render('view-home', { layout: false, greeting:greeting, curVerInfo: req.curVerInfo, currVer: currVer, user: req.session.user });
+
+  let recents = config.general.recents || [] // added in 1.0.16
+  res.render('view-home', { layout: false,
+      greeting:   greeting,
+      curVerInfo: req.curVerInfo,
+      currVer:    currVer,
+      user:       req.session.user,
+      recents:    recents});
 });
 
 router.get('/admin', spxAuth.CheckLogin, function (req, res) {
@@ -149,7 +156,8 @@ router.post('/saveauthpolicy', function (req, res) {
 router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
   await SaveRundownDataToDisc(); // Added in 1.0.15
-  res.render('view-appconfig', { layout: false, config: config, user: req.session.user, configfile: configfileref});
+  let recents = config.general.recents || [] // added in 1.0.16
+  res.render('view-appconfig', { layout: false, config: config, user: req.session.user, configfile: configfileref, recents: recents});
 });
 
 
@@ -237,7 +245,8 @@ router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
   await SaveRundownDataToDisc(); // Added in 1.0.15
   const folderListAsJSON = await GetSubfolders(config.general.dataroot);
-  res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user });
+  let recents = config.general.recents || [] // added in 1.0.16
+  res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user, recents: recents});
 });
 
 
@@ -245,7 +254,8 @@ router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => 
   // Show episodes (files in folder 'data')
   const fileListAsJSON = await GetDataFiles(config.general.dataroot + "/" + req.params.foldername + "/data/");
   await SaveRundownDataToDisc(); // Added in 1.0.15
-  res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, errorMsg: '', user: req.session.user });
+  let recents = config.general.recents || [] // added in 1.0.16
+  res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, errorMsg: '', user: req.session.user, recents: recents});
 });
 
 router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, res) => {
@@ -262,10 +272,18 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
   else {
     treeData = JSON.stringify(spx.GetFilesAndFolders(LastBrowsedTemplateFolder));
   }
-
+  let recents = config.general.recents || [] // added in 1.0.16
   let ERRCODE="";
   if (req.query.ERR){ ERRCODE='error.'+req.query.ERR };
-  res.render('view-showconfig', { layout: false, TemplateFiles: treeData, TemplateRootFolder: config.general.templatefolder, showconfig: fileDataAsJSON, folder: req.params.foldername, messageCode:'', errorCode:ERRCODE, user: req.session.user});
+  res.render('view-showconfig', { layout: false,
+    TemplateFiles: treeData,
+    TemplateRootFolder: config.general.templatefolder,
+    showconfig: fileDataAsJSON,
+    folder: req.params.foldername,
+    messageCode:'', errorCode:ERRCODE,
+    user: req.session.user,
+    recents: recents
+  });
 });
 
 
@@ -735,6 +753,8 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     height  = 2160;
   }
 
+  let recents = config.general.recents || [] // added in 1.0.16
+
   res.render('view-controller', {
     layout:         false,
     globalExtras:   config.globalExtras,
@@ -749,7 +769,8 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     csvFileList:    csvFileList,
     width:          width,
     height:         height,
-    previewMode:    config.general.preview
+    previewMode:    config.general.preview,
+    recents:        recents
   });
 
   let bgImage = ''
@@ -763,6 +784,8 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
       background: bgImage
     });
     }, 500);
+
+    spx.setRecents(req.params.foldername + '/' + req.params.filename) // Added in 1.0.16
 
 });
 

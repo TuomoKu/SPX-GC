@@ -578,6 +578,25 @@ module.exports = {
     }
   }, // shortifyString
 
+  setRecents: function (rundownRef) {
+    try {
+      // request ..... string "folder/file" reference
+      // return ...... nothing
+      // Will manage up to 3 recents in global.config.general.recents[]
+      let recentsArray = config.general.recents || []; // ['FOLDER1/FILE1','FOLDER2/FILE2','FOLDER3/FILE3',];
+      recentsArray.forEach((item,index) => {
+          if (item == rundownRef) {
+              recentsArray.splice(index,1);
+          }
+      });
+      recentsArray.unshift(rundownRef);
+      recentsArray.length = 3;
+      this.writeFile(configfileref,config); //TODO:
+    } catch (error) {
+      logger.error('ERROR in spx.setRecents (fileref: ' + rundownRef + '): ' + error);  
+    }
+  },
+
   shortifyName: function (fullString){
     try {
       // request ..... a long string, such as server asset url

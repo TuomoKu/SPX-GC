@@ -17,7 +17,7 @@ document.onkeydown = checkKey;
 
 socket.on('connect', function () {
     // Added in 1.0.16:
-    if (document.getElementById('logo') && document.getElementById('logo-off')) {
+    if (document.getElementById('logo') && document.getElementById('logo_off')) {
         document.getElementById('logo').src=document.getElementById('logo_on').src;
         document.body.style="pointer-events: auto;" // restore clickability
         hideMessageSlider();
@@ -151,7 +151,7 @@ socket.on('SPXMessage2Controller', function (data) {
 
 socket.on('disconnect', function () {
     // Added in 1.0.16
-    if (document.getElementById('logo') && document.getElementById('logo-off')) {
+    if (document.getElementById('logo') && document.getElementById('logo_off')) {
         document.getElementById('logo').src=document.getElementById('logo_off').src;
         showMessageSlider('Disconnected from SPX server', type='error', true)
         document.body.style="pointer-events: none;"  // disable clickability
@@ -1394,6 +1394,27 @@ function playItem(itemrow='', forcedCommand='') {
 
   } // playItem
 
+/* moved to backend
+function addToRecents() {
+    // manage 3 items in recents
+    let project = document.getElementById('foldername').value;
+    let rundown = document.getElementById('filebasename').value;
+    let address = encodeURI(project + '/' + rundown);
+    showMessageSlider('Adding ' + address);
+    let LS = 'SPX_RecentRundowns';
+    let recentsArray = JSON.parse(localStorage.getItem(LS)) || []; // ['FOLDER1/FILE1','FOLDER2/FILE2','FOLDER3/FILE3',];
+
+    recentsArray.forEach((item,index) => {
+        if (item == address) {
+            recentsArray.splice(index,1);
+        }
+    });
+    recentsArray.unshift(address);
+    recentsArray.length = 3;
+    localStorage.setItem(LS, JSON.stringify(recentsArray))
+    console.log('recents', recentsArray);
+}
+*/
 
 
 function renameRundown() {

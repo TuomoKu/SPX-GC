@@ -19,6 +19,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 - Added the "options zone" below the renderer (WIP)
 - Added a new promo option (WIP)
 - Added "disable" toggle to CasparCG servers to temporarily prevent playout commands sending.
+- Added recent files to the main dropdown menu (saved to config.json)
 - Improved `/api/v1/invokeTemplateFunction` -API endpoint with url encoded strings.
 - Improved startup sequence on macOS
 - Improvements in various file reading / writing functions. Overall stability and cleanup.
