@@ -40,10 +40,11 @@ function reimportTemplateIndex(nro) {
 function RenderFolder(data) {
   // will draw folder and files to the popup GUI
 
-  console.log('showConfig.js --> RenderFolder', data );
+  // console.log('showConfig.js --> RenderFolder', data );
 
-  if (!data.folder) {
+  if (!data || !data.folder) {
     console.log('ShowConfig / RenderFolder(): Folder unknown.');
+    showMessageSlider('Error happened: unknown folder. Restart SPX.', 'error', false)
     return
   }
 
@@ -100,7 +101,7 @@ function openFolder(fromFolder, toFolder) {
     for (fi = 0; fi < fils.length; fi++) {
       fils[fi].classList.remove('selectedFile');
     }
-    // console.log('Opening folder ' + folderName);
+    // console.log('spx_showConfig.js / openFolder() getting content from folder  [' + fromFolder + '] to folder [' + toFolder + ']...');
     axios.post('/api/browseFiles', {
         curFolder: fromFolder,
         tgtFolder: toFolder

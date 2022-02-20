@@ -161,7 +161,7 @@
               <td>
                 <select class="wide drop bg_grey15" name="general[preview]">
                   <!-- error, warn, info, verbose, debug -->
-                  <option value="next"     {{#ifValue config.general.preview "next"    }}selected{{/ifValue}}>Preview next item on play</option> 
+                  <option value="next" disabled  {{#ifValue config.general.preview "next"    }}selected{{/ifValue}}>Preview next item on play</option> 
                   <option value="selected" {{#ifValue config.general.preview "selected"}}selected{{/ifValue}}>Preview selected item on focus</option><!-- this is the default -->
                 </select>
                 </P>
@@ -549,6 +549,7 @@
 
     // See spx_gc.js
     function pageInit(){
+      heartbeat(203); // page identifier
       spxInit('');
     }
   </script>

@@ -13,6 +13,12 @@
     CHANGES:
     12.01.2022  Improved Excel ticker headline switch timing (thanks Brandon for the improvements)
 
+
+    ISSUES:
+    16.02.2022  We noticed there has to be at least two workbooks in the Excel file.
+                Add an additional #EMPTY worksheet and it will work...
+
+
 -->
 
 <head>
@@ -218,6 +224,10 @@
             axios.post(APIcall,  {filename: filename})
             .then(function (response) {
                 workSheetsData = response.data
+
+                console.log('Debug', workSheetsData);
+
+
                 workSheetsData.forEach((Book,index) => {
                   bookRows = [];
                   if (!Book.name.includes('#')) {

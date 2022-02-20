@@ -1,6 +1,6 @@
 // file is used in controller to handle importing of CSV-file data
 
-function RenderFolder(data) {
+function RenderFolder(data) { //controllerImportCSV
   // will draw folder and files to the popup GUI
 
   if (!data.folder){
@@ -71,7 +71,7 @@ function openFolder(fromFolder, toFolder) {
       })
         .then(function (response) {
             // console.log(response);
-            RenderFolder(response.data);
+            RenderFolder(response.data); // controllerImportCSV
 
         })
         .catch(function (error) {

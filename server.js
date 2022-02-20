@@ -31,8 +31,9 @@ const path = require('path')
 const rfs = require('rotating-file-stream')
 var macaddress = require('macaddress');
 
-console.log('\x1b[37m%s\x1b[40m', ''); // console colors to black
-
+// Nope.
+// console.log('\x1b[37m%s\x1b[40m', ''); // console colors to black
+console.log('\n  SPX Graphics Controller server is starting.\n  Closing this window/process will stop the server.\n');
 
 // EXIT HANDLER
 process.on('exit', function(code) {
@@ -83,9 +84,6 @@ global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cac
 // rundown state to avoid unnecessary disk I/O and improve performance. 
 global.rundownData = {} 
 // --------------------------------------------------------------------
-
-
-console.log('\n\n\n  SPX Graphics Controller v.' + vers + ' is starting...\n  Closing this window/process will stop the server.\n');
 
 const port = config.general.port || 5656;
 global.CCGSockets = [];
@@ -611,7 +609,8 @@ app.engine('handlebars', exphbs({
     DropdownOptionsLANG() {
       let html = '';
       let sel = '';
-      let fileListData = spx.getJSONFileList('./locales/');
+      let localesFolder = path.join(spx.getStartUpFolder(), 'locales');
+      let fileListData = spx.getJSONFileList(localesFolder);
       fileListData.files.forEach((element,i) => {
         sel = '';
         if (element.name == config.general.langfile)
@@ -780,7 +779,7 @@ process.on('uncaughtException', function(err) {
 var server = app.listen(port, (err) => {
 
   let splash = '  Copyright 2020-2022 SmartPX & Softpix\n\n' +
-  `  Version ................ ${vers}\n` +  
+  `  SPX version ............ ${vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
   '  Homepage ............... http://spx.graphics\n' +
   '  Template Store ......... http://spxgc.com/store\n' +
@@ -790,9 +789,9 @@ var server = app.listen(port, (err) => {
   `  Cfg / hostname ......... ${config.general.hostname}\n`  +
   `  Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `  Cfg / dataroot ......... ${path.resolve(config.general.dataroot)}\n`  +  
-  `  Cfg / template files ... ${path.resolve(config.general.templatefolder)}\n`  +  
-  `  Cfg / logfolder ........ ${logDirectory}\n`+ 
-  `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n`;
+  /*`  Cfg / template files ... ${path.resolve(config.general.templatefolder)}\n`  + */ 
+  `  Cfg / logfolder ........ ${logDirectory}\n`; 
+  /* `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n` */
   
   // Where are CasparCG templates loaded from (file:// or http://):
   let TemplatesFromInfo;
@@ -806,11 +805,11 @@ var server = app.listen(port, (err) => {
   splash +=
   `  Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
   `  See README.pdf and Knowledge Base for more info\n` + 
-  `  and please visit`; 
+  `  and please visit spxgc.com/store to support us.`; 
   
-  console.log(splash, '\x1b[32m', 'spxgc.com/store', '\x1b[37m', 'to support us.');
+  console.log(splash);
 
-  let prompt = 'Open SPX in a browser:';
+  let prompt = 'SPX can be accessed with a browser:';
   let spxUrl = `http://${ipad}:${port}`;
   let urLeng = spxUrl.length;
   let prLeng = prompt.length;
@@ -827,11 +826,18 @@ var server = app.listen(port, (err) => {
   }
   
 
-  console.log('\x1b[32m%s\x1b[40m', '\n  ' + line1s);
-  console.log('\x1b[32m%s\x1b[40m', `  │`,'\x1b[37m', line2s,'\x1b[32m', `│`);
-  console.log('\x1b[32m%s\x1b[40m', `  │`,'\x1b[32m', spxUrl + spacer,'\x1b[32m', `│`);
-  console.log('\x1b[32m%s\x1b[40m', '  ' + line3s);
-  console.log('\x1b[37m%s\x1b[40m', '');
+  // Color caused pain in some terminals
+  // console.log('\x1b[32m%s\x1b[40m', '\n  ' + line1s);
+  // console.log('\x1b[32m%s\x1b[40m', `  │`,'\x1b[37m', line2s,'\x1b[32m', `│`);
+  // console.log('\x1b[32m%s\x1b[40m', `  │`,'\x1b[32m', spxUrl + spacer,'\x1b[32m', `│`);
+  // console.log('\x1b[32m%s\x1b[40m', '  ' + line3s);
+  // console.log('\x1b[37m%s\x1b[40m', '');
+
+  console.log('\n  ' + line1s);
+  console.log('  │ ' + line2s + '   │');
+  console.log('  │ ' + spxUrl + spacer + '   │');
+  console.log('  ' + line3s);
+  console.log('');
 
   if ( config.general.launchchrome ) {
     try {
@@ -860,7 +866,7 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('disconnect', async function () {
     let SPXClientName = clients[socket.id].SPXClientName || '** no name **';
-    console.log('[' + SPXClientName + '] disconnected (' + socket.id + "). Connections: " + io.engine.clientsCount);
+    // console.log('[' + SPXClientName + '] disconnected (' + socket.id + "). Connections: " + io.engine.clientsCount);
     logger.verbose('*** Socket disconnected (' + socket.id + ") Connections: " + io.engine.clientsCount);
     delete clients[socket.id];
 
@@ -888,7 +894,7 @@ io.sockets.on('connection', function (socket) {
 
       case 'identifyClient':
         socket.SPXClientName = data.name;
-        console.log('Identified [' + socket.id + '] as [' + data.name + ']');
+        logger.verbose('Identified [' + socket.id + '] as [' + data.name + ']');
         break;
 
       case 'command-name-here':

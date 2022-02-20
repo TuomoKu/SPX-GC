@@ -260,8 +260,9 @@
   <script>
     // check for upgrade
     document.getElementById('upgradeBubble').style.display="none";
+    heartbeat(202); // page identifier
 
-
+    /*
     function getMessages() {
       // Poll server for upgrade info.
       // Requires CORS in the route.
@@ -270,6 +271,7 @@
       document.getElementById('messageinfo').style.display="none";
 
       var url = (`https://www.smartpx.fi/gc/messageservice/?{{{curVerInfo}}}`);
+      console.log('url',url);
       fetch(url)
       .then((res) => res.json())
       .then((messages) => {
@@ -317,7 +319,9 @@
       })
       .catch((error) => console.log(error))
     }
+    /*
 
+    /*
     function versInt(semver){
       // Returns a numeric value representing "1.0.0" formatted semantic version string.
       // This works as long as max value of each field is 99!
@@ -329,8 +333,9 @@
       // console.log('Semver ' + semver + ' = versInt ' + versInt);
       return versInt
     }
+    */
 
-    getMessages();
+    getMessages('{{{curVerInfo}}}');
   
 
   </script>

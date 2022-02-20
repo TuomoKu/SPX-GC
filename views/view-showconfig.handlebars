@@ -23,7 +23,6 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
 </head>
 
-
 <body onload="pageInit();" class="bg_body" onmouseover="tip('');">
 
 <input type="hidden" id="treedata" value="{{TemplateFiles}}">
@@ -41,7 +40,6 @@
 
     <div class="header">
       {{>header page="showconfig"}}
-
     </div><!-- header ended -->
 
 
@@ -64,50 +62,6 @@
             {{lang 'warning.showprofilebackup'}}
           </span><BR>
 -->
-
-          <table class="wide" border=0>
-            <TR>
-              <td class="vmid tableheaderText">{{lang 'config.general'}}</td>
-              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projectgeneral');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
-            </TR>
-          </table>
-          <hr class="h2hr"><!-- =========================================== -->
-          <div class="configGeneralContent spxConfigHead" >
-              <form name="configGeneral" id="configGeneral" method="post" action="config/saveGeneralSettings">
-                <input type="hidden" name="showFolder" value="{{folder}}">
-
-              <!-- background option -->
-                <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
-                  <tr>
-                    <td width="50%"><span class="spxConfigHead">{{lang 'config.backgroundImage'}}</span></td>
-                    <td width="50%">
-                        <select style="width: 100%; color:#white; background-color: #656E7A;" class="drop" name="background"  onmouseover="tip('Choose an image');">
-                          <option value="">{{lang 'general.none'}} ({{lang 'color.transparent'}})</option>
-                          <option class="generalSettingDropdown" disabled></option>
-                          <option class="generalSettingDropdown" disabled>{{lang 'config.optionalBgImage'}}:</option>
-                          <option class="generalSettingDropdown" disabled>ASSETS/media/images/hd</option>
-                          <option class="generalSettingDropdown" disabled></option>
-                            {{{ PopulateFilelistOptions 'media/images/hd' 'png' showconfig.general.background }}}
-                        </select>
-                      </td>
-                  </tr>
-                </table>
-
-              <!-- future options here -->
-
-              <!-- save button -->
-              <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
-                <tr>
-                  <td width="50%">&nbsp;</td>
-                  <td width="50%">
-                    <button type="submit" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide btn bg_blue ripple">{{lang 'hover.saveprofile'}}</button>
-                  </td>
-                </tr>
-              </table>
-            </form>
-          </div>
-          <BR><BR>
-          
 
 
           <table class="wide" border=0>
@@ -264,7 +218,56 @@
             <button type="button" class="addbtn bg_blue ripple" onClick="ModalOn('fileoverlay');" onmouseover="tip('{{lang 'hover.browsetemplate'}}');">+</button>
           </div>
 
-          <BR>
+          <BR><BR>
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">{{lang 'config.general'}}</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projectgeneral');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <div class="configGeneralContent spxConfigHead" >
+              <form name="configGeneral" id="configGeneral" method="post" action="config/saveGeneralSettings">
+                <input type="hidden" name="showFolder" value="{{folder}}">
+
+              <!-- background option -->
+                <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                  <tr>
+                    <td width="50%"><span class="spxConfigHead">{{lang 'config.backgroundImage'}}</span></td>
+                    <td width="30%">
+                        <select style="width: 100%; color:#white; background-color: #656E7A;" class="drop" name="background"  onmouseover="tip('Choose an image');">
+                          <option value="">{{lang 'general.none'}} ({{lang 'color.transparent'}})</option>
+                          <option class="generalSettingDropdown" disabled></option>
+                          <option class="generalSettingDropdown" disabled>{{lang 'config.optionalBgImage'}}:</option>
+                          <option class="generalSettingDropdown" disabled>ASSETS/media/images/hd</option>
+                          <option class="generalSettingDropdown" disabled></option>
+                            {{{ PopulateFilelistOptions 'media/images/hd' 'png' showconfig.general.background }}}
+                        </select>
+                    </td>
+                  <td width="20%">
+                    <button type="submit" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide btn bg_grey10 ripple">{{lang 'button.save'}}</button>
+                  </td>
+                  </tr>
+                </table>
+
+              <!-- future options here -->
+
+              <!-- save button --><!--
+              <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
+                <tr>
+                  <td width="50%">&nbsp;</td>
+                  <td width="50%">
+                    <button type="submit" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide btn bg_blue ripple">{{lang 'hover.saveprofile'}}</button>
+                  </td>
+                </tr>
+              </table>
+              -->
+            </form>
+          </div>
+          <BR><BR>
+
+
+
           <table class="wide" border=0>
             <TR>
               <td class="vmid tableheaderText">{{lang 'config.showextras'}}</td>

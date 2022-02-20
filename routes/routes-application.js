@@ -384,7 +384,7 @@ router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, 
   logger.verbose('Overwriting a profile ' + req.body.showFolder + ' with updated values.');
   let showFolder  = req.body.showFolder || "";
   let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
-  let profileData = await GetJsonData(ProfileFile);
+  let profileData = await GetJsonData(ProfileFile) || {};
   profileData.general = {};
   profileData.general.background = req.body.background;
 
@@ -437,6 +437,14 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         TemplatePath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', TemplatePath)
       }
 
+      // Quality improvement?
+      // Trying to survive invalid datafolder path
+      if (!fs.existsSync(TemplatePath)) {
+        TemplatePath = path.join(spx.getStartUpFolder(),'/ASSETS/templates', TemplatePath);
+        logger.warn('config/addtemplate got invalid path, trying failover: ' + TemplatePath)
+      }
+
+
       // console.log('Added template: ' + TemplatePath);
       logger.verbose('Added template: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
@@ -455,6 +463,8 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         https://github.com/jsdom/jsdom/issues/2557
 
       */
+
+      console.log('\nPLEASE NOTE: Any errors below are from template being imported to SPX and can usually be safely ignored. Errors may occur when the template has onLoad() event handlers or is missing required references or assets or has invalid javascript code in them.\n')
 
       const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
       let SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition || 'notFound'; // there must be "window.SPXGCTemplateDefinition{}" -object in template file!
@@ -478,7 +488,6 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
 
       // v.1.0.15 add imported timestamp
       SPXGCTemplateDefinition.imported = String(Date.now()); // epoch. This COULD be used to compare template versions in profile/rundown.
-
 
       // v.1.0.14 add note if no fields
       if ( !SPXGCTemplateDefinition.DataFields ||  SPXGCTemplateDefinition.DataFields.length === 0) {
@@ -708,7 +717,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let profileData = JSON.stringify(profileDataJSONobj);
   let projectBackground = ''; // added in 1.0.15  
 
-  if ( profileDataJSONobj.general && profileDataJSONobj.general.background )  {
+  if ( profileDataJSONobj && profileDataJSONobj.general && profileDataJSONobj.general.background )  {
     projectBackground = profileDataJSONobj.general.background;
   }
 
@@ -743,7 +752,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   });
 
   let bgImage = ''
-  if (profileDataJSONobj.general && profileDataJSONobj.general.background) {
+  if (profileDataJSONobj && profileDataJSONobj.general && profileDataJSONobj.general.background) {
     bgImage = profileDataJSONobj.general.background
   }
 
@@ -1707,6 +1716,8 @@ async function SaveRundownDataToDisc() {
   // Function improved in 1.0.16.
   try {
 
+    if (!rundownData) { return }; // no data to store
+
     if ( Object.keys(global.rundownData).length > 0 ) {
       let RundownData = global.rundownData
 
@@ -1765,7 +1776,7 @@ async function GetJsonData(fileref) {
     }
     else{
       logger.debug('GetJsonData: file does not exist [' + fileref + '], returning null.');
-      return;
+      return false;
     }
     
   }

@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Feb 16 2022.
+Readme updated Feb 20 2022.
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.0.15** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
 
@@ -129,7 +129,12 @@ npm install
 ```
 * See `package.json` for available scripts, but in **development** the typical start script would be `npm run dev` which will use _nodemon_ to restart the server when changes are made to source files.
 ```sh
+# on Windows:
 npm run dev
+
+# On a Mac there is currently an issue when running SPX with nodemon which causes command line arguments to get mixed up. On Mac run the app with Node traditionally without hot reloading:
+node server.js
+
 ```
 ### pm2 process manager<a id="pm2"></a>
 * Installation of `pm2` process manager ([https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)) can help in advanced production scanarios.

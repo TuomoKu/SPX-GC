@@ -1,5 +1,5 @@
 
-// ================== functions alphabetical order  ==================================================
+// SPX server functions
 
 const logger = require('./logger.js');
 const fs = require('fs');
@@ -9,13 +9,10 @@ const wavplayer = require('node-wav-player');
 const PlayoutCCG = require('./playout_casparCG.js');
 const glob = require("glob");
 const ip = require('ip')
-// const { rejects } = require('assert');
 const axios = require('axios')
 const http = require('http');
-
 const port = config.general.port || 5656;
-        
-let Connected=true; // used we messaging service
+// let Connected=true; // used we messaging service // FIXME: Remove?
 
 // Use crypto instead of bcrypt:
 let crypto;
@@ -24,7 +21,6 @@ try {
 } catch (err) {
   logger.warn('Crypto support is disabled!');
 }
-
 
 module.exports = {
 
@@ -63,7 +59,7 @@ module.exports = {
       logger.debug('CCGServersConfigured: No CasparCG servers available in config.');
       return false
     }
-  },
+  }, // CCGServersConfigured
 
   checkServerConnections: function () {
     try {
@@ -97,8 +93,7 @@ module.exports = {
     } catch (error) {
       logger.error('ERROR in spx.checkServerConnections()', error);
     }
-  },
-
+  }, // checkServerConnections
 
   duplicateFile: function (fileRefe, suffix) {
     // TODO: Tämä on kesken!
@@ -119,10 +114,8 @@ module.exports = {
       logger.error('spx.duplicateFile - Error while duplicating: ' + fileRefe + ': ' + error);    
       return false
     }
-  },
-
-
-
+  }, // duplicateFile
+ 
   fileNameFromPath: function (filepath) {
     // returns the last item from slashed string
     filepath.split("\\").join("/"); // force forward slashes
@@ -133,8 +126,7 @@ module.exports = {
     } else {
       return filepath
     }
-  },
-
+  }, // fileNameFromPath
 
   generateCollapsedHeadline: function (DataFields) {
         // (Added in 1.0.7)
@@ -207,9 +199,7 @@ module.exports = {
         //   html = '';
         // }
         return html
-    },
-
-
+  }, // generateCollapsedHeadline
 
   getFileList: function (FOLDER, EXTENSION) {
     try {
@@ -230,31 +220,32 @@ module.exports = {
       logger.error('ERROR in spx.getFileList (Folder: ' + FOLDER + ', Extension: ' + EXTENSION + '): ' + error);
       return false;
     }
-  }, // getJSONFileList ended
+  }, // getFileList ended
 
-
-
-
-    // collect system info for params for messaging functionality
-    getNotificationsMiddleware: async function(req,res,next){
-      datarootSize()
-      .then(function(sizeArr) {
-        let paramstring =""
-        paramstring += "v="  + vers 
-        paramstring += "&o=" + lPad(process.platform, 8, ".")
-        paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
-        paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
-        paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")
-        req.curVerInfo = paramstring;
-        next();
-      })
-    }, 
-
+  getNotificationsMiddleware: async function(req,res,next) {
+      // collect system info for params for messaging functionality
+    datarootSize()
+    .then(function(sizeArr) {
+      let paramstring =""
+      paramstring += "v="  + vers 
+      paramstring += "&o=" + lPad(process.platform, 8, ".")
+      paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
+      paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
+      paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")
+      req.curVerInfo = paramstring;
+      next();
+    })
+  }, // getNotificationsMiddleware
 
   GetJsonData: function (fileref) {
     try {
       // require ..... Full file path
       // returns ..... File contents as a JSON object
+      if (!fs.existsSync(fileref)) {
+        logger.warn('Tried to read JSON from non-existing file ' + fileref)
+        return false;
+      }
+
       var contents = fs.readFileSync(fileref);
       return JSON.parse(contents);
     }
@@ -263,7 +254,6 @@ module.exports = {
       return (error);
     }
   }, // GetJsonData ended
-
 
   getJSONFileList: function (FOLDER) {
     try {
@@ -296,7 +286,6 @@ module.exports = {
     }
   }, // getJSONFileList ended
 
-
   getTemplateSourcePath: function () {
     // Added in 1.0.9 
     // Evaluate serversource from config > general.templatesource.
@@ -319,8 +308,7 @@ module.exports = {
       logger.verbose('A custom templateServer given in config. Using ' + TemplateServer);
     }
     return TemplateServer; // return empty for file system source or full server url with "http://" prefix
-  },
-
+  }, // getTemplateSourcePath
 
   hash: function (textToHash){
     // generate a hashed string using CRYPTO
@@ -332,7 +320,7 @@ module.exports = {
     let encrypted = cipher.update(textToHash, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     return encrypted
-  },
+  }, // hash
 
   hashcompare: function (password, hash){
     // use bcrypt to compare given password to a hashed one
@@ -343,7 +331,7 @@ module.exports = {
 
     if (this.hash(password) == hash) { return true }
     return false;
-  },
+  }, // hashcompare
 
   lang: function (str) {
     try {
@@ -357,324 +345,311 @@ module.exports = {
       logger.error('ERROR in spx.lang (str: ' + str + '): ' + error);
       return str + " missing from " + spxlangfile;
     }
-  },
+  }, // lang
 
-getStartUpFolder: function () {
-  // a workaround to resolve the path to the current startup folder
-  // on this runtime session (node vs binary pkg)
-  if ( process.pkg ) {
-      return path.resolve(process.execPath + '/..');
-  } else {
-      return process.cwd();
-  }
-},
-
-getNotificationsMiddleware: async function(req,res,next){
-  datarootSize()
-  .then(function(sizeArr) {
-    let paramstring =""
-    paramstring += "v="  + vers 
-    paramstring += "&o=" + lPad(process.platform, 8, ".")
-    paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
-    paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
-    paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")
-    req.curVerInfo = paramstring;
-    next();
-  })
-}, 
-
-GetFilesAndFolders: function (datafolder, filter='HTM') {
-  try {
-    // This is used by the AJAX function and returns a data object with folders
-    // and HTML files of a given sourcefolder
-    let data = {
-      folder: datafolder,
-      fileArr: [],
-      foldArr: []
-    };
-
-    if (fs.existsSync(datafolder)) {
-      fs.readdirSync(datafolder).forEach((file, index) => {
-        const curPath = path.join(datafolder, file);
-        if (fs.lstatSync(curPath).isDirectory()) { 
-            // it is folder
-            data.foldArr.push(path.basename(curPath));
-          }
-        else {
-          // it is file
-          let ext = path.extname(curPath).toUpperCase();
-          let fil = filter.toUpperCase();
-
-          if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" ) {
-            data.fileArr.push(path.basename(curPath));
-          }
-
-          if (fil === 'CSV' && ext ==".CSV" ) {
-            data.fileArr.push(path.basename(curPath));
-          }
-        }
-      });
-      
-      // Sort elements within arrays
-      data.fileArr.sort();
-      data.foldArr.sort();
-      return data;
+  getStartUpFolder: function () {
+    // a workaround to resolve the path to the current startup folder
+    // on this runtime session (node vs binary pkg)
+    if ( process.pkg ) {
+        return path.resolve(process.execPath + '/..');
+    } else {
+        return process.cwd();
     }
-    else
-    {
-      return "not-found";
-    }
-    
-  } catch (error) {
-    logger.error('ERROR in spx.GetFilesAndFolders (datafolder: ' + datafolder + '): ' + error);
-  }
-},
+  }, // getStartUpFolder
 
+  GetFilesAndFolders: function (datafolder, filter='HTM') {
+    try {
+      // This is used by the AJAX function and returns a data object with folders
+      // and HTML files of a given sourcefolder
+      let data = {
+        folder: datafolder,
+        fileArr: [],
+        foldArr: []
+      };
 
-playAudio: async function (wavFileName, msg='') {
-  try {
-    // request ..... a name of soundFX
-    // return ...... plays audio on the server
-    // Usage ....... spx. -or- this.playAudio('beep.wav', 'Log message');
-    let cwd = this.getStartUpFolder();
-    let AudioFilePath = path.join(cwd, 'ASSETS', wavFileName);
-
-    // EXTERNAL AUDIO PLAYER IS CURRENTLY DISABLED. -- See also view-appconfig.
-    // let AudioPlayPath = path.normalize(config.general.audioplayer);
-    // let AudioPlayOpts = config.general.playerflags;
-    // let AudioPlayExec = "\"" + AudioPlayPath + "\" " + AudioPlayOpts.replace('%FILE%', AudioFilePath);
-    // logger.debug('spx.PlayAudio - message: [' + msg + '] Audio command: ' + AudioPlayExec);
-    // const { exec } = require("child_process");
-    // exec(AudioPlayExec, (error, stdout, stderr) => {
-    //     if (error) {
-    //         console.log(`error: ${error.message}`);
-    //         return;
-    //     }
-    //     if (stderr) {
-    //         console.log(`stderr: ${stderr}`);
-    //         return;
-    //     }
-    //     console.log(`stdout: ${stdout}`);
-    // });
-
-    wavplayer.play({
-      path: AudioFilePath,
-    }).then(() => {
-      logger.debug('spx.PlayAudio OK ['+ wavFileName +'], ref.message: [' + msg + '].');
-    }).catch((error) => {
-      logger.error('spx.PlayAudio Error ['+ wavFileName +'], ref.message: [' + msg + '], error: ' + error);
-    });
-    return; 
-  } catch (error) {
-    logger.error('ERROR in spx.playAudio (wavFileName: ' + wavFileName + ', ref: ' + msg + '): ' + error);
-  }
-
-
-
-},
-
-
-talk: async function (message){
-
-  logger.debug('FYI: spx.talk function is DISABLED. [' + message + ']')
-  return;
-
-  try {
-    // THIS ONLY WORKS ON WINDOWS!
-    // Usage:
-    //      this.talk('hello there');
-    //       spx.talk('All your base are belong to us');
-    var isWin = process.platform === "win32";
-    if (isWin==false){
-        logger.warn('Talk synthesis currently only works on Windows.');
-        return
+      // Trying to survive invalid datafolder path
+      if (!fs.existsSync(datafolder)) {
+        datafolder = path.join(this.getStartUpFolder(),'/ASSETS/templates', datafolder);
+        logger.warn('GetFilesAndFolders got invalid path, trying failover #1: ' + datafolder)
       }
-    let ScriptPath = path.join(this.getStartUpFolder(), 'utils/talk.vbs');
-    let Executable = "wscript " + ScriptPath + " " + message;
-    logger.debug('spx.Talk [' + message + ']');
-    const { exec } = require("child_process");
-    exec(Executable, (error, stdout, stderr) => {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            return;
-        }
-        // console.log(`stdout: ${stdout}`);
-    });
-  } catch (error) {
-    logger.error('ERROR in spx.talk (message: ' + message + '): ' + error);
-  }
-},
 
-prettifyDate: function (d, presetName){
-  // prettify date format to a desired preset format
-  try {
-    let YEAR = d.getFullYear()
-    let MONT = (d.getMonth()+1).toString().padStart(2, '0')
-    let DNUM = d.getDate().toString().padStart(2, '0')
-    let HOUR = d.getHours().toString().padStart(2, '0')
-    let MINU = d.getMinutes().toString().padStart(2, '0')
-    let SECO = d.getSeconds().toString().padStart(2, '0')
+      if (!fs.existsSync(datafolder)) {
+        datafolder = path.join(this.getStartUpFolder(),'/ASSETS/templates');
+        logger.warn('GetFilesAndFolders got invalid path, trying failover #2: ' + datafolder)
+      }
 
-    switch (presetName) {
-      case 'YYYY-MM-DD-HHMMSS':
-        return YEAR + '-' + MONT + '-' + DNUM + '-' + HOUR + MINU + SECO; 
-        break;
-    
-      default:
-        return d
-        break;
+      if (fs.existsSync(datafolder)) {
+        fs.readdirSync(datafolder).forEach((file, index) => {
+          const curPath = path.join(datafolder, file);
+          if (fs.lstatSync(curPath).isDirectory()) { 
+              // it is folder
+              data.foldArr.push(path.basename(curPath));
+            }
+          else {
+            // it is file
+            let ext = path.extname(curPath).toUpperCase();
+            let fil = filter.toUpperCase();
+
+            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" ) {
+              data.fileArr.push(path.basename(curPath));
+            }
+
+            if (fil === 'CSV' && ext ==".CSV" ) {
+              data.fileArr.push(path.basename(curPath));
+            }
+          }
+        });
+        
+        // Sort elements within arrays
+        data.fileArr.sort();
+        data.foldArr.sort();
+        return data;
+      }
+      else {
+        return "not-found";
+      }
+      
+    } catch (error) {
+      logger.error('ERROR in spx.GetFilesAndFolders (datafolder: ' + datafolder + '): ' + error);
     }
-  } catch(error) {
-    logger.error('ERROR in spx.prettifyDate (d: ' + d + ', presetName: ' + presetName + ' ): ' + error);
-    return ""  
-  }
+  }, // GetFilesAndFolders
+
+  playAudio: async function (wavFileName, msg='') {
+    try {
+      // request ..... a name of soundFX
+      // return ...... plays audio on the server
+      // Usage ....... spx. -or- this.playAudio('beep.wav', 'Log message');
+      let cwd = this.getStartUpFolder();
+      let AudioFilePath = path.join(cwd, 'ASSETS', wavFileName);
+
+      // EXTERNAL AUDIO PLAYER IS CURRENTLY DISABLED. -- See also view-appconfig.
+      // let AudioPlayPath = path.normalize(config.general.audioplayer);
+      // let AudioPlayOpts = config.general.playerflags;
+      // let AudioPlayExec = "\"" + AudioPlayPath + "\" " + AudioPlayOpts.replace('%FILE%', AudioFilePath);
+      // logger.debug('spx.PlayAudio - message: [' + msg + '] Audio command: ' + AudioPlayExec);
+      // const { exec } = require("child_process");
+      // exec(AudioPlayExec, (error, stdout, stderr) => {
+      //     if (error) {
+      //         console.log(`error: ${error.message}`);
+      //         return;
+      //     }
+      //     if (stderr) {
+      //         console.log(`stderr: ${stderr}`);
+      //         return;
+      //     }
+      //     console.log(`stdout: ${stdout}`);
+      // });
+
+      wavplayer.play({
+        path: AudioFilePath,
+      }).then(() => {
+        logger.debug('spx.PlayAudio OK ['+ wavFileName +'], ref.message: [' + msg + '].');
+      }).catch((error) => {
+        logger.error('spx.PlayAudio Error ['+ wavFileName +'], ref.message: [' + msg + '], error: ' + error);
+      });
+      return; 
+    } catch (error) {
+      logger.error('ERROR in spx.playAudio (wavFileName: ' + wavFileName + ', ref: ' + msg + '): ' + error);
+    }
 
 
-},
+
+  }, // playAudio
+
+  talk: async function (message){
+
+    logger.debug('FYI: spx.talk function is DISABLED. [' + message + ']')
+    return;
+
+    try {
+      // THIS ONLY WORKS ON WINDOWS!
+      // Usage:
+      //      this.talk('hello there');
+      //       spx.talk('All your base are belong to us');
+      var isWin = process.platform === "win32";
+      if (isWin==false){
+          logger.warn('Talk synthesis currently only works on Windows.');
+          return
+        }
+      let ScriptPath = path.join(this.getStartUpFolder(), 'utils/talk.vbs');
+      let Executable = "wscript " + ScriptPath + " " + message;
+      logger.debug('spx.Talk [' + message + ']');
+      const { exec } = require("child_process");
+      exec(Executable, (error, stdout, stderr) => {
+          if (error) {
+              console.log(`error: ${error.message}`);
+              return;
+          }
+          if (stderr) {
+              console.log(`stderr: ${stderr}`);
+              return;
+          }
+          // console.log(`stdout: ${stdout}`);
+      });
+    } catch (error) {
+      logger.error('ERROR in spx.talk (message: ' + message + '): ' + error);
+    }
+  }, // talk
+
+  prettifyDate: function (d, presetName){
+    // prettify date format to a desired preset format
+    try {
+      let YEAR = d.getFullYear()
+      let MONT = (d.getMonth()+1).toString().padStart(2, '0')
+      let DNUM = d.getDate().toString().padStart(2, '0')
+      let HOUR = d.getHours().toString().padStart(2, '0')
+      let MINU = d.getMinutes().toString().padStart(2, '0')
+      let SECO = d.getSeconds().toString().padStart(2, '0')
+
+      switch (presetName) {
+        case 'YYYY-MM-DD-HHMMSS':
+          return YEAR + '-' + MONT + '-' + DNUM + '-' + HOUR + MINU + SECO; 
+          break;
+      
+        default:
+          return d
+          break;
+      }
+    } catch(error) {
+      logger.error('ERROR in spx.prettifyDate (d: ' + d + ', presetName: ' + presetName + ' ): ' + error);
+      return ""  
+    }
 
 
-prettifyName: function (fullFilePath){
-  if (!fullFilePath) return "";
-  try {
-    // request ..... a long file name with some slashes ("c:/temp/some_file-name.html")
-    // return ...... nice name ("some file name")
-    // logger.debug('Prettifying ' + fullFilePath);
-    let slashedPath = fullFilePath.split("\\").join("/");
-    let items = slashedPath.split("/");
-    let templateName = items[items.length-1];
-    let niceStringOut = templateName;
-    niceStringOut = niceStringOut.replace(".html", "");
-    niceStringOut = niceStringOut.replace(".htm", "");
-    niceStringOut = niceStringOut.replace(".HTML", "");
-    niceStringOut = niceStringOut.replace(".HTM", "");
-    niceStringOut = niceStringOut.split("_").join(" ");
-    niceStringOut = niceStringOut.split("-").join(" ");
-    return niceStringOut;
-  } catch (error) {
-    logger.error('ERROR in spx.prettifyName (fullFilePath: ' + fullFilePath + '): ' + error);
-    return ""  
-  }
-},
+  }, // prettifyDate
 
+  prettifyName: function (fullFilePath){
+    if (!fullFilePath) return "";
+    try {
+      // request ..... a long file name with some slashes ("c:/temp/some_file-name.html")
+      // return ...... nice name ("some file name")
+      // logger.debug('Prettifying ' + fullFilePath);
+      let slashedPath = fullFilePath.split("\\").join("/");
+      let items = slashedPath.split("/");
+      let templateName = items[items.length-1];
+      let niceStringOut = templateName;
+      niceStringOut = niceStringOut.replace(".html", "");
+      niceStringOut = niceStringOut.replace(".htm", "");
+      niceStringOut = niceStringOut.replace(".HTML", "");
+      niceStringOut = niceStringOut.replace(".HTM", "");
+      niceStringOut = niceStringOut.split("_").join(" ");
+      niceStringOut = niceStringOut.split("-").join(" ");
+      return niceStringOut;
+    } catch (error) {
+      logger.error('ERROR in spx.prettifyName (fullFilePath: ' + fullFilePath + '): ' + error);
+      return ""  
+    }
+  }, // prettifyName
 
-renameRundown: function (orgfile, newname) {
-  // Rename a file:
-  // request ..... full original name (c:/temp/volvo.txt), new basename (toyota)
-  // returns ..... not much, it just does it
-  try {
-    return new Promise(resolve => {
-      let fldrname = path.dirname(orgfile);
-      let extename = path.extname(orgfile);
-      let renafile = path.normalize(path.join(fldrname, newname + extename));
-      fs.rename(orgfile, renafile, (err) => {
-            if (err) throw err;
-            logger.info('Rundown file ' + orgfile + ' was renamed to ' + renafile + '.');
+  renameRundown: function (orgfile, newname) {
+    // Rename a file:
+    // request ..... full original name (c:/temp/volvo.txt), new basename (toyota)
+    // returns ..... not much, it just does it
+    try {
+      return new Promise(resolve => {
+        let fldrname = path.dirname(orgfile);
+        let extename = path.extname(orgfile);
+        let renafile = path.normalize(path.join(fldrname, newname + extename));
+        fs.rename(orgfile, renafile, (err) => {
+              if (err) throw err;
+              logger.info('Rundown file ' + orgfile + ' was renamed to ' + renafile + '.');
+              resolve()
+            });
+      })
+    } catch (error) {
+      logger.error('spx.renameRundown - Error while renaming: ' + orgfile + ': ' + error);    
+    }
+  }, // renameRundown
+
+  shortifyString: function (fullString){
+    try {
+      // request ..... a long string
+      // return ...... return just a short part
+      // Added in 1.0.16 to strip <TAGs> to prevent multiline strings in the SPX UI:
+      fullString = fullString.replace(/<\/?[^>]+(>|$)/g, "").replace(/\s+/g,' ');  // remove <TAGS> and double spaces
+      let shorter = fullString.substring(0, 30);
+      shorter = shorter.trim()
+      if (fullString.length > (shorter.length+2)) {
+        shorter += '...'
+      }
+      return shorter;
+    } catch (error) {
+      logger.error('ERROR in spx.shortifyString(fullString: ' + fullString + '): ' + error);  
+    }
+  }, // shortifyString
+
+  shortifyName: function (fullString){
+    try {
+      // request ..... a long string, such as server asset url
+      // return ...... max length returned
+
+      let SERVER_URL = 'http://' + ip.address() + ':' + port;
+      let serverRemoved = fullString.split(SERVER_URL).join("");
+      return serverRemoved;
+    } catch (error) {
+      logger.error('ERROR in spx.shortifyName (fullString: ' + fullString + '): ' + error);  
+    }
+  }, // shortifyName
+
+  versInt: function (semver){
+    // Returns a numeric value representing "1.0.0" formatted semantic version string.
+    // This works as long as max value of each field is 99!
+    let parts = semver.split(".");
+    let MajorInt = parseInt(parts[0].trim())*100000
+    let MinorInt = parseInt(parts[1].trim())*1000
+    let PatchInt = parseInt(parts[2].trim())
+    let versInt  = (MajorInt + MinorInt + PatchInt);
+    // console.log('Semver ' + semver + ' = versInt ' + versInt);
+    return versInt
+  }, // versInt
+
+  writeFile: function (filepath,data) {
+    // console.log('Writing file ', filepath);
+    try {
+        return new Promise(resolve => {
+          this.talk('Writing file');
+          // this.playAudio('beep.wav', 'spx.writeFile');
+          data.warning = "Modifications done in the SPX will overwrite this file.";
+          data.smartpx = "(c) 2020-2022 SmartPX & Softpix";
+          data.updated = new Date().toISOString();
+          let filedata = JSON.stringify(data, null, 2);
+          fs.writeFile(filepath, filedata, 'utf8', function (err) {
+            if (err){
+              logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+              return
+              // throw error;
+            }
+            logger.verbose('spx.writeFile - File written OK: ' + filepath);
             resolve()
           });
-    })
-  } catch (error) {
-    logger.error('spx.renameRundown - Error while renaming: ' + orgfile + ': ' + error);    
-  }
-},
-
-
-
-shortifyString: function (fullString){
-  try {
-    // request ..... a long string
-    // return ...... return just a short part
-    // Added in 1.0.16 to strip <TAGs> to prevent multiline strings in the SPX UI:
-    fullString = fullString.replace(/<\/?[^>]+(>|$)/g, "").replace(/\s+/g,' ');  // remove <TAGS> and double spaces
-    let shorter = fullString.substring(0, 30);
-    shorter = shorter.trim()
-    if (fullString.length > (shorter.length+2)) {
-      shorter += '...'
+          }
+        )
+    } catch (error) {
+      logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
     }
-    return shorter;
-  } catch (error) {
-    logger.error('ERROR in spx.shortifyString(fullString: ' + fullString + '): ' + error);  
-  }
-},
+  }, // writeFile (.json)
 
-
-shortifyName: function (fullString){
-  try {
-    // request ..... a long string, such as server asset url
-    // return ...... max length returned
-
-    let SERVER_URL = 'http://' + ip.address() + ':' + port;
-    let serverRemoved = fullString.split(SERVER_URL).join("");
-    return serverRemoved;
-  } catch (error) {
-    logger.error('ERROR in spx.shortifyName (fullString: ' + fullString + '): ' + error);  
-  }
-},
-
-versInt: function (semver){
-  // Returns a numeric value representing "1.0.0" formatted semantic version string.
-  // This works as long as max value of each field is 99!
-  let parts = semver.split(".");
-  let MajorInt = parseInt(parts[0].trim())*100000
-  let MinorInt = parseInt(parts[1].trim())*1000
-  let PatchInt = parseInt(parts[2].trim())
-  let versInt  = (MajorInt + MinorInt + PatchInt);
-  // console.log('Semver ' + semver + ' = versInt ' + versInt);
-  return versInt
-},
-
-
-writeFile: function (filepath,data) {
-  // console.log('Writing file ', filepath);
-  try {
-      return new Promise(resolve => {
-        this.talk('Writing file');
-        // this.playAudio('beep.wav', 'spx.writeFile');
-        data.warning = "Modifications done in the SPX will overwrite this file.";
-        data.smartpx = "(c) 2020-2022 SmartPX & Softpix";
-        data.updated = new Date().toISOString();
-        let filedata = JSON.stringify(data, null, 2);
-        fs.writeFile(filepath, filedata, 'utf8', function (err) {
-          if (err){
-            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
-            return
-            // throw error;
+  writeTextFile: function (filepath, filedata) {
+    // console.log('writing text file ' + filepath);
+    try {
+        return new Promise(resolve => {
+          filedata.updated = new Date().toISOString();
+          fs.writeFile(filepath, filedata, 'utf8', function (err) { 
+            if (err) {
+              logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+              return;
+              // throw err;
+            }
+            logger.verbose('spx.writeFile - File written OK: ' + filepath);
+            resolve()
+            });
           }
-          logger.verbose('spx.writeFile - File written OK: ' + filepath);
-          resolve()
-        });
-        }
-      )
-  } catch (error) {
-    logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
-  }
-},
+        )
+    } catch (error) {
+      logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
+    }
+  } // writeTextFile (other)
 
-writeTextFile: function (filepath, filedata) {
-  // console.log('writing text file ' + filepath);
-  try {
-      return new Promise(resolve => {
-        filedata.updated = new Date().toISOString();
-        fs.writeFile(filepath, filedata, 'utf8', function (err) { 
-          if (err) {
-            logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
-            return;
-            // throw err;
-          }
-          logger.verbose('spx.writeFile - File written OK: ' + filepath);
-          resolve()
-          });
-        }
-      )
-  } catch (error) {
-    logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
-  }
-}
-
- 
 } // end of exports (spx.)
 
 function lPad(nro,len,char){
@@ -687,7 +662,6 @@ function lPad(nro,len,char){
   return padded.substring(padded.length - len, padded.length);
 }
 
-
 function checkInternetConnection(icheck) {
   require('dns').lookup('google.com',function(err) {
       if (err && err.code == "ENOTFOUND") {
@@ -696,8 +670,7 @@ function checkInternetConnection(icheck) {
         icheck(true);
       }
     })
-  }
-
+}
 
 function datarootSize () {
     // counts projects and playlists
@@ -719,4 +692,4 @@ function datarootSize () {
           return([0,0])
       }
     })
-  }
+}

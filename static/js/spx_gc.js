@@ -447,7 +447,7 @@ function checkKey(e) {
 
     e = e || window.event;
 
-    console.log('--- ' + e.keyCode + ' --- ' + APPSTATE);
+    // console.log('--- ' + e.keyCode + ' --- ' + APPSTATE);
 
     // FIRST GENERIC keycodes for all situations
     switch (e.keyCode)
@@ -593,7 +593,13 @@ function clearUsedChannels(ServerName='') {
     ajaxpost('/gc/clearPlayouts',data);
 } //clearUsedChannels
 
-
+function closePromo() {
+    // does just that and stores info to the localStorage so 
+    // the same promo will not be show...
+    let e = document.getElementById('promo');
+    localStorage.setItem('SPX_ClosedPromo', e.getAttribute('data-promo-name'));
+    e.style.display = 'none';
+}
 
 function CollectJSONFromDOM() {
     // iterate DOM and collect data to an array of objects
@@ -695,6 +701,47 @@ function copyText(txt) {
     }
     temp.parentNode.removeChild(temp);
 }
+
+function heartbeat(dd, getOnly = false) { // 36 24 36 hey
+    // see notes
+    let nw, st, key, val, dif; 
+    let fD = '|';
+    let vD = ':';
+    let eK = 'TS'
+    let ls = 'SPXGC_UI_stats';
+    let or = localStorage.getItem(ls) || eK + vD + "0" + fD + dd + vD + "0";
+
+    if (getOnly) {
+        return or;
+    }
+
+    let ar = or.split(fD);
+    let ok = false; 
+    let rp = false;
+    ar.every(function(f,idx) {
+        key = f.split(vD)[0]; val = f.split(vD)[1];
+        if (key==eK) {
+            dif = Math.round((Date.now()-val)/(1000*60*60*24));
+            if (Math.round((Date.now()-val)/(1000*60*60*24))>0) { rp = true; };
+            // post = true; // dbg:
+            ar[idx]=eK + vD + Date.now();
+        }
+        if (key==dd) {
+            nw = parseInt(val)+1;
+            ar[idx]=key + vD + nw;
+            ok = true; return false
+        } else {
+            ok = false; return true
+        }
+    });
+    if ( !ok ) { ar.push(dd + vD + '1'); }
+    st = ar.join(fD);
+    if (rp) {
+        console.log('Report (' + or + ') and reset. Post TODO:')
+        st = eK + vD + Date.now() + fD + dd + vD + 1;
+    }
+    localStorage.setItem(ls, st)
+} // dirty deeds done. 
 
 
 function del() {
@@ -1031,7 +1078,71 @@ function getLayerFromProfile(buttonName) {
     }
 } // getLayerFromProfile ended
 
+function getMessages(curVerInfo) {
+    // Poll server for upgrade info.
+    // Requires CORS in the route.
+    // Moved from view-home.
+    //
+    // PLEASE NOTE: This will be replaced with impoved mechanism
+    //              which will report usage stats also and will
+    //              notify user with a small icon to reveal the
+    //              promo within controller UI. 
+    //              This will happen in 1.0.16.
 
+    localStorage.removeItem('SPX-GC-NewVersion');
+    document.getElementById('upgradeinfo').style.display="none";
+    document.getElementById('messageinfo').style.display="none";
+
+    var url = (`https://www.smartpx.fi/gc/messageservice/?` + curVerInfo + '&dd=' + heartbeat('none',true));
+    console.log('URL',url);
+    fetch(url)
+    .then((res) => res.json())
+    .then((messages) => {
+      // do something with the messages (json data)
+      let currntVer = document.getElementById('footerVerDisplay').innerText;
+      let latestVer = messages.latest.vers;
+      let dbggreet  = messages.dbggreet || "";
+
+      // this has been broken until 1.0.11
+      let debugNotifications = false;
+      if ( document.getElementById('greeting') && document.getElementById('greeting').innerText!='' ) {
+        if ( dbggreet == document.getElementById('greeting').innerText ) {
+          // if config.greeting == message.greeting then debug it!
+          debugNotifications = true;
+        }
+      }
+      
+      if (messages.latest.vers && versInt(latestVer) > versInt(currntVer) || debugNotifications ) {
+        // Yes, there is new version available
+        localStorage.setItem('SPX-GC-NewVersion',latestVer);
+        document.getElementById('upgradeinfo').style.display="block";
+        document.getElementById('upgrade_date').innerText=messages.latest.date;
+        document.getElementById('upgrade_head').innerText=messages.latest.head;
+        document.getElementById('upgrade_body').innerText=messages.latest.body;
+        document.getElementById('upgrade_call').innerText=messages.latest.call;
+        document.getElementById('upgrade_link').href=messages.latest.href;
+        document.getElementById('upgrade_link').innerText=messages.latest.link;
+      }
+      
+      if (messages.notification.type && messages.notification.type!="none" || debugNotifications ){
+        // Yes, there is something else to announce
+        document.getElementById('messageinfo').style.display="block";
+        document.getElementById('messageinfo').classList="message-" + messages.notification.type;
+        document.getElementById('messagelink').classList="message-" + messages.notification.type;
+        document.getElementById('message_date').innerText=messages.notification.date;
+        document.getElementById('message_head').innerText=messages.notification.head;
+        document.getElementById('message_body').innerText=messages.notification.body;
+        document.getElementById('message_call').innerText=messages.notification.call;
+        document.getElementById('message_link').href=messages.notification.href;
+        document.getElementById('message_link').innerText=messages.notification.link;
+      }
+      // console.log('Latest: ' + latestVer);
+
+    })
+    .catch((error) => {
+        console.error('SPX error in getMessages().',error)
+    });
+  }
 
 function help(section) {
     //
@@ -1116,6 +1227,7 @@ function nextItem(itemrow='') {
     data.command       = 'next';
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
+    heartbeat(304); // identifier
 
     // decrease steps left
     var stepsleft= parseInt(itemrow.getAttribute('data-spx-stepsleft'))-1;
@@ -1146,6 +1258,7 @@ function previewItem(itemrow='') {
     data.command       = 'preview'; // added in 1.0.16
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
+    heartbeat(308); // identifier
 
 }
 
@@ -1175,11 +1288,19 @@ function playItem(itemrow='', forcedCommand='') {
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
+
+    // Stats
+    if (data.command == 'play' || data.command=="playonce") { heartbeat(302) }
+    if (data.command == 'continue' ) { heartbeat(304) }
+    if (data.command == 'stop' ) { heartbeat(306) }
+
+
     // playonce (for out type=none) command acts on the server, but the state will not be saved to JSON
     // Check for function_onPlay:
     let isPlay = false;
     if (data.command=="play" || data.command=="playonce") {
         isPlay = true;
+        
 
         // Added in 1.0.16 FIXME: This has some issues, previewing wrong items etc...
         if (document.getElementById('previewMode').value==='next') {
@@ -1208,16 +1329,11 @@ function playItem(itemrow='', forcedCommand='') {
         ExecuteDelay      = parseInt(ArgsArray[5]) || 40; // 500 (ms)
         // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName + ', args: ', TempData);
 
-
-
         setTimeout(function () {
             window[FunctionName](TempData);
             }, ExecuteDelay);
-
+        heartbeat(310); // identifier
     }
-    else{
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onPlay function.');
-    }   // onPlay check ended
 
     // Check for function_onStop:
     let onStopField = itemrow.querySelector('[name="RundownItem[function_onCont]"]');
@@ -1232,17 +1348,14 @@ function playItem(itemrow='', forcedCommand='') {
         TempData2.layer    = String(ArgsArray2[2]);
         // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName2 + ', args: ', TempData2);
         window[FunctionName2](TempData2);
+        heartbeat(312); // identifier
     }
-    else{
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'No onStop function.');
-    }   // onStop check ended
 
     // auto-out trigger UI update
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
     if (!isNaN(TimeoutAsString))
         // value is numerical, so 
-        if (data.command=="play" )
-            {
+        if (data.command=="play" ) {
                 // Changed in 1.0.9, failed in 1.0.8.
                 // 1.0.12: Fixed looping issue found by Koen.
                 let TimeoutAsInt = parseInt(TimeoutAsString);
@@ -1255,11 +1368,9 @@ function playItem(itemrow='', forcedCommand='') {
                 }, TimeoutAsInt); 
                 itemrow.setAttribute('data-spx-timerid', AutoOutTimerID);
                 itemrow.querySelector('[data-spx-name="icon"]').classList.add('playAuto');
-            }
-        else
-            {
-                CancelOutTimerIfRunning(itemrow);
-            }
+        } else {
+            CancelOutTimerIfRunning(itemrow);
+        }
 
   } // playItem
 
@@ -1281,6 +1392,19 @@ function renameRundown() {
     }
 } // renameRundown ended
 
+
+function versInt(semver){
+    // Returns a numeric value representing "1.0.0" formatted semantic version string.
+    // This works as long as max value of each field is 99!
+    // Moved from view-home in 1.0.16
+    let parts = semver.split(".");
+    let MajorInt = parseInt(parts[0].trim())*100000
+    let MinorInt = parseInt(parts[1].trim())*1000
+    let PatchInt = parseInt(parts[2].trim())
+    let versInt  = (MajorInt + MinorInt + PatchInt);
+    // console.log('Semver ' + semver + ' = versInt ' + versInt);
+    return versInt
+  }
 
 
 function setItemButtonStates(itemrow, forcedCommand=''){
@@ -1792,9 +1916,6 @@ function showMessageSlider(msg, type='info', persist=false) {
 
 }
 
-
-
-
 function spx_system(cmd,servername='') {
     // system command handler
     let sysCmd = cmd.toUpperCase()
@@ -1848,7 +1969,7 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2021 SmartPX  ', 'background: #0e7a27; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2022 SmartPX & Softpix  ', 'background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd

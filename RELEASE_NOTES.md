@@ -10,9 +10,8 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 ## **WORK IN PROGRESS** (list updated Feb 16 2022)
 > **PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
 
-
 - Changed default port to 5656 to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting :)
-- Added preview functionality (`Currently disabled, has bugs still`)
+- Added preview functionality (`Take-net-on-play is disabled due to bugs`)
 - Added 4K support to app config and renderer(s). Please note, most templates are done for fixed HD resolution and may appear in 1/4th size in the output.
 - Added filtering to Projects view (visible when there are 5 projects or more)
 - Added `/api/v1/controlRundownItemByID` -API endpoint (see http://localhost:5656/api/v1)

@@ -956,3 +956,11 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 .edge_preview {
     border-right: solid rgba(177, 24, 24, 0.7) 6px;
 }
+
+.closePromo {
+    transition: all 200ms ease-in-out;
+}
+
+.closePromo:hover {
+    transform: rotate(90deg);
+}

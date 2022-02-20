@@ -45,8 +45,8 @@ module.exports = {
                 // check if config file exists
                 if (!fs.existsSync(CONFIG_FILE)) {
                     // config file not found, let's create the default one
-                    console.log('** Config file (' + CONFIG_FILE + ') not found, generating defaults. **');
-                    console.log('Please note, starting from v.1.0.12 CasparCG servers are NOT in the config by default and must be added for CasparCG playout to work. Please see the README file for more information.');
+                    console.log('  Config file (' + CONFIG_FILE + ') not found, generating defaults.');
+                    // console.log('Please note, starting from v.1.0.12 CasparCG servers are NOT in the config by default and must be added for CasparCG playout to work. Please see the README file for more information.');
                     let cfg                                     = {}
                     cfg.general                                 = {}
                     cfg.general.username                        = "admin"
@@ -116,7 +116,7 @@ module.exports = {
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);
-                    console.log('** Writing default config values to [' + CONFIG_FILE + '] **\n') 
+                    // console.log('** Writing default config values to [' + CONFIG_FILE + '] **\n') 
                     fs.writeFileSync(CONFIG_FILE, filedata, 'utf8', function (err) {
                     if (err){
                         console.error("Error writing default config to [" + CONFIG_FILE + "]")
@@ -140,7 +140,7 @@ module.exports = {
                 resolve()
             }
             catch (error) {
-                let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING CONFIG, CANNOT CONTINUE. ' + error;
+                let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING SPX CONFIG, CANNOT CONTINUE. ' + error;
                 console.log(msg);  // note, LOGGER is not necessarily initialized yet.
                 global.configfileref = "";
                 return
