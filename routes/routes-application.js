@@ -18,6 +18,7 @@ const spxAuth = require('../utils/spx_auth.js');
 const jsdom = require("jsdom"); // for scanning js within templates
 const { JSDOM } = jsdom;
 const cors = require('cors');
+
 // const { constants } = require("buffer");
 // const { config } = require("winston"); // <!-- this is auto-generated here by the IDE and will screw things up! Beware >:-[
 // global.rundownData is introduced in server.js 
@@ -1535,8 +1536,6 @@ router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
     res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
   }
 });
-
-
 
 
 router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {

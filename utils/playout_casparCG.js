@@ -9,6 +9,18 @@ const moment = require('moment');
 
 module.exports = {
 
+    isDisabled: function (serverName) {
+      let outcome = false;
+      config.casparcg.servers.forEach((item,index) => {
+        // console.log('Iterating server ' + item.name + ', disabled = ' + item.disabled);
+        if (item.name == serverName && item.disabled == true) {
+          outcome = true
+        }
+      });
+      return outcome;
+    },
+
+
     clearChannelsFromGCServer: function (serverName='') {
       //TODO: add 2nd parameter an Array of layer numbers...
       let ClearAMCPCommand = 'CLEAR 1\r\n CLEAR 2\r\n CLEAR 3\r\n CLEAR 4\r\n CLEAR 5\r\n CLEAR 6\r\n CLEAR 7\r\n CLEAR 8\r\n';
@@ -52,17 +64,23 @@ module.exports = {
 
     // 1.0.12 - Check if we do have CCG servers configured
     let CCGSERVER = global.CCGSockets[this.getSockIndex(data.playserver)];
-    if (!CCGSERVER || typeof CCGSERVER === 'undefined')
-      {
+    if (!CCGSERVER || typeof CCGSERVER === 'undefined') {
         logger.verbose('No CasparCG servers configured (or server [' + data.playserver + '] not found) in SPX-GC. Skipping CCG command ' + data.command);
         return
       }
 
-    if (!data.playserver || data.playserver=='' || typeof data.playserver === 'undefined')
-      {
+    if (!data.playserver || data.playserver=='' || typeof data.playserver === 'undefined') {
         logger.verbose('No CasparCG server configured in the template. Skipping CCG command ' + data.command);
         return
       }
+
+    if (this.isDisabled(data.playserver)===true) {
+      logger.verbose('Server ' + data.playserver + ' temporarily disabled, canceling playout commands.' );
+      return;
+    }
+    
+
+
     let GFX_Teml = getCCGTemplateFilepath(data.relpathCCG); //  v.1.0.9 = Supports both FILE or HTTP template paths, see config>general.casparcg-template-folder
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;

@@ -18,6 +18,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 - Added `/api/v1/panic` -API endpoint (see http://localhost:5656/api/v1)
 - Added the "options zone" below the renderer (WIP)
 - Added a new promo option (WIP)
+- Added "disable" toggle to CasparCG servers to temporarily prevent playout commands sending.
 - Improved `/api/v1/invokeTemplateFunction` -API endpoint with url encoded strings.
 - Improved startup sequence on macOS
 - Improvements in various file reading / writing functions. Overall stability and cleanup.

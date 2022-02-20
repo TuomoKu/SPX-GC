@@ -131,7 +131,7 @@ router.get('/control/:data', (req, res) => {
   res.sendStatus(200);
 
   if (!spx.CCGServersConfigured){   return  } // exit early, no need to do any CasparCG work
-  
+
   var DataStr = "";
   const directoryPath = path.normalize(config.general.dataroot);
   let profilefile = path.join(directoryPath, 'config', 'profiles.json');
@@ -150,6 +150,7 @@ router.get('/control/:data', (req, res) => {
       GFX_Laye = eval("obj.templates." + data.element + ".layer");
     }
   }
+
   logger.debug('CCG/Control - Profile ' + data.profile + "', Template: '" + GFX_Teml, "', CasparCG: " + GFX_Serv + ", " + GFX_Chan + ", " + GFX_Laye);
 
   if (data.command == "ADD" || data.command == "UPDATE") {
@@ -197,6 +198,7 @@ router.get('/control/:data', (req, res) => {
 
 
 router.get('/controljson/:data', (req, res) => {
+
   data = JSON.parse(req.params.data);
   logger.info('CCG/controljson ' + JSON.stringify(data));
   res.sendStatus(200);
@@ -256,6 +258,33 @@ router.get('/testfunction', (req, res) => {
 
   console.log('Nothing here now');
 
+});
+
+
+router.post('/disable', async (req, res) => {
+  // Added in 1.0.16. Set "disabled" state of the given CasparCG server
+  // This only affects playback commands. Initialization works normally.
+  logger.verbose('CasparCG server ' + req.body.server + ' disabled to ' + req.body.disabled);
+  try {
+    var ConfigFile = global.configfileref;
+    var ConfigData = await spx.GetJsonData(ConfigFile);
+    if (ConfigData.casparcg.servers) {
+      ConfigData.casparcg.servers.forEach((serverItem,index) => {
+        if (serverItem.name == req.body.server) {
+          serverItem.disabled = req.body.disabled
+        }
+      });
+    }
+    global.config = ConfigData; // update mem version also
+    await spx.writeFile(ConfigFile,ConfigData);
+    let response = ['Config changed']
+    res.status(200).send(response); // ok 200 AJAX RESPONSE
+  } catch (error) {
+      console.error('ERROR', error);
+      let errmsg = 'Server error in /gc/saveConfigChanges [' + error + ']';
+      logger.error(errmsg);
+      res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
+  };
 });
 
 

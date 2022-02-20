@@ -580,7 +580,27 @@ function clearAttributes(attName, attValue) {
     })
 } // clearAttributes ended
 
+function toggleActive(ServerName='') {
+    // Will enable / disable commands to the server
+    // CCG/disable {server:'OVERLAY, disable:false}
+    let e = document.getElementById('server'+ ServerName);
+    let targetState = false;
+    if (e && e.classList.contains('disabledServer')) {
+        // Enable
+        e.classList.remove('disabledServer')
+        targetState = false
+    } else {
+        // Disable
+        e.classList.add('disabledServer')
+        targetState = true
+    }
 
+    let data = {};
+    data.server       = ServerName;
+    data.disabled     = targetState;
+    working('Changing server connection state to [' + targetState + ']...');
+    ajaxpost('/CCG/disable',data);
+}
 
 function clearUsedChannels(ServerName='') {
     // Will call a command over API which will clear passed

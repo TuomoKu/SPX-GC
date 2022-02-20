@@ -252,11 +252,12 @@ td.aright{
 
 .dropdown-content {
     font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    right: 0;
     display: none;
     position: absolute;
     background-color: #272833;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    padding: 0.3em 1em;
+    padding: 0.5em;
     z-index: 1;
     line-height: 2em;
     font-size: 0.8em;
@@ -264,6 +265,10 @@ td.aright{
 
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+.dropdown-content a {
+    white-space: nowrap;
 }
 
 .file, .folder{
@@ -522,6 +527,20 @@ div.curfolder{
     line-height: 2em;
     padding-left: 5px;
     padding-right: 5px;
+}
+
+.serverIndicator {
+    cursor: pointer;
+}
+
+.serverIndicator:hover {
+    color: orange;
+}
+
+.disabledServer {
+    text-decoration: line-through;
+    opacity: 0.4;
+    color: black;
 }
 
 
