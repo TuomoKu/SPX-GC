@@ -325,7 +325,7 @@ config.casparcg.servers.forEach((element,index) => {
     logger.verbose('GC received data from CasparCG ' + CurName + ': ' + data);
 
     // we must parse the data so we can evaluate it...
-    let CCG_RETURN_TEXT = String(data); // convert return object to string
+    let CCG_RETURN_TEXT = String(data).replace('\r','').replace('\n',''); // convert return object to string, strip \r\n
     let CCG_RETURN_CODE = CCG_RETURN_TEXT.substring(0, 2); // first two chars
     switch (CCG_RETURN_CODE) {
       case "20":
@@ -333,8 +333,8 @@ config.casparcg.servers.forEach((element,index) => {
         break;
 
       case "40":
-        logger.error('Error in CasparCG server ' + CurName + ': [' + CCG_RETURN_TEXT + ']');
-        logger.debug('Verify CasparCG\'s (' + CurName + ') access to templates on SPX-GC server at ' + spx.getTemplateSourcePath());
+        logger.error(CurName + ' CasparCG response: ' + CCG_RETURN_TEXT );
+        logger.debug('Verify CasparCG\'s (' + CurName + ') access to templates on SPX server at ' + spx.getTemplateSourcePath());
         data = { spxcmd: 'updateStatusText', status: 'Error in comms with ' + CurName + '.' };
         io.emit('SPXMessage2Client', data);
         break;

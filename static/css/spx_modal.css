@@ -170,7 +170,8 @@ display: block;
 
 .folder::before { content: "\f07b"; color: rgb(9, 119, 170);}
 .file::before { content: "\f15b"; color: rgb(241, 241, 237);}
-.back::before { content: "\f062"; }
+.back::before { content: "\f106"; }
+.home::before { content: "\f100"; }
 
 .height1{
   height: 1em;

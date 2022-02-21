@@ -1106,6 +1106,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 });
 
 router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
+
   // Request: data object (command, datafile, templateIndex)
   // Returns: AJAX response
   // Handles playout commands of the rundown items in the controller.
@@ -1127,13 +1128,13 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     let RundownData = ""  // file JSON
     let preventSave = false;
 
-    // console.log(req.body.prepopulated);
-
     if (req.body.prepopulated && req.body.prepopulated=="true") {
       // data in pre-generated coming in. So we can just pass that along.
       logger.verbose('Playout command prepopulated [' + req.body.command + '] template [' + req.body.relpath + '].');
       dataOut = req.body;
-      dataOut.relpathCCG = req.body.relpath.split('.htm')[0]; // casparCG needs template path without extension
+      if ( req.body.command != 'invoke') {
+        dataOut.relpathCCG = req.body.relpath.split('.htm')[0]; // casparCG needs template path without extension
+      }
       preventSave = true;
     }
     else {
@@ -1406,7 +1407,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   catch (error)
     {
       logger.error('ERROR in /gc/playout [' + error + '].');
-      res.status(500).send('Server error in /gc/playout [' + error + '].')  // error 500 AJAX RESPONSE
+      res.status(500).send('Server error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
     };
 });
 

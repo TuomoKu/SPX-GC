@@ -26,23 +26,26 @@ module.exports = {
 
   httpPost: function (JSONdata, endPoint) {
     // Send a http POST to an endpoint on the GC server.
+    // console.log('httpPost received', endPoint, JSONdata);
+    let JSONdata2 = JSON.stringify(JSONdata);
     try {
-      JSONdata = JSON.stringify(JSONdata);
+      //JSONdata = JSON.stringify(JSONdata);
       const options = { port: port, path: endPoint, method: 'POST', headers: {
           'Content-Type': 'application/json',
-          'Content-Length': JSONdata.length }
+          'Content-Length': JSONdata2.length
+        }
       }
       const httpreq = http.request(options, result => {
         result.on('data', d => {
           process.stdout.write(d)
-          return 'Sent request to server:' + port + ':' + endPoint + JSONdata
+          return 'Sent request to server:' + port + ':' + endPoint + JSONdata2
         })
       })
       httpreq.on('error', error => {
         logger.error(error)
         return error
       })
-      httpreq.write(JSONdata)
+      httpreq.write(JSONdata2)
       httpreq.end()
     } catch (error) {
       logger.error('ERROR in spx.httpPost()', error);
@@ -389,12 +392,13 @@ module.exports = {
             // it is file
             let ext = path.extname(curPath).toUpperCase();
             let fil = filter.toUpperCase();
+            let fir = path.basename(curPath).charAt(0); // first character (dot files) 1.0.16
 
-            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" ) {
+            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" && fir != '.') {
               data.fileArr.push(path.basename(curPath));
             }
 
-            if (fil === 'CSV' && ext ==".CSV" ) {
+            if (fil === 'CSV' && ext ==".CSV" && fir != '.') {
               data.fileArr.push(path.basename(curPath));
             }
           }

@@ -48,13 +48,16 @@ function RenderFolder(data) {
     return
   }
 
+  console.log('RenderFolder data', data);
+
   document.getElementById('curfolder').innerText = data.folder.split("\\").join("/");
   document.getElementById("folderList").innerHTML="";
   document.getElementById("fileList").innerHTML="";
+
+  // populate folders
   data.foldArr.forEach((folder,i) => {
     var node = document.createElement("LI");
     node.classList.add("filebrowser_folder");
-    // node.onclick = function() { alert('OPEN FOLDER ' + folder); };
     var span = document.createElement("SPAN");
     span.classList.add("icon");
     span.classList.add("folder");
@@ -63,10 +66,11 @@ function RenderFolder(data) {
     node.appendChild(span);
     document.getElementById("folderList").appendChild(node);
   });
+
+  // populate files
   data.fileArr.forEach((file,i) => {
     var node = document.createElement("LI");
     node.classList.add("filebrowser_file");
-    // node.onclick = function() { alert('CHOOSE FILE ' + file); };
     var span = document.createElement("SPAN");
     span.classList.add("icon");
     span.classList.add("file");
@@ -200,6 +204,12 @@ function goUp() {
     } else {
       openFolder(targetFolder, '');
     }
+  }
+
+  function goHome() {
+    // added in 1.0.16.
+    let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
+    openFolder(ConfigTemplateFolder, '');
   }
 
 

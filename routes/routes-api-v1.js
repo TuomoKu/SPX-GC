@@ -22,6 +22,7 @@ const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
 const axios = require('axios')
 const PlayoutCCG = require('../utils/playout_casparCG.js');
+const { query } = require("../utils/logger");
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -145,15 +146,16 @@ router.get('/', function (req, res) {
 
     // create a data object 
     let dataOut = {};
+    dataOut.prepopulated = 'true'
     dataOut.playserver   = req.query.playserver || 'OVERLAY';
     dataOut.playchannel  = req.query.playchannel || '1';
     dataOut.playlayer    = req.query.playlayer || '1';
     dataOut.webplayout   = req.query.webplayout || '1';
-    dataOut.prepopulated = 'true'
-    dataOut.relpath      = 'we_need_some_filename_here_to_prevent_errors.html'
+    // dataOut.relpath      = 'we_need_some_filename_here_to_prevent_errors.html'
     dataOut.command      = 'invoke';
     dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(req.query.params) + '\")'; // encode added in v1.0.16
     res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
+    // console.log('API endpoint for invoke got:', dataOut);
     spx.httpPost(dataOut,'/gc/playout')
   });
 
@@ -310,31 +312,22 @@ router.get('/', function (req, res) {
 
 
     router.get('/controlRundownItemByID', async (req, res) => {
-      // added in 1.0.16
+      try {
+        // added in 1.0.16 (and refactored in RC5 by removing datafile reading and data passing)
+        let fold = req.query.file.split('/')[0];
+        let file = req.query.file.split('/')[1];
+        let RundownFile = path.join(config.general.dataroot, fold, 'data',  file + '.json');
+        let dataOut = {};
+        dataOut.datafile      = RundownFile;
+        dataOut.epoch         = req.query.item;
+        dataOut.command       = req.query.command;
+        dataOut.prepopulated  = 'false';
+        res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
+        spx.httpPost(dataOut,'/gc/playout')
+      } catch (error) {
+        res.status(500).send('Error in /api/v1/controlRundownItemByID: ' + error);
+      }
 
-      // search for template file from rundown
-      let fold = req.query.file.split('/')[0];
-      let file = req.query.file.split('/')[1];
-      let RundownFile = path.join(config.general.dataroot, fold, 'data',  file + '.json');
-      let RundownData = await spx.GetJsonData(RundownFile);
-
-      let dataOut = {};
-      RundownData.templates.forEach((template,index) => {
-        if (template.itemID == req.query.item) {
-            // this is the item
-            dataOut.playserver   = template.playserver || 'OVERLAY';
-            dataOut.playchannel  = template.playchannel || '1';
-            dataOut.playlayer    = template.playlayer || '1';
-            dataOut.webplayout   = template.webplayout || '1';
-            dataOut.dataformat   = template.dataformat || 'xml';
-            dataOut.prepopulated = 'true';
-            dataOut.fields       = template.DataFields || '{field: f0, value: "Lorem ipsum"}';
-            dataOut.relpath      = template.relpath || '/vendor/pack/template.html';
-            dataOut.command      = req.query.command || 'play';
-          }
-      });
-      res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
-      spx.httpPost(dataOut,'/gc/playout')
     });
 
 

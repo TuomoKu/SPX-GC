@@ -54,7 +54,7 @@ router.post('/browseFiles/', async (req, res) => {
   // This is axios ajax handler for file browser on dbl click on a folder
   // REQUEST: current folder and next folder name
   // RETURNS: json data with folder and file arrays
-  console.log('TODO: Debug why browseFiles returns empty filelist.')
+  console.log('TODO: Debug why browseFiles returns empty filelist. curFolder = "' + req.body.curFolder + '" and tgtFolder="' + req.body.tgtFolder + '".');
   let curFolder = req.body.curFolder || ".";
   let tgtFolder = req.body.tgtFolder || "";
   let BrowseFolder = path.join(curFolder, tgtFolder);

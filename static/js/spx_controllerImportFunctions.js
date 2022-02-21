@@ -11,10 +11,11 @@ function RenderFolder(data) { //controllerImportCSV
   document.getElementById('curfolder').innerText = data.folder.split("\\").join("/");
   document.getElementById("folderList").innerHTML="";
   document.getElementById("fileList").innerHTML="";
+
+  // generate folder icons
   data.foldArr.forEach((folder,i) => {
     var node = document.createElement("LI");
     node.classList.add("filebrowser_folder");
-    // node.onclick = function() { alert('OPEN FOLDER ' + folder); };
     var span = document.createElement("SPAN");
     span.classList.add("icon");
     span.classList.add("folder");
@@ -23,6 +24,8 @@ function RenderFolder(data) { //controllerImportCSV
     node.appendChild(span);
     document.getElementById("folderList").appendChild(node);
   });
+
+  // generate files icons
   data.fileArr.forEach((file,i) => {
     var node = document.createElement("LI");
     node.classList.add("filebrowser_file");
