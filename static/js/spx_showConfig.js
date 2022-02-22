@@ -190,7 +190,7 @@ function goUp() {
 
     // Maybe this will do?!?!?
     let currentFolder = document.getElementById('curfolder').innerText
-    openFolder(targetFolder, '..');
+    openFolder(currentFolder, '..');
     return; // =========================================================
 
 
