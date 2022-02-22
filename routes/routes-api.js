@@ -55,14 +55,26 @@ router.post('/browseFiles/', async (req, res) => {
   // This is axios ajax handler for file browser on dbl click on a folder
   // REQUEST: current folder and next folder name
   // RETURNS: json data with folder and file arrays
-  console.log('TODO: Debug why browseFiles returns empty filelist. curFolder = "' + req.body.curFolder + '" and tgtFolder="' + req.body.tgtFolder + '".');
-  let curFolder = req.body.curFolder || ".";
-  let tgtFolder = req.body.tgtFolder || "";
+  // 1.0.16 - refactored navigaiton process to use '..' for parent folder.
+  let curFolder   = req.body.curFolder || ".";
+  let tgtFolder   = req.body.tgtFolder || "";
+  let rootFolder  = req.body.rootFolder || path.join(spx.getStartUpFolder(), 'ASSETS');
   let BrowseFolder = path.join(curFolder, tgtFolder);
 
-  console.log('BrowseFolder is now ' + BrowseFolder);
+  let osRootPath = path.resolve(rootFolder)
+  let osTargPath = path.resolve(BrowseFolder)
+  let navigateTo = osTargPath;
+  let feedbackMs = '';
 
-  const fileListAsJSON = await spx.GetFilesAndFolders(BrowseFolder);
+  if ( osTargPath.length <= osRootPath.length ) {
+    logger.verbose('Targeting beyond limits, sending root-identifier. Path: '  + osTargPath);
+    navigateTo = osRootPath;
+    feedbackMs = 'root';
+  } else {
+    feedbackMs = 'ok';
+  }
+  const fileListAsJSON = await spx.GetFilesAndFolders(navigateTo);
+  fileListAsJSON.message=feedbackMs; // force feedback message to UI at RenderFolder()
   res.send(fileListAsJSON);
 }); // browseFiles API post request end
 

@@ -48,11 +48,21 @@ function RenderFolder(data) {
     return
   }
 
-  console.log('RenderFolder data', data);
-
+  // console.log('RenderFolder data', data);
   document.getElementById('curfolder').innerText = data.folder.split("\\").join("/");
   document.getElementById("folderList").innerHTML="";
   document.getElementById("fileList").innerHTML="";
+
+  if (data.message=='root') {
+    showMessage(document.getElementById('templaterootmassage').value);
+    document.getElementById('homefolder').classList.add('disabled'); 
+    document.getElementById('prefolder').classList.add('disabled'); 
+
+  } else  {
+    showMessage('');
+    document.getElementById('homefolder').classList.remove('disabled'); 
+    document.getElementById('prefolder').classList.remove('disabled'); 
+  }
 
   // populate folders
   data.foldArr.forEach((folder,i) => {
@@ -97,7 +107,7 @@ function navigateDeeper(targetFolderName) {
   }
 
 
-function openFolder(fromFolder, toFolder) {
+function openFolder(fromFolder, toFolder, rootFolder='') {
     // deselect files first
     var fils = document.getElementsByClassName("filebrowser_file");
     document.getElementById('btnChooseTemplate').style.opacity=0.2;
@@ -108,7 +118,8 @@ function openFolder(fromFolder, toFolder) {
     // console.log('spx_showConfig.js / openFolder() getting content from folder  [' + fromFolder + '] to folder [' + toFolder + ']...');
     axios.post('/api/browseFiles', {
         curFolder: fromFolder,
-        tgtFolder: toFolder
+        tgtFolder: toFolder,
+        rootFolder: rootFolder
       })
         .then(function (response) {
             // console.log(response);
@@ -187,37 +198,17 @@ function openSelectedFile() {
 
 
 function goUp() {
-
-    // Maybe this will do?!?!?
+    // 1.0.16 - refactored navigation to use '..' for parent folder.
     let currentFolder = document.getElementById('curfolder').innerText
-    openFolder(currentFolder, '..');
-    return; // =========================================================
-
-
-    // improved in 1.0.16. See also another goUp() function... Must merge these...
-    let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
-    let pathItems = document.getElementById('curfolder').innerText.split("/");
-
-    // filter empties
-    temp = [];
-    for(let i of pathItems) i && temp.push(i); // copy each non-empty value to the 'temp' array
-    pathItems = temp;
-    pathItems.pop();
-
-    // console.log('This the reason for the bug?', pathItems);
-    let targetFolder = pathItems.join('/') + '/';
-    if ( targetFolder.length < ConfigTemplateFolder.length  ) {
-      showMessage(document.getElementById('templaterootmassage').value);
-      return;
-    } else {
-      openFolder(targetFolder, '');
-    }
-  }
+    let rootFolder = document.getElementById('templateroot').value;
+    openFolder(currentFolder, '..', rootFolder);
+    return;
+  } // goUp
 
   function goHome() {
     // added in 1.0.16.
-    let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
-    openFolder(ConfigTemplateFolder, '');
+    let ConfigTemplateFolder = document.getElementById('templateroot').value //.split("\\").join("/");
+    openFolder(ConfigTemplateFolder, '..', ConfigTemplateFolder);
   }
 
 
