@@ -191,7 +191,7 @@ function goUp() {
     // Maybe this will do?!?!?
     let currentFolder = document.getElementById('curfolder').innerText
     openFolder(targetFolder, '..');
-    break; // =========================================================
+    return; // =========================================================
 
 
     // improved in 1.0.16. See also another goUp() function... Must merge these...
