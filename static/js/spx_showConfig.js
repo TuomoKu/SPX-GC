@@ -187,6 +187,13 @@ function openSelectedFile() {
 
 
 function goUp() {
+
+    // Maybe this will do?!?!?
+    let currentFolder = document.getElementById('curfolder').innerText
+    openFolder(targetFolder, '..');
+    break; // =========================================================
+
+
     // improved in 1.0.16. See also another goUp() function... Must merge these...
     let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
     let pathItems = document.getElementById('curfolder').innerText.split("/");
@@ -196,8 +203,9 @@ function goUp() {
     for(let i of pathItems) i && temp.push(i); // copy each non-empty value to the 'temp' array
     pathItems = temp;
     pathItems.pop();
-    let targetFolder = pathItems.join('/') + '/';
 
+    // console.log('This the reason for the bug?', pathItems);
+    let targetFolder = pathItems.join('/') + '/';
     if ( targetFolder.length < ConfigTemplateFolder.length  ) {
       showMessage(document.getElementById('templaterootmassage').value);
       return;

@@ -13,6 +13,7 @@ logger.debug('API-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
 const { now } = require("moment");
+const { constants } = require("buffer");
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -58,6 +59,9 @@ router.post('/browseFiles/', async (req, res) => {
   let curFolder = req.body.curFolder || ".";
   let tgtFolder = req.body.tgtFolder || "";
   let BrowseFolder = path.join(curFolder, tgtFolder);
+
+  console.log('BrowseFolder is now ' + BrowseFolder);
+
   const fileListAsJSON = await spx.GetFilesAndFolders(BrowseFolder);
   res.send(fileListAsJSON);
 }); // browseFiles API post request end
