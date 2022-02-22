@@ -110,6 +110,7 @@ export function selectbutton (options) {
 	drop.id = 'list'; 
 	drop.classList = 'btn'; 
 	drop.style.width = '99%';
+	drop.style.paddingLeft="0.4em";
 	drop.classList.add(style[options.color]);
 	options.items.forEach((item,index) => {
 		let optn 	= document.createElement('option');

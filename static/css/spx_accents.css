@@ -25,7 +25,7 @@ label {
   cursor: pointer;
 }
 label:hover span {
-  transform: scale(1.25);
+  /* transform: scale(1.25); */
 }
 label span {
   display: block;

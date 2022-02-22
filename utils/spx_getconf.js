@@ -52,17 +52,21 @@ module.exports = {
                     cfg.general.username                        = "admin"
                     cfg.general.password                        = ""
                     cfg.general.hostname                        = ""
+                    cfg.general.greeting                        = ""
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
-                    cfg.general.launchchrome                    = false
+                    cfg.general.launchchrome                    = "false"
                     cfg.general.resolution                      = "HD"
-                    // cfg.general.localrenderer                = "program" /* Added while doing 1.0.16 but not going to use this now */
                     cfg.general.preview                         = "selected"
+                    cfg.general.renderer                        = "normal"
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
                     cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"
                     cfg.general.templatesource                  = "spxgc-ip-address"
                     cfg.general.port                            = "5656"
+
+                    cfg.general.recents                         = []
+
                     cfg.casparcg                                = {}
                     cfg.casparcg.servers                        = []
                     newcasparcg                                 = {}

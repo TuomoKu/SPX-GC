@@ -707,7 +707,7 @@ div.curfolder{
     color: rgba(255, 255, 255, 0.52);
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
     text-shadow: rgba(255, 255, 255, 0.1) 0 0 2px;
-    line-height: 2em;
+    /* line-height:   2em; */
     font-size: 0.75em;
     margin: auto auto;
     border: 0px solid pink;
@@ -733,7 +733,7 @@ div.curfolder{
     text-rendering: optimizeLegibility;
     text-shadow: rgba(255, 255, 255, 0.5) 0 0 2px;
     opacity: 0.75;
-    line-height: 75%;
+    line-height: 1; /* 75%; */
 }
 
 

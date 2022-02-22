@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPX - PROGRAM EMULATOR</title>
-    <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+    <link rel="stylesheet" type="text/css" href="/css/spx_renderpopups.css">
     <script src="/js/socket.io.js"></script>
     <script>
         var socket = io();
@@ -34,65 +34,22 @@
         }); // end SPXMessage2Client
 
     </script>
-    <style>
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            color: white;
-            overflow: hidden;
-            align-items: center;
-            flex-direction: column;
-            justify-content: center;
-            font-family: 'UI-Regular';
-            background-color: rgb(0,0,0);
-        }
-
-        *, *:before, *:after {
-            box-sizing: inherit;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-        }
-
-        .renderer  {
-            /* renderer size set by SPX to {{width}}x{{height}} */ 
-            width: {{width}}px;
-            height: {{height}}px;
-            background-image: url('/img/checker60.png'); /* bgimage for local preview */
-            background-size: 10vw;
-            transform-origin: top left;
-            border: 0px;
-            outline: 0px;
-            padding: 0;
-            margin: 0;
-        }
-
-        #toolbar {
-            flex-grow: 0;
-            width: 100%;
-            display: flex;
-            align-items: left;
-            flex-direction: row;
-            align-self: flex-start;
-            border: 1px solid yellow;
-        }
-
-    </style>
 </head>
 <body onresize="resizePreview();" > <!-- onunload="sendWinClosedMessage('unload');" onload="sendWinClosedMessage('load');" -->
+     <!-- maybe in the future
     <div id="toolbar">
         <div>PROGRAM</div>
         <div>Clear</div>
         <div>Layers</div>
     </div>
+    -->
 
+    <div class="watermark prog"></div>
     <div id="previewBG" style="background-color: rgb(0, 0, 0); overflow: hidden;">
-        <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
+        <iframe id="previewIF"
+            src="/renderer"
+            class="renderer"
+            style="width: {{width}}px; height: {{height}}px;"></iframe>
     </div>
 
     <script>

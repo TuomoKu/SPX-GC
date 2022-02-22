@@ -12,6 +12,17 @@ function RenderFolder(data) { //controllerImportCSV
   document.getElementById("folderList").innerHTML="";
   document.getElementById("fileList").innerHTML="";
 
+  if (data.message=='root') {
+    showMessage(document.getElementById('templaterootmassage').value);
+    document.getElementById('homefolder').classList.add('disabled'); 
+    document.getElementById('prefolder').classList.add('disabled'); 
+
+  } else  {
+    showMessage('');
+    document.getElementById('homefolder').classList.remove('disabled'); 
+    document.getElementById('prefolder').classList.remove('disabled'); 
+  }
+
   // generate folder icons
   data.foldArr.forEach((folder,i) => {
     var node = document.createElement("LI");
@@ -58,7 +69,7 @@ function navigateDeeper(targetFolderName) {
   }
 
 
-function openFolder(fromFolder, toFolder) {
+function openFolder(fromFolder, toFolder, rootFolder='') {
     // deselect files first
     var fils = document.getElementsByClassName("filebrowser_file");
     document.getElementById('btnChooseTemplate').style.opacity=0.2;
@@ -70,7 +81,8 @@ function openFolder(fromFolder, toFolder) {
     axios.post('/api/browseFiles', {
         curFolder: fromFolder,
         tgtFolder: toFolder,
-        fileExtsn: 'htm'
+        rootFolder: rootFolder,
+        extension: 'CSV'
       })
         .then(function (response) {
             // console.log(response);
@@ -127,25 +139,19 @@ function openSelectedCSVFile() {
 }
 
 function goUp() {
-  // improved in 1.0.16. See also another goUp() function... Must merge these...
-  let ConfigTemplateFolder = document.getElementById('templateroot').value.split("\\").join("/");
-  let pathItems = document.getElementById('curfolder').innerText.split("/");
-
-  // filter empties
-  temp = [];
-  for(let i of pathItems) i && temp.push(i); // copy each non-empty value to the 'temp' array
-  pathItems = temp;
-  pathItems.pop();
-  let targetFolder = pathItems.join('/') + '/';
-
-  if ( targetFolder.length < ConfigTemplateFolder.length  ) {
-    showMessage(document.getElementById('templaterootmassage').value);
-    return;
-  } else {
-    openFolder(targetFolder, '');
-  }
+  // 1.0.16 - refactored navigation to use '..' for parent folder.
+  // See also another goUp() function... Must merge these...
+  let currentFolder = document.getElementById('curfolder').innerText
+  let rootFolder = document.getElementById('assetsroot').value;
+  openFolder(currentFolder, '..', rootFolder);
+  return;
 }
 
+function goHome() {
+  // added in 1.0.16.
+  let AssetsFolder = document.getElementById('assetsroot').value //.split("\\").join("/");
+  openFolder(AssetsFolder, '..', AssetsFolder);
+}
 
 function showMessage(msg) {
   document.getElementById('browserMessage').innerText=msg;

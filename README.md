@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Feb 20 2022.
+Readme updated Feb 22 2022.
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.0.15** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
 
@@ -259,6 +259,8 @@ An example `config.json` of the SPX server
     "dataroot": "X:/DATAROOT/",
     "templatefolder": "X:/GC-DEV/ASSETS/templates/",
     "templatesource": "spxgc-ip-address",
+    "preview": "selected",
+    "renderer": "normal",
     "launchchrome": "true"
   },
   },
@@ -312,6 +314,18 @@ An example `config.json` of the SPX server
 * `casparcg-template-path` to playout templates from target CasparCG server's file system template-path. (See _caspar.config_ file) Note, in this workflow the templates *must be in two places*: in SPX ASSETS/templates -folder *and* CasparCG's templates folder. And if a changes are done to either location, those changes should also be done to the other. `rsync` or other mirroring technique should be considered...
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
+
+**`general.preview`** Version 1.0.16 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true`parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.0.16 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
+`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. There are three values available.
+
+* `selected` (the default value) Preview will play whenever a _focus_ is changed on the rundown.
+* `next` Preview will play _the next item_ from the rundown when an item is played. (This value is not exposed in version 1.0.16) 
+* `none` preview will not be triggered
+
+**`general.renderer`** Version 1.0.16 introduced an option to have the local renderer in traditional position at the top right corner of SPX UI **or** taken out to a floating window. This is stored to config file and each consecutive controller reload will act according to set preference. Possible values are
+
+* `normal` an inline renderer view
+* `popup` renderer in a floating window "popup" (notice, it is possible that popup blocker prevent this from working as expected)
 
 <a id="locales"></a>**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
 

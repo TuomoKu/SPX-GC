@@ -40,8 +40,6 @@ function reimportTemplateIndex(nro) {
 function RenderFolder(data) {
   // will draw folder and files to the popup GUI
 
-  // console.log('showConfig.js --> RenderFolder', data );
-
   if (!data || !data.folder) {
     console.log('ShowConfig / RenderFolder(): Folder unknown.');
     showMessageSlider('Error happened: unknown folder. Restart SPX.', 'error', false)
@@ -199,6 +197,7 @@ function openSelectedFile() {
 
 function goUp() {
     // 1.0.16 - refactored navigation to use '..' for parent folder.
+    // See also another goUp() function... Must merge these...
     let currentFolder = document.getElementById('curfolder').innerText
     let rootFolder = document.getElementById('templateroot').value;
     openFolder(currentFolder, '..', rootFolder);

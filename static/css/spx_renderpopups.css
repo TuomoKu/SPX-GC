@@ -1,0 +1,67 @@
+html,
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        color: white;
+        overflow: hidden;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        font-family: 'UI-Regular';
+        background-color: rgb(0,0,0);
+    }
+
+    *, *:before, *:after {
+        box-sizing: inherit;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+    }
+
+    .renderer  {
+        background-image: url('/img/checker60.png'); /* bgimage for local preview */
+        background-size: 10vw;
+        transform-origin: top left;
+        border: 0px;
+        outline: 0px;
+        padding: 0;
+        margin: 0;
+    }
+
+    #toolbar {
+        flex-grow: 0;
+        width: 100%;
+        display: flex;
+        align-items: left;
+        flex-direction: row;
+        align-self: flex-start;
+        border: 1px solid yellow;
+    }
+
+    .watermark {
+      top: 0;
+      left: 0;
+      top: 50%;
+      left: 50%;
+      opacity: 1; /* WATERMARK if 1 = visible, 0 = invisible */
+      width: 50vw;
+      z-index:100;
+      height: 50vw;
+      position: absolute;
+      background-size: contain;
+      border: 0px solid yellow;
+      background-position: center;
+      background-repeat: no-repeat;
+      transform: translate(-50%, -50%);
+    }
+
+    .prev {
+      background-image: url("/img/spx_preview.png");
+    }
+
+    .prog {
+      background-image: url("/img/spx_program.png");
+    }

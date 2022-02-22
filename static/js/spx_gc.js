@@ -51,11 +51,15 @@ socket.on('SPXMessage2Client', function (data) {
         case 'clientLostNotification':
             switch (data.clientName) {
                 case 'SPX_PROGRAM':
-                    toggleRendererPopup('programToggleBtn', data.source, 'forceButtonOff')
+                    if (document.getElementById('toggleRendererWindowProgram')) {
+                        document.getElementById('toggleRendererWindowProgram').checked = false;
+                    }
+                    toggleNormalRenderer('normal');
                     break;
 
                 case 'SPX_PREVIEW':
-                    toggleRendererPopup('previewToggleBtn', data.source, 'forceButtonOff')
+                    if ( document.getElementById('toggleRendererWindowPreview') )
+                        document.getElementById('toggleRendererWindowPreview').checked = false;
                     break;
             
                 default:
@@ -580,6 +584,28 @@ function clearAttributes(attName, attValue) {
     })
 } // clearAttributes ended
 
+
+function toggleSwitchHandler(slider, targ, type) {
+    // When program/preview toggle buttons are clicked.
+    // console.log('toggleSwitchHandler', slider, targ);
+    let data    = {}
+    data.type   =  type;
+    let handle = slider.querySelector('.vc-handle');
+    if (slider.checked) {
+        data.command = 'open';
+        document.getElementById(targ).innerText = 'ON';
+    } else {
+        data.command = 'close';
+        document.getElementById(targ).innerText = 'OFF';
+    }
+    handleRendererPopups(data)
+} // toggleSwitchHandler
+
+function toggleTip(targetField, source, attr) {
+    document.getElementById(targetField).innerText = source.getAttribute(attr);
+} // toggleTip
+
+
 function toggleActive(ServerName='') {
     // Will enable / disable commands to the server
     // CCG/disable {server:'OVERLAY, disable:false}
@@ -700,13 +726,17 @@ async function revealItemID(button) {
     }
 }
 
-function copyRendererUrl() {
-    var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + '/renderer/';
+function copyRendererUrl(preview=false) {
+
+    let page = '/renderer/';
+    if (preview) {
+        page = '/renderer?preview=true';
+    }
+    var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + page;
     copyText(RendererUrl);
     showMessageSlider('Copied URL to clipboard', 'happy');
 }
 
- 
 function copyText(txt) {
     const temp = document.createElement('input');
     document.body.appendChild(temp);
@@ -2042,20 +2072,6 @@ function setProfile(profileName) {
     localStorage.SPX_CT_ProfileName = profileName;
 } // setProfile ended
 
-/* Added in 1.0.16 but not in use YET 
-function saveRendererType(value) {
-    // Save selected localRenderer type to config file for future use
-    data = {};
-    data.key = 'localrenderer'
-    data.val = value;
-    ajaxpost('/gc/saveConfigChanges',data);
-    showMessageSlider('Renderer changed to ' + value + '.')
-    document.getElementById('localRendererCollapsiple').classList = 'collapsibleZone activeZone edge_' + value; // 3 classes!
-
-    // Clear gfx from all (local renderer) layers:
-    document.getElementById('previewIF').src="/renderer";
-} */ 
-
 
 
 function statusbar(sMsg, sLevel="x") {
@@ -2213,71 +2229,29 @@ function working(StatusMsg){
   } //working
 
 
-  function toggleRendererPopup(buttonID, source, forceState='nothing') {
-    // Open / close renderer popups
-    // require:
-    // 1: elementID
-    // 2: source (window, button)
-    // 3: optional target state
-    // does: change button UI and execute popup commands
-    // Spagetti warning. I was tired, this can be confusing. Sorry <:-/
-    let buttonRef = document.getElementById(buttonID);
-    let data = {}
-    data.source = source;
-    data.type = buttonRef.getAttribute('data-spx-popup');
-
-    // console.log('INFO - button: ' + buttonID + ', source: ' + source + ', current state: ' + buttonRef.getAttribute('data-spx-status') + ', force: ' + forceState);
-
-    if (forceState == 'forceButtonOff') {
-        // Just disable toggle button, do not make window commands!
-        // console.log('FORCE toggle to OFF');
-        buttonRef.setAttribute('data-spx-status',false);
-        buttonRef.classList.remove('toggleON');
-        return
-    } 
-
-    if (buttonRef.getAttribute('data-spx-status') == 'false') {
-        // toggle button ON
-        console.log('Turning toggle to ON');
-        buttonRef.classList.add('toggleON');
-        buttonRef.setAttribute('data-spx-status',true);
-        data.command = 'open';
-        handleRendererPopups(data); // execute window functions
-        return
-    }
-
-    if (buttonRef.getAttribute('data-spx-status') == 'true') {
-        // toggle button OFF
-        console.log('Turning toggle to OFF');
-        buttonRef.setAttribute('data-spx-status',false);
-        buttonRef.classList.remove('toggleON');
-        data.command = 'close';
-        handleRendererPopups(data); // execute window functions
-        return
-    }
-  }
-
-
   function handleRendererPopups(data) {
-      // open / close renderer popups
-      // data: {type:preview}
-      
-      let URL;
-      let socketData = {};
-      var w = 1280;
-      var h = 720;
-      var left = (screen.width/2)-(w/2);
-      var top = (screen.height/2)-(h/2);
-      var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
+    
+    console.log('handleRendererPopups',data);
 
-      if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
-      if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
+    // open / close renderer popups 
+    // data: {type:preview}
+    // Save to config.json general.renderer as "normal" (embedded inline renderer) or "popup" (floating window)
+    
+    let URL;
+    let socketData = {};
+    var w = 1280;
+    var h = 720;
+    var left = (screen.width/2)-(w/2);
+    var top = (screen.height/2)-(h/2);
+    var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
 
-      if (data.command == 'open')  {
+    if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
+    if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
+
+    if (data.command == 'open')  {
         // open the popup
         console.log('Sendin OPEN, source: ' + data.source);
         window.open(URL, winRef, OPT);
-        return
     } 
     
     if (data.command == 'close')  {
@@ -2287,7 +2261,36 @@ function working(StatusMsg){
         // console.log('Sending ' + 'close' + data.type);
         socketData.spxcmd = 'close' + data.type;
         socket.emit('SPXWebRendererMessage', socketData);
-        return
-    } 
+    }
 
+    if (data.type == 'program') {
+        toggleNormalRenderer(data.command)
+    }
+  }
+
+
+  function toggleNormalRenderer(cmd) {
+    // 1.0.16
+    // This [closing of popup] can happen in any SPX view,
+    // not necessarily in the controller view...
+    let Cfgdata = {};
+    Cfgdata.key = 'renderer'
+    if (cmd == 'open')  {
+        Cfgdata.val = 'popup';        
+    } else {
+        Cfgdata.val = 'normal';
+    }
+    ajaxpost('/gc/saveConfigChanges',Cfgdata);
+    showMessageSlider('Renderer changed to ' + Cfgdata.val + '.')
+
+    if ( !document.getElementById('previewIF') ) return ; // not in controller
+    if (cmd == 'open')  {
+        // Hide inline renderer, use popup
+        document.getElementById('previewBG').style.display='none';
+        document.getElementById('previewIF').src='/templates/empty.html';
+    } else {
+        // Use normal renderer
+        document.getElementById('previewBG').style.display='block';
+        document.getElementById('previewIF').src='/renderer';
+    }
   }

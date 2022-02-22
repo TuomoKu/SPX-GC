@@ -12,40 +12,41 @@
 }
 
 :root {
-  --vc-off-color:             linear-gradient(190deg, rgba(0, 0, 0, 0.39) 5%, rgba(0, 0, 0, 0.157) 50%);
-  --vc-on-color:              #54AF3C;
+  --vc-off-color:             #2A3641; /* linear-gradient(190deg, rgba(0, 0, 0, 0.39) 5%, rgba(0, 0, 0, 0.157) 50%); */
+  --vc-on-color:              #2A3641;
   --vc-animation-speed:       0.2s ease-out;
-  --vc-font-family:           "UI-BOLD";
+  --vc-font-family:           "UI-Regular";
   --vc-font-size:             1.2em;
   --vc-font-weight:           unset;
-  --vc-on-font-color:         rgba(47, 43, 43, 0.52);
+  --vc-on-font-color:         rgba(255, 255, 255, 1.0);
   --vc-off-font-color:        rgb(255, 255, 255);
   --vc-label-position-off:    14px;
   --vc-label-position-on:     14px;
-  --vc-height:                2.0em;
+  --vc-height:                1.3em; /* 2.0em*/
   --vc-width:                 100%;
-  --vc-handle-width:          70%;
-  --vc-handle-height:         86%;
+  --vc-handle-width:          60%;
+  --vc-handle-height:         90%;
   --vc-box-border-radius:     0px;
   --vc-handle-border-radius:  0px;
   --vc-handle-shadow:         0px 0px 5px rgba(0, 0, 0, 0.5);
-  --vc-handle-color:          rgb(61, 61, 61);
-  --vc-onclick-width:         90%;
-  --vc-handle-top:            0.2em;
-  --vc-handle-fontsize:       0.8em;
-  --vc-handle-lineHeight:     2.2em;
+  --vc-handle-color:          #485a6b; /* rgb(61, 61, 61); */
+  --vc-onclick-width:         80%;
+  --vc-handle-top:            0.1em;  /* 0.2 */
+  --vc-handle-fontsize:       0.7em; /* 0.8 */
+  --vc-handle-lineHeight:     1.7em; /* 2.2 */
 }
 
 .toggle-container * {
   font-family:                var(--vc-font-family);
   transition:                 var(--vc-animation-speed);
   cursor:                     pointer;
+  /* background:                 darkgreen; */
 }
 
 .vc-switch {
   width:                      var(--vc-width);
   height:                     var(--vc-height);
-  border:                     0px solid rgba(255, 255, 255, 0.198);
+  margin-top:                 5px;
 }
 
 .toggle-container label {
@@ -59,7 +60,7 @@
 .vc-switch-input {
   position:                   absolute;
   transform:                  translate3d(5px, 5px, 0);
-  opacity: 0;
+  opacity:                    0;
 }
 
 .vc-switch-label {
@@ -145,8 +146,10 @@
 .vc-switch-input:checked ~ .vc-handle {
   left:                     unset;
   right:                    2px;
-  color:                    #46f515;
-  text-shadow:              0 0 6px #52cf2f;
+  color:                    var(--vc-on-font-color);
+  text-shadow:              0 0 6px var(--vc-on-font-color),
+                            0 4px 8px green,
+                            0 0px 12px rgb(20, 209, 20);
 }
 
 

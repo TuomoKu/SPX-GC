@@ -753,7 +753,11 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     height  = 2160;
   }
 
-  let recents = config.general.recents || [] // added in 1.0.16
+  // these added in 1.0.16
+  let recents       = config.general.recents  || []        
+  let preview       = config.general.preview  || 'none'    
+  let rnrtype       = config.general.renderer || 'normal'  
+  let assetsFolder  = path.resolve(spx.getStartUpFolder(),'ASSETS') || ''
 
   res.render('view-controller', {
     layout:         false,
@@ -769,8 +773,10 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     csvFileList:    csvFileList,
     width:          width,
     height:         height,
-    previewMode:    config.general.preview,
-    recents:        recents
+    previewMode:    preview,
+    recents:        recents,
+    renderer:       rnrtype,
+    assetsFolder:   assetsFolder
   });
 
   let bgImage = ''

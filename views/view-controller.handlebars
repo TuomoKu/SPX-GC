@@ -28,9 +28,9 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
-  <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
   <link rel="stylesheet" type="text/css" href="/css/vanilla-js-tooltip.css" />
   <link rel="stylesheet" type="text/css" href="/css/toggle2.css">
+  <link rel="stylesheet" type="text/css" href="/css/toggle.css">
   
   {{{ hookLoadControllerPlugins }}}
 
@@ -51,6 +51,8 @@
   <input type="hidden" id="background" value="{{background}}">        <!-- background.png -->
   <input type="hidden" id="csvlist" value="{{csvFileList}}">          <!-- tree data from ASSETS/csv -->
   <input type="hidden" id="previewMode" value="{{previewMode}}">      <!-- previewMode (next/selected) -->
+  <input type="hidden" id="assetsroot" value="{{assetsFolder}}">      <!-- used by file browser -->
+  <input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
 
   <div class="overlay" id="overlayTemplatePicker">
     <!-- This is the file browser modal overlay -->
@@ -549,24 +551,42 @@
 
           <!-- background: {{background}} -->
 
-          <div id="previewBG" style="background-color: rgb(0, 0, 0); width:100%; height:27%; overflow: hidden; opacity:0.1;">
-            {{#if background}}
-              <iframe width={{width}} height={{height}} id="previewIF" src="/renderer"  class="renderer" style="background-image: url('/{{background}}'); background-size: 100% 100%;"></iframe>
-            {{else}}
-              <iframe width={{width}} height={{height}}  id="previewIF" src="/renderer"  class="renderer"></iframe>
-            {{/if}}
+          <div id="previewBG"
+            style="background-color: rgb(0, 0, 0);
+                   width:100%;
+                   height:27%;
+                   overflow: hidden;
+                   {{#ifValue renderer "popup"}}
+                    display: none;
+                   {{else}}
+                    display: block;
+                   {{/ifValue}}
+                   opacity:0.1;">
+            <iframe
+              width={{width}}
+              height={{height}} 
+              id="previewIF"
+              src="/renderer"
+              class="renderer"
+              {{#if background}}
+              style="background-image: url('/{{background}}'); background-size: 100% 100%;"
+              {{/if}}
+              ></iframe>
+            
           </div>
 
           <!-- options foldable -->
           <!-- Functions Zone -->
           <div id="controllerFunctionsZone" style="opacity:0;">
-            <div id="FoldableDemo" style="position: relative;">
+            <div id="renderOptionsFoldable" style="position: relative;">
+              <!-- TODO: Enable promo notification icon
               <i  class="fas fa-bell"
                   style=" position:absolute;
                           margin: 0.7em;
                           font-size: 0.7em;
                           top:0; right: 0;
                           color: orange;"></i>
+              -->
               <button id="localRendererCollapsiple" class="collapsibleZone {{{ GenerateLocalRendererOptions 'class' }}}" type="button">OPTIONS</button>
               
               <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2); padding:0;">
@@ -596,71 +616,90 @@
                           border: 0;"></iframe>
                 </div>
                 <div style="padding:10px;">
-                <table style="width: 100%;" cellspacing="4" style="border:1px solid yellow;">
-                  <!-- Added in 1.0.16 but NOT in use yet 
-                  <tr>
-                    <td width="50%"><span class="spxTableHead">Local renderer type</span></td>
-                    <td>
-                      <select id="rendererStyle" class="btnsmall bg_grey" style="width: 99%;" onChange='saveRendererType(this.value);'>
-                        ///  GenerateLocalRendererOptions 'options' /// 
-                      </select>
+
+                <table style="width:100%;">
+                  <tr> 
+                    <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
+                      Popup renderer
                     </td>
-                  </tr>
-                  -->
-                  <tr  style="padding: 10px;">
-                    <td width="50%"><span class="spxTableHead">Renderer pop-ups</span></td>
-                    <td style="vertical-align:middle;">
-                      <div style="display: flex;">
-                        <button type="button"
-                                id="previewToggleBtn"
-                                class="w50 spxFlexItem btnsmall bg_grey"
-                                data-spx-popup="preview"
-                                data-spx-status="false"
-                                onClick="toggleRendererPopup('previewToggleBtn', 'button')">PREVIEW</button>
-                        <button type="button"
-                                id="programToggleBtn"
-                                class="w50 spxFlexItem btnsmall bg_grey"
-                                data-spx-popup="program"
-                                data-spx-status="false"
-                                onClick="toggleRendererPopup('programToggleBtn', 'button')">PROGRAM</button>
+                    <td width="20%" ALIGN="center">
+                      <div class="toggle-container">
+                        <label class="vc-switch">
+                        <input  id="toggleRendererWindowProgram"
+                                {{#ifValue renderer "popup"}}
+                                  checked
+                                {{/ifValue}}
+                                type="checkbox"
+                                class="vc-switch-input"
+                                onClick="toggleSwitchHandler(this, 'toggle1', 'program');"/>
+                        <span id="recSlider" class="vc-switch-label"></span>
+                        <span class="vc-handle" id="toggle1">
+                            {{#ifValue renderer "popup"}}
+                              ON
+                            {{else}}
+                              OFF
+                            {{/ifValue}}
+                        </span>
+                        </label>
                       </div>
                     </td>
-                  </tr>
-                  <tr style="padding: 10px;">
-                    <td width="50%"><span class="spxTableHead">Renderer output URL</span></td>
-                    <td>
-                      <button type="button" class="wide spxFlexItem btnsmall ripple bg_grey" onClick="copyRendererUrl();">COPY TO CLIPBOARD</button>
-                    </td>
-                  </tr>
-                  <tr style="padding: 10px;">
-                    <td colspan="2" style="text-align: center;">
-                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spxgc.com">SPX Store</a> for more.</span>
+                    <td width="20%"  ALIGN="center" style="padding:0;">
+                      <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0;"
+                              class="btn bg_grey ripple"
+                              data-defaultTip = 'Program in a viewer'
+                              data-toggleText = 'Copy program output url'
+                              onmouseover="toggleTip('toggleInfo1', this, 'data-toggleText')"
+                              onmouseout ="toggleTip('toggleInfo1', this, 'data-defaultTip')"
+                              onclick = "copyRendererUrl()"
+                              ><i class="fas fa-clipboard"></i> URL</button>
                     </td>
                   </tr>
                 </table>
+
+                <table style="width:100%;">
+                  <tr> 
+                    <td width="60%" id="toggleInfo2" style="font-size: 0.7em;">
+                      Show preview viewer
+                    </td>
+                    <td width="20%" ALIGN="center">
+                      <div class="toggle-container">
+                        <label class="vc-switch">
+                        <input id="toggleRendererWindowPreview" type="checkbox" data-on="LOOP" data-off="OFF" class="vc-switch-input"  onClick="toggleSwitchHandler(this, 'toggle2', 'preview');"/>
+                        <span id="recSlider" class="vc-switch-label"></span>
+                        <span class="vc-handle" id="toggle2">OFF</span>
+                        </label>
+                      </div>
+                    </td>
+                    <td width="20%"  ALIGN="center" style="padding:0;">
+                        <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0;"
+                              class="btn bg_grey ripple"
+                              data-defaultTip = 'Show preview viewer'
+                              data-toggleText = 'Copy preview output url'
+                              onmouseover="toggleTip('toggleInfo2', this, 'data-toggleText')"
+                              onmouseout ="toggleTip('toggleInfo2', this, 'data-defaultTip')"
+                              onclick = "copyRendererUrl(true)"
+                              ><i class="fas fa-clipboard"></i> URL</button>
+                    </td>
+                  </tr>
+                </table>
+
+                <!--<table cellspacing="4" style="width: 100%; margin-top: 1em;">
+                  <tr>
+                    <td style="text-align: right; font-size: 0.7em; padding: 0.2em; background: rgba(0,0,0,0.1);">
+                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spxgc.com">SPX Store</a> for more.</span>
+                    </td>
+                  </tr>
+                </table>-->
+
                 </div>
               </div>
             </div> <!-- foldable end -->
-
-
-
           </div><!-- zone ended -->
-
-
-
-
-
 
           <HR id="previewWidthRuler"> <!-- ===========================================================  -->
 
-
-
-
           <div id="controllerPluginButtons" style="border:0px dashed yellow">
-
             <!-- plugins zone -->
-              
-
           </div>
 
           <!-- showExtras generated here. In future releases this may move to plugins -->

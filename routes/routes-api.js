@@ -58,6 +58,7 @@ router.post('/browseFiles/', async (req, res) => {
   // 1.0.16 - refactored navigaiton process to use '..' for parent folder.
   let curFolder   = req.body.curFolder || ".";
   let tgtFolder   = req.body.tgtFolder || "";
+  let extension   = req.body.extension || "HTM";
   let rootFolder  = req.body.rootFolder || path.join(spx.getStartUpFolder(), 'ASSETS');
   let BrowseFolder = path.join(curFolder, tgtFolder);
 
@@ -73,7 +74,7 @@ router.post('/browseFiles/', async (req, res) => {
   } else {
     feedbackMs = 'ok';
   }
-  const fileListAsJSON = await spx.GetFilesAndFolders(navigateTo);
+  const fileListAsJSON = await spx.GetFilesAndFolders(navigateTo, extension);
   fileListAsJSON.message=feedbackMs; // force feedback message to UI at RenderFolder()
   res.send(fileListAsJSON);
 }); // browseFiles API post request end
