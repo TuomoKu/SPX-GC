@@ -2,17 +2,12 @@
 # SPX Release Notes
 > Most recent updates are at the top.
 
-See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
-
 <BR>
-
 
 ## **WORK IN PROGRESS** (list updated Feb 22 2022)
 > **⚠ PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
 
 - New promo option is WIP
-
-
 
 <br>
 
@@ -23,6 +18,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 Published releases:
 
 ## **1.1.0** (Feb 23 2022)
+* >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - Changed default port to **5656** to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting 😉)
 - Added preview functionality and required UI changes. Preview functionality is **very much WIP** and `Take-next-on-play` -preview mode is disabled due to bugs.
 - Added "renderer options" area below the renderer to move local renderer to a popup window. Renderer options area also has buttons to copy Program and Preview URLs.
@@ -43,7 +39,7 @@ Published releases:
 - Binary packages v1.1.0:
     [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_win64.zip),
     [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_linux64.zip),
-    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_linux64.zip)
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_macos64.zip)
 
 <br>
 
