@@ -81,7 +81,7 @@ module.exports = {
                     cfg.globalExtras.customscript               = "/ExtraFunctions/demoFunctions.js"
                     cfg.globalExtras.CustomControls             = []
 
-                    // EXTRAS MOVED to plugins from v.1.0.16
+                    // EXTRAS MOVED to plugins from v.1.1.0
                     // play gfx out
                     // newcontrol2                                  = {}
                     // newcontrol2.ftype                            = "button"
@@ -144,7 +144,7 @@ module.exports = {
                 resolve()
             }
             catch (error) {
-                let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING SPX CONFIG, CANNOT CONTINUE. ' + error;
+                let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING SPX CONFIG, CANNOT CONTINUE. You can remove config.json and SPX will recreate one with defaults at startup.' + error;
                 console.log(msg);  // note, LOGGER is not necessarily initialized yet.
                 global.configfileref = "";
                 return

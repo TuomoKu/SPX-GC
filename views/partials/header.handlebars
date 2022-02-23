@@ -22,7 +22,7 @@
                       <A HREF="/"><i class="fas fa-home"></i>&nbsp; {{lang 'pagetitle.home'}}</A><br>
                       <A HREF="/shows/"><i class="fas fa-folder"></i>&nbsp; {{lang 'pagetitle.shows'}}...</A><BR>
 
-                      <!-- recent files added in 1.0.16 -->
+                      <!-- recent files added in 1.1.0 -->
                       <div style="font-size: 0.8em; padding-left: 1.0em; border-left: 10px solid rgba(0, 0, 0, 0.205);">
                        {{#each recents}}
                           <div id="recent{{@index}}"><i class="fas fa-file-alt"></i><A id="recent{{@index}}link" HREF="/gc/{{this}}">&nbsp; {{this}}</A></div>
@@ -55,6 +55,7 @@
 
                       <HR class="menuDivider">
                       <A HREF="https://spxgc.com/store" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; spxgc.com/store</A>
+                      <A id="newVersionMenuItem" class="newVersionBubble" HREF="https://spxgc.tawk.help/article/latest-changes" target="_new"><i class="fas fa-bullhorn"></i>&nbsp; New version available!</A>
 
                       
                     </div>

@@ -105,7 +105,7 @@ iframe {
     transform-origin:   top left;
     background-color:   rgb(0, 0, 0);
     border:             1px solid rgb(0, 0, 0);
-    /* removed in 1.0.16 -----
+    /* removed in 1.1.0 -----
     width:              1920px;
     height:             1080px; */
     overflow:           hidden;

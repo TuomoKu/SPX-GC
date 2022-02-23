@@ -93,7 +93,7 @@ macaddress.one(function (err, mc) {
   let macaddress = String(mc);
   let pseudomac = macaddress.split(':').join('').substring(0,8);
   global.hwid = config.general.hostname || pseudomac;
-  // console.log('(Pseudo) HardwareID for messaging service: ' + global.hwid);
+  global.pmac = pseudomac; // an anonymous id
 });
 
 
@@ -522,9 +522,9 @@ app.engine('handlebars', exphbs({
     // "launchchromeatstartup":"false"
     // Feature most likely only works on Windows...?
     OpenChromeCheck(){
-      let value = config.general.launchchromeatstartup || "off";
+      let value = config.general.launchchromeatstartup || "false";
       value = value.toLowerCase();
-      if (value=="on"){
+      if (value==="true"){
         return '<input type="checkbox" checked name="general[launchchromeatstartup]">';
       }
       else {
@@ -691,9 +691,9 @@ app.engine('handlebars', exphbs({
 
     // What renderer options to generate into controller options.
     // This same function can return <options> or a CSS classname.
-    // Added in 1.0.16 but not using it yet:
+    // Added in 1.1.0 but not using it yet:
     GenerateLocalRendererOptions(mode) {
-      return '<!-- Added in 1.0.16 but LocalRendererOptions are not in use yet -->\n';
+      return '<!-- Added in 1.1.0 but LocalRendererOptions are not in use yet -->\n';
       /* =============== NOT IN USE YET ==================================
       let activeRendererOption = config.general.localrenderer || 'program' ;
       let html = '';
@@ -760,13 +760,6 @@ const ROUTEapp = require('./routes/routes-application.js');
 app.use('/', ROUTEapp);
 
 const ROUTEccg = require('./routes/routes-casparcg.js');
-// const { data } = require('./utils/logger.js') // 1.0.16 WTF?
-// const { prependListener } = require('process'); // const { prependListener } = require('process') // DIFF?
-// const { request } = require('http')
-// const { data } = require('./utils/logger.js')
-// const { Z_VERSION_ERROR } = require('zlib')
-// const { resolve } = require('path')
-// const { rejects } = require('assert')
 app.use('/CCG', ROUTEccg);
 
 process.on('uncaughtException', function(err) {
@@ -846,7 +839,7 @@ var server = app.listen(port, (err) => {
   console.log('  ' + line3s);
   console.log('');
 
-  if ( config.general.launchchrome ) {
+  if ( config.general.launchchrome=='true' ) {
     try {
       (async () => {
         // Opens the URL in a specified browser.

@@ -2,7 +2,7 @@
 import * as UI from "../lib/ui.js";
 
 function PluginInstance() {
-    var pluginRootFolder = '/plugins/xLinks/';
+    var pluginRootFolder = '/plugins/spxxLinks/';
     var plug = this;
 
     this.render = () => {

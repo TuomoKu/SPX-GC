@@ -10,23 +10,7 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 ## **WORK IN PROGRESS** (list updated Feb 22 2022)
 > **⚠ PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
 
-- Changed default port to 5656 to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting :)
-- Added preview functionality and required UI changes. Preview functionality is **very much WIP** and `Take-next-on-play` -preview mode is disabled due to bugs.
-- Added 4K support to app config and renderer(s). Please note, most templates are done for fixed HD resolution and may appear in 1/4th size in the output.
-- Added filtering to Projects view (visible when there are 5 projects or more)
-- Added `/api/v1/controlRundownItemByID` -API endpoint (see http://localhost:5656/api/v1)
-- Added `/api/v1/panic` -API endpoint (see http://localhost:5656/api/v1)
-- Added the "renderer options" below the renderer to open renderer in a popup
-- Added a new promo option (WIP)
-- Added "disable" toggle to CasparCG servers to temporarily prevent playout commands sending.
-- Added recent files to the main dropdown menu (saved to config.json)
-- Improved `/api/v1/invokeTemplateFunction` -API endpoint with url encoded strings.
-- Improved startup sequence on macOS
-- Improvements in various file reading / writing functions. Overall stability and cleanup.
-- Improved locale files (english, finnish, portuguese, dutch)
-- Improved "links to other stuff" globalExtra from config/createConfig to a plugin in ASSETS/plugins/spxLinks/
-- Improved file browsers to skip dot-files (".file.ext", mostly on mac)
-- Bug fix: a cross platform issue in the template browser navigation mechanism refactored.
+- New promo option is WIP
 
 
 
@@ -37,6 +21,31 @@ See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article
 <BR>
 
 Published releases:
+
+## **1.1.0** (Feb 23 2022)
+- Changed default port to **5656** to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting 😉)
+- Added preview functionality and required UI changes. Preview functionality is **very much WIP** and `Take-next-on-play` -preview mode is disabled due to bugs.
+- Added "renderer options" area below the renderer to move local renderer to a popup window. Renderer options area also has buttons to copy Program and Preview URLs.
+- Added 4K support to app config and renderer(s). Please note, most templates are done for fixed HD resolution and may appear in 1/4th size in the output.
+- Added filtering to Projects view (visible when there are 5 projects or more)
+- Added `/api/v1/controlRundownItemByID` -API endpoint (see http://localhost:5656/api/v1)
+- Added `/api/v1/panic` -API endpoint (see http://localhost:5656/api/v1)
+
+- Added "disable" toggle to CasparCG servers to temporarily prevent playout commands sending.
+- Added recent files to the main dropdown menu (saved to config.json)
+- Improved `/api/v1/invokeTemplateFunction` -API endpoint with url encoded strings.
+- Improved startup sequence on macOS
+- Improvements in various file reading / writing functions. Overall stability and cleanup.
+- Improved locale files (english, finnish, portuguese, dutch)
+- Improved "links to other stuff" globalExtra from config/createConfig to a plugin in ASSETS/plugins/spxLinks/
+- Improved file browsers to skip dot-files (".file.ext", mostly on mac)
+- Bug fix: a cross platform issue in the template browser navigation mechanism refactored.
+- Binary packages v1.1.0:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_linux64.zip)
+
+<br>
 
 ## **1.0.15** (Oct 24 2021)
 - Renamed the app from "SPX-GC" to "SPX". Website: http://spx.graphics

@@ -139,7 +139,7 @@ function openSelectedCSVFile() {
 }
 
 function goUp() {
-  // 1.0.16 - refactored navigation to use '..' for parent folder.
+  // 1.1.0 - refactored navigation to use '..' for parent folder.
   // See also another goUp() function... Must merge these...
   let currentFolder = document.getElementById('curfolder').innerText
   let rootFolder = document.getElementById('assetsroot').value;
@@ -148,7 +148,7 @@ function goUp() {
 }
 
 function goHome() {
-  // added in 1.0.16.
+  // added in 1.1.0.
   let AssetsFolder = document.getElementById('assetsroot').value //.split("\\").join("/");
   openFolder(AssetsFolder, '..', AssetsFolder);
 }

@@ -55,7 +55,7 @@ router.post('/browseFiles/', async (req, res) => {
   // This is axios ajax handler for file browser on dbl click on a folder
   // REQUEST: current folder and next folder name
   // RETURNS: json data with folder and file arrays
-  // 1.0.16 - refactored navigaiton process to use '..' for parent folder.
+  // 1.1.0 - refactored navigaiton process to use '..' for parent folder.
   let curFolder   = req.body.curFolder || ".";
   let tgtFolder   = req.body.tgtFolder || "";
   let extension   = req.body.extension || "HTM";
@@ -77,6 +77,32 @@ router.post('/browseFiles/', async (req, res) => {
   const fileListAsJSON = await spx.GetFilesAndFolders(navigateTo, extension);
   fileListAsJSON.message=feedbackMs; // force feedback message to UI at RenderFolder()
   res.send(fileListAsJSON);
+}); // browseFiles API post request end
+
+
+router.post('/heartbeat/', async (req, res) => {
+  // REQUEST: data = a heartbeat string
+  // RETURNS: none
+  // 1.1.0 submit anonymous usage stats
+  try {
+    let d = req.body.data;
+    let h = 'smartpx.fi';
+    spx.collectSPXInfo('hello from api/heartbeat endpoint')
+    .then(function(si) {
+      let u = 'http://' + h  + '/gc/messageservice2/?'+ si + '&d=' + d;
+      spx.httpGet(u);
+      return si
+    })
+    .then(function(si) {
+      logger.verbose('Stats ' + si + ' AND ' + d);
+      res.status(200).send('{all:good}'); // ok 200 AJAX RESPONSE
+      return;
+    })
+  } catch (error) {
+    logger.error('Error in api/heartbeat: ' + error);
+    res.status(500).send(error);
+  };
+  
 }); // browseFiles API post request end
 
 
@@ -248,7 +274,7 @@ router.post('/exportCSVfile', async (req, res) => {
     fs.existsSync(CSVfolder) || fs.mkdirSync(CSVfolder)
     let CSVfileRef = path.join(CSVfolder, filenameref + '_' + timestamp + '.csv');
     await spx.writeTextFile(CSVfileRef,CSVdata);
-    console.log(' Created CSV file ' + CSVfileRef);
+    // console.log(' Created CSV file ' + CSVfileRef);
     logger.verbose('Created ' + CSVfileRef + ' from itemID ' + req.body.itemID + ' on ' + dataJSONfile + '. ');
     res.status(200).send('Generated file ' + CSVfileRef);
   } catch (error) {

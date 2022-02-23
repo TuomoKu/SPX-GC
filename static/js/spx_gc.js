@@ -16,7 +16,7 @@ document.onkeydown = checkKey;
 
 
 socket.on('connect', function () {
-    // Added in 1.0.16:
+    // Added in 1.1.0:
     if (document.getElementById('logo') && document.getElementById('logo_off')) {
         document.getElementById('logo').src=document.getElementById('logo_on').src;
         document.body.style="pointer-events: auto;" // restore clickability
@@ -79,7 +79,7 @@ socket.on('SPXMessage2Controller', function (data) {
     // data.APIcmd as function identifier. Additional object values are payload.
     // Feature added in v.1.0.8.
 
-    console.log('SPXMessage2Controller received', data)
+    // console.log('SPXMessage2Controller received', data)
     let DomItemID;
     switch (data.APIcmd) {
 
@@ -154,7 +154,7 @@ socket.on('SPXMessage2Controller', function (data) {
 }); // end SPXMessage2Controller
 
 socket.on('disconnect', function () {
-    // Added in 1.0.16
+    // Added in 1.1.0
     if (document.getElementById('logo') && document.getElementById('logo_off')) {
         document.getElementById('logo').src=document.getElementById('logo_off').src;
         showMessageSlider('Disconnected from SPX server', type='error', true)
@@ -761,9 +761,7 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     let ls = 'SPXGC_UI_stats';
     let or = localStorage.getItem(ls) || eK + vD + "0" + fD + dd + vD + "0";
 
-    if (getOnly) {
-        return or;
-    }
+    if (getOnly) { return or; }
 
     let ar = or.split(fD);
     let ok = false; 
@@ -773,7 +771,9 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
         if (key==eK) {
             dif = Math.round((Date.now()-val)/(1000*60*60*24));
             if (Math.round((Date.now()-val)/(1000*60*60*24))>0) { rp = true; };
-            // post = true; // dbg:
+            // ###################
+            // rp = true; // debug
+            // ###################
             ar[idx]=eK + vD + Date.now();
         }
         if (key==dd) {
@@ -787,7 +787,8 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     if ( !ok ) { ar.push(dd + vD + '1'); }
     st = ar.join(fD);
     if (rp) {
-        console.log('Report (' + or + ') and reset. Post TODO:')
+        // console.log('Post (' + or + ') and reset.')
+        getMessages2(or)
         st = eK + vD + Date.now() + fD + dd + vD + 1;
     }
     localStorage.setItem(ls, st)
@@ -827,7 +828,7 @@ function delshow() {
 
 
 function delRow(e) {
-    console.log('Would delete', e);
+    // console.log('Would delete', e);
     if (!e){return};
     document.getElementById('itemList').removeChild(e);
     // save data 
@@ -914,8 +915,7 @@ function openImportDialog() {
 }
 
 function filterProjects() {
-    // Added in 1.0.16
-    // https://stackoverflow.com/questions/58098566/filtering-a-list-by-a-text-field
+    // Added in 1.1.0 - will hide/show items in the allProjects list
     var input, filterPhrase, projList, li, itemValue, i, txtValue;
     input = document.getElementById('projectFilter');
     filterPhrase = input.value.toUpperCase();
@@ -923,15 +923,13 @@ function filterProjects() {
     optionItems = projList.getElementsByTagName('option');
     lists.innerHTML=''; // clear
     for (i = 0; i < optionItems.length; i++) {
-      // itemValue = optionItems[i].innerText;
-      txtValue = optionItems[i].innerText; // itemValue.textContent || itemValue.innerText;
+      txtValue = optionItems[i].innerText;
       let filters = filterPhrase.split(" ") 
       filters = filters.filter(f => f.length)   
       let shouldDisplay = true
       filters.forEach(filterItem => {
         shouldDisplay = shouldDisplay && txtValue.toUpperCase().includes(filterItem)
       })
-      // optionItems[i].style.display = (shouldDisplay || filters.length === 0) ? "" : "none";
       if (shouldDisplay || filters.length === 0) {
         var opt = document.createElement('option');
         opt.innerHTML = txtValue;
@@ -972,7 +970,7 @@ function focusRow(rowitemOrIndex) {
             block: "nearest",
         });
 
-        // Added in 1.0.16:
+        // Added in 1.1.0:
         if (document.getElementById('previewMode').value==='selected') {
             previewItem(TargetElement); // preview selected item
         }
@@ -1100,7 +1098,7 @@ function getDomIndexByElementId(ElementId)
     for (let DomNro = 0; DomNro < document.querySelectorAll('.itemrow').length; DomNro++) {
         if (document.querySelectorAll('.itemrow')[DomNro].id=='playlistitem' + String(ElementId))
             {
-                console.log('Found DomIndex ' + DomNro + ' for ElementID ' + String(ElementId) + '.');
+                // console.log('Found DomIndex ' + DomNro + ' for ElementID ' + String(ElementId) + '.');
                 return DomNro
             };
     }
@@ -1129,26 +1127,32 @@ function getLayerFromProfile(buttonName) {
 } // getLayerFromProfile ended
 
 function getMessages(curVerInfo) {
-    // Poll server for upgrade info.
+    // Poll server for upgrade info. ------------------------------
     // Requires CORS in the route.
     // Moved from view-home.
     //
-    // PLEASE NOTE: This will be replaced with impoved mechanism
+    // PLEASE NOTE: This will be replaced with improved mechanism
     //              which will report usage stats also and will
     //              notify user with a small icon to reveal the
     //              promo within controller UI. 
-    //              This will happen in 1.0.16.
+    //              This will happen in 1.1.x.
+    //
+    //              All passed data is anonymous and non-identifiable
+    // -------------------------------------------------------------
+
+    // DEPRECATION WARNING -    This function to be removed in 1.1.x
+    //                          And will be replaced with v2
+    //                          which is partially implemented.
+
+    // console.log('getMessages ', curVerInfo);
 
     localStorage.removeItem('SPX-GC-NewVersion');
     document.getElementById('upgradeinfo').style.display="none";
     document.getElementById('messageinfo').style.display="none";
-
-    var url = (`https://www.smartpx.fi/gc/messageservice/?` + curVerInfo + '&dd=' + heartbeat('none',true));
-    console.log('URL',url);
+    var url = (`https://www.smartpx.fi/gc/messageservice/?` + curVerInfo );
     fetch(url)
     .then((res) => res.json())
     .then((messages) => {
-      // do something with the messages (json data)
       let currntVer = document.getElementById('footerVerDisplay').innerText;
       let latestVer = messages.latest.vers;
       let dbggreet  = messages.dbggreet || "";
@@ -1194,8 +1198,18 @@ function getMessages(curVerInfo) {
     });
   }
 
+function getMessages2(or) {
+    // This is called from heartbeat after a day change and will
+    // post anonymous usage data and may get potential notification
+    // data back to be displayed in the SPX user interface.
+    // This function is in early stage in v 1.1.0 and will be
+    // fully implemented in future versions.
+    ajaxpost('/api/heartbeat', {data:or});
+}
+
+
+
 function help(section) {
-    //
     // Help is massively a WORK-IN-PROGRESS thing!
     // Wanna help? Let us know.
     // 
@@ -1297,7 +1311,7 @@ function nextItem(itemrow='') {
 
 
 function previewItem(itemrow='') {
-    // Added in 1.0.16
+    // Added in 1.1.0
     // console.log('Itemrow: ', itemrow);
     if (!itemrow) { itemrow = getFocusedRow();  }
     if (!itemrow) { /* console.log('No active rows, skip command.');*/ return;}
@@ -1305,7 +1319,7 @@ function previewItem(itemrow='') {
     data = {};
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
-    data.command       = 'preview'; // added in 1.0.16
+    data.command       = 'preview'; // added in 1.1.0
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
     heartbeat(308); // identifier
@@ -1332,7 +1346,6 @@ function playItem(itemrow='', forcedCommand='') {
 
     data = {};
     data.datafile      = document.getElementById('datafile').value;
-    // data.localrenderer = document.getElementById('rendererStyle').value;    // Added in 1.0.16 to prevent preview to render locally in "preview" -mode // Not in use YET
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
     data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
@@ -1352,14 +1365,14 @@ function playItem(itemrow='', forcedCommand='') {
         isPlay = true;
         
 
-        // Added in 1.0.16 FIXME: This has some issues, previewing wrong items etc...
+        // Added in 1.1.0 FIXME: This has some issues, previewing wrong items etc...
         if (document.getElementById('previewMode').value==='next') {
-            console.log('Preview next on play ** THIS IS DISABLED DUE TO BUGS **');
-            /*
-            let nextRundownItem = getFocusedRow().nextElementSibling;
-            console.log('Next elementID ' + nextRundownItem.id, nextRundownItem);
-            previewItem(nextRundownItem);
-            */
+            console.log('Preview-next-on-play IS WIP and IS CURRENTY DISABLED');
+
+            // TODO: Enable this:
+            // let nextRundownItem = getFocusedRow().nextElementSibling;
+            // console.log('Next elementID ' + nextRundownItem.id, nextRundownItem);
+            // previewItem(nextRundownItem);
         }
 
     }
@@ -1424,29 +1437,6 @@ function playItem(itemrow='', forcedCommand='') {
 
   } // playItem
 
-/* moved to backend
-function addToRecents() {
-    // manage 3 items in recents
-    let project = document.getElementById('foldername').value;
-    let rundown = document.getElementById('filebasename').value;
-    let address = encodeURI(project + '/' + rundown);
-    showMessageSlider('Adding ' + address);
-    let LS = 'SPX_RecentRundowns';
-    let recentsArray = JSON.parse(localStorage.getItem(LS)) || []; // ['FOLDER1/FILE1','FOLDER2/FILE2','FOLDER3/FILE3',];
-
-    recentsArray.forEach((item,index) => {
-        if (item == address) {
-            recentsArray.splice(index,1);
-        }
-    });
-    recentsArray.unshift(address);
-    recentsArray.length = 3;
-    localStorage.setItem(LS, JSON.stringify(recentsArray))
-    console.log('recents', recentsArray);
-}
-*/
-
-
 function renameRundown() {
     // Rename an existing rundown
     var filename = document.getElementById('lists').value;
@@ -1467,7 +1457,7 @@ function renameRundown() {
 function versInt(semver){
     // Returns a numeric value representing "1.0.0" formatted semantic version string.
     // This works as long as max value of each field is 99!
-    // Moved from view-home in 1.0.16
+    // Moved from view-home in 1.1.0
     let parts = semver.split(".");
     let MajorInt = parseInt(parts[0].trim())*100000
     let MinorInt = parseInt(parts[1].trim())*1000
@@ -2230,9 +2220,6 @@ function working(StatusMsg){
 
 
   function handleRendererPopups(data) {
-    
-    console.log('handleRendererPopups',data);
-
     // open / close renderer popups 
     // data: {type:preview}
     // Save to config.json general.renderer as "normal" (embedded inline renderer) or "popup" (floating window)
@@ -2250,15 +2237,12 @@ function working(StatusMsg){
 
     if (data.command == 'open')  {
         // open the popup
-        console.log('Sendin OPEN, source: ' + data.source);
         window.open(URL, winRef, OPT);
     } 
     
     if (data.command == 'close')  {
         // send message request to close the popup
-        console.log('Sendin CLOUS, source: ' + data.source);
         // send message to close the window without prompts (closeprogram closepreview)
-        // console.log('Sending ' + 'close' + data.type);
         socketData.spxcmd = 'close' + data.type;
         socket.emit('SPXWebRendererMessage', socketData);
     }
@@ -2270,7 +2254,7 @@ function working(StatusMsg){
 
 
   function toggleNormalRenderer(cmd) {
-    // 1.0.16
+    // Added in 1.1.0
     // This [closing of popup] can happen in any SPX view,
     // not necessarily in the controller view...
     let Cfgdata = {};

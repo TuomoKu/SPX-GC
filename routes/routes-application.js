@@ -29,7 +29,7 @@ router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, asyn
   let currVer = vers;
   let greeting = config.general.greeting || '';
 
-  let recents = config.general.recents || [] // added in 1.0.16
+  let recents = config.general.recents || [] // added in 1.1.0
   res.render('view-home', { layout: false,
       greeting:   greeting,
       curVerInfo: req.curVerInfo,
@@ -50,7 +50,7 @@ router.get('/templates/empty.html', function (req, res) {
 });
 
 router.get(['/renderer/index.html','/renderer'], function (req, res) {
-  // Added in 1.0.16. Default resolution is HD.
+  // Added in 1.1.0. Default resolution is HD.
   let width   = '1920';
   let height  = '1080';
   if ( global.config.general.resolution && global.config.general.resolution=='4K') {
@@ -61,7 +61,7 @@ router.get(['/renderer/index.html','/renderer'], function (req, res) {
 });
 
 router.get('/renderer/scalable', function (req, res) {
-  // Added in 1.0.16. Default resolution is HD.
+  // Added in 1.1.0. Default resolution is HD.
   let width   = '1920';
   let height  = '1080';
   if ( global.config.general.resolution && global.config.general.resolution=='4K') {
@@ -72,8 +72,7 @@ router.get('/renderer/scalable', function (req, res) {
 });
 
 router.get('/renderwindow/:type', function (req, res) {
-  // Added in 1.0.16. 
-  // FIXME: This is not done yet!
+  // Added in 1.1.0. 
   let width   = '1920';
   let height  = '1080';
   if ( global.config.general.resolution && global.config.general.resolution=='4K') {
@@ -156,7 +155,7 @@ router.post('/saveauthpolicy', function (req, res) {
 router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
   await SaveRundownDataToDisc(); // Added in 1.0.15
-  let recents = config.general.recents || [] // added in 1.0.16
+  let recents = config.general.recents || [] // added in 1.1.0
   res.render('view-appconfig', { layout: false, config: config, user: req.session.user, configfile: configfileref, recents: recents});
 });
 
@@ -245,7 +244,7 @@ router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
   await SaveRundownDataToDisc(); // Added in 1.0.15
   const folderListAsJSON = await GetSubfolders(config.general.dataroot);
-  let recents = config.general.recents || [] // added in 1.0.16
+  let recents = config.general.recents || [] // added in 1.1.0
   res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user, recents: recents});
 });
 
@@ -254,7 +253,7 @@ router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => 
   // Show episodes (files in folder 'data')
   const fileListAsJSON = await GetDataFiles(config.general.dataroot + "/" + req.params.foldername + "/data/");
   await SaveRundownDataToDisc(); // Added in 1.0.15
-  let recents = config.general.recents || [] // added in 1.0.16
+  let recents = config.general.recents || [] // added in 1.1.0
   res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, errorMsg: '', user: req.session.user, recents: recents});
 });
 
@@ -272,7 +271,7 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
   else {
     treeData = JSON.stringify(spx.GetFilesAndFolders(LastBrowsedTemplateFolder));
   }
-  let recents = config.general.recents || [] // added in 1.0.16
+  let recents = config.general.recents || [] // added in 1.1.0
   let ERRCODE="";
   if (req.query.ERR){ ERRCODE='error.'+req.query.ERR };
   res.render('view-showconfig', { layout: false,
@@ -299,7 +298,8 @@ router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('removeTemplate Error while saving file: ', error);
+      logger.error('removeTemplate Error while saving file: ' + error);
+      // console.log('removeTemplate Error while saving file: ', error);
   }; //file written
 });
 
@@ -317,7 +317,7 @@ router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (r
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('removeExtra Error while saving file: ', error);
+      logger.error('removeExtra Error while saving file: ' + error);
   }; //file written
 });
 
@@ -366,7 +366,7 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('saveExtra Error while saving file: ', error);
+      logger.error('saveExtra Error while saving file: ' + error);
   }; //file written
 });
 
@@ -391,7 +391,7 @@ router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('saveTemplate Error while saving file: ', error);
+      logger.error('saveTemplate Error while saving file: ' + error);
   }; //file written
 });
 
@@ -416,7 +416,7 @@ router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, 
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('saveGeneralSettings Error while saving file: ', error);
+      logger.error('saveGeneralSettings Error while saving file: ' + error);
   }; //file written
 });
 
@@ -456,19 +456,10 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         TemplatePath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', TemplatePath)
       }
 
-      // Quality improvement?
-      // Trying to survive invalid datafolder path
-      if (!fs.existsSync(TemplatePath)) {
-        TemplatePath = path.join(spx.getStartUpFolder(),'/ASSETS/templates', TemplatePath);
-        logger.warn('config/addtemplate got invalid path, trying failover: ' + TemplatePath)
-      }
-
-
       // console.log('Added template: ' + TemplatePath);
       logger.verbose('Added template: ' + TemplatePath);
       let templateContents = fs.readFileSync(TemplatePath, "utf8")
       let templatehtml = templateContents.toString();
-
 
       /*
         FIXME: JSDOM loading via a promise
@@ -483,7 +474,8 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
 
       */
 
-      console.log('\nPLEASE NOTE: Any errors below are from template being imported to SPX and can usually be safely ignored. Errors may occur when the template has onLoad() event handlers or is missing required references or assets or has invalid javascript code in them.\n')
+      console.log('\nTEMPLATE IMPORT NOTE:');
+      console.log('Messages below are from template "' + TemplatePath + '".\nonLoad() event handlers or other issues can yield messages.\n')
 
       const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
       let SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition || 'notFound'; // there must be "window.SPXGCTemplateDefinition{}" -object in template file!
@@ -612,7 +604,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
     await spx.writeFile(ProfileFile,profileData);
     res.redirect('/show/' + showFolder + '/config')
   } catch (error) {
-      console.log('showconfig Error while saving file: ', error);
+      logger.error('showconfig Error while saving file: ' + error);
   }; //file written
 
 }); // browseTemplates API post request end
@@ -659,7 +651,7 @@ router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
       await spx.writeFile(datafile,EmptyJSON);
       res.redirect('/gc/' + req.params.foldername + '/' + req.body.filebasename);
     } catch (error) {
-      console.log('Error while creating file: ', error);
+      logger.error('Error while creating file: ' + error);
     }; //file written
   }
 });
@@ -745,7 +737,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let csvFileList = '';
   csvFileList = JSON.stringify(spx.GetFilesAndFolders( path.resolve(spx.getStartUpFolder(),'ASSETS', 'csv'), 'csv' ));
 
-  // Added in 1.0.16
+  // Added in 1.1.0
   let width   = 1920;
   let height  = 1080;
   if (config.general.resolution && config.general.resolution=='4K') {
@@ -753,7 +745,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     height  = 2160;
   }
 
-  // these added in 1.0.16
+  // these added in 1.1.0
   let recents       = config.general.recents  || []        
   let preview       = config.general.preview  || 'none'    
   let rnrtype       = config.general.renderer || 'normal'  
@@ -790,9 +782,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
       background: bgImage
     });
     }, 500);
-
-    spx.setRecents(req.params.foldername + '/' + req.params.filename) // Added in 1.0.16
-
+    spx.setRecents(req.params.foldername + '/' + req.params.filename) // Added in 1.1.0
 });
 
 
@@ -1160,7 +1150,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // console.log('RundownData ' + notifyDataSource, RundownData);
 
       // Refactored: identify with epoch / itemID, not index.
-      // req.body.templateindex // disabled line in 1.0.16
+      // req.body.templateindex // disabled line in 1.1.0
       
       RundownData.templates.forEach((template,index) => {
         if (template.itemID == req.body.epoch) {
@@ -1569,7 +1559,7 @@ router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
 
 
 router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
-  // Added in 1.0.16. Handles modification changes of given config items.
+  // Added in 1.1.0. Handles modification changes of given config items.
   // Request: key / val pair as a data object.
   // Returns: Ajax response
 
@@ -1742,7 +1732,7 @@ async function SaveRundownDataToDisc() {
   // File is written if there is data in the memory.
   //
   // Hotfix right after 1.0.15: remove absPath from RundownData before storing json.
-  // Function improved in 1.0.16.
+  // Function improved in 1.1.0.
   try {
 
     if (!rundownData) { return }; // no data to store
@@ -1758,7 +1748,7 @@ async function SaveRundownDataToDisc() {
         let AbsPath = RundownData.filepath;
         delete RundownData.filepath;
         RundownData.updated = new Date().toISOString();
-        await spx.writeFile(AbsPath,RundownData); // 1.0.16
+        await spx.writeFile(AbsPath,RundownData); // 1.1.0
       } else {
         logger.verbose('No RundownData.filepath known in memory, cannot save.');
       }

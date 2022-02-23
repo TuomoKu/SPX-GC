@@ -11,6 +11,15 @@ const glob = require("glob");
 const ip = require('ip')
 const axios = require('axios')
 const http = require('http');
+// ----------------------------------------- good until here
+// const { config } = require('process');
+
+if (!config.general) {
+  console.error('\n\n****\n\tDEV NOTE:\n\tCheck spx_server_functions.js file\n\theader for invalid imports\n***\n\n')
+  // This may happen is VSC adds phantom require statements above.
+  // How the f**k can I prevent that!?
+}
+
 const port = config.general.port || 5656;
 // let Connected=true; // used we messaging service // FIXME: Remove?
 
@@ -23,6 +32,20 @@ try {
 }
 
 module.exports = {
+
+
+  httpGet: function (url) {
+    // A generic http/get sender utility
+    // used by heartbeat pusher
+    axios.get(url)
+    .then(function (response) {
+      return response
+    })
+    .catch(function (error) {
+      logger.error('spx_server_functions httpGet: ' + error);
+    });
+  }, // httpGet
+
 
   httpPost: function (JSONdata, endPoint) {
     // Send a http POST to an endpoint on the GC server.
@@ -226,18 +249,25 @@ module.exports = {
   }, // getFileList ended
 
   getNotificationsMiddleware: async function(req,res,next) {
-      // collect system info for params for messaging functionality
-    datarootSize()
-    .then(function(sizeArr) {
-      let paramstring =""
-      paramstring += "v="  + vers 
-      paramstring += "&o=" + lPad(process.platform, 8, ".")
-      paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
-      paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
-      paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")
-      req.curVerInfo = paramstring;
-      next();
-    })
+    logger.verbose('DEPRECATION WARNING. spx.getNotificationsMiddleware() will be removed in future version.');
+    // Please note! Below code is duplicated! See spx.collectSPXInfo.
+    // This will probably be removed completely in v1.1.1
+    try {
+      datarootSize()
+      .then(function(sizeArr) {
+        let paramstring =""
+        paramstring += "v="  + vers 
+        paramstring += "&o=" + lPad(process.platform, 8, ".")
+        paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
+        paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
+        paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")
+        req.curVerInfo = paramstring;
+        next();
+      })
+    } catch (error) {
+      logger.error('Error in getNotificationsMiddleware: ' + error);
+      next(); // note! This will just HIDE THE PROBLEM from UI.
+    }
   }, // getNotificationsMiddleware
 
   GetJsonData: function (fileref) {
@@ -370,16 +400,14 @@ module.exports = {
         foldArr: []
       };
 
-      // Trying to survive invalid datafolder path
+      // FIXME: Try to improve in 1.1.x
+      // Trying to survive invalid datafolder path.
+      // This happens on a PC (at least) when re-importing templates.
       if (!fs.existsSync(datafolder)) {
+        logger.verbose('GetFilesAndFolders got invalid path 1 "' + datafolder + '"')
         datafolder = path.join(this.getStartUpFolder(),'/ASSETS/templates', datafolder);
-        logger.warn('GetFilesAndFolders got invalid path, trying failover #1: ' + datafolder)
-      }
-
-      if (!fs.existsSync(datafolder)) {
-        datafolder = path.join(this.getStartUpFolder(),'/ASSETS/templates');
-        logger.warn('GetFilesAndFolders got invalid path, trying failover #2: ' + datafolder)
-      }
+        logger.verbose('Trying failover #1: "' + datafolder + '"')
+      } // -------------------- lets hope it works ------------------------------------
 
       if (fs.existsSync(datafolder)) {
         fs.readdirSync(datafolder).forEach((file, index) => {
@@ -392,7 +420,7 @@ module.exports = {
             // it is file
             let ext = path.extname(curPath).toUpperCase();
             let fil = filter.toUpperCase();
-            let fir = path.basename(curPath).charAt(0); // first character (dot files) 1.0.16
+            let fir = path.basename(curPath).charAt(0); // first character (dot files) Added in 1.1.0
 
             if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" && fir != '.') {
               data.fileArr.push(path.basename(curPath));
@@ -569,7 +597,7 @@ module.exports = {
     try {
       // request ..... a long string
       // return ...... return just a short part
-      // Added in 1.0.16 to strip <TAGs> to prevent multiline strings in the SPX UI:
+      // Added in 1.1.0 to strip <TAGs> to prevent multiline strings in the SPX UI:
       fullString = fullString.replace(/<\/?[^>]+(>|$)/g, "").replace(/\s+/g,' ');  // remove <TAGS> and double spaces
       let shorter = fullString.substring(0, 30);
       shorter = shorter.trim()
@@ -594,7 +622,8 @@ module.exports = {
           }
       });
       recentsArray.unshift(rundownRef);
-      recentsArray.length = 3;
+      if (recentsArray.length > 3 ) {recentsArray.length = 3}; // limit to 3
+      config.general.recents = recentsArray;
       this.writeFile(configfileref,config); //TODO:
     } catch (error) {
       logger.error('ERROR in spx.setRecents (fileref: ' + rundownRef + '): ' + error);  
@@ -671,7 +700,29 @@ module.exports = {
     } catch (error) {
       logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
     }
-  } // writeTextFile (other)
+  }, // writeTextFile (other)
+
+  collectSPXInfo: async function (from='') {
+    return new Promise(resolve => {
+      try {
+        datarootSize()
+        .then(function(sizeArr) {
+          let paramstring =""
+          paramstring += "v="  + vers 
+          paramstring += "&o=" + lPad(process.platform, 8, ".")
+          paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
+          paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
+          paramstring += "&h=" + global.pmac
+          resolve(paramstring)
+        })
+      }
+      catch (error) {
+          logger.error('Error in collectSPXInfo: ' + error);
+          return([0,0])
+      }
+    })
+  } // collectSPXInfo
+
 
 } // end of exports (spx.)
 

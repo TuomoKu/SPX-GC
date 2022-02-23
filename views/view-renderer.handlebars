@@ -119,7 +119,7 @@
             //   false = do not allow control
             // 1.0.12 fixes issue #32
 
-            // Added in 1.0.16 a check to skip command if
+            // Added in 1.1.0 a check to skip command if
             // a) window is in preview mode, but request is missing required preview flag
             // b) window is in program mode, but request has the preview flag
             let playMode = incomingData.playmode || 'notFoundSoMustBeProgramCommand' ;
@@ -151,7 +151,7 @@
         }
 
         function validateLayerNro(LayerNro) {
-            // Added in 1.0.16 to add a preview functionality to renderer
+            // Added in 1.1.0 to add a preview functionality to renderer
             // If renderer is in ?preview=true mode AND layer is within the valid layer rage, then layer is always 1
 
             if (!allowLayerControl(LayerNro)) {
@@ -195,17 +195,16 @@
         function protocolCheck() {
             // check if we are http or file.
             let protocol = location.protocol;
-            if (protocol != "http:" && protocol != "https:")
-                {
-                    alert('Please use this via server! Functions and CORS may not work when used as a file. (Current protocol: ' + protocol + ')');
-                }
+            if (protocol != "http:" && protocol != "https:") {
+                alert('Please use this via server! Functions and CORS may not work when used as a file. (Current protocol: ' + protocol + ')');
+            }
 
             // Resize window according to resolution
             const root = document.getElementById('root');
             const style = getComputedStyle(root)
             const w = style.width.replace('px','');
             const h = style.height.replace('px','');
-            console.log('Resizing window to ' + w + ' x ' + h + ' px.')
+            // console.log('Resizing window to ' + w + ' x ' + h + ' px.')
             window.resizeTo(w, h);
 
         }

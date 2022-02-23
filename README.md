@@ -4,9 +4,9 @@
 
 <br>
 
-Readme updated Feb 22 2022.
+Readme updated Feb 23 2022.
 
->  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.0.15** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
+>  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.0** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
 
 <br>
 
@@ -89,9 +89,9 @@ SPX can be installed using a **ready-to-go binary package** which includes all r
 
 | Package| Build date | Notes |
 |  ------ | ----- | ----- |
-| **Windows**<BR>[SPX_1_0_15_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_win64.zip   ) | Oct 31 2021 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| **Linux**<BR>[SPX_1_0_15_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_linux64.zip ) | Oct 31 2021 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
-| **MacOS**<BR>[SPX_1_0_15_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.0/SPX_1_0_15_macos64.zip ) | Oct 31 2021 | Mac version comes with "SPX Launcher" -AppleScript app to start the SPX server process in the Terminal. If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
+| **Windows**<BR>[SPX_1_1_0_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_win64.zip   ) | Feb 23 2022 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| **Linux**<BR>[SPX_1_1_0_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_linux64.zip ) | Feb 23 2022 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| **MacOS**<BR>[SPX_1_1_0_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_macos64.zip ) | Feb 23 2022 | If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
 
 > For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
  Please [get in touch](#feedback) if you have problems downloading or installing these files.
@@ -100,6 +100,7 @@ SPX can be installed using a **ready-to-go binary package** which includes all r
 * Download a zip-file for your system using one of the links above.
 * Create a new folder for the app (for example on Windows `C:\SPX\`, or on Linux `/SPX` ).
 * >**PLEASE NOTE** if using `C:\Program Files\` folder on Windows you may need to start SPX with administrative priviledges, since SPX will generate files in that folder structure.  
+* >**AVOID SYMBOLIC LINKS** Some filesystem related operations are known to fail is SPX (at least on Windows) when using `SUBST` or `net use` to assign a drive letter to a folder. 
 * Extract the zip-file to that folder.
 * Locate the executable (for example `SPX_win64.exe` on Windows) and double click it to start the SPX server. A console window should open (and remain open) and show some startup information.
 * Chrome browser can be enabled to launch automatically at server start-up. See `launchcrome` setting in [config.json](#config).
@@ -116,7 +117,7 @@ SPX can be installed using a **ready-to-go binary package** which includes all r
 
 Developers can get the source code from the repository with [git](https://git-scm.com/) and run the application using [NodeJS](https://nodejs.org/) and [npm](https://www.npmjs.com/).
 
-> **PLEASE NOTE:** The source code in this repository is always in a <span style="color:red;">WORK IN PROGRESS</span> state and features may or may not work. For production work it is recommended to always use known [prebuilt binaries](#builds), which are more carefully tested. See also [Release Notes](RELEASE_NOTES.md).
+> **PLEASE NOTE:** The source code in this repository is always in a <span style="color:red;">**WORK IN PROGRESS**</span> state and features may or may not work. For production work it is recommended to always use known [prebuilt binaries](#builds), which are more carefully tested. See also [Release Notes](RELEASE_NOTES.md).
 
 * Create an empty folder on your system and fetch the source code using a `git clone` command:
 ```sh
@@ -261,8 +262,7 @@ An example `config.json` of the SPX server
     "templatesource": "spxgc-ip-address",
     "preview": "selected",
     "renderer": "normal",
-    "launchchrome": "true"
-  },
+    "launchchrome": "false"
   },
   "casparcg": {
     "servers": [
@@ -305,6 +305,8 @@ An example `config.json` of the SPX server
 
 **`general.username / password`** If _username_ is present but the _password_ is left blank, the app will ask for login policy, just as with [first launch](#firstlaunch). When both are entered the _password_ is saved here (encrypted) and a logic is required to start a session.
 
+**`general.hostname`** _Mostly for future use_ This will identify SPX instance for logging purposes.
+
 <a id="templatesources"></a>
 
 **`general.templatefolder`** contains the HTML templates and their resource files (css, js, images, etc). This root folder is used by SPX's template browser and 'Explore templates folder' menu command (Win only). For playout folder see _templatesource_ parameter below.
@@ -315,14 +317,14 @@ An example `config.json` of the SPX server
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
 
-**`general.preview`** Version 1.0.16 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true`parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.0.16 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
-`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. There are three values available.
+**`general.preview`** Version 1.1.0 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true`parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.1.0 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
+`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. Values available.
 
 * `selected` (the default value) Preview will play whenever a _focus_ is changed on the rundown.
-* `next` Preview will play _the next item_ from the rundown when an item is played. (This value is not exposed in version 1.0.16) 
-* `none` preview will not be triggered
+* ~~`next`~~ Preview will play _the next item_ from the rundown when an item is played. (Option coming later) 
+* ~~`none`~~ preview will not be triggered  (Option coming later)
 
-**`general.renderer`** Version 1.0.16 introduced an option to have the local renderer in traditional position at the top right corner of SPX UI **or** taken out to a floating window. This is stored to config file and each consecutive controller reload will act according to set preference. Possible values are
+**`general.renderer`** Version 1.1.0 introduced an option to have the local renderer in traditional position at the top right corner of SPX UI **or** taken out to a floating window. This is stored to config file and each consecutive controller reload will act according to set preference. Possible values are
 
 * `normal` an inline renderer view
 * `popup` renderer in a floating window "popup" (notice, it is possible that popup blocker prevent this from working as expected)
@@ -734,9 +736,10 @@ New releases will try address found issues and bugs in older versions and they w
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
 | 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. ~~Export/import CSV~~| TBD |
-| X.X  | Under consideration: OSC support, Built-in NDI support, mediafile picker, video playback control templates, graphics preview, ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template store~~,  community marketplace. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
+| X.X  | Under consideration: OSC support, Built-in NDI support, mediafile picker, video playback control templates, ~~graphics preview~~, ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template store~~,  community marketplace. Video tutorials. ~~Knowledgebase~~. Forum. Slack support channel. Free lunches. | TBD |
 
-Strikethrough items are already done.
+Strikethrough items are already done.<BR>
+Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.
 
 
 ----

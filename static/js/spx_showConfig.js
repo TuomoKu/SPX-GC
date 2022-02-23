@@ -32,7 +32,6 @@ function reimportTemplateIndex(nro) {
   data.template = htmlFileName // document.getElementById('templateIndex' + nro).value; // bug fix 1.0.14
   data.showFolder = document.getElementById('showfolder').value; // rundown file
   data.replaceIndex = nro;
-  console.log('Sending request to reimport:', data);
   post('', data, 'post');
 }
 
@@ -196,8 +195,8 @@ function openSelectedFile() {
 
 
 function goUp() {
-    // 1.0.16 - refactored navigation to use '..' for parent folder.
-    // See also another goUp() function... Must merge these...
+    // 1.1.0 - refactored navigation to use '..' for parent folder.
+    // See also another goUp() function... Must merge these at some point...
     let currentFolder = document.getElementById('curfolder').innerText
     let rootFolder = document.getElementById('templateroot').value;
     openFolder(currentFolder, '..', rootFolder);
@@ -205,7 +204,7 @@ function goUp() {
   } // goUp
 
   function goHome() {
-    // added in 1.0.16.
+    // added in 1.1.0.
     let ConfigTemplateFolder = document.getElementById('templateroot').value //.split("\\").join("/");
     openFolder(ConfigTemplateFolder, '..', ConfigTemplateFolder);
   }

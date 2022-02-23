@@ -22,7 +22,7 @@ function PluginInstance() {
     }
 
     this.panic = () => {
-        // Requires SPX 1.0.16+
+        // Requires SPX 1.1.0+
         fetch('/api/v1/panic')
         .then(response => {
             console.log('Sent Panic command.', response)

@@ -44,7 +44,7 @@ router.get('/', function (req, res) {
             },
             {
               "param"   :     "controlRundownItemByID?file=HelloWorld-project/My%20first%20rundown&item=1616702200909&command=play",
-              "info"    :     "GET (v.1.0.16) Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
+              "info"    :     "GET (v.1.1.0) Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
             }
           ]
         },
@@ -59,7 +59,7 @@ router.get('/', function (req, res) {
             },
             {
               "param"   :     "panic",
-              "info"    :     "GET (v1.0.16) Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
+              "info"    :     "GET (v1.1.0) Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
             }
           ]
         },
@@ -153,7 +153,7 @@ router.get('/', function (req, res) {
     dataOut.webplayout   = req.query.webplayout || '1';
     // dataOut.relpath      = 'we_need_some_filename_here_to_prevent_errors.html'
     dataOut.command      = 'invoke';
-    dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(req.query.params) + '\")'; // encode added in v1.0.16
+    dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(req.query.params) + '\")'; // encode added in v1.1.0
     res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
     // console.log('API endpoint for invoke got:', dataOut);
     spx.httpPost(dataOut,'/gc/playout')
@@ -313,7 +313,7 @@ router.get('/', function (req, res) {
 
     router.get('/controlRundownItemByID', async (req, res) => {
       try {
-        // added in 1.0.16 (and refactored in RC5 by removing datafile reading and data passing)
+        // added in 1.1.0 and removed obsolete datafile read/write logic
         let fold = req.query.file.split('/')[0];
         let file = req.query.file.split('/')[1];
         let RundownFile = path.join(config.general.dataroot, fold, 'data',  file + '.json');

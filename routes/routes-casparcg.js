@@ -46,7 +46,7 @@ router.get('/requestInfo', async (req, res) => {
   // This creates a new temporary tcp/ip connection for the request.
   var SERVER  = req.query.server;   // ?server=OVERLAY
   var COMMAND = req.query.command;  // &command=INFO
-  console.log('requestInfo from ' + SERVER + ', cmd: ' + COMMAND);
+  // console.log('requestInfo from ' + SERVER + ', cmd: ' + COMMAND);
   const CCGHost = global.CCGSockets[PlayoutCCG.getSockIndex(SERVER)].spxhost;
   const CCGPort = global.CCGSockets[PlayoutCCG.getSockIndex(SERVER)].spxport;
   const net = require('net')
@@ -262,7 +262,7 @@ router.get('/testfunction', (req, res) => {
 
 
 router.post('/disable', async (req, res) => {
-  // Added in 1.0.16. Set "disabled" state of the given CasparCG server
+  // Added in 1.1.0. Set "disabled" state of the given CasparCG server
   // This only affects playback commands. Initialization works normally.
   logger.verbose('CasparCG server ' + req.body.server + ' disabled to ' + req.body.disabled);
   try {
@@ -346,8 +346,7 @@ config.casparcg.servers.forEach((element,index) => {
         break;
 
       default:
-        logger.warn('Warning ' + CurName + ": " + CCG_RETURN_TEXT);
-        console.log('Unknown status value ' + CCG_RETURN_CODE);
+        logger.error('Unknown status value ' + CurName + ' - ' + CCG_RETURN_CODE + ' - ' + CCG_RETURN_TEXT);
         break;
     }
 
@@ -366,7 +365,7 @@ config.casparcg.servers.forEach((element,index) => {
     io.emit('SPXMessage2Client', data);
     data = { spxcmd: 'updateStatusText', status: 'Connection to ' + CurName + ' was closed.' };
     io.emit('SPXMessage2Client', data);
-    logger.verbose('GC connection to CasparCG \'' + CurName + '\' closed (' + CurHost + ':' + CurPort + ').');
+    logger.verbose('SPX connection to CasparCG "' + CurName + '" closed (' + CurHost + ':' + CurPort + ').');
   });
 
   CurCCG.on('error', function (err) {
@@ -376,7 +375,7 @@ config.casparcg.servers.forEach((element,index) => {
     data = { spxcmd: 'updateStatusText', status: 'Communication error with ' + CurName + '.' };
     io.emit('SPXMessage2Client', data);
 
-    logger.warn('GC socket error with CasparCG server ' + CurName + '. CasparCG running?\n', err);
+    logger.warn('SPX connection error with "' + CurName + '". Is CasparCG running? (' + err +')');
   });
 });
 }; // end if 

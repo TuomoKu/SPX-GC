@@ -32,6 +32,9 @@ ASSETS/media/images/hd_org/
 ASSETS/media/images/bg_old/
 ASSETS/media/images/logo_org/
 ASSETS/media/images/smartpx_internal/
+
+ASSETS/media/images/_*
+
 ASSETS/template_stash/
 ASSETS/hot_or_not
 ASSETS/xml/demo.xml
