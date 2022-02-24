@@ -7,7 +7,8 @@
 ## **WORK IN PROGRESS** (list updated Feb 22 2022)
 > **⚠ PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
 
-- New promo option is WIP
+- New promo option is still WIP
+- gcinput margin-top fixed back to 5px from zero
 
 <br>
 

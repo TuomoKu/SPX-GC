@@ -356,9 +356,9 @@
                                     <option disabled>{{title}}:</option>
                                     {{#each items}}
                                       {{#ifValue value ../value}}
-                                          <option selected value="{{value}}">&nbsp;&nbsp;{{text}}</option>
+                                          <option selected value="{{value}}">{{text}}</option>
                                       {{else}}
-                                          <option value="{{value}}">&nbsp;&nbsp;{{text}}</option>
+                                          <option value="{{value}}">{{text}}</option>
                                       {{/ifValue}}
                                     {{/each}}
                                   </select>

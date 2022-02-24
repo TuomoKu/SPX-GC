@@ -7,9 +7,6 @@
   volume sliders
 
 */
-.gcinput {
-  margin: 0px !important;
-}
 
 :root {
   --vc-off-color:             #2A3641; /* linear-gradient(190deg, rgba(0, 0, 0, 0.39) 5%, rgba(0, 0, 0, 0.157) 50%); */
