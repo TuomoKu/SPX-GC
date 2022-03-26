@@ -770,19 +770,20 @@ process.on('uncaughtException', function(err) {
     }
   else
     {
-      console.log('Killing process because of error ' + err);
-      setTimeout(function(){ process.exit(5); }, 2000);
+      console.log('\n\nThis error in unhandled, consider SPX restart! ', err); // Added in 1.1.1
+      // console.log('Killing process because of error ' + err);
+      // setTimeout(function(){ process.exit(5); }, 2000);
     }
 });    
 
 
 var server = app.listen(port, (err) => {
 
-  let splash = '  Copyright 2020-2022 SmartPX & Softpix\n\n' +
+  let splash = '  Copyright 2020-2022 Softpix\n\n' +
   `  SPX version ............ ${vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
-  '  Homepage ............... http://spx.graphics\n' +
-  '  Template Store ......... http://spxgc.com/store\n' +
+  '  Homepage ............... https://spx.graphics\n' +
+  '  Template Store ......... https://spx.graphics/store\n' +
   '  Knowledge Base ......... http://spxgc.tawk.help\n' +
   `  Config file ............ ${configfileref}\n`  +
   `  Cfg / locale ........... ${config.general.langfile}\n`  +
@@ -805,11 +806,11 @@ var server = app.listen(port, (err) => {
   splash +=
   `  Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
   `  See README.pdf and Knowledge Base for more info\n` + 
-  `  and please visit spxgc.com/store to support us.`; 
+  `  and please visit spx.graphics/store to support us.`; 
   
   console.log(splash);
 
-  let prompt = 'SPX can be accessed with a browser:';
+  let prompt = 'Open SPX in a browser:';
   let spxUrl = `http://${ipad}:${port}`;
   let urLeng = spxUrl.length;
   let prLeng = prompt.length;

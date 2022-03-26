@@ -32,6 +32,9 @@ function reimportTemplateIndex(nro) {
   data.template = htmlFileName // document.getElementById('templateIndex' + nro).value; // bug fix 1.0.14
   data.showFolder = document.getElementById('showfolder').value; // rundown file
   data.replaceIndex = nro;
+
+  console.log('\n\nReimport data', data, '\n\n')
+
   post('', data, 'post');
 }
 
@@ -179,8 +182,7 @@ function openSelectedFile() {
     var fils = document.getElementsByClassName("filebrowser_file");
     var fi;
     for (fi = 0; fi < fils.length; fi++) {
-      if (fils[fi].classList.contains('selectedFile'))
-        {
+      if (fils[fi].classList.contains('selectedFile')) {
         let data={};
         data.command = 'addtemplate';
         data.curFolder = document.getElementById('curfolder').innerText;
@@ -189,7 +191,7 @@ function openSelectedFile() {
         // alert('Fire baby burn: ' + data.template);
         post('', data, 'post');
         break;
-        }
+      }
     }
   }
 
