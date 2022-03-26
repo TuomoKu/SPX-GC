@@ -91,6 +91,10 @@ router.get('/', function (req, res) {
               "info"    :     "GET Open rundown from project / file."
             },
             {
+              "param"   :     "get",
+              "info"    :     "GET returns current Rundown json"
+            },
+            {
               "param"   :     "focusFirst",
               "info"    :     "GET Move focus to the first item on the rundown."
             },
@@ -433,6 +437,10 @@ router.get('/', function (req, res) {
         logger.error('changeItemID error', error)  ;
         return res.status(409).send('ID not changed');
       }
+});
+
+router.get('/rundown/get', async (req, res) => {
+ res.status(200).send(JSON.stringify(global.rundownData))
 });
 
 
