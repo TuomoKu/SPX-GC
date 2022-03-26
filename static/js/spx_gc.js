@@ -753,7 +753,7 @@ function copyText(txt) {
 }
 
 function heartbeat(dd, getOnly = false) { // 36 24 36 hey
-    // see notes
+    // see notes TDT=00d86114
     let nw, st, key, val, dif; 
     let fD = '|';
     let vD = ':';
@@ -787,9 +787,13 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     if ( !ok ) { ar.push(dd + vD + '1'); }
     st = ar.join(fD);
     if (rp) {
-        // console.log('Post (' + or + ') and reset.')
+        // FIXME:
+        console.log('Submit ' + or)
         getMessages2(or)
         st = eK + vD + Date.now() + fD + dd + vD + 1;
+    } else {
+        // FIXME:
+        console.log('Resume ' + st)
     }
     localStorage.setItem(ls, st)
 } // dirty deeds done. 
