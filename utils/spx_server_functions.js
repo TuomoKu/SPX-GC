@@ -435,8 +435,6 @@ module.exports = {
 
   GetFilesAndFolders: function (datafolder, filter='HTM') {
 
-    console.log('\nDEV: GetFilesAndFolders from ' + datafolder + '\n')
-
     try {
       // This is used by the AJAX function and returns a data object with folders
       // and HTML files of a given sourcefolder
@@ -446,7 +444,7 @@ module.exports = {
         foldArr: []
       };
 
-      // FIXME: Try to improve in 1.1.x
+      // FIXME: Try to improve in 1.1.1
       // Trying to survive invalid datafolder path.
       // This happens on a PC (at least) when re-importing templates.
       if (!fs.existsSync(datafolder)) {

@@ -454,8 +454,6 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
       case 'addtemplate':
         // ------------------------------------------------------------- ADDING (or RE-ADDING) A TEMPLATE -----------------
         // save the folder to app globals for the next potential need...
-        console.log('DEV: addtemplate lastBrowsed: ' +  curFolder)
-        
 
         // scan the file for SPXConfig
         if ( replaceIndex ) {

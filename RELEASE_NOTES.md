@@ -9,7 +9,7 @@
 
 - Added API endpoint `getprojects` that returns all project names in SPX
 - Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project
-- Added width and height url params to renderer (/renderer?width=1000&height=500&preview=true)
+- Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`)
 - Fixed a major path detection bug that appeared after re-importing a template and prevented importing more templates before server restart. 
 - New promo option is still WIP
 - gcinput margin-top fixed back to 5px from zero
