@@ -60,8 +60,24 @@ router.get('/', function (req, res) {
             {
               "param"   :     "panic",
               "info"    :     "GET (v1.1.0) Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
-            }
-          ]
+            },
+            {
+              "param"   :     "getprojects",
+              "info"    :     "GET (v1.1.1), returns projects as an array of strings."
+            },
+            {
+              "param"   :     "getrundowns?project=HelloWorld-project",
+              "info"    :     "GET (v1.1.1), returns rundown names of a given project as an array of strings."
+            },
+            {
+              "param"   :     "getrundowns?project=HelloWorld-project",
+              "info"    :     "GET (v1.1.1), returns rundown names of a given project as an array of strings."
+            },
+            {
+              "param"   :     "getlayerstate",
+              "info"    :     "GET (v1.1.1), returns current memory state. Please note, if API commands are used to load templates, this may not return them as expected!"
+            },
+            ]
         },
 
 
@@ -261,6 +277,47 @@ router.get('/', function (req, res) {
         console.log(error);
         return res.status(500).json({ type: 'error', message: error.message })
       });
+    });
+
+    router.get('/getprojects', async (req, res) => {
+      // Added in 1.1.1
+      let projects = await spx.GetSubfolders(config.general.dataroot); 
+      return res.status(200).json(projects)
+    });
+    
+    router.get('/getrundowns', async (req, res) => {
+      // Added in 1.1.1
+      let project = req.query.project || '';
+      if (!project) {
+        return res.status(500).json({ type: 'error', message: 'Project name required as parameter (eg ?project=ProjecName)' })
+      }
+      const fileListAsJSON = await spx.GetDataFiles(config.general.dataroot + "/" + project + "/data/");
+      return res.status(200).json(fileListAsJSON)
+    });
+
+    router.get('/getlayerstate', async (req, res) => {
+      // Added in 1.1.1
+      // REMEMBER!  This ONLY reports items which are in memory. So if direct API commands
+      //            are used to play out templates, this will not return reliable results.
+      let layers = new Array(20);
+
+      for (let i = 1; i < 20; i++) {
+        layers[i] = {};
+        layers[i].itemID = 'no-id';
+        layers[i].relpath = 'no-file';
+      }
+
+      layers.forEach((layer,lindex) => {
+        global.rundownData.templates.forEach((element,eindex) => {
+          let newObj = {}
+          if (element.onair=='true') {
+            newObj.itemID = element.itemID;
+            newObj.relpath = element.relpath;
+            layers[lindex]=newObj;
+          }
+        });
+      });
+      return res.status(200).json(layers)
     });
 
 

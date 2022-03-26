@@ -55,7 +55,7 @@ router.post('/browseFiles/', async (req, res) => {
   // This is axios ajax handler for file browser on dbl click on a folder
   // REQUEST: current folder and next folder name
   // RETURNS: json data with folder and file arrays
-  // 1.1.0 - refactored navigaiton process to use '..' for parent folder.
+  // 1.1.0 - refactored navigation process to use '..' for parent folder.
   let curFolder   = req.body.curFolder || ".";
   let tgtFolder   = req.body.tgtFolder || "";
   let extension   = req.body.extension || "HTM";

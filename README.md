@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Feb 23 2022.
+Readme updated Feb 23 2022. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.0** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
 

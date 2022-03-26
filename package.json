@@ -1,8 +1,8 @@
 {
   "name": "spx-gc",
-  "version": "1.1.0",
-  "description": "SPX | SmartPX Graphics Controller for CasparCG and streaming applications",
-  "homepage": "https://spxgc.com",
+  "version": "1.1.1",
+  "description": "SPX | Softpix Graphics Controller for CasparCG and streaming applications",
+  "homepage": "https://spx.graphics",
   "main": "server.js",
   "bin": "server.js",
   "pkg": {
@@ -22,7 +22,7 @@
     "build": "BUILD_PACKAGES.BAT"
   },
   "keywords": [],
-  "author": "Tuomo Kulomaa <tuomo@smartpx.fi> (https://smartpx.fi)",
+  "author": "Tuomo Kulomaa <tuomo@smartpx.fi> (https://softpix.io)",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.2",

@@ -390,7 +390,53 @@ module.exports = {
     }
   }, // getStartUpFolder
 
+
+  GetSubfolders: async function (strFOLDER) {
+    // return a list of all subfolders in a given folder
+    // console.log('Trying to get subfolders of ' + strFOLDER);
+    try {
+      let FOLDER = path.normalize(strFOLDER);
+      return fs.readdirSync(FOLDER).filter(function (file) {
+        return fs.statSync(FOLDER+'/'+file).isDirectory();
+      });
+    }
+    catch (error) {
+      logger.error('Failed to read folder ' + strFOLDER + ': ' + error);
+      return (error);
+    }
+  }, // GetSubfolders
+
+
+  GetDataFiles: async function (FOLDERstr) {
+    // return a list of all json files in the dataroot folder
+    logger.debug("Getting json files from " + FOLDERstr + "...");
+    let FOLDER = path.normalize(FOLDERstr);
+    let jsonData = [];
+    try {
+      // console.log('reading',FOLDER);
+      
+      fs.readdirSync(FOLDER).forEach(file => {
+        let bname = path.basename(file, '.json');
+        let ext = path.extname(file).toUpperCase();
+        if (ext == ".JSON") {
+          // console.log('Filename', bname);
+          jsonData.push(bname);
+        }
+      });
+      return jsonData;
+    }
+    catch (error) {
+      logger.error('Failed to read folder ' + FOLDERstr + ': ' + error);
+      return ('Failed to read folder: ' + FOLDERstr);
+    }
+  }, // GetDataFiles ended
+  
+
+
   GetFilesAndFolders: function (datafolder, filter='HTM') {
+
+    console.log('\nDEV: GetFilesAndFolders from ' + datafolder + '\n')
+
     try {
       // This is used by the AJAX function and returns a data object with folders
       // and HTML files of a given sourcefolder
@@ -668,7 +714,7 @@ module.exports = {
           fs.writeFile(filepath, filedata, 'utf8', function (err) {
             if (err){
               logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
-              return
+              return 
               // throw error;
             }
             logger.verbose('spx.writeFile - File written OK: ' + filepath);

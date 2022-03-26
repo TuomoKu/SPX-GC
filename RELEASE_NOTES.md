@@ -4,11 +4,16 @@
 
 <BR>
 
-## **WORK IN PROGRESS** (list updated Feb 22 2022)
+## **WORK IN PROGRESS** (list updated Mar 22 2022)
 > **⚠ PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
 
+- Added API endpoint `getprojects` that returns all project names in SPX
+- Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project
+- Added width and height url params to renderer (/renderer?width=1000&height=500&preview=true)
+- Fixed a major path detection bug that appeared after re-importing a template and prevented importing more templates before server restart. 
 - New promo option is still WIP
 - gcinput margin-top fixed back to 5px from zero
+- Changed template import error handler to prevent SPX crash when errors in templates JS-code. 
 
 <br>
 
