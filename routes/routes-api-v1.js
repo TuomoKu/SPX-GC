@@ -70,8 +70,8 @@ router.get('/', function (req, res) {
               "info"    :     "GET (v1.1.1), returns rundown names of a given project as an array of strings."
             },
             {
-              "param"   :     "getrundowns?project=HelloWorld-project",
-              "info"    :     "GET (v1.1.1), returns rundown names of a given project as an array of strings."
+              "param"   :     "get",
+              "info"    :     "GET (v1.1.1), returns current rundown as json."
             },
             {
               "param"   :     "getlayerstate",
@@ -89,10 +89,6 @@ router.get('/', function (req, res) {
             {
               "param"   :     "load?file=MyFirstProject/MyFirstRundown",
               "info"    :     "GET Open rundown from project / file."
-            },
-            {
-              "param"   :     "get",
-              "info"    :     "GET returns current Rundown json"
             },
             {
               "param"   :     "focusFirst",
