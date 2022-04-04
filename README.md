@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Feb 23 2022. 
+Readme updated Apr 04 2022. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.0** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
 
@@ -262,7 +262,9 @@ An example `config.json` of the SPX server
     "templatesource": "spxgc-ip-address",
     "preview": "selected",
     "renderer": "normal",
-    "launchchrome": "false"
+    "resolution": "HD",
+    "launchchrome": false,
+    "disableConfigUI": true
   },
   "casparcg": {
     "servers": [
@@ -354,7 +356,7 @@ Localization credits:
 
 Starting from v.1.0.12 SPX does not have a CasparCG server assigned by default in the [configuration](#config). To add CasparCG server(s) go to Configuration and scroll down to CasparCG servers. Add a new server by giving it name such as `OVERLAY`, `ip-address` (or `localhost`) and a `port` number (5250 is CasparCG's default port). Click on Save at the bottom of the page and there will be an empty line to add another server. Add as many as you have in your production, such as OVERLAY (for CG's), VIDEOWALL, FULLSCREEN etc... 
 
-> The name `OVERLAY` is preferred, since this name is used in all [SPX Store](https://spxgc.com/store) templates and the default template pack which comes with the application.
+> The name `OVERLAY` is preferred, since this name is used in all [SPX Store](https://spxgc.com/store) templates and the default template pack which comes with the application. **Note:** use only alphanumeric names for CasparCG servers, without special characters or spaces.
 
 <img src="./screenshots/ccgservers.png" align="right" width="450" style="vertical-align:middle;margin-right:10px; margin-top:10px">
 

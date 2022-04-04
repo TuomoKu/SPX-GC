@@ -19,15 +19,41 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+
+  <style>
+    .locked {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    #locked {
+      padding: 1em;
+      display: block;
+      font-size: 0.7em;
+      text-align: center;
+      color: rgb(255, 255, 255);
+      background-color: rgb(85, 3, 3);
+    }
+  </style>
+
 </head>
 
 
 <body onload="pageInit();" class="bg_body" onmouseover="tip('');">
+
+  {{#ifValue config.general.disableConfigUI true}}
+    <div id="locked">Configuration locked by admin.</div>
+  {{/ifValue}}
+
   <div class="wrapper">
     <div class="header">
       {{>header page="appconfig"}}
     </div><!-- header ended -->
-    <div class="content">
+    {{#ifValue config.general.disableConfigUI true}}
+      <div class="content locked">
+    {{else}}
+      <div class="content">
+    {{/ifValue}}
       <div class="centerColumn pM wrapper ">
         <div id="itemList" class="content pM scroller" style="border: 0px solid yellow;">
 

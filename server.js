@@ -522,9 +522,8 @@ app.engine('handlebars', exphbs({
     // "launchchromeatstartup":"false"
     // Feature most likely only works on Windows...?
     OpenChromeCheck(){
-      let value = config.general.launchchromeatstartup || "false";
-      value = value.toLowerCase();
-      if (value==="true"){
+      let launchChrome = config.general.launchchromeatstartup || false;
+      if (launchChrome){
         return '<input type="checkbox" checked name="general[launchchromeatstartup]">';
       }
       else {
@@ -730,7 +729,6 @@ app.engine('handlebars', exphbs({
 })); // end app.engine
 
 app.set('view engine', 'handlebars');
-// app.set('views', 'views/');
 app.set('views', path.join(__dirname, 'views'));
 
 
@@ -763,17 +761,14 @@ const ROUTEccg = require('./routes/routes-casparcg.js');
 app.use('/CCG', ROUTEccg);
 
 process.on('uncaughtException', function(err) {
-  if(err.errno === 'EADDRINUSE')
-    {
-      console.log('Process failed! [' + err + ']'); // most likely app running on this port already
-      setTimeout(function(){ process.exit(3); }, 2000);
-    }
-  else
-    {
-      console.log('\n\nThis error in unhandled, consider SPX restart! ', err); // Added in 1.1.1
-      // console.log('Killing process because of error ' + err);
-      // setTimeout(function(){ process.exit(5); }, 2000);
-    }
+  if(err.errno === 'EADDRINUSE') {
+    console.log('Process failed! [' + err + ']'); // most likely app running on this port already
+    setTimeout(function(){ process.exit(3); }, 2000);
+  } else {
+    console.log('\n\nThis error in unhandled, consider SPX restart! ', err); // Added in 1.1.1
+    // console.log('Killing process because of error ' + err);
+    // setTimeout(function(){ process.exit(5); }, 2000);
+  }
 });    
 
 
@@ -840,7 +835,7 @@ var server = app.listen(port, (err) => {
   console.log('  ' + line3s);
   console.log('');
 
-  if ( config.general.launchchrome=='true' ) {
+  if ( config.general.launchchrome==true ) {
     try {
       (async () => {
         // Opens the URL in a specified browser.

@@ -3,16 +3,16 @@
 
 <!--
 
-   	Need custom templates? Get in touch! https://spxgc.com/contact
+   	Need custom templates? Get in touch! https://spx.graphics/contact
 
     PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
-    ▸ spxgc.com | Copyright 2022 SmartPX & Softpix
+    ▸ spx.graphics | Copyright 2022 SmartPX & Softpix
     Version: 1.0.1 / Minor bug fixes
-    Build: Wed Jan 12 2022 08:37:41 GMT+0200 (GMT+02:00) 
+    Build: Sat Mar 26 2022 16:15:52 GMT+0200 (GMT+02:00) 
 
     CHANGES:
     12.01.2022  Improved Excel ticker headline switch timing (thanks Brandon for the improvements)
-
+    26.03.2022  Added Stopped -variable to prevent loading after the Out animation
 
     ISSUES:
     16.02.2022  We noticed there has to be at least two workbooks in the Excel file.
@@ -32,61 +32,6 @@
     <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
     <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
     <link rel="stylesheet" type="text/css" href="customize.css" />
-    <script>
-        start = new Date().getTime();
-
-        function runAnimationIN() {
-            let dur = 0.8;
-            gsap.ticker.fps(25);
-            gsap.set("#line1", { opacity: 1 });
-            gsap.set("#TICKER", {display:"block"});
-            gsap.to("#TICKER",   0.5, {opacity: 1});
-            gsap.fromTo(".tickerZone",     { opacity:    0 }, { delay: 0.05, duration: 0.1, opacity: 1,   ease: "none" }); 
-            gsap.fromTo(
-                "#TICKER",
-                dur,
-                    {
-                        x:function(i, target)
-                            {
-                            var x = target.offsetWidth-3;
-                            target.style.left = x;
-                            return x;
-                            },
-                    },
-                    {
-                        x:0,
-                        ease: "power3.out"
-                    }
-                );
-            gsap.fromTo(
-                "#line1",
-                dur+0.2,
-                    {
-                        width:0
-                    },
-                    {
-                        delay: 0.7,
-                        width:function(i, target)
-                            {
-                            target.style.width = "auto"; 
-                            var width = target.offsetWidth-3;
-                            target.style.width = "0px";
-                            return width;
-                            },
-                        onComplete:function() { gsap.set("#line1", {width:"auto"});  },
-                        ease: "power3.inOut"
-                    }
-                );
-            gsap.fromTo("#line1", { borderRightWidth: 10 }, { delay: 1.4, duration: 0.1, borderRightWidth:  0,   ease: "Power3.easeOut" });
-        }
-
-        function runAnimationOUT() {
-            let dur = 0.7;
-            gsap.to("#line1",     { duration: dur + 0.00, width:    0, ease: "back.in(1.2)" });
-            gsap.set("#TICKER",   { delay:    dur, display: "none"});
-        }
-
-    </script>
     <style>
 
         .tickerZone{
@@ -161,7 +106,7 @@
             "DataFields": [
                 {
                     "ftype" :           "instruction",
-                    "value" :           "News ticker from Excel file. Names of worksheets will be used as separators. File will be read at each section change while ticker is running. This is an example from the default template pack. For more templates see ▶ spxgc.com/store"
+                    "value" :           "News ticker from Excel file. Names of worksheets will be used as separators. File will be read at each section change while ticker is running. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
                 },
                 {
                     "field":            "f0",
@@ -178,7 +123,10 @@
 
 <body>
     <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
-        <div style="display: none; font-size:3em;" id="f0"></div>
+        <div style="position: absolute; font-size:3em; opacity: 0;">
+            <div id="f0"></div>
+            <div id="epochID"></div>
+        </div>
         <div class="tickerZone region">
             <div id="TICKER" class="tgpos region SKEW">
                 <div id="line1" class="color1 region accentRight">
@@ -193,13 +141,71 @@
 
 <script>
     
-    let ScrollSpeed = 3.25; // Typical speed approx 1.5 - 2.0
+    let ScrollSpeed = 3.5; // Typical speed approx 2.0 - 5.0
     let TickerData=[];
     let TickerStarted=0;
     let SectionSelector = 1;
     let SectionName = '';
+    let Stopped = false;
+    let ShowJustFirst = true; // Show just the first ticker category, then stop. [ true | false ]
+
+    start = new Date().getTime();
+
+    function runAnimationIN() {
+        Stopped = false;
+        let dur = 0.8;
+        gsap.ticker.fps(50);
+        gsap.set("#line1", { opacity: 1 });
+        gsap.set("#TICKER", {display:"block"});
+        gsap.to("#TICKER",   0.5, {opacity: 1});
+        gsap.fromTo(".tickerZone",     { opacity:    0 }, { delay: 0.05, duration: 0.1, opacity: 1,   ease: "none" }); 
+        gsap.fromTo(
+            "#TICKER",
+            dur,
+                {
+                    x:function(i, target)
+                        {
+                        var x = target.offsetWidth-3;
+                        target.style.left = x;
+                        return x;
+                        },
+                },
+                {
+                    x:0,
+                    ease: "power3.out"
+                }
+            );
+        gsap.fromTo(
+            "#line1",
+            dur+0.2,
+                {
+                    width:0
+                },
+                {
+                    delay: 0.7,
+                    width:function(i, target)
+                        {
+                        target.style.width = "auto"; 
+                        var width = target.offsetWidth-3;
+                        target.style.width = "0px";
+                        return width;
+                        },
+                    onComplete:function() { gsap.set("#line1", {width:"auto"});  },
+                    ease: "power3.inOut"
+                }
+            );
+        gsap.fromTo("#line1", { borderRightWidth: 10 }, { delay: 1.4, duration: 0.1, borderRightWidth:  0,   ease: "Power3.easeOut" });
+    }
+
+    function runAnimationOUT() {
+        Stopped = true;
+        let dur = 0.7;
+        gsap.to("#line1",     { duration: dur + 0.00, width:    0, ease: "back.in(1.2)" });
+        gsap.set("#TICKER",   { delay:    dur, display: "none"});
+    }
 
     async function StartTicker(SectionSelector) {
+        if (Stopped) {return}
         // this function gets triggered onload and everytime
         console.log('Starting ticker');
         TickerStarted = new Date().getTime();
@@ -210,12 +216,9 @@
         console.log('Ticker generation time: ' + (TickerReady-TickerStarted) + 'ms');
     }; 
 
-
-
-    
-    function getSheetData() 
-      {
+    function getSheetData()  {
         return new Promise(resolve => {
+
             // let SectionData = {};
             // SectionData.section = sectionName;
             let workSheetsData, excelData = [];
@@ -224,10 +227,6 @@
             axios.post(APIcall,  {filename: filename})
             .then(function (response) {
                 workSheetsData = response.data
-
-                console.log('Debug', workSheetsData);
-
-
                 workSheetsData.forEach((Book,index) => {
                   bookRows = [];
                   if (!Book.name.includes('#')) {
@@ -251,8 +250,7 @@
         )
       }
 
-    function populateDom(TickerData,SectionSelector) 
-      {
+    function populateDom(TickerData,SectionSelector){
         let spxTicker = document.getElementById('spxTicker');
         document.getElementById('spxTicker').innerHTML="";
         return new Promise(resolve => {
@@ -262,12 +260,9 @@
             // document.getElementById('SectionHeader').innerText = SectionName;
             spxTicker.innerHTML="";
             TickerData[SectionSelector].data.forEach((item,index) => {
-                if (index==0)
-                {
+                if (index==0) {
                     spxTicker.innerHTML=item;
-                }
-                else
-                {
+                } else {
                     spxTicker.innerHTML+='&nbsp;&nbsp;<span class="sheetTickerDelim" style="margin-left:0.5em;"></span>&nbsp;' + item;
                 }
             });
@@ -278,55 +273,54 @@
         )
       }
 
-    function PlayTickerDOM()
-        {
-            document.getElementById('SectionHeader').innerText = SectionName;
-            gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
-            gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
-            gsap.ticker.add(scrollToLeft);
-        }
-
-    function scrollToLeft() {
-            let spxTicker = document.getElementById('spxTicker');
-            let spxTiZone = document.getElementById('TICKER');
-            let LEFT = spxTicker.offsetLeft;
-            let LAST = document.getElementById('LastItem');
-            spxTicker.style.left = (LEFT-ScrollSpeed) + 'px';
-
-            var zoneRect = spxTiZone.getBoundingClientRect(),
-            elemRect = LAST.getBoundingClientRect(),
-            offset   = elemRect.left - zoneRect.left;
-            if ( offset < 200 ) {
-                gsap.ticker.remove(scrollToLeft);
-                gsap.fromTo("#SectionHeader",  { y:        0 }, { delay: 0.0, duration: 0.6, y:     100,   ease: "back.in(1.5)" }); 
-                gsap.fromTo("#SectionHeader",  { opacity:  1 }, { delay: 0.5, duration: 0.1, opacity: 0,   ease: "none" }); 
-                spxTicker.style.left = '100%';
-                if ( SectionSelector >= TickerData.length-1) // minus 2 because first index is DocID...
-                    {
-                        SectionSelector=1
-                    }
-                else
-                    {
-                        SectionSelector+=1
-                        // console.log('SectionSelector incremented to ' + SectionSelector);
-                    }
-                setTimeout(function(){ StartTicker(SectionSelector) }, 300);
-            }
-            else
-            {
-                // console.log('LAST distance from TickerZone start ' + offset);
-            }
+    function PlayTickerDOM() {
+        document.getElementById('SectionHeader').innerText = SectionName;
+        gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
+        gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
+        gsap.ticker.add(scrollToLeft);
     }
 
+    function scrollToLeft() {
+        let spxTicker = document.getElementById('spxTicker');
+        let spxTiZone = document.getElementById('TICKER');
+        let LEFT = spxTicker.offsetLeft;
+        let LAST = document.getElementById('LastItem');
+        spxTicker.style.left = (LEFT-ScrollSpeed) + 'px';
+
+        var zoneRect = spxTiZone.getBoundingClientRect(),
+        elemRect = LAST.getBoundingClientRect(),
+        offset   = elemRect.left - zoneRect.left;
+        if ( offset < 200 ) {
+            gsap.ticker.remove(scrollToLeft);
+            gsap.fromTo("#SectionHeader",  { y:        0 }, { delay: 0.0, duration: 0.6, y:     100,   ease: "back.in(1.5)" }); 
+            gsap.fromTo("#SectionHeader",  { opacity:  1 }, { delay: 0.5, duration: 0.1, opacity: 0,   ease: "none" }); 
+            spxTicker.style.left = '100%';
+            if ( SectionSelector >= TickerData.length-1) { // minus 2 because first index is DocID...
+                SectionSelector=1
+            } else {
+                SectionSelector+=1
+                // console.log('SectionSelector incremented to ' + SectionSelector);
+            }
+            
+            // stop here?
+            if (ShowJustFirst) {
+                // This will stop the item using API (to reflect UI also)
+                let epochID = document.getElementById('epochID').innerText;
+                axios.get('/api/v1/item/stop/' + epochID)
+                .then((response) => {
+                    console.log(response.data);
+                });
+                return
+            } 
+            setTimeout(function(){ StartTicker(SectionSelector) }, 300);
+        } else { 
+            // console.log('LAST distance from TickerZone start ' + offset);
+        }
+    }
 
     setTimeout(function () {
         StartTicker(SectionSelector) // the index number of sections in sourceConfig
-     },
-     50);
-
-
-
-
+     }, 50);
 
     function stop() {
         runAnimationOUT()

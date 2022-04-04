@@ -30,12 +30,15 @@ router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, asyn
   let greeting = config.general.greeting || '';
 
   let recents = config.general.recents || [] // added in 1.1.0
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
   res.render('view-home', { layout: false,
       greeting:   greeting,
       curVerInfo: req.curVerInfo,
       currVer:    currVer,
       user:       req.session.user,
-      recents:    recents});
+      recents:    recents,
+      disableConfigUI: disableConfigUI
+    });
 });
 
 router.get('/admin', spxAuth.CheckLogin, function (req, res) {
@@ -166,7 +169,14 @@ router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let recents = config.general.recents || [] // added in 1.1.0
-  res.render('view-appconfig', { layout: false, config: config, user: req.session.user, configfile: configfileref, recents: recents});
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
+  res.render('view-appconfig', {
+    layout: false, 
+    config: config, 
+    user: req.session.user, 
+    configfile: configfileref, 
+    recents: recents,
+    disableConfigUI: disableConfigUI});
 });
 
 
@@ -250,7 +260,14 @@ router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   await SaveRundownDataToDisc(); // Added in 1.0.15
   const folderListAsJSON = await spx.GetSubfolders(config.general.dataroot);
   let recents = config.general.recents || [] // added in 1.1.0
-  res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user, recents: recents});
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
+  res.render('view-shows', {
+    layout: false, 
+    folders: folderListAsJSON,
+    errorMsg: '',
+    user: req.session.user,
+    recents: recents,
+    disableConfigUI: disableConfigUI});
 });
 
 
@@ -259,7 +276,15 @@ router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => 
   const fileListAsJSON = await spx.GetDataFiles(config.general.dataroot + "/" + req.params.foldername + "/data/");
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let recents = config.general.recents || [] // added in 1.1.0
-  res.render('view-episodes', { layout: false, files: fileListAsJSON, folder: req.params.foldername, errorMsg: '', user: req.session.user, recents: recents});
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
+  res.render('view-episodes', {
+    layout: false,
+    files: fileListAsJSON,
+    folder: req.params.foldername, 
+    errorMsg: '',
+    user: req.session.user,
+    recents: recents,
+    disableConfigUI: disableConfigUI});
 });
 
 router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, res) => {
@@ -267,6 +292,7 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let datafile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
   const fileDataAsJSON = await GetJsonData(datafile);
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
 
   // a "previous folder" functionality
   let treeData = '';
@@ -286,7 +312,8 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
     folder: req.params.foldername,
     messageCode:'', errorCode:ERRCODE,
     user: req.session.user,
-    recents: recents
+    recents: recents,
+    disableConfigUI: disableConfigUI
   });
 });
 
@@ -764,6 +791,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let preview       = config.general.preview  || 'none'    
   let rnrtype       = config.general.renderer || 'normal'  
   let assetsFolder  = path.resolve(spx.getStartUpFolder(),'ASSETS') || ''
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
 
   res.render('view-controller', {
     layout:         false,
@@ -782,7 +810,8 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     previewMode:    preview,
     recents:        recents,
     renderer:       rnrtype,
-    assetsFolder:   assetsFolder
+    assetsFolder:   assetsFolder,
+    disableConfigUI: disableConfigUI
   });
 
   let bgImage = ''

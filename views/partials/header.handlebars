@@ -29,11 +29,14 @@
                        {{/each}}
                       </div>
 
-                      <HR class="menuDivider">
-                      <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A><BR>
-                      
+                      {{#ifValue disableConfigUI true}}
+                        <!-- disableConfigUI:true -->
+                      {{else}}
+                        <HR class="menuDivider">
+                        <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A><BR>
+                      {{/ifValue}}
+
                       {{#ifValue page "controller"}}
-                      
                       <A HREF="" onClick="ModalOn('overlayHelp');return false;"><i class="far fa-keyboard"></i>&nbsp; {{lang 'button.shortcuts'}}...</A>
                       {{/ifValue}}
 

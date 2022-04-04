@@ -14,6 +14,7 @@
 - New promo option is still WIP
 - gcinput margin-top fixed back to 5px from zero
 - Changed template import error handler to prevent SPX crash when errors in templates JS-code. 
+- Added disableConfigUI flag to config.json. If true the config menu is hidden and config page gets locked.
 
 <br>
 

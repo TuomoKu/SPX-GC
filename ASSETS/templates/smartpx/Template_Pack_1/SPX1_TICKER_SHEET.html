@@ -28,13 +28,13 @@
     (in the SPXGCTemplateDefinition object within the script tag below) to prevent operators from changing
     API-KEY and Google document ID values by accident... 
 
-    Need custom templates? Get in touch! https://spxgc.com/contact
+    Need custom templates? Get in touch! https://spx.graphics/contact
 
 
 	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
-    ▸ spxgc.com | Copyright 2022 SmartPX & Softpix
+    ▸ spx.graphics | Copyright 2022 SmartPX & Softpix
     Version: 1.0.1 / Minor bug fixes
-    Build: Wed Jan 12 2022 08:37:41 GMT+0200 (GMT+02:00) 
+    Build: Sat Mar 26 2022 16:15:52 GMT+0200 (GMT+02:00) 
 
 	----
 
@@ -122,41 +122,41 @@
         }
 
         .tickerZone{
-            position: absolute;
-            border: 0px solid yellow;
-            left: 3.2vw;
-            right: 3.2vw;
+            padding: 0;
             top: 85.5%;
             z-index: 10;
-            padding: 0;
+            left: 3.2vw;
+            right: 3.2vw;
+            position: absolute;
+            border: 0px solid yellow;
         }
 
         .tgpos{
+            opacity: 0; /* animated */
+            display:block;
             position: relative;
             transform-origin: top left;
             border-left: 1.4rem solid var(--spx-accent-color);
-            display:block;
-            opacity: 0; /* animated */
         }
 
 
         .ticker {
             z-index: 1;
             width: 100%;
-            border: 0px solid rgb(21, 255, 0);
             border-left: 1.4rem;
+            border: 0px solid rgb(21, 255, 0);
         }
 
         .spxTicker {
-            color: var(--spx-txcol1-color);
-            position: relative;
+            left: 108%;
             bottom: 0.3rem;
-            font-family: "UI-Regular", Arial, Helvetica, sans-serif;
             font-size: 1.6rem;
-            padding: 0.9rem 1rem 0.1rem 1rem; 
+            position: relative;
             line-height: 2.5rem;
             text-transform: uppercase;
-            left: 108%;
+            color: var(--spx-txcol1-color);
+            padding: 0.9rem 1rem 0.1rem 1rem; 
+            font-family: "UI-Regular", Arial, Helvetica, sans-serif;
         }
 
         .LastItem{
@@ -164,16 +164,16 @@
         }
 
         .tab{
-            position: absolute;
-            display: inline-block;
+            opacity: 0;  
+            margin: 0px;
             z-index: 20;
             left: -10px;
-            background-color: rgb(61, 61, 61);
             height: 100%;
-            margin: 0px;
-            padding: 0.6rem 2rem 0.1rem 2rem;
-            opacity: 0;  
+            position: absolute;
+            display: inline-block;
             box-shadow: black 10px 0px 30px;
+            padding: 0.6rem 2rem 0.1rem 2rem;
+            background-color: rgb(61, 61, 61); /* DEFAULT COLOR FOR TABS */
         }
 
 
@@ -227,7 +227,7 @@
             "DataFields": [
                 {
                     "ftype" : "instruction",
-                    "value" : "Ticker with Google Sheet as the data source. Please change API-KEY and DOCUMENT-ID to your own. Read sourcecode for comments. This is an example from the default template pack. For more templates see ▶ spxgc.com/store"
+                    "value" : "Ticker with Google Sheet as the data source. Please change API-KEY and DOCUMENT-ID to your own. Read sourcecode for comments. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
                 },
                 {
                     "field" : "f0",

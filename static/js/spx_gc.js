@@ -788,12 +788,12 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     st = ar.join(fD);
     if (rp) {
         // FIXME:
-        console.log('Submit ' + or)
+        // console.log('Submit ' + or)
         getMessages2(or)
         st = eK + vD + Date.now() + fD + dd + vD + 1;
     } else {
         // FIXME:
-        console.log('Resume ' + st)
+        // console.log('Resume ' + st)
     }
     localStorage.setItem(ls, st)
 } // dirty deeds done. 
