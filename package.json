@@ -35,7 +35,7 @@
     "ip": "^1.1.5",
     "jsdom": "^16.4.0",
     "macaddress": "^0.5.1",
-    "moment": "^2.27.0",
+    "moment": "^2.29.2",
     "morgan": "^1.9.1",
     "node-wav-player": "^0.1.0",
     "node-xlsx": "^0.15.1",
