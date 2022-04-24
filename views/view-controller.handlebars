@@ -42,7 +42,7 @@
 
 
 
-<body onload="pageInit();" onresize="resizePreview();" class="bg_body">
+<body onresize="resizePreview();" class="bg_body">
 
   <input type="hidden" id="foldername" value="{{folder}}">            <!-- just the foldername "showname" -->
   <input type="hidden" id="filebasename" value="{{filebasename}}">    <!-- just the filename "listname" -->
@@ -333,6 +333,26 @@
                                 </div>
                               {{/ifValue}}
 
+                              {{#ifValue ftype "filebrowser"}}
+                                <!-- "FILEBROWSER" TYPE OF TEMPLATE FIELD (added in 1.1.1) --> 
+                                <div class="wide HIDE" >
+                                  <table class="wide spxTableHeadsmall">
+                                    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="filebrowser"></td></tr>
+                                    <tr><td class="aright">title</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][title]" value="{{title}}"></td></tr>
+                                    <tr><td class="aright">assetfolder</td>  <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][assetfolder]" value="{{assetfolder}}"></td></tr>
+                                    <tr><td class="aright">extension</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][extension]" value="{{extension}}"></td></tr>
+                                  </table>
+                                </div>
+                                <div class="gcpluginbuttondiv" style="white-space: nowrap;">
+                                    {{title}}&nbsp;
+                                    <input type="text" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                                    <button type="button"
+                                      onClick="alert('{{assetfolder}} {{extension}} {{value}}')"; 
+                                      class="btnsmall ripple bg_grey15"
+                                      >Browse</button>&nbsp; &nbsp;
+                                </div>
+                              {{/ifValue}}
+
 
                               {{#ifValue ftype "textarea"}}
                                 <!-- "TEXTAREA" TYPE OF TEMPLATE FIELD -->
@@ -375,6 +395,7 @@
                                   </table>
                                 </div>
                                 <!-- then render visible DOM elements with a helper-->
+                                <!-- value set as fField value {{value}} -->
                                 <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="FilelistValues[{{field}}]" data-tooltip="{{title}} {{lang 'general.fromFolder'}}: {{assetfolder}}" data-position="right center">
                                   <option disabled>{{title}} {{lang 'general.fromFolder'}}:</option>
                                   <option disabled>{{assetfolder}}</option>
@@ -444,7 +465,7 @@
                           <TD class="vtop center">
                             <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
                             <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
-                            
+                             
                             <!-- export CSV button -->
                             <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.exportitem'}}');"></i><BR>
 
@@ -769,6 +790,15 @@
         document.getElementById('controllerFunctionsZone').style.opacity=1;
         // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
       }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // added in 1.1.1 - UX is greatly improve with this change
+      //                  compared to previously used onload event
+      // console.log('DOMContentLoaded')
+      pageInit();
+    })
+
+
 
   </script>
 </body>

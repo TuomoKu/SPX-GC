@@ -12,7 +12,7 @@ Readme updated Apr 04 2022.
 
 **SPX** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
 
-**[spxgc.com](https://spxgc.com)**
+**[spx.graphics](https://spx.graphics)**
 
 ![snapshot](screenshots/00-spx-gc-principle2.png)
 

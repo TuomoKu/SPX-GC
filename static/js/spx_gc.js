@@ -951,6 +951,8 @@ function focusRow(rowitemOrIndex) {
     document.querySelectorAll('.itemrow').forEach(function (item, i) {
         if (item.classList.contains("inFocus")) {
             item.classList.remove('inFocus');
+        } else {
+            item.setAttribute('data-spx-previewing', 'false'); // added in 1.1.1
         }
     })
     var index = 0; // for master buttons
@@ -976,7 +978,10 @@ function focusRow(rowitemOrIndex) {
 
         // Added in 1.1.0:
         if (document.getElementById('previewMode').value==='selected') {
-            previewItem(TargetElement); // preview selected item
+            if (TargetElement.getAttribute('data-spx-previewing')!='true') {
+                TargetElement.setAttribute('data-spx-previewing', 'true'); // added in 1.1.1 to avoid double previewing
+                previewItem(); // preview selected item
+            }
         }
 
     }
@@ -1033,8 +1038,7 @@ function org_focusRow(index, useID=false) {
 
 
 
-function getElementIdOfFocusedItem()
-{
+function getElementIdOfFocusedItem() {
     // FIXME: Is this in use? From old logic?
     // a utility to iterate DOM items, return element ID of focused
     for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
@@ -1048,10 +1052,10 @@ function getElementIdOfFocusedItem()
 function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
     for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-        if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
-            {
-                return document.querySelectorAll('.itemrow')[nro];
-            };
+        if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
+            // console.log('Focused row is ' + nro + ' and is ' + document.querySelectorAll('.itemrow')[nro].getAttribute('data-spx-epoch'));
+            return document.querySelectorAll('.itemrow')[nro];
+        };
     }
 }
 
@@ -1241,6 +1245,7 @@ function help(section) {
         case "PROJECTEXTRAS":       HELP_PAGE = "article/help-project-extras"       ; break;
         case "CONTROLLER":          HELP_PAGE = "article/help-controller"           ; break;
         case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
+        case "API":                 HELP_PAGE = "article/help-api"                  ; break;
         default: break;
     }
 
@@ -1319,7 +1324,7 @@ function previewItem(itemrow='') {
     // console.log('Itemrow: ', itemrow);
     if (!itemrow) { itemrow = getFocusedRow();  }
     if (!itemrow) { /* console.log('No active rows, skip command.');*/ return;}
-
+    itemrow.setAttribute('data-spx-previewing', 'true'); // added in 1.1.1 to avoid double previewing. See also focusRow()
     data = {};
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
@@ -1327,6 +1332,7 @@ function previewItem(itemrow='') {
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
     heartbeat(308); // identifier
+
 
 }
 
@@ -1614,8 +1620,7 @@ function resizeInput() {
 
 
 
-function duplicateRundownItem(rowitem)
-{
+function duplicateRundownItem(rowitem) {
     if (!rowitem){
         rowitem = getFocusedRow();
     }
@@ -1634,33 +1639,35 @@ function duplicateRundownItem(rowitem)
 
     // update table id's for sorting to keep up. A bug found right after 1.0.12 was released.
     updateFormIndexes()
-
-    setTimeout(function () { rowitem.classList.remove('inFocus'); }, 5);
-    setTimeout(function () { newItem.setAttribute('data-spx-epoch', data.cloneEpoch); }, 15);
-    setTimeout(function () { newItem.setAttribute('data-spx-onair', "false"); }, 20);
-    setTimeout(function () { newItem.querySelector('.copyid').setAttribute('onmouseover', `tip('Duplicated item ${data.cloneEpoch}')`); }, 30);
-
-    
-    // reset play icon and play button
-    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'); }, 40);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'); }, 50);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'); }, 60);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'); }, 70);
-    setTimeout(function () { newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'); }, 80);
-        
     rowitem.after(newItem);
-    setTimeout(function () { newItem.style.opacity=1; }, 100);
-    setTimeout(function () { newItem.classList.add('inFocus'); }, 110);
 
-    // var FirstInput = newItem.querySelectorAll('[data-role="userEditable"]')[0] || null;
-    // if (FirstInput) {
-    //     FirstInput.focus();
-    //     FirstInput.select();
-    // }
+    let list = [
+        newItem.setAttribute('data-spx-epoch', data.cloneEpoch),
+        newItem.setAttribute('data-spx-onair', "false"),
+        newItem.querySelector('.copyid').setAttribute('onmouseover', 'tip("Duplicated item ' + data.cloneEpoch + '")'),
+        newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'),
+        newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'),
+        newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'),
+        newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'),
+        newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'),
+        rowitem.classList.remove('inFocus'),
+        newItem.classList.add('inFocus'),
+        newItem.style.opacity=1
+    ]
 
-    // send server command
+    applyCommands(list);
     working('Sending ' + data.command + ' request.');
     ajaxpost('',data);
+
+    function applyCommands(list) {
+        // delay commands utility
+        let totalDelay = 0;
+        let stepDelay = 10;
+        list.forEach((item,index) => {
+            totalDelay += stepDelay;
+            setTimeout(function () { (item) }, totalDelay);
+        });
+    }
 
 } // duplicateRundownItem ended
 
@@ -1695,7 +1702,7 @@ function updateFormIndexes() {
     // Sorting routine needs the IndexList for saving sorting to a file.
     // When deleting, this is needed to re-assing form names.
     // 1.0.13 refactored to use epochs and not item indexes.
-    var forms = document.forms;
+    // var forms = document.forms;
     let IndexList = []
     let items = document.querySelectorAll('.itemrow');
     items.forEach((item,index) => {

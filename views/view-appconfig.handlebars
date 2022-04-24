@@ -242,8 +242,10 @@
               </td>
             </tr>
             audio player -->
-            
           </table>
+
+
+
 
           <BR><BR>
           <table class="wide" border=0>
@@ -275,6 +277,27 @@
             -->
 
           </table>
+
+          <BR><BR>
+          <table class="wide" border=0>
+            <TR>
+              <td class="vmid tableheaderText">API</td>
+              <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('api');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
+            </TR>
+          </table>
+          <hr class="h2hr"><!-- =========================================== -->
+          <table style="width: 100%;" cellspacing="5" border="0">
+            <tr onmouseover="tip('API Commands');">
+              <td width="40%">
+                <a href="/api/v1/" target="_api"><span style="border-bottom: 1px dashed rgb(0, 140, 255);" class="spxConfigHead">API endpoints</span></a>
+              </td>
+              <td>
+                  <input type="text" class="wide bg_grey15 cfg" style="border: 1px dashed rgba(0, 140, 255, 0.507); background-color: #575757;" placeholder="List of API endpoints" id="apiLink" value="">
+                </P>
+              </td>
+            </tr>
+          </table>
+
 
           <BR><BR>
           <table class="wide" border=0>
@@ -547,6 +570,9 @@
 
     var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + '/renderer/';
     document.getElementById('rendererLink').value = RendererUrl;
+
+    var APIUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + '/api/v1/';
+    document.getElementById('apiLink').value = APIUrl;
 
      // COLLAPSIPLE HANDLERS
       var coll = document.getElementsByClassName("collapsible");

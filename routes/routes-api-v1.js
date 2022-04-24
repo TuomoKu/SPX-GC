@@ -70,12 +70,12 @@ router.get('/', function (req, res) {
               "info"    :     "GET (v1.1.1), returns rundown names of a given project as an array of strings."
             },
             {
-              "param"   :     "get",
-              "info"    :     "GET (v1.1.1), returns current rundown as json."
+              "param"   :     "rundown/get",
+              "info"    :     "GET (v1.1.1), returns current rundown as json. "
             },
             {
               "param"   :     "getlayerstate",
-              "info"    :     "GET (v1.1.1), returns current memory state. Please note, if API commands are used to load templates, this may not return them as expected!"
+              "info"    :     "GET (v1.1.1), returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
             },
             ]
         },
@@ -299,23 +299,29 @@ router.get('/', function (req, res) {
       // Added in 1.1.1
       // REMEMBER!  This ONLY reports items which are in memory. So if direct API commands
       //            are used to play out templates, this will not return reliable results.
+
       let layers = new Array(20);
 
-      for (let i = 1; i < 20; i++) {
+      for (let i = 1; i < 21; i++) {
         layers[i] = {};
-        layers[i].itemID = 'no-id';
-        layers[i].relpath = 'no-file';
+        layers[i].layer = i;
+        layers[i].itemID = '';
+        layers[i].onair = '';
       }
 
       layers.forEach((layer,lindex) => {
-        global.rundownData.templates.forEach((element,eindex) => {
-          let newObj = {}
-          if (element.onair=='true') {
-            newObj.itemID = element.itemID;
-            newObj.relpath = element.relpath;
-            layers[lindex]=newObj;
-          }
-        });
+        if (global.rundownData && global.rundownData.templates) {
+          global.rundownData.templates.forEach((element,eindex) => {
+            let newObj = {}
+            if (element.onair=='true') {
+              newObj.layer = parseInt(element.webplayout);
+              newObj.itemID = element.itemID;
+              newObj.onair = element.relpath;
+              layers[parseInt(element.webplayout)]=newObj;
+            }
+          });
+ 
+        }
       });
       return res.status(200).json(layers)
     });

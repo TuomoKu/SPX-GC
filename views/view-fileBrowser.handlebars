@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filebrowser</title>
+
+  <!-- local -->
+  <script src="/js/lib/luxon.min.js"></script>
+  <script src="/js/lib/lodash.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/css/spx_filebrowser.css">
+
+  <!-- from SPX -->
+  <script src="/js/axios.min.js"></script>
+  <script src="/js/anime.min.js"></script>
+  <script src="/js/fontawesome.all.min.js"></script>
+  <script src="/js/Sortable.min.js"></script>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
+</head>
+
+<body style="background-color: #2A3641;">
+  <div id="messageSlider" style="opacity:0;"></div>
+  <div class="page">
+    <div class="page-content">
+      <div class="well darken skroll filebrowser">
+        <div id="navipath">
+            <!-- path generated here-->&nbsp;
+        </div>
+        <div class="filebrowser">
+            <UL>
+              <LI style="user-select: none;" id="homefolder" class="filebrowser_up" onDblClick="goHome();"><SPAN class="icon home"></i>ROOT</SPAN></LI>
+              <LI style="user-select: none;" id="prefolder" class="filebrowser_up" onDblClick="goUp();"><SPAN class="icon back">UP</SPAN></LI>
+            </UL>
+        </div>
+        <div id="folderinbox">
+              <!-- folder items generated here -->
+        </div>
+        <div id="fileinbox">
+              <!-- folder items generated here -->
+        </div>
+      <div >
+    </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <div class="footitem1">
+      <button
+        id="playButton"
+        class="btn bg_grey ripple disable"
+        style="width:80%; margin-bottom:0.5em;"
+        onClick="playItem();">
+        SELECT
+      </button>
+    </div>
+    <div class="footitem1">
+      <button
+        id="stopButton"
+        class="btn bg_grey ripple"
+        style="width:80%; margin-bottom:0.5em;"
+        onClick="stopItem();">
+        CANCEL
+      </button>
+    </div>
+  </div>
+  <script defer src="/js/spx_fileBrowser.js"></script>
+</body>
+</html>
+

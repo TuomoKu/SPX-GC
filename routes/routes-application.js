@@ -45,6 +45,11 @@ router.get('/admin', spxAuth.CheckLogin, function (req, res) {
   res.render('view-admin', { layout: false });
 });
 
+router.get('/fileBrowser', spxAuth.CheckLogin, function (req, res) {
+  // added in 1.1.1
+  res.render('view-fileBrowser', { layout: false } );
+});
+
 router.get('/templates/empty.html', function (req, res) {
   // let emptyhtml = path.join(__dirname + '/../static/empty.html');
   // console.log('Haetaan empty: ' + emptyhtml);

@@ -648,10 +648,10 @@ app.engine('handlebars', exphbs({
       // console.log('files', fileList);
       if (fileList) {
         fileList.forEach((fileRef,index) => {
-          fullFilePath = assetfolder + fileRef;
-          if (assetfolder.substr(assetfolder.length - 1)!="/") {
+          if (assetfolder.substr(assetfolder.length - 1)!="/") { // fixed a bug in 1.1.1
             assetfolder = assetfolder + "/";
           }
+          fullFilePath = assetfolder + fileRef;
           sel = "";
           if (fullFilePath == selectedValue) {
             sel = 'selected';
