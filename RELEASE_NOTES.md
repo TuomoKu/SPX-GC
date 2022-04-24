@@ -12,15 +12,16 @@
 - Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project
 - Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`)
 - Added a link to API endpoint list to app config
+- Added `disableConfigUI` boolean to config.json. If `true` config menu is hidden and config page gets locked.
 - Fixed a major path detection bug that appeared after re-importing a template and prevented importing more templates (before server restart). 
 - Fixed a minor bug in filelist field (did not add trailing "/" in filepath)
 - Fixed a bug in rundown item duplication routine (when clicking on the icon - had a clash with preview function)
 - Improved preview mechanism (prevent subsequent previews of the same item)
+- Improved UI by reverting gcinput margin-top fixed back to 5px from zero
+- Improved controller UX by doing init with DOMcontentLoaded ratger than onLoad event
+- Improved template import error handler to prevent SPX crash when errors in template's JS-code. 
 - (New promo option is still WIP)
-- gcinput margin-top fixed back to 5px from zero
-- Changed controller GUI init from onLoad event to DOMcontentLoaded to improve UX
-- Changed template import error handler to prevent SPX crash when errors in templates JS-code. 
-- Added `disableConfigUI` boolean to config.json. If `true` config menu is hidden and config page gets locked.
+
 
 <BR>
 
