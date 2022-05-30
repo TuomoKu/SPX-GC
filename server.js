@@ -77,6 +77,8 @@ const open = require('open');
 var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
+
+global.isDev = process.env.SPX_ROOT_FOLDER ? true : false;
 global.vers = vers;
 global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
 
@@ -94,6 +96,20 @@ macaddress.one(function (err, mc) {
   let pseudomac = macaddress.split(':').join('').substring(0,8);
   global.hwid = config.general.hostname || pseudomac;
   global.pmac = pseudomac; // an anonymous id
+
+  if (isDev)  {
+
+    let scrambled = spx.rot(pseudomac);
+    let unscrambd = spx.rot(scrambled, true);
+
+    console.log('  pmac = ' + pseudomac);
+    console.log('  rot  = ' + scrambled);
+    console.log('  unsc = ' + unscrambd);
+    console.log('');
+    console.log('Config', config);
+  }
+  
+
 });
 
 
@@ -128,6 +144,21 @@ app.engine('handlebars', exphbs({
         return options.fn(this);
       }
       return options.inverse(this);
+    },
+
+    // conditional IF helper return value A if "value" == "compareTo", B if not
+    ifValueMatch: function(value, compareTo, A, B ) {
+      if(value == compareTo) {
+        return A;
+      } else {
+        return B;
+      }
+    },
+
+    // conditional IF helper
+    itemCount: function(arr) {
+      // console.log('a: ' + a + ', b: ' + b);
+      return arr.length;
     },
 
     // conditional IF helper
@@ -254,8 +285,7 @@ app.engine('handlebars', exphbs({
 
 
     // generate a pretty string for each template to display playout configs
-    GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='' , itemid='')
-    {
+    GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='' , itemid='') {
       let html = '<div data-spx-name="playoutConfig">';
       // html += '<input type="text" data-clipboard-action="copy" data-clipboard-target="#copy' + itemid + '">';
 
@@ -472,6 +502,11 @@ app.engine('handlebars', exphbs({
       var ip = require('ip');
       var myIP = ip.address() + ':' + port;
       return myIP;
+    },
+
+    // Returns unique ID for this host machine
+    getHostID: function () {
+      return global.pmac;
     },
 
 
@@ -775,14 +810,14 @@ process.on('uncaughtException', function(err) {
 var server = app.listen(port, (err) => {
 
   let splash = '  Copyright 2020-2022 Softpix\n\n' +
-  `  SPX version ............ ${vers}\n` +  
+  `  SPX version ............ ${global.vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
   '  Homepage ............... https://spx.graphics\n' +
   '  Template Store ......... https://spx.graphics/store\n' +
   '  Knowledge Base ......... http://spxgc.tawk.help\n' +
   `  Config file ............ ${configfileref}\n`  +
   `  Cfg / locale ........... ${config.general.langfile}\n`  +
-  `  Cfg / hostname ......... ${config.general.hostname}\n`  +
+  `  Cfg / host-id and name . ${global.pmac} ${config.general.hostname}\n`  +
   `  Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `  Cfg / dataroot ......... ${path.resolve(config.general.dataroot)}\n`  +  
   /*`  Cfg / template files ... ${path.resolve(config.general.templatefolder)}\n`  + */ 

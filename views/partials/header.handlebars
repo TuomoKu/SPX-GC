@@ -20,6 +20,7 @@
                         <img src="/img/spx.svg" class="logo">
                       </div> --}}
                       <A HREF="/"><i class="fas fa-home"></i>&nbsp; {{lang 'pagetitle.home'}}</A><br>
+
                       <A HREF="/shows/"><i class="fas fa-folder"></i>&nbsp; {{lang 'pagetitle.shows'}}...</A><BR>
 
                       <!-- recent files added in 1.1.0 -->
@@ -60,6 +61,16 @@
                       <A HREF="https://spxgc.com/store" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; spxgc.com/store</A>
                       <A id="newVersionMenuItem" class="newVersionBubble" HREF="https://spxgc.tawk.help/article/latest-changes" target="_new"><i class="fas fa-bullhorn"></i>&nbsp; New version available!</A>
 
+                      <!-- add a link to register -->
+                      {{#if config.registration.updated }}
+                        <!-- Reg ok -->
+                      {{else}}
+                        <A style="display: block;" class="newVersionBubble" HREF="/register"><i class="fas fa-crown"></i>&nbsp; Register for free...</A>
+                        {{!-- <div class="registrationDiv">
+                          <A HREF="/register/"><i class="fas fa-crown"></i>&nbsp; Register for free...</A><BR>
+                        </div> --}}
+                        
+                      {{/if}}
                       
                     </div>
                   </div>

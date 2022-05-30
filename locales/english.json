@@ -1,7 +1,7 @@
 {
 	"general":{
 	   "hello":"Howdy",
-	   "slogan":"Manage and control graphics with CasparCG and streaming applications.",
+	   "slogan":"Manage and control graphics for live broadcast, live streaming and live events.",
 	   "folder":"Folder",
 	   "file":"File",
 	   "up":"Up",
@@ -128,6 +128,7 @@
 	   "openchrome":"Open Chrome at restart",
 	   "options":"Dropdown options (text, value)",
 	   "optionalBgImage":"Optional background image from folder",
+	   "projectvariables": "Project variables",
 	   "resolution":"Output resolution",
 	   "resolutioninfo": "Please note, templates are designed for HD by default and may need changes to support other resolutions.",
 	   "restartinfo":"SPX process will need to restart for changes to have effect",

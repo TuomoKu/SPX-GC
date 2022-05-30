@@ -34,23 +34,21 @@ function CheckLogin(req,res,next) {
       return;
     }
 
-    if (USER==AllowedUser)
-      {
-        if (spx.hashcompare(PASS,config.general.password))
-          {
-            logger.info('CheckLogin: User "' + USER + '" logged in.');
-            req.session.user = USER;
-            next();
-            return;
-          }
-      }
+    if (USER==AllowedUser) {
+        if (spx.hashcompare(PASS,config.general.password))           {
+          logger.info('CheckLogin: User "' + USER + '" logged in.');
+          req.session.user = USER;
+          next();
+          return;
+        }
+    }
     logger.verbose('CheckLogin: Not authenticated (or wrong user/pass), redirect to login');
     res.status(403);
     res.render('view-login', { layout: false });
   }
 
 
-function Logout(req,res,next){
+function Logout(req,res,next) {
   // logout user
   logger.info('CheckLogin: User "' + req.session.user + '" logged out.');
   req.session.user = '';

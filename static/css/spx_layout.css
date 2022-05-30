@@ -5,10 +5,10 @@
 
 
 html, body {
-    margin: 5px;
-    height: 99.5%;
+    margin: 0px;
+    height: 100%;
     color: white;
-    overflow: hidden;
+    /* overflow: hidden; */
     font-size: 1.5vw;
     box-sizing: border-box;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
@@ -174,7 +174,7 @@ td.aright{
     font-size: 0.6rem;
     margin-top: 1em;
     padding: 0.6em 0.4em 0.6em 0.4em;
-    overflow: hidden;
+    /* overflow: hidden; */
     background-color: rgba(0,0,0,0.1);
     border-top: 1px solid rgba(0,0,0,0.7) !important;
     border-bottom: 1px solid rgba(255,255,255,0.3) !important;
@@ -528,7 +528,27 @@ div.curfolder{
         background-size: 10vw;
     }
 
+.registrationDiv {
+    display: block;
+    padding: 0.05em;
+    background-color: rgba(18, 82, 25, 0.604);
+    border-radius: 200px;
+    color: green;
+    border: 2px solid rgba(0, 128, 0, 0.317);
+    text-align: center;
+    font-size: 0.8em;
+    margin-top: 0.8em;
+    opacity: 0.7;
+    transition: all 0.3s ease-in-out;
+}
 
+.registrationDiv:hover {
+    border: 2px solid orange;
+    background-color: rgba(12, 132, 6, 0.441);
+    transform: scale(0.98);
+    transition: all 0.3s ease-in-out;
+    opacity: 1.0;
+}
 
 .right {
     margin-left: 60%;
@@ -614,6 +634,7 @@ div.curfolder{
     padding: 0.0em;
     border: 0px solid yellow;
     margin: 0px;
+    gap: 2px;
 }
 
 .spxFlexItem {
@@ -714,6 +735,12 @@ div.curfolder{
     white-space: nowrap;
 }
 
+.prvar {
+    color: rgba(255, 255, 255, 0.2);
+    font-family: monospace;
+    float: right;
+    padding-right: 1em;
+}
 
 .spxInfotext {
     font-size: 0.6em;
@@ -723,6 +750,15 @@ div.curfolder{
     text-rendering: optimizeLegibility;
     opacity: 0.7;
     line-height: 120%;
+}
+
+.spxInfoRegtext {
+    font-size: 0.7em;
+    color:rgb(198, 198, 198);
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .spxTableHeadsmall {
@@ -1003,4 +1039,8 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 
 .closePromo:hover {
     transform: rotate(90deg);
+}
+
+.wrap {
+    white-space: normal;
 }

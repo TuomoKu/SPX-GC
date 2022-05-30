@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Apr 04 2022. 
+Readme updated May 18 2022. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.0** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
 
@@ -629,6 +629,12 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
                 "title": "Click me",
                 "descr": "Describe button function here",
                 "fcall": "myCustomHello('world')"
+            },
+            {
+                "field": "f8",
+                "ftype": "color",
+                "title": "Text color",
+                "value": "rgba(255, 255, 255, 1.0)"
             }
         ]
     };
@@ -667,6 +673,7 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
 | `checkbox` | `Title` is used as label in UI. _Value_ is "0" or "1" when checked. (Added in 1.0.10) | `[x] Show logo`  |
+| `color` | `Title` is used as label in UI. _Value_ is a valid CSS color string such as `rgb(255,0,0)` (full red) or `rgba(0,0,0,0.33)` (black with 33% opacity). (Added in 1.1.1) | `rgba(255,255,255,1.0)`  |
 
 
 > **Note** additional user interface controls may be added in future releases.

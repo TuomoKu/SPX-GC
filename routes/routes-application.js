@@ -1,6 +1,6 @@
 
 // --------------------------------------------
-// Handle Express server routes for the webapp.
+// Handle Express server routes for the webapp (at "/")
 // --------------------------------------------
 var express = require("express");
 const router = express.Router();
@@ -18,7 +18,13 @@ const spxAuth = require('../utils/spx_auth.js');
 const jsdom = require("jsdom"); // for scanning js within templates
 const { JSDOM } = jsdom;
 const cors = require('cors');
+const { timeStamp } = require("console");
+const { httpPost } = require("../utils/spx_server_functions.js");
+const http = require('http');
+const axios = require('axios')
+// -----watchout!-----
 
+// const { config } = require("process");
 // const { constants } = require("buffer");
 // const { config } = require("winston"); // <!-- this is auto-generated here by the IDE and will screw things up! Beware >:-[
 // global.rundownData is introduced in server.js 
@@ -31,14 +37,18 @@ router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, asyn
 
   let recents = config.general.recents || [] // added in 1.1.0
   let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
-  res.render('view-home', { layout: false,
-      greeting:   greeting,
-      curVerInfo: req.curVerInfo,
-      currVer:    currVer,
-      user:       req.session.user,
-      recents:    recents,
-      disableConfigUI: disableConfigUI
+  res.render('view-home', {
+      layout:           false,
+      greeting:         greeting,
+      curVerInfo:       req.curVerInfo,
+      currVer:          currVer,
+      user:             req.session.user,
+      recents:          recents,
+      disableConfigUI:  disableConfigUI,
+      config:           config,
+      showMessage:      req.session.showMessage
     });
+    req.session.showMessage = null;
 });
 
 router.get('/admin', spxAuth.CheckLogin, function (req, res) {
@@ -187,6 +197,7 @@ router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
 
 
 
+
 router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   // save incoming json form data to config.json and reload the page
   let ConfigData = req.body;
@@ -260,6 +271,64 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
 });
 
 
+router.get('/register', cors(), spxAuth.CheckLogin, async (req, res) => {
+  // show application config (send global.config as "config" data to the view, see options object below)
+  await SaveRundownDataToDisc(); // Added in 1.0.15
+  let recents = config.general.recents || [] // added in 1.1.0
+  let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
+  res.render('view-registration', {
+    layout: false, 
+    config: config, 
+    user: req.session.user, 
+    configfile: configfileref, 
+  });
+});
+
+
+router.post('/register', async (req, res) => {
+  // Handles modification changes of registratiom.
+  // Request: form data as JSON
+  // Returns: Ajax response
+  logger.verbose('Saving registration [' +  + '] in rundown [' + req.body.rundownfile + '] with updated values.');
+  try {
+    
+    if (!config.registration) {
+      config.registration = {};
+    }
+
+    config.registration.updated     = new Date().toISOString();
+    config.registration.country     = req.body.country;
+    config.registration.usage       = req.body.usage
+    config.registration.devlevel    = req.body.skill
+    config.registration.freetext    = req.body.freetext
+    config.registration.email       = req.body.email
+
+    if (req.body.inviteDiscord=="on") {
+      config.registration.discord = true
+    } else {
+      config.registration.discord = false
+    }
+
+    if (req.body.newsletter=="on") {
+      config.registration.newsletter = true
+    } else {
+      config.registration.newsletter = false
+    }
+    await spx.writeFile(global.configfileref,config);
+    const response = await axios.post('https://smartpx.fi/gc/reg/', config.registration);
+    req.session.showMessage = 'Thank you for registration! 👍';
+    res.redirect('/');
+
+  } catch (error) {
+      console.error('ERROR', error);
+      let errmsg = 'Server error in /register [' + error + ']';
+      logger.error(errmsg);
+      res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
+  };
+});
+
+
+
 router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
   await SaveRundownDataToDisc(); // Added in 1.0.15
@@ -272,6 +341,7 @@ router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
     errorMsg: '',
     user: req.session.user,
     recents: recents,
+    config: config,
     disableConfigUI: disableConfigUI});
 });
 
@@ -289,6 +359,7 @@ router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => 
     errorMsg: '',
     user: req.session.user,
     recents: recents,
+    config: config,
     disableConfigUI: disableConfigUI});
 });
 
@@ -318,6 +389,7 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
     messageCode:'', errorCode:ERRCODE,
     user: req.session.user,
     recents: recents,
+    config: config,
     disableConfigUI: disableConfigUI
   });
 });
@@ -568,6 +640,45 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
           // create new templates array
           profileData.templates=[SPXGCTemplateDefinition];
         }
+
+        // Scan each template field for potential project variables ("prvar")
+        // and add them to the profile.
+        profileData.templates.forEach(function(template, index) {
+          template.DataFields.forEach(function(field, index) {
+            if (field.prvar) {
+              console.log('Found prvar in template field: ' + field.prvar);
+              if (!profileData.variables) {
+                profileData.variables = [];
+              }
+              // TODO: Bug here! This will overwrite existing variables with same name!
+
+              let foundOld = false;
+              profileData.variables.forEach(function(variable, index) {
+                if (variable.prvar === field.prvar) {
+                  console.log('Found existing variable: ' + variable.prvar);
+                  foundOld = true;
+                  variable.ftype = field.ftype;
+                  variable.title = field.title;
+                  variable.value = field.value;
+                  if (!variable.users.includes(template.relpath)) {
+                    variable.users.push(template.relpath);
+                  }
+                }
+              })
+
+              if (!foundOld) {
+                let varItem = {}
+                varItem.prvar = field.prvar;
+                varItem.ftype = field.ftype;
+                varItem.title = field.title;
+                varItem.value = field.value;
+                varItem.users = [template.relpath];
+                profileData.variables.push(varItem);
+              }
+            }
+          })
+        })
+
         break;
 
       case 'addshowextra':
@@ -816,7 +927,8 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     recents:        recents,
     renderer:       rnrtype,
     assetsFolder:   assetsFolder,
-    disableConfigUI: disableConfigUI
+    disableConfigUI: disableConfigUI,
+    config:         config,
   });
 
   let bgImage = ''
@@ -842,6 +954,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
   let profileDataJSONobj;
   let showprofile ="";
   let data = req.body;
+  let filepath; 
   switch (data.command) {
 
     case 'importCSVdata':
@@ -850,7 +963,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         let fieldsFound = false; // check at the end
         logger.verbose('Importing CSV from ' + data.curFolder + '/' + data.importFile + ' to be appended to ' + data.RundownFile);
         rundownDataJSONobj = await GetJsonData( path.resolve(data.RundownFile) );
-        // console.log('Rundown data', rundownDataJSONobj);
         if (!rundownDataJSONobj.templates) {
           rundownDataJSONobj.templates = []
         }
@@ -872,6 +984,8 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         var t_onair
         var t_dataformat
         var t_relpath
+        var t_project
+        var t_rundown
 
 
         let curLineItems = []
@@ -929,6 +1043,15 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
             case '# relpath #':
               t_relpath = curLineItems[1].trim();
               break;
+
+            case '# project #':
+              t_project = curLineItems[1].trim();
+              break;
+
+            case '# rundown #':
+              t_rundown = curLineItems[1].trim();
+              break;
+
 
             case '# FieldUUIDs #':
               // this line carries f-field ids (f0, f1, etc)
@@ -1012,18 +1135,15 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
               templateData.DataFields.push(dataFiProto);
             }
 
-
-
             rundownDataJSONobj.templates.push(templateData)
           } // content line process ended 
         });
 
         // saving new items to disk
         global.rundownData = rundownDataJSONobj;
-        //global.rundownData.filepath = data.RundownFile; // Early bug in 1.0.15. AbsPath, why?
-        await SaveRundownDataToDisc() // importCSVdata
+        filepath = path.join(spx.getStartUpFolder(), 'ASSETS', '..', 'DATAROOT', t_project, 'data', t_rundown + '.json');
+        await SaveRundownDataToDisc(filepath) // importCSVdata
   
-        // response
         if (fieldsFound) {
           res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=Added ' + fieldIndex + ' templates.'); 
           break;
@@ -1066,7 +1186,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       }; //file written
       break;
 
-
     case 'removeItemFromRundown': 
       // REMOVE TEMPLATE ITEM FROM RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
       logger.verbose('Removing template epoch [' + data.epoch + '] from rundown ' + data.listname );
@@ -1094,8 +1213,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       }; //file written
       break;
 
-
-
     case 'duplicateRundownItem': 
       // CLONE TEMPLATE ITEM ON RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
 
@@ -1117,6 +1234,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
           // console.log('Yes, found ID ' + rundownDataJSONobj.templates[i].itemID + ' which gets duplicated once.');
           // console.log('Copy', duplicateData);
           NewTemplateArray.push(duplicateData);
+          global.rundownData.templates.push(duplicateData); // Fixed "duplicate play issue" in 1.1.1
           duplicated = true;
         }
       }
@@ -1132,10 +1250,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
           // console.log('duplicateRundownItem Error while saving file: ', error);
       }; //file written
       break;
-
-
-
-
 
     case 'saveRundownItemModifications': 
       // SAVE CHANGES MADE TO A SINGLE RUNDOWN ITEM /////////////////////////////////////////////////////////////////////////////////////////
@@ -1163,7 +1277,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   //        in memory and data is written to disk only when we SHOW folders
   //        after being in the rundown view (so memory has been populated).
 
-  let templateIndex = 0;
+  let templateIndex = -1; // was 0 
 
   try {
     let dataOut     = {}; // new object
@@ -1197,14 +1311,16 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       }
       // console.log('RundownData ' + notifyDataSource, RundownData);
 
-      // Refactored: identify with epoch / itemID, not index.
-      // req.body.templateindex // disabled line in 1.1.0
-      
       RundownData.templates.forEach((template,index) => {
         if (template.itemID == req.body.epoch) {
             templateIndex=index;
           }
       });
+
+      if (templateIndex<0) {
+        logger.warn('Playout command did not find templateIndex ' + templateIndex + ' for item [' + req.body.epoch+ '].');
+        return
+      }
 
       let ItemData = RundownData.templates[templateIndex];
       // console.log('gc/playout handler. Current items data:',ItemData);
@@ -1651,10 +1767,11 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
         if (template.itemID == req.body.epoch){
           req.body.DataFields.forEach(function(PostField){
             RundownData.templates[TemplateIdx].DataFields.forEach(function(JsonField){
-              if (PostField.field == JsonField.field)
-                {
-                  JsonField.value = PostField.value;
-                }
+              console.log(JsonField);
+              if (PostField.field == JsonField.field) {
+                console.log('Templatesta tuli value: ' + PostField.value, "POST:", PostField, "JSON:", JsonField);
+                JsonField.value = PostField.value;
+              }
             });
             DataFieldsForCollapsePreview = RundownData.templates[TemplateIdx].DataFields;  
           });
@@ -1774,7 +1891,7 @@ async function orgGetDataFiles(FOLDERstr) {
 } // orgGetDataFiles ended
 
 
-async function SaveRundownDataToDisc() {
+async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
   // Added in 1.0.15 to persists global rundown data from
   // memory to disk. This is called from "show", "project" and "config" views,
   // or where-ever user can "go" after making rundown changes...
@@ -1784,7 +1901,14 @@ async function SaveRundownDataToDisc() {
   // Function improved in 1.1.0.
   try {
 
-    if (!rundownData) { return }; // no data to store
+    let targetRundownFile;
+
+    // console.log('Saving rundown data to disc...', global.rundownData);
+
+    if (!global.rundownData) {
+      console.log('No data in memory to save to disk.');
+      return
+    }; // no data to store
 
     if ( Object.keys(global.rundownData).length > 0 ) {
       let RundownData = global.rundownData
@@ -1793,13 +1917,19 @@ async function SaveRundownDataToDisc() {
       // recently managed rundown file. This will not be stored
       // to the json file.
 
-      if (RundownData.filepath && RundownData.filepath!='') {
-        let AbsPath = RundownData.filepath;
-        delete RundownData.filepath;
-        RundownData.updated = new Date().toISOString();
-        await spx.writeFile(AbsPath,RundownData); // 1.1.0
+      if (filepathFromCSVimport) {
+        targetRundownFile = filepathFromCSVimport;
       } else {
-        logger.verbose('No RundownData.filepath known in memory, cannot save.');
+        targetRundownFile = RundownData.filepath || ''
+      }
+
+      if (targetRundownFile) {
+        // delete RundownData.filepath;
+        RundownData.updated = new Date().toISOString();
+        await spx.writeFile(targetRundownFile,RundownData); // 1.1.0
+      } else {
+        console
+        logger.verbose('No targetRundownFile known, cannot save.');
       }
     } else {
       logger.verbose('No RundownData data yet in memory, nothing to save.');

@@ -637,6 +637,58 @@ module.exports = {
     }
   }, // renameRundown
 
+
+  salt: function (length) {
+    // Generate a salt for hashing
+    // request ..... length of salt (16)
+    // returns ..... salt string
+    try {
+      let hex = crypto.randomBytes(Math.ceil(length/2))
+        .toString('hex')
+        .slice(0,length);
+      return this.rot(hex)
+    } catch (error) {
+      logger.error('ERROR in spx.salt (length: ' + length + '): ' + error);
+      return ""  
+    }
+  },
+
+
+  rot: function (str, reverse=false) {
+    // Added in 1.1.1. - used by basic lic service
+    // Un/Scramble. Always returns uppercased string.
+    // rot('car') ......... = "ROI"
+    // rot('ROI', true) ... = "CAR"
+    try {
+      let orig = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+      let mixd = "OJN59B6VKTQEMIFZ87WUDCS4X1PHR0A23LGY"
+      let src = str.toUpperCase();
+      if (reverse) {
+          return src.replace(/./gi, c => mixd[orig.indexOf(c)])
+          // return src.replace(/./gi, c => mixd[orig.indexOf(c)])
+      } else {
+          return src.replace(/./gi, c => orig[mixd.indexOf(c)])
+          // return src.replace(/./gi, c => orig[mixd.indexOf(c)])
+      }
+    } catch (error) {
+      logger.error('ERROR in spx.rot (str: ' + str + '): ' + error);
+      return str  
+    }
+}, // rot
+
+  dashify: function (str) {
+    // add dashes to a string
+    // request ..... string to be dashed
+    // returns ..... dashed string
+    try {
+      // break string into two character groups with dashes
+      return str.match(/.{1,2}/g).join("-");
+    } catch (error) {
+      logger.error('ERROR in spx.dashify (str: ' + str + '): ' + error);
+      return ""  
+    }
+  },
+
   shortifyString: function (fullString){
     try {
       // request ..... a long string
@@ -706,7 +758,7 @@ module.exports = {
           this.talk('Writing file');
           // this.playAudio('beep.wav', 'spx.writeFile');
           data.warning = "Modifications done in the SPX will overwrite this file.";
-          data.smartpx = "(c) 2020-2022 SmartPX & Softpix";
+          data.smartpx = "(c) 2020-2022 Softpix (https://spx.graphics)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
           fs.writeFile(filepath, filedata, 'utf8', function (err) {

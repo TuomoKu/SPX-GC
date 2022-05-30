@@ -105,6 +105,29 @@
     outline: none;
 }
 
+.colorbtnsmall {
+    position: absolute;
+    border: 1px solid rgba(0, 0, 0, 1);
+    margin: 4px;
+    height: 80%;
+    width: 50%;
+    cursor: pointer;
+    border-radius: 0.5em;
+    font-size: 1.0em;
+    color: rgba(200,200,200,0.8);
+    text-shadow: 1px 1px 1px black;
+
+}
+
+.colorbtnsmall:hover {
+    /* border: 2px solid rgba(255, 255, 255, 0.1); */
+
+}
+
+.colorbtnsmall:focus{
+    outline: none;
+}
+
 .drop {
     height: 2.4em;
     font-size: 0.8em;

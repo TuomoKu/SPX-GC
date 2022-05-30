@@ -454,8 +454,7 @@ function checkKey(e) {
     // console.log('--- ' + e.keyCode + ' --- ' + APPSTATE);
 
     // FIRST GENERIC keycodes for all situations
-    switch (e.keyCode)
-    {
+    switch (e.keyCode) {
         case 116: // F5
             updateItem();
             e.preventDefault(); // do not refresh browser
@@ -493,8 +492,7 @@ function checkKey(e) {
         // EDITING (while editor open)
         case "EDITING":
             // console.log('Captured keypress while editing');    
-            switch (e.keyCode)
-            {
+            switch (e.keyCode) {
                 case 13: // enter
                     if ( document.activeElement.nodeName === "TEXTAREA" && document.hasFocus()) {
                         // console.log('Come on, we are multilining here');
@@ -521,8 +519,8 @@ function checkKey(e) {
 
         // OTHER MODES, (while editor closed)
         default:
-            switch (e.keyCode)
-            {
+            // console.log('Captured keypress while NOT editing'); 
+            switch (e.keyCode) {
                 case 13: // enter
                     ToggleExpand()
                     e.preventDefault();
@@ -532,10 +530,13 @@ function checkKey(e) {
                     if (e.shiftKey) {
                         // Shift + Space = NEXT
                         nextItem();
-                    }
-                    else
-                    {
+                    } else {
                         // Space = PLAY
+                        // Bug fix added in 1.1.1. Dblcheck if we are opened...
+                        if (getFocusedRow().querySelector('#Expanded').style.display!="none") {
+                            // console.log('Ignoring play while opened for editing');
+                            return; 
+                        }
                         playItem();
                     }
                     
@@ -865,7 +866,11 @@ function edi() {
     document.location = '/shows/' + filename;
 } // edi ended
 
-
+function openRelpathFolder(itemrow) {
+    // added in 1.1.1 - Open a file for editing.
+    let fileRef = itemrow.querySelector("[id^='relpath']").value;
+    AJAXGET('/api/openFileFolder?file=' + fileRef);
+}
 
 
 function eps() {
@@ -896,7 +901,7 @@ function exportItemAsCSV(rowItem) {
     // Added in 1.0.15
     let data = {};
     data.foldername   = document.getElementById('foldername').value;
-    data.datafile     = document.getElementById('datafile').value;
+    data.datafile     = document.getElementById('filebasename').value;
     data.itemID       = rowItem.getAttribute('data-spx-epoch');
     working('Generating CSV file to ASSETS/csv -folder.');
     ajaxpost('/api/exportCSVfile',data);
@@ -1051,12 +1056,15 @@ function getElementIdOfFocusedItem() {
 
 function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
-    for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-        if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
-            // console.log('Focused row is ' + nro + ' and is ' + document.querySelectorAll('.itemrow')[nro].getAttribute('data-spx-epoch'));
-            return document.querySelectorAll('.itemrow')[nro];
-        };
-    }
+
+    return document.querySelectorAll('.inFocus')[0];
+
+    // for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
+    //     if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
+    //         console.log('Focused row is ' + nro + ' ID: ' + document.querySelectorAll('.itemrow')[nro].getAttribute('data-spx-epoch'));
+    //         return document.querySelectorAll('.itemrow')[nro];
+    //     };
+    // }
 }
 
 function getElementByEpoch(itemID) {
@@ -1242,6 +1250,7 @@ function help(section) {
         case "GLOBALEXTRAS":        HELP_PAGE = "article/help-config-globalextras"  ; break;
         case "PROJECTGENERAL":      HELP_PAGE = "article/help-project-general"      ; break;
         case "PROJECTTEMPLATES":    HELP_PAGE = "article/help-project-templates"    ; break;
+        case "PROJECTVARIABLES":    HELP_PAGE = "article/help-project-variables"    ; break;
         case "PROJECTEXTRAS":       HELP_PAGE = "article/help-project-extras"       ; break;
         case "CONTROLLER":          HELP_PAGE = "article/help-controller"           ; break;
         case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
@@ -1348,6 +1357,7 @@ function playItem(itemrow='', forcedCommand='') {
     // and playout handler will parse required data and so on. 
 
     if (!itemrow) { itemrow = getFocusedRow();  }
+    // console.log('playItem with forcedcommand "' + forcedCommand + '"', itemrow);
 
     if (!itemrow) {
         // console.log('No active rows, skip command.');
@@ -1617,7 +1627,6 @@ function resizeInput() {
     // changes headline1 width
     this.style.width = (this.value.length + 1.2) + "ch";
 } // resizeInput ended
-
 
 
 function duplicateRundownItem(rowitem) {
@@ -1935,7 +1944,7 @@ function hideMessageSlider() {
     if (!document.getElementById('messageSlider')) { return }
     anime({
         targets:        '#messageSlider',
-        opacity:        [1,0],
+        opacity:        0,
         translateY:     [0,-200],
         translateX:     '-50%',
         duration:       300,
@@ -2135,29 +2144,25 @@ function ToggleExpand(rowelement='') {
     let Expanded  = rowelement.querySelector('#Expanded')
     let Collapsed = rowelement.querySelector('#Collapsed')
 
-    if (Collapsed.style.display=="none")
-        { 
+    if (Collapsed.style.display=="none") { 
         // We were open, so lets COLLAPSE
         Collapsed.style.display="block";
         Expanded.style.display="none";
         AppState('DEFAULT');
-        }
-    else
-        {
+    } else {
         // We were closed, so lets EXPAND and set focus to first text field
         Collapsed.style.display="none";
         Expanded.style.display="block";
-        if (Expanded.querySelectorAll('.gcinput').length>0)
-            {
-                // if there are input fields, go to editor mode (and disable dragsort)
-                let firstFormElement = Expanded.querySelectorAll('.gcinput')[0];
-                if (firstFormElement.type=="text") {
-                        firstFormElement.focus();
-                        firstFormElement.select();
-                    }
-                AppState('EDITING');
-            }
+        if (Expanded.querySelectorAll('.gcinput').length>0) {
+            // if there are input fields, go to editor mode (and disable dragsort)
+            let firstFormElement = Expanded.querySelectorAll('.gcinput')[0];
+            if (firstFormElement.type=="text") {
+                    firstFormElement.focus();
+                    firstFormElement.select();
+                }
+            AppState('EDITING');
         }
+    }
 } // ToggleExpand
 
 
