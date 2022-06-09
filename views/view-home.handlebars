@@ -200,15 +200,15 @@
             <tr>
               <td>
                 <div>
-                  <img src="/img/SPXgraphicsLogo64px.png" style="height: 64px; float:right; margin-right: 1em;">
+                  <img src="/img/SPXgraphicsLogo64px.png" style="height: 2.8em; float:right; margin-right: 1em;">
                   <h1 style="padding:0px; margin:0px; font-size: 1.0em;">SPX Graphics</h1>
                   <span class="spxInfotext" style="font-size: 0.8em; opacity:0.5;">
-                  {{lang 'general.slogan'}}<BR>
+                    {{lang 'general.slogan'}}<BR>
                   </span>
                 </div>
 
                 {{#if greeting}}
-                <div class="greeting" id="greeting">{{greeting}}</div>
+                  <div class="greeting" id="greeting">{{greeting}}</div>
                 {{/if}}
 
                 <BR><BR>
@@ -219,24 +219,24 @@
                   <button onmouseover="tip('spx.graphics');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="website()">website</button>
                 </div>
 
-                  <!-- Notifications from the SPX messaging service: -->
-                  <div class="message-upgrade" id="upgradeinfo" style="display:none">
-                    <div class="messagedate" id="upgrade_date"></div>
-                    <div class="messageheadline" id="upgrade_head"></div>
-                    <div class="messagebody" id="upgrade_body"></div><BR>
-                    <div id="notificationlink" class="message-upgrade"><span id="upgrade_call"></span><a href="" id="upgrade_link"></a></div>
-                  </div>
+                <!-- Notifications from the SPX messaging service: -->
+                <div class="message-upgrade" id="upgradeinfo" style="display:none">
+                  <div class="messagedate" id="upgrade_date"></div>
+                  <div class="messageheadline" id="upgrade_head"></div>
+                  <div class="messagebody" id="upgrade_body"></div><BR>
+                  <div id="notificationlink" class="message-upgrade"><span id="upgrade_call"></span><a href="" id="upgrade_link"></a></div>
+                </div>
 
-                  <div class="message-info" id="messageinfo" style="display:none">
-                    <div class="messagedate" id="message_date"></div>
-                    <div class="messageheadline" id="message_head"></div>
-                    <div class="messagebody" id="message_body"></div><BR>
-                    <div id="messagelink" class="message-info"><span id="message_call"></span><a href="" id="message_link"></a></div>
-                  </div>
+                <div class="message-info" id="messageinfo" style="display:none">
+                  <div class="messagedate" id="message_date"></div>
+                  <div class="messageheadline" id="message_head"></div>
+                  <div class="messagebody" id="message_body"></div><BR>
+                  <div id="messagelink" class="message-info"><span id="message_call"></span><a href="" id="message_link"></a></div>
+                </div>
 
-                  <BR><BR>
-                  <!-- <A href="https://youtu.be/e5LTFC9MlOI" target="_yt">Introduction video (v 1.0.0)</A>:<BR><BR> -->
-                  <A href="https://youtu.be/e5LTFC9MlOI" target="_yt"><IMG class="auto-resizable-iframe" SRC="/img/yt_mockup.png"></A><BR>
+                <BR><BR>
+                <!-- <A href="https://youtu.be/e5LTFC9MlOI" target="_yt">Introduction video (v 1.0.0)</A>:<BR><BR> -->
+                <A href="https://youtu.be/e5LTFC9MlOI" target="_yt"><IMG class="auto-resizable-iframe" SRC="/img/yt_mockup.png"></A><BR>
               </td>
             </tr>
           </table>
@@ -259,9 +259,13 @@
     // check for upgrade
     document.getElementById('upgradeBubble').style.display="none";
     heartbeat(202); // page identifier
-    getMessages('{{{curVerInfo}}}');
 
-
+    {{#ifValue config.general.allowstats false}}
+      // console.log('stats prevented');
+    {{else}}
+      // console.log('stats permitted');
+      getMessages('{{{curVerInfo}}}');
+    {{/ifValue}}
 
     // show message when page loaded
     window.addEventListener('load', (event) => {

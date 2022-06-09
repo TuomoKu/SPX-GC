@@ -83,7 +83,7 @@
                  Registration is completely voluntary but helps us to keep track of the number of users
                  and give some insight into the usage of SPX. This information is <b>anonymous</b> and
                  <b>non-identifiable</b>. You can leave any field empty.
-                 Read more <a href="https://spxgc.tawk.help/article/help-registration">about registration</a> and related policies.</span>
+                 <a href="https://spxgc.tawk.help/article/help-registration">Read more about registration and related policies</a>.</span>
                 </div>
               </td>
             </tr>
@@ -430,7 +430,7 @@
                       <input type="text" class="wide drop bg_grey" name="email" id="email" value="{{config.registration.email}}" oninput="checkEmail(this)">
                       <div style="font-size: 0.6em; margin-top: 1em; opacity: 0.5;">
                         All users registered with an email will receive a <span class="fg_orange">20%
-                        discount code</span> for any purchase in the SPX Store! 
+                        discount code</span> for any purchase in the <a href="https://spx.graphics/store">SPX Store</a>! 
                         <BR><BR>
                         <div id="checks" {{{ifValueMatch config.registration.email "" "style='opacity:0.3;'" ""}}}>
                           <input  {{{ifValueMatch config.registration.newsletter true "checked" ""}}}
@@ -443,7 +443,8 @@
                           <BR>
                           <input  {{{ifValueMatch config.registration.discord true "checked" ""}}}
                                   {{{ifValueMatch config.registration.email "" "disabled" ""}}}
-                                  type="checkbox"
+                                  {{!-- type="checkbox" --}}
+                                  type="hidden"
                                   name="inviteDiscord"
                                   id="inviteDiscord"
                                   style="transform: scale(1.5);"

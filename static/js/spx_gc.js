@@ -725,7 +725,48 @@ async function revealItemID(button) {
     } else {
         // alert("Same ID " + newID)
     }
-}
+} // revealItemID
+
+
+async function revealItemTiming(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change timing here. Use 'manual', 'none' or millisecond values (1000=1s):", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=out&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item out mode changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=out]')[0].value = newValue;
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
+        });
+    }
+} // revealItemTiming
+
+async function revealItemLayer(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 20:", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item webplay layer changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=webplayout]')[0].value = newValue;
+            // document.querySelectorAll('.itemrow')[0].querySelectorAll('input[id^=out]')[0];
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
+        });
+    }
+} // revealItemLayer
+
 
 function copyRendererUrl(preview=false) {
 
@@ -1255,6 +1296,7 @@ function help(section) {
         case "CONTROLLER":          HELP_PAGE = "article/help-controller"           ; break;
         case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
         case "API":                 HELP_PAGE = "article/help-api"                  ; break;
+        case "ITEM-DETAILS":        HELP_PAGE = "article/help-item-details"         ; break;
         default: break;
     }
 
@@ -1383,7 +1425,6 @@ function playItem(itemrow='', forcedCommand='') {
     let isPlay = false;
     if (data.command=="play" || data.command=="playonce") {
         isPlay = true;
-        
 
         // Added in 1.1.0 FIXME: This has some issues, previewing wrong items etc...
         if (document.getElementById('previewMode').value==='next') {
@@ -1434,8 +1475,11 @@ function playItem(itemrow='', forcedCommand='') {
         heartbeat(312); // identifier
     }
 
-    // auto-out trigger UI update
+    // auto-out trigger UI update (FIXME: verify auto-out works over direct API commands?!)
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
+
+    // console.log('TimeoutAsString: ', TimeoutAsString);
+
     if (!isNaN(TimeoutAsString))
         // value is numerical, so 
         if (data.command=="play" ) {
@@ -2050,7 +2094,7 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2022 SmartPX & Softpix  ', 'background: #0e7a27; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2020-2022 Softpix Ltd  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd

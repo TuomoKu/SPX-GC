@@ -255,9 +255,17 @@ module.exports = {
     try {
       datarootSize()
       .then(function(sizeArr) {
+
+        let pform
+        if (global.env.product) {
+          pform = global.env.product.slice(0, 5) + global.env.version + '_' + process.platform; 
+        } else {
+          pform = process.platform; 
+        }
+
         let paramstring =""
         paramstring += "v="  + vers 
-        paramstring += "&o=" + lPad(process.platform, 8, ".")
+        paramstring += "&o=" + lPad(pform.replace(" ", "_"), 25, ".")
         paramstring += "&p=" + lPad(sizeArr[0],5, "0") 
         paramstring += "&r=" + lPad(sizeArr[1],5, "0") 
         paramstring += "&h=" + lPad(global.hwid.replace(" ", "_"), 25, ".")

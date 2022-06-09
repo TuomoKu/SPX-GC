@@ -245,7 +245,7 @@
                         </select>
                     </td>
                   <td width="20%">
-                    <button type="submit" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide btn bg_grey10 ripple">{{lang 'button.save'}}</button>
+                    <button type="submit" onmouseover="tip('{{lang 'hover.cancelconfig'}}');" class="wide btn bg_grey10 ripple">SET</button>
                   </td>
                   </tr>
                 </table>
@@ -255,14 +255,15 @@
 
           
 
-          <!-- project variables -->
+          <!-- project variables a future feature from 1.1.3 maybe? -->
+          <!-- 
           <table class="wide" border=0>
             <TR>
               <td class="vmid tableheaderText">{{lang 'config.projectvariables'}}</td>
               <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projectvariables');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
             </TR>
           </table>
-          <hr class="h2hr"><!-- =========================================== -->
+          <hr class="h2hr">
           <div class="configGeneralContent" >
             <table class="wide" style="border: 0px solid pink; border-spacing: 10px; border-collapse: separate;" border="0">
                 <tr>
@@ -274,38 +275,13 @@
                 <tr>
                   <td width="25%"><span class="spxConfigHead">{{title}}</span></span></td>
                   <td width="25%"><span class="spxConfigHead"><span class="prvar">{{prvar}}: {{{itemCount users}}}</span></span></td>
-
                   <td width="50%"><input type="text" class="wide bg_grey15 cfg" id="templateIndex{{@index}}" name="templateData[relpath]" value="{{value}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
-
-
-                <!-- TODO: Add variables as original ftype fields -->
-                <!--
-                  {{#ifValue ftype "textfield"}}
-                    <td width="50%"><input type="text" class="wide bg_grey15 cfg" id="templateIndex{{@index}}" name="templateData[relpath]" value="{{value}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
-                  {{/ifValue}}
-
-                  {{#ifValue ftype "number"}}
-                    <td width="50%"><input type="number" class="wide bg_grey15 cfg" id="templateIndex{{@index}}" name="templateData[relpath]" value="{{value}}" onmouseover="tip('{{lang 'hover.templatepath'}}');"></td>
-                  {{/ifValue}}
-
-                  {{#ifValue ftype "filelist"}}
-                    <td width="50%">
-                      <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="FilelistValues[{{field}}]" data-tooltip="{{title}} {{lang 'general.fromFolder'}}: {{assetfolder}}" data-position="right center">
-                        <option disabled>{{title}} {{lang 'general.fromFolder'}}:</option>
-                        <option disabled>{{assetfolder}}</option>
-                        <option disabled></option>
-                        <option value="none">-</option>
-                          {{{ PopulateFilelistOptions assetfolder extension value ../relpath }}}
-                      </select>
-                    </td>
-                  {{/ifValue}}
-                -->
-
                 </tr>
               {{/each}}
             </table>
           </div>
           <BR><BR>
+          -->
 
 
 

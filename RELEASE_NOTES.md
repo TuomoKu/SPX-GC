@@ -4,35 +4,37 @@
 
 <BR>
 
-## **WORK IN PROGRESS** (list updated May 31 2022)
+## ** WORK IN PROGRESS - 1.1.2 ** (list updated Jun 09 2022)
 
 > **⚠ PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
 
-- Added API endpoint `getprojects` that returns all project names in SPX
-- Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project
-- Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`)
-- Added a link to API endpoint list to app config
+- Added API endpoint `getprojects` that returns all project names in SPX.
+- Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project.
+- Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`).
+- Added a link to API endpoint list to app config.
 - Added `disableConfigUI` boolean to config.json. If `true` config menu is hidden and config page gets locked.
 - Added `allowstats` boolean config flag. If `false` anonymous user stats posting is disabled.
-- Added `registration{}` to config and a menu option for it. 
+- Added `registration{}` to config and a menu option for it (url `/register`).
+- Added `open template folder` button to rundown item editor for developers. 
+- Added function to change `out` mode of an opened rundown item. (Change duration, for instance)
+- Added function to change `webplayout` layer of an opened rundown item. 
+- Added `color` ftype and a color picker UI into the template item editor.
 - Fixed a major path detection bug that appeared after re-importing a template and prevented importing more templates (before server restart). 
-- Fixed a minor bug in filelist field (did not add trailing "/" in filepath)
-- Fixed a bug in rundown item duplication routine (when clicking on the icon - had a clash with preview function)
-- Fixed a "play duplicated rundown item" -bug
-- Fixed a spacebar bug (play) after editing several rundown items
-- Fixed "import CSV" functionality to generate a bunch of items onto the rundown in one go
-- Improved preview mechanism (prevent subsequent previews of the same item)
-- Improved UI by reverting gcinput margin-top fixed back to 5px from zero
-- Improved controller UX / speed by doing init with DOMcontentLoaded rather than onLoad event
+- Fixed a minor bug in filelist field (did not add trailing "/" in filepath).
+- Fixed a bug in rundown item duplication routine (when clicking on the icon - had a clash with preview function).
+- Fixed a "play duplicated rundown item" -bug.
+- Fixed a spacebar bug (play) after editing several rundown items.
+- Fixed "import CSV" functionality to generate a bunch of items onto the rundown in one go.
+- Improved preview mechanism (prevent subsequent previews of the same item).
+- Improved UI by reverting gcinput margin-top fixed back to 5px from zero.
+- Improved controller UX / speed by doing init with DOMcontentLoaded rather than onLoad event.
 - Improved template import error handler to prevent SPX crash when errors in template's JS-code. 
 
-Still unfinished tasks
-- New promo option
-- Color picker ftype not completed
-- Rundown Variables
-
-Todo
-- Change item timings from Rundown view
+Unfinished tasks:
+    - Rundown Variables
+        - does not remove prVar from profile if no users
+        - and more...
+    - New promo option
 
 <BR>
 

@@ -106,9 +106,9 @@ module.exports = {
                     // newcontrol1.text                             = "VISIT"
                     // newcontrol1.bgclass                          = "bg_green"
                     // newcontrol1.fcall                            = "openSelectedURL"
-                    // newcontrol1.value                            = "https://spxgc.com/store"
+                    // newcontrol1.value                            = "https://spx.graphics/store"
                     // newcontrol1.items                            = []
-                    // newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spxgc.com/store"});
+                    // newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spx.graphics/store"});
                     // newcontrol1.items.push({text: "Knowledge Base &nbsp;",  "value": "https://spxgc.tawk.help"});
                     // newcontrol1.items.push({text: "Give feedback &nbsp;",   "value": "https://forms.gle/T26xMFyNZt9E9S6d8"});
                     // cfg.globalExtras.CustomControls.push(newcontrol1)

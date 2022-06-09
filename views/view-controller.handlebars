@@ -439,11 +439,12 @@
                                   <div class="wide HIDE">
                                     <table class="wide spxTableHeadsmall">
                                       <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="color"></td></tr>
-                                      <tr><td class="aright">value</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][value]" id="colorvalue" value="" ></td></tr>
+                                      <tr><td class="aright">value</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][value]" id="colorvalue" value="{{value}}" data-role="userEditable" data-update="{{field}}"></td></tr>
                                     </table>
                                   </div>
                                   <div class="gcpluginbuttondiv wide" style="white-space: nowrap; position:relative;">
                                     &nbsp; <span class="gcplugindescription">{{title}}</span>
+                                    <!--see handler at the bottom of file -->
                                     <button type="button"
                                       onClick="colorPicker(this,'{{value}}')"; 
                                       class="colorbtnsmall ripple"
@@ -783,7 +784,6 @@
 
     function colorPicker(sourceButton, initialColor) {
       // Color picker
-
       // alert('Picker to ' + initialColor)
       sourceButton.textContent = '...';
       var picker = new Picker({
@@ -795,10 +795,12 @@
       picker.onChange = function(color) {
         sourceButton.style.backgroundColor = color.rgbaString;
         sourceButton.closest('.colorRoot').querySelector('#colorvalue').value=String(color.rgbaString);
-      };
+      }
+
       picker.onDone = function(color) {
         sourceButton.textContent = color.rgbaString;
         sourceButton.style.backgroundColor = color.rgbaString;
+        sourceButton.closest('.colorRoot').querySelector('#colorvalue').value=String(color.rgbaString);
       };
     }
 

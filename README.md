@@ -309,18 +309,17 @@ An example `config.json` of the SPX server
 
 **`general.hostname`** _Mostly for future use_ This will identify SPX instance for logging purposes.
 
-<a id="templatesources"></a>
-
 **`general.templatefolder`** contains the HTML templates and their resource files (css, js, images, etc). This root folder is used by SPX's template browser and 'Explore templates folder' menu command (Win only). For playout folder see _templatesource_ parameter below.
 
-**`general.templatesource`**  (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX. Supported values are:
+<a id="templatesource"></a>
+**`general.templatesource`** (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX. Supported values are:
 * `spxgc-ip-address` to automatically use SPX's IP address and http -protocol for playing out templates from SPX's template folder. This is the default behaviour.
 * `casparcg-template-path` to playout templates from target CasparCG server's file system template-path. (See _caspar.config_ file) Note, in this workflow the templates *must be in two places*: in SPX ASSETS/templates -folder *and* CasparCG's templates folder. And if a changes are done to either location, those changes should also be done to the other. `rsync` or other mirroring technique should be considered...
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
 
-**`general.preview`** Version 1.1.0 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true`parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.1.0 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
-`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. Values available.
+**`general.preview`** Version 1.1.0 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true` parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.1.0 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
+`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. Values available:
 
 * `selected` (the default value) Preview will play whenever a _focus_ is changed on the rundown.
 * ~~`next`~~ Preview will play _the next item_ from the rundown when an item is played. (Option coming later) 
@@ -361,6 +360,8 @@ Starting from v.1.0.12 SPX does not have a CasparCG server assigned by default i
 <img src="./screenshots/ccgservers.png" align="right" width="450" style="vertical-align:middle;margin-right:10px; margin-top:10px">
 
 Each SPX template has a setting for choosing a target CasparCG server. This server is assigned in the template settings within Project Settings. (Default value comes to the project from the HTML sourcecode of the template as the 'playserver' -parameter of the TemplateDefinition object.) The name must match with one of configured servers for the playout to work.
+
+SPX has three options for loading templates, see section about configuring [template source folder](#templatesource) for more info.
 
 If you have problems during playout it is recommeded to [set log level](#log) higher and observe SPX console window messages for potential cause.
 
@@ -408,6 +409,35 @@ File structure of dataroot:
 
 > If selected template does NOT have template definition it will cause an `error:templateDefinitionMissing` -message. See section [html templates](#templates).
 
+<a id="projectextras"></a> **showExtras** are additional user interface controls, or _plugins_, shown below preview window in current project as opposed to [globalExtras](#globalextras) which are shown in every project. Each item has an UI component (a button) and associated function call available in the specified `javascript file`.
+
+<a id="variables"></a> **projectVariables** are advanced properties introduced in v.1.1.1. Variables can be used to drive a shared value across several templates on the rundown. If a field in template definition has a `prvar` property defined when template is added to the project, this will cause a _projectVariable_ to be added (or appended to an existing projectVariable of the same name) into the project's `variables` array in `profile.json` file. The latest added template will set the default value of that variable. See example:
+```json
+            /* Example field in the templateDefinition */
+            {
+                "field" : "f0",
+                "ftype" : "textfield",
+                "title" : "Name of the event",
+                "value" : "Fakemusic Fest 2022",
+                "prvar" : "eventName"
+            }
+```
+If several templates use a projectVariable by the same name, this template references will be added to an array. When template is removed from the project, its reference will be removed from the `users` array. See example:
+```json
+          /* Example variables array from profile.json */
+          "variables": [
+            {
+              "prvar": "eventName",
+              "ftype": "textfield",
+              "title": "Name of the event",
+              "value": "Fakemusic Fest 2022",
+              "users": [
+                "softpix/eventpack/lowerthird.html",
+                "softpix/eventpack/agenda.html"
+              ]
+            }
+          ]
+```
 
 <a id="projectextras"></a> **showExtras** are additional user interface controls, or _plugins_, shown below preview window in current project as opposed to [globalExtras](#globalextras) which are shown in every project. Each item has an UI component (a button) and associated function call available in the specified `javascript file`.
 
@@ -673,7 +703,7 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
 | `checkbox` | `Title` is used as label in UI. _Value_ is "0" or "1" when checked. (Added in 1.0.10) | `[x] Show logo`  |
-| `color` | `Title` is used as label in UI. _Value_ is a valid CSS color string such as `rgb(255,0,0)` (full red) or `rgba(0,0,0,0.33)` (black with 33% opacity). (Added in 1.1.1) | `rgba(255,255,255,1.0)`  |
+| `color` | `Title` is used as label in UI. _Value_ is a valid CSS color string such as `rgb(255,0,0)` (full red) or `rgba(0,0,0,0.33)` (black with 33% opacity). (Added in 1.1.1)<BR>_**Please note**: The Color Picker UI feels a bit flaky, color may need to be selected two or more times for it to register as intended. This may improve in future versions._| `rgba(255,255,255,1.0)`  |
 
 
 > **Note** additional user interface controls may be added in future releases.

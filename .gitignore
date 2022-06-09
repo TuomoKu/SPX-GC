@@ -23,6 +23,7 @@ DATAROOT/*
 DATAROOT_*
 
 ASSETS/csv/
+ASSETS/excel/ndf/
 ASSETS/media/video/
 ASSETS/media/images/hd/
 ASSETS/media/images/bg/
@@ -38,6 +39,7 @@ ASSETS/media/images/_*
 ASSETS/template_stash/
 ASSETS/hot_or_not
 ASSETS/xml/demo.xml
+
 
 
 
@@ -66,6 +68,7 @@ ASSETS/templates/codetive
 ASSETS/templates/softpix/SPX_GoogleMaps
 ASSETS/templates/softpix/Template_Pack_1.1
 ASSETS/templates/softpix/picturall_core_templates
+ASSETS/templates/analogway/
 
 
 #######################################
@@ -130,4 +133,6 @@ config_ORGjson
 TESTAUS_CHECKLIST.txt
 TODO.md
 BUILD_PACKAGES_TO_OS_FOLDERS_TE-LIVE.BAT
+
+env.json
 

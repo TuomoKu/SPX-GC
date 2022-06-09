@@ -164,16 +164,15 @@ router.post('/readExcelData', async (req, res) => {
   // an Excel file in the ASSETS/excel -folder.
   // Data parsing / logic must be implemented in the template
   // this just dumps data out as-is.
-
   // var excelFile = path.join(__dirname, '..', 'ASSETS', req.body.filename); // fails when packaged
-  var excelFile = path.join(spx.getStartUpFolder(), 'ASSETS', req.body.filename); // v.1.0.15: getStartUpFolder()
-  var workSheetsData;
+  // Improved in 1.1.1 - Return cached data also if fileref is empty (for some reason).
   try {
-
+    var excelFile = path.join(spx.getStartUpFolder(), 'ASSETS', req.body.filename); // v.1.0.15: getStartUpFolder()
+    var workSheetsData;
     let timenow = Date.now(); 
     // console.log('Excel cache age ' + (timenow - excel.readtime) + ' ms');
 
-    if ( excel.data && excel.filename == req.body.filename && (timenow - excel.readtime) <= 10000) {
+    if ( excel.data && excel.filename == req.body.filename && (timenow - excel.readtime) <= 1000 || !req.body.filename ) { /* milliseconds */
       // sama data requested less than a second ago, return data from memory
       logger.verbose('Returning cached Excel data from memory')
       workSheetsData = excel.data;

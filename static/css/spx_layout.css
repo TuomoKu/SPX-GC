@@ -23,13 +23,13 @@ html, body {
 
 
 .HIDE{
-    /* WHILE DEBUGGING unhide OBJECTS with display:no-none */
+    /* WHILE DEBUGGING unhide OBJECTS with display:no-none ++++++++++++++++++++++++++ */
     display     :      none; /*change this to no-none to see debug data in editors */
     border      :      2px dashed rgb(0, 248, 0);
     padding     :      5px;
     margin      :      5px;
     background-color: rgba(173, 76, 11, 0.246);
-    /* +++++++++++++++++++++++++++++++++++++++++++++++++++  */
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  */
 }
     
 
@@ -199,18 +199,27 @@ td.aright{
     border: 0px solid salmon;
     }
     
-
+.helpid,
 .copyid {
-    margin-left: 1em;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.2em 0.6em;
-    border-radius: 0.4em;
-    color:rgb(255, 255, 255);
-    transition: background-color 0.2s linear ;
+    margin-left: 0.25em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.3em 0.6em;
+    border-radius: 0.2em;
+    color:rgba(255, 255, 255, 0.4);
+    transition: all 0.2s linear ;
     }
 
 .copyid:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    color:rgb(255, 255, 255);
+    transition: all 0.2s linear ;
+    }
+
+.helpid:hover {
+    background: rgb(5, 45, 145);
+    color:rgb(255, 255, 255);
+    transition: all 0.2s linear ;
+    cursor: help;
     }
     
 .content {
@@ -374,7 +383,7 @@ div.curfolder{
     {
         color: rgb(250, 201, 96);
         opacity: 1.0;
-        cursor: pointer;
+        cursor: help;
     }
 
 .tableheaderHelp2

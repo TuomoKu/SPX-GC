@@ -402,7 +402,19 @@ router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async
   let TemplateIdx = req.body.TemplIndex || 0;
   let ProfileFile = path.join(config.general.dataroot, showFolder, 'profile.json');
   let profileData = await GetJsonData(ProfileFile);
+  let templateRef = profileData.templates[TemplateIdx].relpath;
   profileData.templates.splice(TemplateIdx,1);
+
+  // Then remove references from the users-arrays of each variables
+  if (profileData.variables && profileData.variables.length>0){
+    profileData.variables.forEach(function(variable) {
+      var filtered = variable.users.filter(function(value, index, arr){ 
+          return value != templateRef;
+      });
+      variable.users = filtered;
+    });
+  }
+
   try {
       await spx.writeFile(ProfileFile,profileData);
       res.redirect('/show/' + showFolder + '/config')
@@ -646,7 +658,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         profileData.templates.forEach(function(template, index) {
           template.DataFields.forEach(function(field, index) {
             if (field.prvar) {
-              console.log('Found prvar in template field: ' + field.prvar);
+              console.log('WIP - Found prvar in template field: ' + field.prvar);
               if (!profileData.variables) {
                 profileData.variables = [];
               }
@@ -655,7 +667,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
               let foundOld = false;
               profileData.variables.forEach(function(variable, index) {
                 if (variable.prvar === field.prvar) {
-                  console.log('Found existing variable: ' + variable.prvar);
+                  console.log('WIP - Found existing variable: ' + variable.prvar);
                   foundOld = true;
                   variable.ftype = field.ftype;
                   variable.title = field.title;
@@ -1319,7 +1331,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
       if (templateIndex<0) {
         logger.warn('Playout command did not find templateIndex ' + templateIndex + ' for item [' + req.body.epoch+ '].');
-        return
+        throw 'Playout command did not find templateIndex ' + templateIndex + ' for item [' + req.body.epoch+ '].';
       }
 
       let ItemData = RundownData.templates[templateIndex];
@@ -1733,6 +1745,12 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
     var ConfigData = await GetJsonData(ConfigFile);
     let key = req.body.key;
     let val = req.body.val;
+    if (!key && !val) {
+      throw '/gc/saveConfigChanges: key [' + key + '] or val [' + val + '] was missing, skipping save.';
+    }
+    if (!ConfigData.general[key]) {
+      throw '/gc/saveConfigChanges: ConfigData was missing general.[' + key + '], skipping save.';
+    }
     ConfigData.general[key] = val;
     global.config = ConfigData; // update mem version also
     await spx.writeFile(ConfigFile,ConfigData);
@@ -1754,39 +1772,27 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
   // Handles modification changes of a template in the rundown.
   // Request: form data as JSON
   // Returns: Ajax response
-
   logger.verbose('Overwriting a template itemID [' + req.body.epoch + '] in rundown [' + req.body.rundownfile + '] with updated values.');
   try {
     // spx.talk('Saving template changes from rundown.');
-
     var RundownFile = path.normalize(req.body.rundownfile);
     var RundownData = await GetJsonData(RundownFile);
     var DataFieldsForCollapsePreview;
-
     RundownData.templates.forEach((template,TemplateIdx) => {
         if (template.itemID == req.body.epoch){
-          req.body.DataFields.forEach(function(PostField){
+          req.body.DataFields.forEach(function(PostField) {
             RundownData.templates[TemplateIdx].DataFields.forEach(function(JsonField){
-              console.log(JsonField);
               if (PostField.field == JsonField.field) {
-                console.log('Templatesta tuli value: ' + PostField.value, "POST:", PostField, "JSON:", JsonField);
                 JsonField.value = PostField.value;
               }
             });
             DataFieldsForCollapsePreview = RundownData.templates[TemplateIdx].DataFields;  
           });
         }
-        else {
-          // console.log('Skipping #' + TemplateIdx);
-        }
     });
-
-    // console.log('FILE TO SAVE', JSON.stringify(RundownData,null,4));
     global.rundownData = RundownData; // push to memory also for next take
     await spx.writeFile(RundownFile,RundownData);
     var htmlSnippetForCollapse = spx.generateCollapsedHeadline(DataFieldsForCollapsePreview);
-    // console.log('html' + htmlSnippetForCollapse);
-
     let response = ['Item changes saved', htmlSnippetForCollapse]
     res.status(200).send(response); // ok 200 AJAX RESPONSE
   } catch (error) {
@@ -1906,7 +1912,7 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
     // console.log('Saving rundown data to disc...', global.rundownData);
 
     if (!global.rundownData) {
-      console.log('No data in memory to save to disk.');
+      // console.log('No data in memory to save to disk.');
       return
     }; // no data to store
 
@@ -1928,7 +1934,6 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
         RundownData.updated = new Date().toISOString();
         await spx.writeFile(targetRundownFile,RundownData); // 1.1.0
       } else {
-        console
         logger.verbose('No targetRundownFile known, cannot save.');
       }
     } else {

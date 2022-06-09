@@ -95,6 +95,12 @@ router.get('/', function (req, res) {
               "param"   :     "getlayerstate",
               "info"    :     "Returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
             },
+            {
+              "vers"    :     "v1.1.2",
+              "method"  :     "GET",
+              "param"   :     "version",
+              "info"    :     "Returns SPX version info"
+            },
             ]
         },
 
@@ -285,6 +291,16 @@ router.get('/', function (req, res) {
 
 // HELPER COMMANDS ----------------------------------------------------------------------------------
 
+    router.get('/version', async (req, res) => {
+      let data = {};
+      data.vendor = "Softpix";
+      data.product = "SPX";
+      data.version = global.vers;
+      data.id = global.pmac;
+      data.os = process.platform;
+      return res.status(200).json(data)
+    });
+
     router.get('/panic', async (req, res) => {
       // This WILL NOT change playlist items onair to "false"!
 
@@ -296,7 +312,6 @@ router.get('/', function (req, res) {
       if (!spx.CCGServersConfigured){ return } // exit early, no need to do any CasparCG work
       PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
       return res.status(200).json({ message: 'Panic executed. Layers cleared forcefully.' })
-
     });
 
     router.get('/feedproxy', async (req, res) => {
@@ -445,11 +460,8 @@ router.get('/', function (req, res) {
         let file = req.query.rundownfile || '';
         let oldI = req.query.ID || '';
         let newI = req.query.newID || '';
-
-        console.log('changeItemID - file [' + file + '], old [' + oldI + '], new [' + newI + ']')
-
         if (!file || !oldI || !newI) {
-          console.warn('Missing data: file [' + file + '], old [' + oldI + '], new [' + newI + ']')
+          throw 'Missing data: file [' + file + '], old [' + oldI + '], new [' + newI + ']';
         }
 
         let datafile = path.normalize(file);
@@ -458,8 +470,7 @@ router.get('/', function (req, res) {
         // First check for conflicts
         RundownData.templates.forEach((item,index) => {
           if (item.itemID === newI) {
-            logger.verbose('ID not changed')
-            throw 'ID conflict'
+            throw 'ID-conflict'
           }
         });
 
@@ -470,22 +481,71 @@ router.get('/', function (req, res) {
         });
 
         RundownData.updated = new Date().toISOString();
-        global.rundownData = RundownData; // push to memory also for next take
+        global.rundownData = RundownData;
         await spx.writeFile(datafile,RundownData);
-        // await spx.writeFile(RundownData.filepath,RundownData);
-        // console.log('Saved');
         logger.verbose('Changed item ID to ' + newI);
         return res.status(200).send('ID changed to ' + newI);
       } catch (error) {
-        console.log('Error', error);
-        logger.error('changeItemID error', error)  ;
+        switch (error) {
+          case 'ID-conflict':
+            msg = 'ID conflict, ID was not changed.'
+            lvl = 'warn'
+            break;
+          
+          default:
+            msg = 'Error in changeItemID: ' + error
+            lvl = 'error'
+        }
+        logger[lvl](msg)  ;
         return res.status(409).send('ID not changed');
       }
-});
+    });
 
-router.get('/rundown/get', async (req, res) => {
- res.status(200).send(JSON.stringify(global.rundownData))
-});
+
+    router.get('/changeItemData', async (req, res) => {
+      // Added in 1.1.1
+      // ID button in SPX controller uses this API endpoint:
+      // /api/v1/changeItemData?rundownfile=C:/SPX/DATAROOT/PROJECT/data/list.json & ID=1234567890 & key=out & newValue=manual
+
+      try {
+        let file = req.query.rundownfile || '';
+        let epoc = req.query.ID || '';
+        let prop = req.query.key || '';
+        let valu = req.query.newValue || '';
+
+        console.log('changeItemData - file: [' + file + '], ID: [' + epoc + '], prop [' + prop + '], value: [' + valu + ']')
+
+        if (!file || !epoc || !prop || !valu) {
+          logger.warn('Missing data from changeItemData: file: [' + file + '], ID: [' + epoc + '], key: [' + prop + '], value: [' + valu + ']')
+          throw 'Missing data, see log.';
+        }
+
+        let datafile = path.normalize(file);
+        const RundownData = await spx.GetJsonData(datafile);
+
+        RundownData.templates.forEach((item,index) => {
+          console.log('Iterating item: ' + item.itemID);
+          if (item.itemID === epoc) {
+            console.log('BINGO: ' + item.itemID);
+            item[prop] = valu
+          }
+        });
+
+        RundownData.updated = new Date().toISOString();
+        global.rundownData = RundownData; // push to memory also for next take
+        await spx.writeFile(datafile,RundownData);
+        logger.verbose('ChangeItemData: file: [' + file + '], ID: [' + epoc + '], key: [' + prop + '], value: [' + valu + ']')
+        return res.status(200).send(prop + ' changed to ' + valu);
+      } catch (error) {
+        console.log('Error', error);
+        logger.error('changeItemData error', error)  ;
+        return res.status(409).send('Failed to change ' + prop + ' to ' + valu + '!');
+      }
+    });
+
+    router.get('/rundown/get', async (req, res) => {
+      res.status(200).send(JSON.stringify(global.rundownData))
+    });
 
 
 module.exports = router;
