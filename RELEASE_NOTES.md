@@ -47,6 +47,7 @@ Published releases:
 - Fixed a spacebar bug (play) after editing several rundown items.
 - Fixed "import CSV" functionality to generate a bunch of items onto the rundown in one go.
 - Changed `spxgc-ip-address` to `spx-ip-address`
+- Improved default templates to use dynamic themes dropdown selector.
 - Improved preview mechanism (prevent subsequent previews of the same item).
 - Improved UI by reverting gcinput margin-top fixed back to 5px from zero.
 - Improved controller UX / speed by doing init with DOMcontentLoaded rather than onLoad event.
