@@ -67,6 +67,7 @@ function wipeClean() {
     }, 50);
 }
  
+/*
 function stopAll(){
     // Will send STOP commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
@@ -80,6 +81,7 @@ function stopAll(){
             }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
         });
     }
+*/
 	
 function playAll(){
     // Will send PLAY commands to all layers used by current rundown.

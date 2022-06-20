@@ -82,7 +82,7 @@ var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
 
-global.isDev = process.env.SPX_ROOT_FOLDER ? true : false;
+global.isDev = process.env.SPX_ROOT_FOLDER ? true : false; // value used internally for SPX & Template dev
 global.vers = vers;
 global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
 
@@ -119,9 +119,10 @@ macaddress.one(function (err, mc) {
     console.log('  pmac = ' + pseudomac);
     console.log('  rot  = ' + scrambled);
     console.log('  unsc = ' + unscrambd);
-    console.log('\n  vendor: ' + global.env.vendor + '\n  product: ' + global.env.product + '\n  version: ' + global.env.version + '\n');
+    console.log('\n  ENV{}:');
+    console.log('  vendor:  ' + global.env.vendor + '\n  product: ' + global.env.product + '\n  version: ' + global.env.version + '\n');
     console.log('');
-    console.log('Config', config);
+    console.log('Config:\n', config);
     console.log('');
   }
   
@@ -837,7 +838,6 @@ var server = app.listen(port, (err) => {
   `  Cfg / host-id and name . ${global.pmac} ${config.general.hostname}\n`  +
   `  Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `  Cfg / dataroot ......... ${path.resolve(config.general.dataroot)}\n`  +  
-  /*`  Cfg / template files ... ${path.resolve(config.general.templatefolder)}\n`  + */ 
   `  Cfg / logfolder ........ ${logDirectory}\n`; 
   /* `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n` */
   

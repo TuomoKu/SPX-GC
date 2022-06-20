@@ -76,7 +76,7 @@
 
           <table class="wide" border=0>
             <TR>
-              <td class="vmid tableheaderText">{{lang 'config.general'}}</td>
+              <td class="vmid tableheaderText">{{lang 'config.general'}} </td>
               <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('config');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
             </TR>
           </table>
@@ -92,7 +92,7 @@
               </td>
             </tr>
             -->
-            <tr>
+
               <td width="40%">
                 <span class="spxConfigHead">Config file</span>
               </td>
@@ -189,6 +189,7 @@
                   <!-- error, warn, info, verbose, debug -->
                   <option value="next" disabled  {{#ifValue config.general.preview "next"    }}selected{{/ifValue}}>Preview next item on play</option> 
                   <option value="selected" {{#ifValue config.general.preview "selected"}}selected{{/ifValue}}>Preview selected item on focus</option><!-- this is the default -->
+                  <option value="none" {{#ifValue config.general.preview "none"}}selected{{/ifValue}}>Disable preview</option>
                 </select>
                 </P>
               </td>
@@ -209,6 +210,7 @@
                 </P>
               </td>
             </tr>
+            <!-- Removed in 1.1.2
             <tr onmouseover="tip('{{lang 'hover.htmlfolder'}}');">
               <td width="40%" class="vtop">
                 <span class="spxConfigHead">{{lang 'config.templateroot'}} *</span>
@@ -219,9 +221,9 @@
                  {{lang 'config.templatepathinfo'}}
                   </small>
                 </P>
-                <!--  -->
               </td>
             </tr>
+            -->
 
 
             <!-- external audio player is disabled:

@@ -1,5 +1,5 @@
 /*
-  Copyright 2020 SmartPX
+  Copyright 2020 Softpix
   CSS file for basic stuff. Must be loaded first.
 */
 
@@ -796,6 +796,9 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     line-height: 16px;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
     font-size:  14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 
@@ -932,7 +935,7 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 }
 
 .itemrow:hover {
-    background-color: rgba(153, 218, 255, 0.07);
+    background-color: rgba(153, 218, 255, 0.08);
     border-width: 2px 2px 2px 15px;
 }
 

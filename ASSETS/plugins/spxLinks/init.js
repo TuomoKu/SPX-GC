@@ -30,6 +30,10 @@ function PluginInstance() {
                     "value": "https://forms.gle/T26xMFyNZt9E9S6d8"
                 },
                 {
+                    "text": "Latest Changes",
+                    "value": "https://spxgc.tawk.help/article/latest-changes"
+                },
+                {
                     "text": "Discuss Features",
                     "value": "https://spx.kampsite.co"
                 },

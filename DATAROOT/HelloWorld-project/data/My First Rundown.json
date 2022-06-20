@@ -1,0 +1,438 @@
+{
+  "warning": "Modifications done in the SPX will overwrite this file.",
+  "smartpx": "(c) 2020-2022 Softpix (https://spx.graphics)",
+  "updated": "2022-06-20T09:00:15.259Z",
+  "templates": [
+    {
+      "description": "Top left with icon",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "7",
+      "webplayout": "7",
+      "out": "manual",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template demonstrates a use of dropdowns. Animated icons are small webm-videos in img-subfolder."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Info text",
+          "value": "Hello World"
+        },
+        {
+          "field": "f1",
+          "ftype": "dropdown",
+          "title": "Icon",
+          "value": "live",
+          "items": [
+            {
+              "text": "No icon",
+              "value": "0"
+            },
+            {
+              "text": "Telephone",
+              "value": "phone"
+            },
+            {
+              "text": "Live",
+              "value": "live"
+            }
+          ]
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "dataformat": "xml",
+      "imported": "1651834717300",
+      "relpath": "softpix/Template_Pack_1.1/INFO_LEFT.html",
+      "itemID": "1651834950798"
+    },
+    {
+      "description": "Top right",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "8",
+      "webplayout": "8",
+      "out": "manual",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "Fields also supports emoji."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Infotext top right",
+          "value": "👍 Click <c4>F1</c4> for keyboard shortcuts"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "dataformat": "xml",
+      "imported": "1651834719690",
+      "relpath": "softpix/Template_Pack_1.1/INFO_RIGHT.html",
+      "itemID": "1651836514955"
+    },
+    {
+      "description": "Namestrap left",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "5",
+      "webplayout": "5",
+      "out": "manual",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Fullname",
+          "value": "Angus MacGyver"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Title",
+          "value": "handyman"
+        },
+        {
+          "field": "f2",
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": "Phoenix Foundation"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "dataformat": "xml",
+      "imported": "1651834722045",
+      "relpath": "softpix/Template_Pack_1.1/NAME_LEFT.html",
+      "itemID": "1651836656088"
+    },
+    {
+      "description": "Namestrap right",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "6",
+      "webplayout": "6",
+      "out": "manual",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Fullname",
+          "value": "Keyser Söze"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Title",
+          "value": "mastermind"
+        },
+        {
+          "field": "f2",
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": ""
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "dataformat": "xml",
+      "imported": "1651834726172",
+      "relpath": "softpix/Template_Pack_1.1/NAME_RIGHT.html",
+      "itemID": "1651843852151"
+    },
+    {
+      "description": "Excel Ticker",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "3",
+      "webplayout": "3",
+      "out": "manual",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "News ticker from Excel file. Names of worksheets will be used as separators. File will be read at each section change while ticker is running. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "filelist",
+          "title": "Choose Excel file",
+          "assetfolder": "/excel/ticker/",
+          "extension": "xlsx",
+          "value": "/excel/ticker/ticker_info.xlsx"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "dataformat": "xml",
+      "imported": "1651834728791",
+      "relpath": "softpix/Template_Pack_1.1/TICKER_EXCEL.html",
+      "itemID": "1651844044260"
+    },
+    {
+      "description": "News ticker from Google Sheet",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "3",
+      "webplayout": "3",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "Ticker with Google Sheet as the data source. Please change API-KEY and DOCUMENT-ID to your own. Read sourcecode for comments. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Google Sheet DocumentID",
+          "value": "1scpoPiIc7-Vi_BWW4KFndowM_4AD7isMZKIw1_fP7_0"
+        },
+        {
+          "field": "f2",
+          "ftype": "textfield",
+          "title": "Google API-KEY",
+          "value": "AIzaSyB9jTBHXWu5INdNgwyAAHZMPnuIqeXjks4"
+        },
+        {
+          "ftype": "instruction",
+          "value": "Below Worksheets will be read from the Google Sheet document. You can specify CSS colors for each."
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Worksheets (tabs) to read",
+          "value": "NEWS, TECHNOLOGY, BUSINESS"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1651834733060",
+      "relpath": "softpix/Template_Pack_1.1/TICKER_SHEET.html",
+      "itemID": "1651844276251"
+    },
+    {
+      "defversion": "1",
+      "description": "Headline, 2 phases",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "10",
+      "webplayout": "10",
+      "steps": "2",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template demonstrates the CONTINUE command (also Shift+Space). Templates can have several phases, this one has two."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Headline",
+          "value": "Now click <c1>Continue</c1>"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Subhead",
+          "value": "This is the second phase"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1655677374610",
+      "relpath": "/softpix/Template_Pack_1.1/HEADLINE_2_STEPS.html",
+      "itemID": "1655677380500"
+    },
+    {
+      "description": "Ticker",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "3",
+      "webplayout": "3",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Headline",
+          "value": "INLINE STYLING"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Content",
+          "value": "These templates supports <c4>inline color tags</c4>, such as <c1>C1</c1>, <c2>C2</c2>, <c3>C3</c3>, <c4>C4</c4>, <c5>C5</c5>, <c6>C6</c6>, <c7>C7</c7>, <c8>C8</c8> and <c9>C9</c9>."
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1655713210393",
+      "relpath": "/softpix/Template_Pack_1.1/TICKER_MANUAL.html",
+      "itemID": "1655713217433"
+    },
+    {
+      "description": "Bumper",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "18",
+      "webplayout": "18",
+      "out": "none",
+      "dataformat": "json",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Bumper headline (optional)",
+          "value": "HEADLINE"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template has 'none' as the out mode, which means it does not need to be stopped separately."
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1655713360317",
+      "relpath": "/softpix/Template_Pack_1.1/COLORBUMPER.html",
+      "itemID": "1655713368137"
+    }
+  ],
+  "filepath": "X:\\GC\\DATAROOT\\HelloWorld-project\\data\\My First Rundown.json"
+}

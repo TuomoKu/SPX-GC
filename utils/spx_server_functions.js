@@ -77,12 +77,9 @@ module.exports = {
   
   CCGServersConfigured: function () {
     // helper function which will return true / false
-    try {
-      let FirstServer = config.casparcg.servers;
-      logger.debug('CCGServersConfigured: Yes at least one CasparCG server in config.');
-      return true
-    } catch (error) {
-      logger.debug('CCGServersConfigured: No CasparCG servers available in config.');
+      if (config.casparCG && config.casparCG.servers && config.casparCG.servers.length > 0) {
+        return true;
+      } else {
       return false
     }
   }, // CCGServersConfigured
@@ -332,7 +329,7 @@ module.exports = {
     // Evaluate serversource from config > general.templatesource.
     // Supported values
     //  - 'casparcg-template-path' : Uses file protocol and CasparCG's template-path folder value during CassparCG playout
-    //  - 'spxgc-ip-address'       : Uses current SPX-GC server's IP address
+    //  - 'spx-ip-address'       : Uses current SPX-GC server's IP address
     //  - '
     //
     let TemplateSource = config.general.templatesource;
@@ -340,7 +337,7 @@ module.exports = {
     if ( TemplateSource == 'casparcg-template-path') {
       TemplateServer = "";
       logger.verbose('Using filesystem and caspar.config for template-path.');
-    } else if ( !TemplateSource || TemplateSource == 'spxgc-ip-address') {
+    } else if ( !TemplateSource || TemplateSource == 'spx-ip-address') {
       TemplateServer = 'http://' + ip.address(); // TODO: https one day? 
       logger.verbose('Using ip.address() for TemplateServer IP address: ' + TemplateServer);
     } else {
@@ -636,7 +633,8 @@ module.exports = {
         let renafile = path.normalize(path.join(fldrname, newname + extename));
         fs.rename(orgfile, renafile, (err) => {
               if (err) throw err;
-              logger.info('Rundown file ' + orgfile + ' was renamed to ' + renafile + '.');
+              logger.verbose('Rundown file ' + orgfile + ' was renamed to ' + renafile + '.');
+              global.rundownData = {}; // Added in 1.1.2
               resolve()
             });
       })
@@ -782,6 +780,7 @@ module.exports = {
         )
     } catch (error) {
       logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
+      return 
     }
   }, // writeFile (.json)
 

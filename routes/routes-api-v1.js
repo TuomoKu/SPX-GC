@@ -298,6 +298,12 @@ router.get('/', function (req, res) {
       data.version = global.vers;
       data.id = global.pmac;
       data.os = process.platform;
+      if (global.env && global.env.vendor) {
+        data.env = {}
+        data.env.vendor = global.env.vendor;
+        data.env.product = global.env.product;
+        data.env.version = global.env.version;
+      }
       return res.status(200).json(data)
     });
 
@@ -512,21 +518,14 @@ router.get('/', function (req, res) {
         let epoc = req.query.ID || '';
         let prop = req.query.key || '';
         let valu = req.query.newValue || '';
-
-        console.log('changeItemData - file: [' + file + '], ID: [' + epoc + '], prop [' + prop + '], value: [' + valu + ']')
-
         if (!file || !epoc || !prop || !valu) {
           logger.warn('Missing data from changeItemData: file: [' + file + '], ID: [' + epoc + '], key: [' + prop + '], value: [' + valu + ']')
           throw 'Missing data, see log.';
         }
-
         let datafile = path.normalize(file);
         const RundownData = await spx.GetJsonData(datafile);
-
         RundownData.templates.forEach((item,index) => {
-          console.log('Iterating item: ' + item.itemID);
           if (item.itemID === epoc) {
-            console.log('BINGO: ' + item.itemID);
             item[prop] = valu
           }
         });

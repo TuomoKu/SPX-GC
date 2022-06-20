@@ -292,11 +292,11 @@
             // The 'templates' is a subfolder in MEDIA, which is 
             // routed as static! At least during dev.
             TemplateRoot = "/templates/";
-            console.log('Local comms using [' + TemplateRoot + '].');
+            // console.log('Local comms using [' + TemplateRoot + '].');
             var socket = io();
         } else {
             TemplateRoot = "templates/";
-            console.log('Remote comms ' + GCserver + ' using [' + TemplateRoot + '].');
+            // console.log('Remote comms ' + GCserver + ' using [' + TemplateRoot + '].');
             var socket = io(GCserver);
         }
 

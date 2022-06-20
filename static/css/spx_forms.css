@@ -1,5 +1,5 @@
 /*
-  Copyright 2020 SmartPX
+  Copyright 2020 Softpix
   CSS file for form items. Loaded after spx_layout.css
 */
 
@@ -45,8 +45,8 @@
     font-family: "UI-Bold", Arial, Helvetica, sans-serif;
     text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
     box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
-    padding-inline-start: 10px;
-    padding-inline-end: 10px;
+    padding-inline-start: 0.4em;
+    padding-inline-end: 0.4em;
     margin-left: auto;
     margin-right: auto;
     cursor: pointer;

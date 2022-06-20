@@ -57,7 +57,8 @@
       msg = "Really?\n\nRegistration is an important " +
             "feedback mechanism for us to understand who is using SPX " +
             "and we would like encourage to help us by submitting some " +
-            "info about you. Everything is optional. All help is highly appreciated!";
+            "info about you. Everything is optional. All help is highly appreciated!\n\n" + 
+            "Click OK to skip registration.";
       if (confirm(msg)) {
         document.location = '/';
       }
@@ -359,6 +360,27 @@
                 <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
                   <tr>
                     <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Industry
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                        What is your main focus?
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <select class="wide drop bg_grey" name="indus">
+                        <option {{{ifValueMatch config.registration.indus "empty" "selected" ""}}} value = "empty"></option>
+                        <option {{{ifValueMatch config.registration.indus "broad" "selected" ""}}} value = "broad">Broadcast TV</option>
+                        <option {{{ifValueMatch config.registration.indus "strea" "selected" ""}}} value = "strea">Streaming</option>
+                        <option {{{ifValueMatch config.registration.indus "event" "selected" ""}}} value = "event">Events</option>
+                        <option {{{ifValueMatch config.registration.indus "educa" "selected" ""}}} value = "educa">Education</option>
+                        <option {{{ifValueMatch config.registration.indus "other" "selected" ""}}} value = "other">Other</option>
+                      </select>
+                    </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
                       Usage
                       <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
                         What is or will most likely be the main use of SPX?
@@ -448,7 +470,7 @@
                                   name="inviteDiscord"
                                   id="inviteDiscord"
                                   style="transform: scale(1.5);"
-                                  >&nbsp;&nbsp;Send me invite to SPX Discord
+                                  ><!--&nbsp;&nbsp;Send me invite to SPX Discord -->
                         </div>
                       </div>
                     </td>

@@ -2,7 +2,7 @@
 // Client javascript for SPX
 // Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2021 SmartPX
+// (c) 2020-2021 Softpix
 // ***************************************
 
 var socket = io();
@@ -263,6 +263,8 @@ function ajaxpost(urlPath, data, prepopulated='false'){
         if (error.response) {
             // statusbar('GC server returned error, see console and logs','error')
             statusbar(error.response.data,'error')
+            showMessageSlider(error.response.data, 'error')
+            // msg, type='info', persist=false
             console.log(error.response.data);
             console.log(error.response.status);
             console.log(error.response.headers);
@@ -675,6 +677,7 @@ function continueUpdateStop(command, itemrow='') {
     if (!itemrow) { itemrow = getFocusedRow(); }
     switch (command) {
         case 'stop':
+            // console.log('Stopping item', itemrow);
             playItem(itemrow, 'stop');
             break;
 
@@ -1197,11 +1200,9 @@ function getMessages(curVerInfo) {
     //              All passed data is anonymous and non-identifiable
     // -------------------------------------------------------------
 
-    // DEPRECATION WARNING -    This function to be removed in 1.1.x
-    //                          And will be replaced with v2
-    //                          which is partially implemented.
-
-    // console.log('getMessages ', curVerInfo);
+    
+    let versionStr = curVerInfo.split('v=')[1].split('&')[0].trim();
+    // console.log('getMessages [' + versionStr + ']', curVerInfo);
 
     localStorage.removeItem('SPX-GC-NewVersion');
     document.getElementById('upgradeinfo').style.display="none";
@@ -1247,8 +1248,23 @@ function getMessages(curVerInfo) {
         document.getElementById('message_link').href=messages.notification.href;
         document.getElementById('message_link').innerText=messages.notification.link;
       }
-      // console.log('Latest: ' + latestVer);
 
+      // Added in 1.1.2
+      // versionStr = "1.0.0"; // DEBUG## with specific version number
+      if (messages.homepagepromo[versionStr] ) {
+        // console.log('Promo available for v.' + versionStr, messages.homepagepromo[versionStr]);
+        document.getElementById('homepagepromolink').href=messages.homepagepromo[versionStr].link;
+        document.getElementById('homepagepromopict').src=messages.homepagepromo[versionStr].pict;
+        document.getElementById('homepagepromopict').title=messages.homepagepromo[versionStr].titl;
+      } else {
+        // Check if there is a default promo
+        if (messages.homepagepromo && messages.homepagepromo.default && messages.homepagepromo.default.active ){
+            // console.log('Using active default promo.', messages.homepagepromo.default);
+            document.getElementById('homepagepromolink').href=messages.homepagepromo.default.link;
+            document.getElementById('homepagepromopict').src=messages.homepagepromo.default.pict;
+            document.getElementById('homepagepromopict').title=messages.homepagepromo.default.titl;
+          }
+      }
     })
     .catch((error) => {
         console.error('SPX error in getMessages().',error)
@@ -1410,6 +1426,7 @@ function playItem(itemrow='', forcedCommand='') {
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
     data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
+
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
@@ -1548,11 +1565,13 @@ function setItemButtonStates(itemrow, forcedCommand=''){
     // Response ..... 'play' or 'stop' state after toggle
     // 
 
-    if ( itemrow.querySelector('[name="RundownItem[out]"]').value=="none" )
-        {
-            // console.log('NONE out type in this graphic. Do not set the buttons in any way and return with playonce.');
-            return 'playonce';
+    if ( itemrow.querySelector('[name="RundownItem[out]"]').value=="none" ) {
+        // console.log('NONE out type in this graphic. Do not set the buttons in any way and return with playonce.');
+        if (forcedCommand=='stop') {
+            return 'stop'; // Added in v 1.1.2 to prevent playing bumper at "Stop All"
         }
+        return 'playonce';
+    }
 
     let CommandToExecute = 'play' // default action
     let EXPANDEDPLAY = itemrow.querySelector('[data-spx-name="playbutton"]');

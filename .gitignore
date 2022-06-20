@@ -18,12 +18,21 @@ SmartPX_log*.txt
 env.txt
 .log
 devnotes.txt
-MEDIA/*
-DATAROOT/*
 DATAROOT_*
 
-ASSETS/csv/
-ASSETS/excel/ndf/
+# DATAROOT - Add just the DATAROOT/HelloWorld-project
+!DATAROOT/
+DATAROOT/*
+!DATAROOT/HelloWorld-project/
+
+
+# ASSETS
+!ASSETS/
+# ASSETS/*
+!ASSETS/excel/ticker/
+!ASSETS/templates/softpix/Template_Pack_1.1/*
+!ASSETS/csv/
+ASSETS/csv/*.csv
 ASSETS/media/video/
 ASSETS/media/images/hd/
 ASSETS/media/images/bg/
@@ -37,6 +46,7 @@ ASSETS/media/images/smartpx_internal/
 ASSETS/media/images/_*
 
 ASSETS/template_stash/
+ASSETS/templates_dev/
 ASSETS/hot_or_not
 ASSETS/xml/demo.xml
 
@@ -60,13 +70,14 @@ ASSETS/plugins/spxImagelist
 #######################################
 # non-public templates
 #######################################
+ASSETS/templates_*
 ASSETS/templates/smartpx
 ASSETS/templates/smartpx_demo
 ASSETS/templates/smartpx_internal
 ASSETS/templates/smartpx/scoreboard
 ASSETS/templates/codetive
 ASSETS/templates/softpix/SPX_GoogleMaps
-ASSETS/templates/softpix/Template_Pack_1.1
+ASSETS/templates/softpix/*_old
 ASSETS/templates/softpix/picturall_core_templates
 ASSETS/templates/analogway/
 
@@ -135,4 +146,5 @@ TODO.md
 BUILD_PACKAGES_TO_OS_FOLDERS_TE-LIVE.BAT
 
 env.json
+
 

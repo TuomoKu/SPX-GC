@@ -245,6 +245,7 @@
                               </div>
 
                               
+
                               {{#ifValue ftype "number"}}
                                 <!-- "NUMBER" TYPE OF TEMPLATE FIELD (added in 1.0.7) --> 
                                 <div class="wide HIDE">
@@ -452,6 +453,11 @@
                                   </div>
                                 </div>
                               {{/ifValue}}
+
+                              {{#ifValue ftype "spacer"}}
+                                <br><br>
+                              {{/ifValue}}
+
 
 
                             {{/each}} <!-- ftype check ended -->

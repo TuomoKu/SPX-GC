@@ -298,6 +298,7 @@ router.post('/register', async (req, res) => {
 
     config.registration.updated     = new Date().toISOString();
     config.registration.country     = req.body.country;
+    config.registration.indus       = req.body.indus;
     config.registration.usage       = req.body.usage
     config.registration.devlevel    = req.body.skill
     config.registration.freetext    = req.body.freetext
@@ -316,7 +317,7 @@ router.post('/register', async (req, res) => {
     }
     await spx.writeFile(global.configfileref,config);
     const response = await axios.post('https://smartpx.fi/gc/reg/', config.registration);
-    req.session.showMessage = 'Thank you for registration! 👍';
+    req.session.showMessage = 'Thank you for the registration! 👍';
     res.redirect('/');
 
   } catch (error) {
@@ -372,8 +373,9 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
 
   // a "previous folder" functionality
   let treeData = '';
+  let templateRootPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates');
   if (LastBrowsedTemplateFolder==''){
-    treeData = JSON.stringify(spx.GetFilesAndFolders(config.general.templatefolder));
+    treeData = JSON.stringify(spx.GetFilesAndFolders(templateRootPath));
   }
   else {
     treeData = JSON.stringify(spx.GetFilesAndFolders(LastBrowsedTemplateFolder));
@@ -383,7 +385,7 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
   if (req.query.ERR){ ERRCODE='error.'+req.query.ERR };
   res.render('view-showconfig', { layout: false,
     TemplateFiles: treeData,
-    TemplateRootFolder: config.general.templatefolder,
+    TemplateRootFolder: templateRootPath,
     showconfig: fileDataAsJSON,
     folder: req.params.foldername,
     messageCode:'', errorCode:ERRCODE,
@@ -635,7 +637,9 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         }
     
         let absPath = TemplatePath.split("\\").join("/");
-        let tmpRoot = config.general.templatefolder.split("\\").join("/");
+        let templateRootPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates');
+        // let tmpRoot = config.general.templatefolder.split("\\").join("/");
+        let tmpRoot = templateRootPath.split("\\").join("/");
         SPXGCTemplateDefinition.relpath = absPath.split(tmpRoot)[1];
         // console.log('New SPXGCTemplateDefinition',SPXGCTemplateDefinition);
 
@@ -839,6 +843,7 @@ router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
      }
      else {
       logger.verbose('Deleted file: ' + datafile);
+      global.rundownData = {};
       // client will reload in 500ms
     }
   });
@@ -1330,8 +1335,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       });
 
       if (templateIndex<0) {
-        logger.warn('Playout command did not find templateIndex ' + templateIndex + ' for item [' + req.body.epoch+ '].');
-        throw 'Playout command did not find templateIndex ' + templateIndex + ' for item [' + req.body.epoch+ '].';
+        throw 'TemplateIndex ' + templateIndex + ' not found using ID ' + req.body.epoch+ '.';
       }
 
       let ItemData = RundownData.templates[templateIndex];
@@ -1389,7 +1393,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       case 'preview':
 
         // Send PlayoutWEB.functionCalls() if any ---------------------
-        if (dataOut.webplayout!='-') {
+        if (dataOut.webplayout!='-' && config.general.preview!='none' ) {
           dataOut.webplayout = 1; // force to layer 1!
           logger.verbose('Webplayout PREVIEW: ' + dataOut.webplayout);
           dataOut.playmode = 'preview';
@@ -1567,20 +1571,24 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     }
 
     // persist to file.
-    if (!preventSave)
-      {
+    if (!preventSave) {
       RundownData.updated = new Date().toISOString();
       // await spx.writeFile(RundownFile,RundownData);
       global.rundownData = RundownData // memory only
       }
     // res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
+
+    // Check if file exists
+    let templateAbsPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', dataOut.relpath);
+    if (!fs.existsSync(templateAbsPath)) {
+      throw(playOutCommand + ' warning! Template not found: ' + dataOut.relpath);
+    }
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try
-  catch (error)
-    {
-      logger.error('ERROR in /gc/playout [' + error + '].');
-      res.status(500).send('Server error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
-    };
+  catch (error) {
+    logger.error('ERROR in /gc/playout [' + error + '].');
+    res.status(500).send('Error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
+  };
 });
 
 
@@ -1689,6 +1697,7 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
       RundownData.templates = TempArr;
       RundownData.updated = new Date().toISOString();
       await spx.writeFile(RundownFile,RundownData);
+      global.rundownData = RundownData; // Added in 1.1.2
       res.status(200).send('Rundown sorting saved.'); // ok 200 AJAX RESPONSE
     }
   catch (error)
@@ -1746,11 +1755,9 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
     let key = req.body.key;
     let val = req.body.val;
     if (!key && !val) {
-      throw '/gc/saveConfigChanges: key [' + key + '] or val [' + val + '] was missing, skipping save.';
+      throw 'Key [' + key + '] or val [' + val + '] was missing, skipping save.';
     }
-    if (!ConfigData.general[key]) {
-      throw '/gc/saveConfigChanges: ConfigData was missing general.[' + key + '], skipping save.';
-    }
+    
     ConfigData.general[key] = val;
     global.config = ConfigData; // update mem version also
     await spx.writeFile(ConfigFile,ConfigData);
@@ -1927,6 +1934,7 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
         targetRundownFile = filepathFromCSVimport;
       } else {
         targetRundownFile = RundownData.filepath || ''
+        // console.log('-----> targetRundownFile', targetRundownFile);
       }
 
       if (targetRundownFile) {
