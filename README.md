@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Jun 20 2022. 
+Readme updated Jun 29 2022. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.2** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
@@ -28,6 +28,7 @@ See the website ▶  **[spx.graphics](https://spx.graphics)**
 - Install [pre-built packages](#builds) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
+- [Renderer parameters](#renderer)
 - [UI localization](#locales)
 - [Add CasparCG server(s)](#addcaspar)
 - [Projects and rundowns](#dataroot)
@@ -391,7 +392,27 @@ Template requests CasparCG server [SERVERNAME] but a server by that name was not
 
 > **REMEMBER** SPX server process must be restarted whenever changes are made to configuration. 
 
-----
+<br>
+
+# Renderer parameters <a id="renderer"></a>
+SPX renderer is at `/renderer` URL and it supports additional parameters for specialized workflows. In a typical use (such as 16:9 single renderer production) these can be safely ignored.
+
+| Parameter | Datatype | Example |
+|  ------ | ----- | ----- |
+|  `layers` | Array of numbers | `[1,2,3,4,20]` |
+|  `preview` | Boolean | `true` |
+|  `width` | integer | `1920` |
+|  `height` | integer | `1080` |
+|  `fps` | integer | `50` |
+
+An example renderer URL for _"a vertical HD-Ready screen, showing only layers 2 and 3 and at 15 fps refresh rate"_.
+
+```
+renderer/?width=768&height=1366&layers=[2,3]&preview=false&fps=15
+```
+**PLEASE NOTE:** `fps` parameter value is stored to `window.top.spxRenderer.fps` -global variable of the renderer and it's utilization requires support from the templates themselves. See the _Google Sheet Ticker_ -template for an example of this.
+
+<br>
 
 # Projects and rundowns <a id="dataroot"></a>
 All content in SPX is stored as files in `dataroot` folder which is specified in the configuration.

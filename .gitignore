@@ -65,6 +65,7 @@ ASSETS/plugins/spxProjectLogger
 ASSETS/plugins/spxResultsboard_4x
 ASSETS/plugins/spxCasparCGMediaplayer
 ASSETS/plugins/spxImagelist
+ASSETS/plugins/spxLeaderboard
 
 
 #######################################
@@ -97,8 +98,7 @@ notes/
 notes2/
 cg20.*
 START_GC_IN_BACKGROUND.bat
-BUILD_PACKAGES.BAT
-BUILD_PACKAGES_TO_OS_FOLDERS.BAT
+BUILD_PACKAGE*.BAT
 BUILD_A_ZIP_PACK.BAT
 SPX_STARTER_MENU.bat
 RUN_DEV_DEMOROOT.BAT
@@ -143,8 +143,9 @@ api-tester.rest
 config_ORGjson
 TESTAUS_CHECKLIST.txt
 TODO.md
-BUILD_PACKAGES_TO_OS_FOLDERS_TE-LIVE.BAT
+
 
 env.json
 
-
+_env.json
+.gitignore

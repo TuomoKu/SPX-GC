@@ -6,12 +6,12 @@
 
 ## WORK IN PROGRESS
 
-> List updated Jun 20 2022
+> List updated Jun 21 2022
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases below.
 
 **Completed items**:
-* (none)
+* Minor fixes to registration view (remove Discord, not needed) and enable email checkbox always
 
 **Waiting**:
 * Rundown Variables (does not remove prVar from profile if no users)
@@ -23,6 +23,10 @@
 <BR>
 
 Published releases:
+
+## **1.1.3** (Jun 29 2022)
+> Version 1.1.3 was never released publicly as binaries. These features will be present in the future releases.
+- New url parameter added to the renderer to pass a desired refresh rate to templates `renderer/?fps=30`. This will require modifications to the templates with controllable update rates, such as the scrolling tickers, using **gsap** animation library (or similar.) See _Google Sheet Ticker_ -template for an example.
 
 ## **1.1.2** (Jun 20 2022)
 * >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.

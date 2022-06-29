@@ -88,7 +88,7 @@ global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cac
 
 // Added in 1.1.1.
 global.env = {'vendor':'', 'product':'', 'version':''};
-let envIdfile = './env.json'
+let envIdfile = path.resolve(spx.getStartUpFolder(),'env.json') // fixed post 1.1.2
 if (fs.existsSync(envIdfile)) {
   var spxenv = require(envIdfile);
   if (spxenv.vendor) {global.env.vendor = spxenv.vendor;}
