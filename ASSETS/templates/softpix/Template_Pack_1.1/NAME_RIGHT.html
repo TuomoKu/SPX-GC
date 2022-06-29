@@ -14,13 +14,14 @@
 	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
     ▸ spx.graphics | Copyright 2022 Softpix
     Version: 1.1.0 / Dynamic theming
-    Build: Mon Jun 20 2022 11:33:38 GMT+0300 (GMT+03:00) 
+    Build: Wed Jun 29 2022 11:58:27 GMT+0300 (GMT+03:00) 
 
 	----
 
     CHANGES:
     01.09.2020 Original version
     22.12.2021 Added some delay to fix cropping of names from left side
+    29.06.2022 Added FPS value check from SPX renderer
 
 -->
 
@@ -78,6 +79,11 @@
 
         function runAnimationIN() {
             let dur = 0.8;
+
+            let spxFPS = window.top.spxRenderer.fps || 50;
+            console.log('spxRenderer: ' + spxFPS + ' FPS');
+            gsap.ticker.fps(spxFPS);
+
             gsap.fromTo("#TG", 0.1, { opacity: 0 },{delay: 0.3, opacity: 1 });  // added a fade-in with a little delay
             gsap.set("#line1", { opacity: 1 });
             gsap.set("#line2", { display:"block" });

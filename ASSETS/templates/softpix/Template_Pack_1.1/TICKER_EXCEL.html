@@ -8,7 +8,7 @@
     PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
     ▸ spx.graphics | Copyright 2022 Softpix
     Version: 1.1.0 / Dynamic theming
-    Build: Mon Jun 20 2022 11:33:38 GMT+0300 (GMT+03:00) 
+    Build: Wed Jun 29 2022 11:58:27 GMT+0300 (GMT+03:00) 
 
     CHANGES:
     12.01.2022  Improved Excel ticker headline switch timing (thanks Brandon for the improvements)
@@ -17,6 +17,8 @@
     ISSUES:
     16.02.2022  We noticed there has to be at least two workbooks in the Excel file.
                 Add an additional #EMPTY worksheet and it will work...
+    29.06.2022  Added FPS value check from SPX renderer
+    
 
 
 -->
@@ -171,7 +173,11 @@
     function runAnimationIN() {
         Stopped = false;
         let dur = 0.8;
-        // gsap.ticker.fps(50); // Disabled intentionally, let browser figure out the framerate.
+
+        let spxFPS = window.top.spxRenderer.fps || 50;
+        console.log('spxRenderer: ' + spxFPS + ' FPS');
+        gsap.ticker.fps(spxFPS);
+
         gsap.set("#line1", { opacity: 1 });
         gsap.set("#TICKER", {display:"block"});
         gsap.to("#TICKER",   0.5, {opacity: 1});
