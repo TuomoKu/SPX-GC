@@ -403,7 +403,7 @@ SPX renderer is at `/renderer` URL and it supports additional parameters for spe
 |  `preview` | Boolean | `true` |
 |  `width` | integer | `1920` |
 |  `height` | integer | `1080` |
-|  `fps` | integer | `50` |
+|  `fps` | number | `50` or `29.97` |
 
 An example renderer URL for _"a vertical HD-Ready screen, showing only layers 2 and 3 and at 15 fps refresh rate"_.
 

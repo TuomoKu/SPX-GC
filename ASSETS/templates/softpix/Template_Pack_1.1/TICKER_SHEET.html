@@ -60,9 +60,10 @@
             window.paused = false // let it run
             let dur = 0.8;
 
-            let spxFPS = window.top.spxRenderer.fps || 50;
-            console.log('spxRenderer: ' + spxFPS + ' FPS');
-            gsap.ticker.fps(spxFPS);
+            if (window.top.spxRenderer.fps) {
+                gsap.ticker.fps(window.top.spxRenderer.fps);    
+                console.log('spxRenderer: ' + window.top.spxRenderer.fps + ' FPS')
+            }
 
             gsap.set("#line1", { width:0 });
             gsap.fromTo("#line1", 0.1, { opacity: 0 }, { delay: 0.2, opacity:1 });
