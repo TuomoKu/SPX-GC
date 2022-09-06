@@ -40,14 +40,6 @@
       "relpath": "/softpix/Template_Pack_1.1/COLORBUMPER.html"
     },
     {
-      "description": "Top left with icon",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "7",
-      "webplayout": "7",
-      "out": "manual",
-      "dataformat": "json",
-      "uicolor": "7",
       "DataFields": [
         {
           "field": "comment",
@@ -94,9 +86,15 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "false",
-      "imported": "1655713113099",
-      "relpath": "/softpix/Template_Pack_1.1/INFO_LEFT.html"
+      "relpath": "/softpix/Template_Pack_1.1/INFO_LEFT.html",
+      "description": "Top left with icon",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "7",
+      "dataformat": "json",
+      "webplayout": "7",
+      "out": "manual",
+      "uicolor": "7"
     },
     {
       "description": "Top right",
@@ -541,7 +539,7 @@
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
   "smartpx": "(c) 2020-2022 Softpix (https://spx.graphics)",
-  "updated": "2022-06-20T08:22:40.317Z",
+  "updated": "2022-08-24T12:51:17.513Z",
   "general": {
     "background": ""
   }
