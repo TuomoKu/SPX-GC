@@ -236,6 +236,7 @@
                           <TD width="65%" class="vtop">
 
                             {{#each DataFields}}
+
                               <!-- COMMON FIELD DATA -->
                               <div class="wide HIDE">
                                   <table class="wide spxTableHeadsmall">
@@ -244,7 +245,9 @@
                                   </table>
                               </div>
 
-                              
+                              {{#ifValue ftype "spacer"}}
+                                <br><br>
+                              {{/ifValue}}
 
                               {{#ifValue ftype "number"}}
                                 <!-- "NUMBER" TYPE OF TEMPLATE FIELD (added in 1.0.7) --> 
@@ -454,9 +457,7 @@
                                 </div>
                               {{/ifValue}}
 
-                              {{#ifValue ftype "spacer"}}
-                                <br><br>
-                              {{/ifValue}}
+
 
 
 

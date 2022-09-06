@@ -101,6 +101,12 @@ router.get('/', function (req, res) {
               "param"   :     "version",
               "info"    :     "Returns SPX version info"
             },
+            {
+              "vers"    :     "v1.1.3",
+              "method"  :     "GET",
+              "param"   :     "gettemplates?project=HelloWorld-project",
+              "info"    :     "Returns templates and their settings from a given project."
+            },
             ]
         },
 
@@ -356,6 +362,20 @@ router.get('/', function (req, res) {
       }
       const fileListAsJSON = await spx.GetDataFiles(config.general.dataroot + "/" + project + "/data/");
       return res.status(200).json(fileListAsJSON)
+    });
+
+    router.get('/gettemplates', async (req, res) => {
+      // Added in 1.1.3
+      let project = req.query.project || '';
+      if (!project) {
+        return res.status(500).json({ type: 'error', message: 'Project name required as parameter (eg ?project=ProjecName)' })
+      }
+      const result = await spx.GetTemplatesFromProfileFile(project);
+      if ( result[0]==200 ) {
+        return res.status(200).json(result[1])
+      } else {
+        return res.status(result[0]).json(result[1])
+      }
     });
 
     router.get('/getlayerstate', async (req, res) => {

@@ -435,6 +435,28 @@ module.exports = {
       return ('Failed to read folder: ' + FOLDERstr);
     }
   }, // GetDataFiles ended
+
+  GetTemplatesFromProfileFile: async function (FOLDERstr) {
+    // Return templates of the given project. Added in 1.1.4.
+    try {
+      // console.log('reading',FOLDER);
+      let showFolder   = path.normalize(FOLDERstr);
+      let dataJSONfile = path.join(this.getStartUpFolder(), 'ASSETS', '..', 'DATAROOT', showFolder, 'profile.json');
+      if (fs.existsSync(dataJSONfile)) {
+        logger.debug("Getting templates from " + dataJSONfile + "...");
+        let profileData  = await this.GetJsonData(dataJSONfile);
+        return [200,profileData.templates];
+      } else {
+        logger.error("No profile.json found in " + showFolder);
+        return [404,{"error":"No profile.json found for project " + showFolder + "."}];
+      }
+
+    }
+    catch (error) {
+      logger.error('Failed to read profile file from ' + FOLDERstr + ': ' + error);
+      return ('Failed to read profile file from: ' + FOLDERstr);
+    }
+  }, // GetTemplatesFromProfileFile ended
   
 
 
@@ -688,7 +710,7 @@ module.exports = {
     // returns ..... dashed string
     try {
       // break string into two character groups with dashes
-      return str.match(/.{1,2}/g).join("-");
+      return str.match(/.{1,2}/g).join(""); // removed -
     } catch (error) {
       logger.error('ERROR in spx.dashify (str: ' + str + '): ' + error);
       return ""  

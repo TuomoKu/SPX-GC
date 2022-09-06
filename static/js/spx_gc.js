@@ -1454,47 +1454,59 @@ function playItem(itemrow='', forcedCommand='') {
         }
 
     }
-     
+
+    // Check for function_onPlay event (improved in 1.1.4):
     let onPlayField = itemrow.querySelector('[name="RundownItem[function_onPlay]"]');
     if (isPlay && onPlayField && onPlayField.value!="") {
-        let onPlayCommand = onPlayField.value;
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Executing: ' + onPlayCommand);
-        let FunctionName  = String(onPlayCommand.split("|")[0].trim());
-        let ArgsArray     = onPlayCommand.split("|")[1].trim().split(",");
-        let TempData      = {};
-        TempData.server   = String(ArgsArray[0]);
-        TempData.channel  = String(ArgsArray[1]);
-        TempData.layer    = String(ArgsArray[2]); // 
-        TempData.video    = String(ArgsArray[3]); // 'PARTICLESANDFLUIDCORNER_RGBAS_1080P50_V2'
-        TempData.looping  = String(ArgsArray[4]); // 'true'
-        ExecuteDelay      = parseInt(ArgsArray[5]) || 40; // 500 (ms)
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName + ', args: ', TempData);
+        // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
+        // Examples of valid "function_onPlay/nStop" values:
+        // 
+        //  myCustomMethod | {'foo': 'bar'} | 500 | f1
+        //  myCustomMethod | 'foo'          | 500 | f1
+        // 
+        //  1st: Function name (no parenthesis),
+        //  2nd: an optional JSON object or a string argument,
+        //  3rd: execution delay in ms.
+        //  4th: one of the f-fields (value can be used as a condition in the function)
 
+        let onPlayCommand = onPlayField.value.split('|') || [];
+        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'PLAY event: ' + onPlayCommand);
+        let FunctionName  = String(onPlayCommand[0] || 'noFunctionName').trim();
+        let FunctionArgs  = String(onPlayCommand[1] || 'NoArgs').trim();
+        let ExecuteDelay  = String(onPlayCommand[2] || '100').trim();
+        let ConditFField  = String(onPlayCommand[3] || 'XXX').trim();
+        let conditionVal = null;
+        let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
+        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            window[FunctionName](TempData);
-            }, ExecuteDelay);
+            console.log('FunctionName:' + FunctionName);
+            window[FunctionName]([FunctionArgs, conditionVal]);
+        }, parseInt(ExecuteDelay));
         heartbeat(310); // identifier
     }
 
-    // Check for function_onStop:
-    let onStopField = itemrow.querySelector('[name="RundownItem[function_onCont]"]');
+    // Check for function_onStop event (improved in 1.1.4):
+    let onStopField = itemrow.querySelector('[name="RundownItem[function_onStop]"]');
     if (data.command=="stop" && onStopField && onStopField.value!="") {
-        let onStopCommand = onStopField.value;
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Executing: ' + onStopCommand);
-        let FunctionName2   = String(onStopCommand.split("|")[0].trim());
-        let ArgsArray2      = onStopCommand.split("|")[1].trim().split(",");
-        let TempData2 = {};
-        TempData2.server   = String(ArgsArray2[0]);
-        TempData2.channel  = String(ArgsArray2[1]);
-        TempData2.layer    = String(ArgsArray2[2]);
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName2 + ', args: ', TempData2);
-        window[FunctionName2](TempData2);
+        // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
+        let onStopCommand = onStopField.value.split('|') || [];
+        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'STOP event: ' + onStopCommand);
+        let FunctionName  = String(onStopCommand[0] || 'noFunctionName').trim();
+        let FunctionArgs  = String(onStopCommand[1] || 'NoArgs').trim();
+        let ExecuteDelay  = String(onStopCommand[2] || '100').trim();
+        let ConditFField  = String(onStopCommand[3] || 'XXX').trim();
+        let conditionVal = null;
+        let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
+        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
+        setTimeout(function () {
+            console.log('FunctionName:' + FunctionName);
+            window[FunctionName]([FunctionArgs, conditionVal]);
+        }, parseInt(ExecuteDelay));
         heartbeat(312); // identifier
     }
 
     // auto-out trigger UI update (FIXME: verify auto-out works over direct API commands?!)
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
-
     // console.log('TimeoutAsString: ', TimeoutAsString);
 
     if (!isNaN(TimeoutAsString))

@@ -1311,8 +1311,8 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         dataOut.relpathCCG = req.body.relpath.split('.htm')[0]; // casparCG needs template path without extension
       }
       preventSave = true;
-    }
-    else {
+      // console.log('IF', dataOut);
+    } else {
       // normal method of working. We collect data from showfile.
       logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.epoch + '] of [' + req.body.datafile + '].');
       RundownFile = path.normalize(req.body.datafile);
@@ -1578,10 +1578,12 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       }
     // res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
 
-    // Check if file exists
-    let templateAbsPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', dataOut.relpath);
-    if (!fs.existsSync(templateAbsPath)) {
-      throw(playOutCommand + ' warning! Template not found: ' + dataOut.relpath);
+    // Check if file exists. Function implroved in 1.1.3
+    if (dataOut.relpath) {
+      let templateAbsPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', dataOut.relpath);
+      if (!fs.existsSync(templateAbsPath)) {
+        throw(playOutCommand + ' warning! Template not found: ' + dataOut.relpath);
+      }
     }
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try

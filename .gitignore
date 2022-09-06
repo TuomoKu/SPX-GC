@@ -49,6 +49,7 @@ ASSETS/template_stash/
 ASSETS/templates_dev/
 ASSETS/hot_or_not
 ASSETS/xml/demo.xml
+ASSETS/excel/tellyo/
 
 
 
@@ -59,6 +60,7 @@ ASSETS/xml/demo.xml
 #######################################
 ASSETS/plugins/_*
 ASSETS/plugins/spxSocial
+ASSETS/plugins/spxAnalytics
 ASSETS/plugins/scoreboard
 ASSETS/plugins/spxResultsboard
 ASSETS/plugins/spxProjectLogger
@@ -77,10 +79,15 @@ ASSETS/templates/smartpx_demo
 ASSETS/templates/smartpx_internal
 ASSETS/templates/smartpx/scoreboard
 ASSETS/templates/codetive
+ASSETS/templates/softpix/spxSocial/
 ASSETS/templates/softpix/SPX_GoogleMaps
 ASSETS/templates/softpix/*_old
 ASSETS/templates/softpix/picturall_core_templates
 ASSETS/templates/analogway/
+ASSETS/templates/softpix/HIFK_Jumbo/
+ASSETS/templates/softpix/techmahindra/
+ASSETS/templates/TechMahindra/
+ASSETS/templates/Tellyo/
 
 
 #######################################
@@ -149,3 +156,4 @@ env.json
 
 _env.json
 .gitignore
+static/tt2020_reactions.json

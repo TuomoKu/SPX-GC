@@ -635,6 +635,12 @@ div.curfolder{
         cursor: default;
     }
 
+.spacer {
+    /* empty span between UI controls, spacer ftype */
+    display: block; 
+    background-color: green;
+    height: 1em;
+}
 
 .spxFlexContainer {
     display: flex; /* flex or inline-flex */

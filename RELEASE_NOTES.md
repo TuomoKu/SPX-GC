@@ -6,12 +6,13 @@
 
 ## WORK IN PROGRESS
 
-> List updated Jun 29 2022
+> List updated Sept 6 2022
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases below.
 
 **Completed items**:
-
+- Added API edpoint `gettemplates?project=MyProject` to return all templates, and their settings, of a given project.
+- Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending and `onCont` is still missing...)
 
 **Waiting**:
 - Rundown Variables (does not remove prVar from profile if no users)
