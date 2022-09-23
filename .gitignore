@@ -60,14 +60,14 @@ ASSETS/excel/tellyo/
 #######################################
 ASSETS/plugins/_*
 ASSETS/plugins/spxSocial
-ASSETS/plugins/spxAnalytics
 ASSETS/plugins/scoreboard
+ASSETS/plugins/spxAnalytics
+ASSETS/plugins/spxImagelist
+ASSETS/plugins/spxLeaderboard
 ASSETS/plugins/spxResultsboard
 ASSETS/plugins/spxProjectLogger
 ASSETS/plugins/spxResultsboard_4x
 ASSETS/plugins/spxCasparCGMediaplayer
-ASSETS/plugins/spxImagelist
-ASSETS/plugins/spxLeaderboard
 
 
 #######################################
@@ -75,19 +75,22 @@ ASSETS/plugins/spxLeaderboard
 #######################################
 ASSETS/templates_*
 ASSETS/templates/smartpx
+ASSETS/templates/codetive
 ASSETS/templates/smartpx_demo
 ASSETS/templates/smartpx_internal
 ASSETS/templates/smartpx/scoreboard
-ASSETS/templates/codetive
-ASSETS/templates/softpix/spxSocial/
-ASSETS/templates/softpix/SPX_GoogleMaps
+
 ASSETS/templates/softpix/*_old
-ASSETS/templates/softpix/picturall_core_templates
-ASSETS/templates/analogway/
+ASSETS/templates/softpix/spxSocial/
 ASSETS/templates/softpix/HIFK_Jumbo/
 ASSETS/templates/softpix/techmahindra/
-ASSETS/templates/TechMahindra/
+ASSETS/templates/softpix/SPX_GoogleMaps
+ASSETS/templates/softpix/picturall_core_templates
+
 ASSETS/templates/Tellyo/
+ASSETS/templates/analogway/
+ASSETS/templates/TechMahindra/
+ASSETS/templates/community-creations/
 
 
 #######################################
