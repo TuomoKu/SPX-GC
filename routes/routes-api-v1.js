@@ -210,28 +210,31 @@ router.get('/', function (req, res) {
 // DIRECT COMMANDS (bypassing rundown) ----------------------------------------------------------
   router.get('/invokeTemplateFunction/', async (req, res) => {
 
-    // function fixedEncodeURIComponent (str) {
-    //   return encodeURIComponent(str).replace(/[!'()*]/g, escape); // encode single quote also!
-    // }
+    // Init params
+    let params = req.query.params || ''; // improved in 1.1.4 to avoid undefined
 
-    // create a data object 
+    // create the data object 
     let dataOut = {};
+    dataOut.message      = 'Sent request to SPX server.'
     dataOut.prepopulated = 'true'
     dataOut.playserver   = req.query.playserver || 'OVERLAY';
     dataOut.playchannel  = req.query.playchannel || '1';
     dataOut.playlayer    = req.query.playlayer || '1';
     dataOut.webplayout   = req.query.webplayout || '1';
-    // dataOut.relpath      = 'we_need_some_filename_here_to_prevent_errors.html'
     dataOut.command      = 'invoke';
-    dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(req.query.params) + '\")'; // encode added in v1.1.0
-    res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
-    // console.log('API endpoint for invoke got:', dataOut);
+    if (params=='') {
+      dataOut.invoke       = req.query.function + '()'; // improved in 1.1.4 to avoid undefined
+    } else {
+      dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(params) + '\")'; // encode added in v1.1.0
+    }
+    res.status(200).json(dataOut);
     spx.httpPost(dataOut,'/gc/playout')
   });
 
 
   router.post('/directplayout', async (req, res) => {
     let dataOut = {};
+    dataOut.message      = 'Sent request to SPX server.'
     dataOut.playserver   = req.body.casparServer || 'OVERLAY';
     dataOut.playchannel  = req.body.casparChannel || '1';
     dataOut.playlayer    = req.body.casparLayer || '1';
@@ -241,7 +244,7 @@ router.get('/', function (req, res) {
     dataOut.command      = req.body.command || 'play';
     dataOut.dataformat   = req.body.dataformat || 'xml';
     dataOut.fields       = req.body.DataFields || '{field: f0, value: "Lorem ipsum"}';
-    res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
+    res.status(200).json(dataOut);
     spx.httpPost(dataOut,'/gc/playout')
   });
 
@@ -254,45 +257,51 @@ router.get('/', function (req, res) {
     router.get('/rundown/load/', async (req, res) => {
       let file = req.query.file;
       let dataOut = {};
+      dataOut.message      = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownLoad';
       dataOut.file    = file;
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/rundown/focusFirst/', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusFirst';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/rundown/focusNext/', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusNext';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/rundown/focusPrevious/', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusPrevious';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/rundown/focusLast/', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusLast';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/rundown/stopAllLayers', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownStopAll';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
 // HELPER COMMANDS ----------------------------------------------------------------------------------
@@ -413,47 +422,53 @@ router.get('/', function (req, res) {
 // ITEM COMMANDS ------------------------------------------------------------------------------------
     router.get('/item/play', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemPlay';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/item/play/:id', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemPlayID';
       dataOut.itemID  = req.params.id;
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/item/continue', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemContinue';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/item/continue/:id', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemContinueID';
       dataOut.itemID  = req.params.id;
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/item/stop', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemStop';
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
     router.get('/item/stop/:id', async (req, res) => {
       let dataOut = {};
+      dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemStopID';
       dataOut.itemID  = req.params.id;
       io.emit('SPXMessage2Controller', dataOut);
-      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+      res.status(200).json(dataOut);
     });
 
 
@@ -464,11 +479,12 @@ router.get('/', function (req, res) {
         let file = req.query.file.split('/')[1];
         let RundownFile = path.join(config.general.dataroot, fold, 'data',  file + '.json');
         let dataOut = {};
+        dataOut.message       = 'Sent request to SPX server.'
         dataOut.datafile      = RundownFile;
         dataOut.epoch         = req.query.item;
         dataOut.command       = req.query.command;
         dataOut.prepopulated  = 'false';
-        res.status(200).send('Sent request to SPX server: ' + JSON.stringify(dataOut));
+        res.status(200).json(dataOut);
         spx.httpPost(dataOut,'/gc/playout')
       } catch (error) {
         res.status(500).send('Error in /api/v1/controlRundownItemByID: ' + error);
@@ -563,7 +579,7 @@ router.get('/', function (req, res) {
     });
 
     router.get('/rundown/get', async (req, res) => {
-      res.status(200).send(JSON.stringify(global.rundownData))
+      res.status(200).json(global.rundownData)
     });
 
 

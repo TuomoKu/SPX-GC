@@ -12,7 +12,9 @@
 
 **Completed items**:
 - Added API edpoint `gettemplates?project=MyProject` to return all templates, and their settings, of a given project.
+- Improved API return messages also format changed to JSON (from strings).
 - Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending and `onCont` is still missing...)
+- pkg updated from 4.4.9 to 5.8.0 (due to updated Node16)
 
 **Waiting**:
 - Rundown Variables (does not remove prVar from profile if no users)

@@ -1,0 +1,156 @@
+
+:root {
+    --paleColor: #475663; /* small texts; */
+    --darkColor: rgba(255, 255, 255, 0.2); /* blink off, progress bg */
+    --liteColor: #ffffff; /* blink on */
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    background-color: black;
+}
+
+#clock{
+    opacity: 0; /* animated */
+    width: 90vw;
+    height: 60vh;
+    display: flex;
+    color: white;
+    font-size: 50vh;
+    align-items: center;
+    letter-spacing: 1rem;
+    justify-content: center;
+    /* makes fonts fixed width but not sure if this is ok */
+    font-variant-numeric: tabular-nums; 
+} 
+
+.clock_blink{
+    gap: 4vw;
+    height: 100%;
+    display: flex;
+    padding: 2vw;
+    padding-top: 5vw;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.blinker {
+    width: 3.5vw;
+    height: 3.5vw;
+    background-color: var(--darkColor);
+}
+
+.progress_bar{
+    width: 90%;
+    height: 8vh;
+    padding: 1vw;
+    display: flex;
+    font-size: 2rem;
+    position: relative;
+    align-items: center;
+    justify-content: flex-end;
+    background-color: var(--darkColor);
+ }
+
+.progressBar {
+    /* progress bar */
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    position: absolute;
+    font-family: "LITE";
+}
+
+.pb_time {
+    z-index: 2;
+    font-size: 4vh;
+    line-height: 1em;
+    color: rgb(0, 0, 0);
+    font-family: "LITE";
+}
+
+#bottom_area{
+    width: 90vw;
+    height: 30vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#optional_text {
+    height: 100%;
+    display: flex;
+    font-size: 5vh;
+    flex-grow: 1;
+    font-family: "LITE";
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    color: var(--paleColor);
+    line-height: 1em;
+}
+
+#logo_container {
+    padding: 3vh;
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#logotexture {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#current_time {
+    flex-grow: 1;
+    display: flex;
+    font-size: 5vh;
+    line-height: 1em;
+    text-align: center;
+    align-items: center;
+    font-family: "LITE";
+    justify-content: center;
+    color: var(--paleColor);
+}
+
+#line1, #line2 {
+    width: 2px;
+    height: 80%;
+    background-color: var(--paleColor);
+}
+
+.timesup {
+    width: 100%;
+    display: block;
+    font-size: 20vh;
+    position: absolute;
+    text-align: center;
+    font-family: "BOLD";
+    letter-spacing: 0px;
+    text-transform: uppercase;
+    transform: translateY(-2vh);
+    text-shadow: 0px 1vh 2vh black;
+}
+
+.timesupNros {
+    width: 100%;
+    display: block;
+    font-size: 8vh;
+    position: absolute;
+    text-align: center;
+    font-family: "LITE";
+    letter-spacing: 1vh;
+    transform: translateY(15vh);
+}

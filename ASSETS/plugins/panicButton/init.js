@@ -11,7 +11,7 @@ function PluginInstance() {
             description: 'Clear playout channels',
             overToolTip: 'Send command to SPX to clear all output layers',
             caption: 'PANIC',
-            color: 'black'
+            color: 'red'
         }
         this.btn = UI.button(options);    
         var app = document.getElementById("controllerPluginButtons"); 

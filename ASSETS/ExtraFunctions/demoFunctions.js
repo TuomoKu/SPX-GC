@@ -19,6 +19,48 @@
 // -------------------------------------------------------------- 
 
 
+function CasparCGPlayback(argArr) {
+
+    // EXAMPLE (all options are optional)
+    // options = {
+    //     "playserver": "OVERLAY",
+    //     "playchannel": "1",
+    //     "playlayer": "20",
+    //     "relpathCCG": "VIDEO/SMARTPXVIDEO/MECHWIPE_RGBAM",
+    //     "command": "play"
+    //     "playoptions": "MIX 50 LOOP"
+    // }
+
+    console.log('CasparCGPlayback argArr',argArr);
+
+    let paramet = argArr[0]; // a custom parameter, not used in this function
+    let options = JSON.parse(argArr[1]); // parse options from JSON string
+
+    console.log('JSON', options);
+
+    let data = {};
+    // Target server-channel-layer
+    data.playserver   = options.playserver || 'OVERLAY';
+    data.playchannel  = options.playchannel || '1';
+    data.playlayer    = options.playlayer || '1';
+
+    // Media and playback commands
+    data.relpathCCG   = options.relpathCCG || 'EMPTY';
+    data.command      = options.command ||'play'; 
+    data.playoptions  = options.playoptions || 'CUT'
+
+    // Other
+    data.webplayout   = '-';
+
+    console.log('CasparCGPlayback',data);
+
+
+    // Send the command
+    ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
+}
+
+
+
 function HKOvideoControl(argsArr){
     // request ..... commandRef (startIntroLoop, endWithLogoTransition)
     // returns ..... post a server command
@@ -26,60 +68,48 @@ function HKOvideoControl(argsArr){
     // "function_onPlay": "HKOvideoControl|startIntroLoop|50|f2",
     // "function_onStop": "HKOvideoControl|endWithLogoTransition|50|f2",
 
+    console.log('NOT IN USE');
+    return;
+
+    console.log('HKOvideoControl',argsArr);
+
     let commandRef = argsArr[0]; // startIntroLoop, endWithLogoTransition
-    let condiValue = argsArr[1]; // a value to be used as a conditional (if needed)
+    let condiValue = argsArr[1]; // a value to be used as a conditional (if needed...)
+    let execuDelay = argsArr[2]; // delay (if needed...)
 
-
-    // **************************************
-    // SET FILENAMES HERE (WITHOUT .extension)
-    
-    let HKOVideoINTRO = "HKO/INTROLOOPVIDEO"; // 'VIDEO/KENO_3MIN'
-    let HKOVideoTRANS = "HKO/LOGOTRANSITION"; // 'VIDEO/SMARTPXVIDEO/MECHWIPE_RGBAM'
-    
-    // **************************************
-
-    console.log('HKOvideoControl: ' + commandRef + ", conditional value: " + condiValue);
-    if (condiValue == "off" ) {
-        console.log('HKOvideoControl disabled in template. Exiting.');
-        return;
-    };
+    let HKOVideoINTRO = "VIDEO/SMARTPXVIDEO/BUSINESS-WOMAN-PRESENTING1080"; // Long loop filepath on CasparCG 
+    let HKOVideoTRANS = "VIDEO/SMARTPXVIDEO/MECHWIPE_RGBAM";                // Logo transition filepath
 
     let data = {};
     data.playserver    = 'OVERLAY';
-    data.playchannel   = '1'; 
+    data.playchannel   = '2';  // HKO uses this channel for video playback
     data.webplayout    = '-'; 
     let x; 
 
     switch (commandRef) {
+
         case 'startIntroLoop':
-            console.log('startIntroLoop video, graphics will follow shortly...');
+            console.log('Starting intro loop playback');
             data.relpathCCG    = HKOVideoINTRO;
             data.playlayer     = '1';
-            data.playoptions   = 'MIX 50'
+            data.playoptions   = 'MIX 50 LOOP'
             data.command       = 'play'; 
-            x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
             break;
-
-        case 'endWithLogoTransition':
-            console.log('Fade out graphics, then start logo transition and fadeout introloop...');
-
-            // Play Logo Bumper Transition
-            setTimeout(function () {
-                data.relpathCCG   = HKOVideoTRANS;
-                data.playlayer    = '22';
-                data.playoptions  = 'CUT 0'
-                data.command      = 'play'; 
-                x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
-            }, 100);
-
-            // Fade out loop (with EMPTY)
-            setTimeout(function () {
-                data.relpathCCG    = 'EMPTY';
-                data.playlayer     = '1';
-                data.playoptions   = 'MIX 25'
-                data.command       = 'play'; 
-                x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
-            }, 600);
+            
+        case 'stopIntroLoop':
+            console.log('Fade out intro loop');
+            data.relpathCCG    = 'EMPTY';
+            data.playlayer     = '1';
+            data.playoptions   = 'MIX 25'
+            data.command       = 'play'; 
+            break;
+                
+        case 'startLogoBumper':
+            console.log('Play logo bumper');
+            data.relpathCCG   = HKOVideoTRANS;
+            data.playlayer    = '22';
+            data.playoptions  = 'CUT 0'
+            data.command      = 'play'; 
             break;
 
         default:
@@ -87,6 +117,7 @@ function HKOvideoControl(argsArr){
             return;
             break;
     }
+    x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
 }
 
 
