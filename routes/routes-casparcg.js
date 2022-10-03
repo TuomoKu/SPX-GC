@@ -319,11 +319,11 @@ config.casparcg.servers.forEach((element,index) => {
     data = { spxcmd: 'updateStatusText', status: 'Communication established with ' + CurName + '.' };
     io.emit('SPXMessage2Client', data);
 
-    logger.verbose('GC connected to CasparCG as \'' + CurName + '\' at ' + CurHost + ":" + CurPort + '.');
+    logger.verbose('SPX connected to CasparCG as \'' + CurName + '\' at ' + CurHost + ":" + CurPort + '.');
   });
 
   CurCCG.on('data', function (data) {
-    logger.verbose('GC received data from CasparCG ' + CurName + ': ' + data);
+    logger.verbose('SPX received data from CasparCG ' + CurName + ': ' + data);
 
     // we must parse the data so we can evaluate it...
     let CCG_RETURN_TEXT = String(data).replace('\r','').replace('\n',''); // convert return object to string, strip \r\n

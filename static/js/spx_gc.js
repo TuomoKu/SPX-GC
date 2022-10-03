@@ -261,7 +261,7 @@ function ajaxpost(urlPath, data, prepopulated='false'){
     .catch(function (error) {
         working('');
         if (error.response) {
-            // statusbar('GC server returned error, see console and logs','error')
+            // statusbar('SPX server returned error, see console and logs','error')
             statusbar(error.response.data,'error')
             showMessageSlider(error.response.data, 'error')
             // msg, type='info', persist=false
@@ -269,11 +269,11 @@ function ajaxpost(urlPath, data, prepopulated='false'){
             console.log(error.response.status);
             console.log(error.response.headers);
         } else if (error.request) {
-            statusbar('GC server connection error','error')
+            statusbar('SPX server connection error','error')
             console.log(error.request);
         } else {
           // Something happened in setting up the request that triggered an Error
-          statusbar('GC request error, see console','warn')
+          statusbar('SPX request error, see console','warn')
           console.log('Error', error.message);
         }
         console.log(error.config);
@@ -1800,7 +1800,7 @@ function updateFormIndexes() {
 
 
 function SaveNewSortOrder() {
-    // This will save the rundown opened in GC, for instance when
+    // This will save the rundown opened in SPX, for instance when
     // items dragged to new sorting order. Maybe other events also?
     working('saving');
     let data={};
@@ -1867,10 +1867,10 @@ function saveTemplateItemChanges(elementID) {
             console.log(error.response.status);
             console.log(error.response.headers);
         } else if (error.request) {
-            statusbar('GC server connection error','error')
+            statusbar('SPX server connection error','error')
             console.log(error.request);
         } else {
-          statusbar('GC request error, see console','warn')
+          statusbar('SPX request error, see console','warn')
           console.log('Error', error.message);
         }
         console.log(error.config);
@@ -1922,10 +1922,10 @@ function saveTemplateItemChangesByElement(itemrow) {
             console.log(error.response.status);
             console.log(error.response.headers);
         } else if (error.request) {
-            statusbar('GC server connection error','error')
+            statusbar('SPX server connection error','error')
             console.log(error.request);
         } else {
-          statusbar('GC request error, see console','warn')
+          statusbar('SPX request error, see console','warn')
           console.log('Error', error.message);
         }
         console.log(error.config);

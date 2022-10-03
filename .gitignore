@@ -86,6 +86,8 @@ ASSETS/templates/softpix/HIFK_Jumbo/
 ASSETS/templates/softpix/techmahindra/
 ASSETS/templates/softpix/SPX_GoogleMaps
 ASSETS/templates/softpix/picturall_core_templates
+ASSETS/templates/softpix/SPX_Speaker_Countdown/
+ASSETS/templates/softpix/SPX_Speaker_Countdown_Lang/
 
 ASSETS/templates/Tellyo/
 ASSETS/templates/analogway/
@@ -160,3 +162,4 @@ env.json
 _env.json
 .gitignore
 static/tt2020_reactions.json
+

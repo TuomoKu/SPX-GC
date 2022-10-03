@@ -48,7 +48,7 @@ module.exports = {
 
 
   httpPost: function (JSONdata, endPoint) {
-    // Send a http POST to an endpoint on the GC server.
+    // Send a http POST to an endpoint on the SPX server.
     // console.log('httpPost received', endPoint, JSONdata);
     let JSONdata2 = JSON.stringify(JSONdata);
     try {

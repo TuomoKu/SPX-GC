@@ -29,6 +29,10 @@ const axios = require('axios')
 // const { config } = require("winston"); // <!-- this is auto-generated here by the IDE and will screw things up! Beware >:-[
 // global.rundownData is introduced in server.js 
 
+// May need to add custom header capabilities from config.json
+
+
+
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
 router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, async function (req, res) {
   await SaveRundownDataToDisc(); // Added in 1.0.15
@@ -1648,7 +1652,7 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
   catch (error)
     {
       logger.error('Error in gc/clearPlayouts while clearing channels. [' + error + '].');
-      res.status(500).send('GC error in gc/clearPlayouts [' + error + '].')  // error 500 AJAX RESPONSE
+      res.status(500).send('SPX error in gc/clearPlayouts [' + error + '].')  // error 500 AJAX RESPONSE
     };
 
 });
