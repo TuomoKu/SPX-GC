@@ -105,6 +105,9 @@ socket.on('SPXMessage2Controller', function (data) {
             let lastIndex = document.querySelectorAll('.itemrow').length-1;
             focusRow(lastIndex)
             break;
+        case 'RundownFocusByID':
+            focusRow(getElementByEpoch(data.itemID))
+            break;
 
         case 'RundownStopAll':
             stopAll()
