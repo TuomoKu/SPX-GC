@@ -149,6 +149,12 @@ router.get('/', function (req, res) {
             {
               "vers"    :     "1.0",
               "method"  :     "GET",
+              "param"   :     "focusByID/1234567890",
+              "info"    :     "Move focus by ID on the rundown."
+            },
+            {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "stopAllLayers",
               "info"    :     "Animate all layers (used by the current rundown) out, but does not clear layers."
             }
@@ -284,6 +290,14 @@ router.get('/', function (req, res) {
     router.get('/rundown/focusLast/', async (req, res) => {
       let dataOut = {};
       dataOut.APIcmd  = 'RundownFocusLast';
+      io.emit('SPXMessage2Controller', dataOut);
+      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+    });
+
+    router.get('/rundown/focusByID/:id', async (req, res) => {
+      let dataOut = {};
+      dataOut.APIcmd  = 'RundownFocusByID';
+      dataOut.itemID  = req.params.id;
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
     });
