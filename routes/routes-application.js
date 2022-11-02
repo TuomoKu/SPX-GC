@@ -624,6 +624,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
         if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "xml"};
         if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
+        if (!SPXGCTemplateDefinition.steps)       {SPXGCTemplateDefinition.steps       = "1"};
 
         // v.1.0.15 add imported timestamp
         SPXGCTemplateDefinition.imported = String(Date.now()); // epoch. This COULD be used to compare template versions in profile/rundown.
