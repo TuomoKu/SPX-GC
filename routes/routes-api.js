@@ -246,7 +246,8 @@ router.post('/exportCSVfile', async (req, res) => {
         item_out,
         item_uicolor,
         item_dataformat,
-        item_relpath
+        item_relpath,
+        item_steps
 
     rundownData.templates.forEach((item,index) => {
       // console.log('Iterating template index ' + index);
@@ -263,6 +264,7 @@ router.post('/exportCSVfile', async (req, res) => {
         item_uicolor     = item.uicolor || '0';
         item_dataformat  = item.dataformat || 'json';
         item_relpath     = item.relpath || '';
+        item_steps       = item.steps || '1';
 
         CSVdata  = '\r\n# SPX Rundown item CSV export. (More info: https://spxgc.tawk.help/article/help-csv-files)\r\n\r\n' 
         CSVdata += '# description #;' + item_description + '\r\n' 
@@ -274,6 +276,7 @@ router.post('/exportCSVfile', async (req, res) => {
         CSVdata += '# uicolor #;' + item_uicolor + '\r\n'
         CSVdata += '# dataformat #;' + item_dataformat + '\r\n'
         CSVdata += '# relpath #;' + item_relpath + '\r\n'
+        CSVdata += '# steps #;' + item_steps + '\r\n'
         CSVdata += '# onair #;false\r\n'
         CSVdata += '# project #;' + showFolder  + '\r\n'
         CSVdata += '# rundown #;' + datafile  + '\r\n'
