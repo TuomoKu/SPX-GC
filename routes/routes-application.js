@@ -624,6 +624,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
         if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "xml"};
         if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
+        if (!SPXGCTemplateDefinition.steps)       {SPXGCTemplateDefinition.steps       = "1"};
 
         // v.1.0.15 add imported timestamp
         SPXGCTemplateDefinition.imported = String(Date.now()); // epoch. This COULD be used to compare template versions in profile/rundown.
@@ -1003,6 +1004,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         var t_relpath
         var t_project
         var t_rundown
+        var t_steps
 
 
         let curLineItems = []
@@ -1069,6 +1071,10 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
               t_rundown = curLineItems[1].trim();
               break;
 
+            case '# steps #':
+              t_steps = curLineItems[1].trim();
+              break;
+
 
             case '# FieldUUIDs #':
               // this line carries f-field ids (f0, f1, etc)
@@ -1130,6 +1136,8 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
             templateData.onair        = t_onair
             templateData.dataformat   = t_dataformat
             templateData.relpath      = t_relpath
+            templateData.steps        = t_steps
+
 
             // Append warning
             templateData.DataFields.push({
@@ -1346,6 +1354,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       dataOut.playchannel= ItemData.playchannel;
       dataOut.playlayer  = ItemData.playlayer;
       dataOut.webplayout = ItemData.webplayout;
+      dataOut.steps = ItemData.steps;
       dataOut.dataformat = ItemData.dataformat || 'xml'; // TODO: Move this to all template's definition objet. Values 'xml' or 'json', defaulting to 'xml'
       ItemData.DataFields.forEach(item => {
         // We pass data as custom JSON format and the format is changed
@@ -1441,14 +1450,16 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             let thisChannel = item.playchannel || '1';
             let thisLayer   = item.playlayer || '1';
             let thisWeb     = item.webplayout || '-';
-            let thisOutput  = thisServer.trim() + thisChannel.trim() + thisLayer.trim() + thisWeb.trim() + thisOnair.trim();
+            let thisSteps   = item.steps || '1';
+            let thisOutput  = thisServer.trim() + thisChannel.trim() + thisLayer.trim() + thisWeb.trim() + thisOnair.trim() + thisSteps.trim();
 
             let dataOnair   = 'true' // because we are in play;
             let dataServer  = dataOut.playserver || '-';
             let dataChannel = dataOut.playchannel || '1';
             let dataLayer   = dataOut.playlayer || '1';
             let dataWeb     = dataOut.webplayout || '-';
-            let dataOutput  = dataServer.trim() + dataChannel.trim() + dataLayer.trim() + dataWeb.trim() + dataOnair.trim();
+            let dataSteps   = dataOut.steps || '1';
+            let dataOutput  = dataServer.trim() + dataChannel.trim() + dataLayer.trim() + dataWeb.trim() + dataOnair.trim() + dataSteps.trim();
 
             if (index!=templateIndex && thisOutput==dataOutput){
               RundownData.templates[index].onair='false';

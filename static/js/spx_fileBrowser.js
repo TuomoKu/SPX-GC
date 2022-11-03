@@ -259,6 +259,7 @@ function playItem() {
         spxPlayoutData.playchannel   = extensionConfig.template.playchannel || 1;
         spxPlayoutData.playlayer     = extensionConfig.template.playlayer || 10;
         spxPlayoutData.webplayout    = extensionConfig.template.webplayout || 10;
+        spxPlayoutData.steps         = extensionConfig.template.steps || 1;
         spxPlayoutData.relpathCCG    = spxPlayoutData.relpath.split('.htm')[0];
         spxPlayoutData.fields        = fFields
         spxPlayoutData.command       = 'play';
@@ -292,6 +293,7 @@ function stopItem() {
     spxPlayoutData.playchannel   = extensionConfig.template.playchannel || 1;
     spxPlayoutData.playlayer     = extensionConfig.template.playlayer || 10;
     spxPlayoutData.webplayout    = extensionConfig.template.webplayout || 10;
+    spxPlayoutData.steps         = extensionConfig.template.steps || 1;
     spxPlayoutData.relpathCCG    = spxPlayoutData.relpath.split('.htm')[0];
     spxPlayoutData.command       = 'stop';
     if (Array.isArray(spxPlayoutData.playserver)) {
@@ -333,6 +335,7 @@ window.addEventListener('load', async () => {
                 "playchannel": 1,
                 "playlayer": 2,
                 "webplayout": 2,
+                "steps": 1,
                 "imageLayerAnimationStyle": {
                     "inAnimation": "fade",
                     "easing": "linear"

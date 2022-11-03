@@ -83,6 +83,7 @@
               </button>
             <div class="collapsiblecontent spxConfigHead" >
               <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">
+              <input type="hidden" name="templateData[steps]" value="{{steps}}">
               <input type="hidden" name="showFolder" value="{{../folder}}">
               <input type="hidden" name="TemplIndex" value="{{@index}}">
               <input type="hidden" name="templateData[DataFields]" value="{{{DataToJSONString DataFields}}}">
