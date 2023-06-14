@@ -274,7 +274,7 @@
                     formattedJsonOut[KEY]=VAL;
                     let e = document.getElementById(iframeID).contentWindow.document.getElementById(KEY);
                     if (e) {
-                        e.innerText=VAL;
+                        e.innerHTML=VAL;
                     }
                 });
                 return JSON.stringify(formattedJsonOut)
