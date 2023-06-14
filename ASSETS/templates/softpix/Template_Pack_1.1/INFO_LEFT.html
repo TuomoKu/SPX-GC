@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2022 Softpix (MIT License)
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+
+    This demo template does not have linked properties so all layers remain in their positions and
+    do not "make space" for others.
+
+    This template demonstrates a use of a dropdown selector to pick an icon. The same approach
+    can be used to drive other aspects of templates: colors, optional elements, animations, logos,
+    host names, yes/no options etc...
+
+    Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spx.graphics | Copyright 2022 Softpix
+    Version: 1.1.0 / Dynamic theming
+    Build: Wed Aug 24 2022 16:09:18 GMT+0300 (Itä-Euroopan kesäaika) 
+
+	----
+
+	Changes:
+    29.06.2022 Added FPS value check from SPX renderer
+    24.08.2022 Fixed bug FPS value check (if not available)
+
+-->
+
+
+<head>
+    <meta charset="utf-8" />
+    <title>INFOLEFT</title>
+    <script type="text/javascript" src="js/lib/gsap3.2.6.min.js"></script>
+    <script type="text/javascript" src="js/spx_interface.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+    <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+    <link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+
+    <script>
+
+        function runTemplateUpdate() {
+            // console.log("runTemplateUpdate()");
+            e('DynamicTheme').href = e('f99').innerText;
+            e('f0_gfx').innerHTML = htmlDecode(e('f0').innerText);
+            gsap.set("#line1", { opacity: 0 });
+            runAnimationIN();
+        }
+
+
+        function runAnimationIN() {
+            // console.log("runAnimationIN()");
+            let videoPath="";
+            let dur = 0.8;
+            let iconDIV = document.getElementById('icon');
+            let iconVAL = document.getElementById('f1').innerText;
+            videoPath = "img/" + iconVAL.trim() + ".webm";
+            if (iconVAL=='0' || iconVAL=='') {
+                // no icon
+                iconDIV.style.display='none';
+            } else {
+                // use icon
+                document.getElementById('f0').style.paddingLeft = '0.5rem'; // move text a bit closer to icon
+                // console.log('Setting icon video to ' + videoPath);
+                document.getElementById('loop').src = videoPath;
+                videoplayer  = document.getElementById('video');
+                setTimeout(function(){ videoplayer.load(); }, 10);
+                setTimeout(function(){ videoplayer.play(); }, 100);
+                iconDIV.style.display='inline-block';
+            }
+
+            if (window.top.spxRenderer && window.top.spxRenderer.fps) {
+                gsap.ticker.fps(window.top.spxRenderer.fps);    
+                console.log('spxRenderer: ' + window.top.spxRenderer.fps + ' FPS')
+            }
+
+            gsap.set("#TG", { opacity: 1 });
+            gsap.set("#line1", { opacity: 1 });
+            gsap.fromTo(
+                "#line1",
+                dur,
+                    {
+                        // start value
+                        width:0
+                    },
+                    {
+                        width:function(i, target)
+                            {
+                            target.style.width = "auto"; 
+                            var width = target.offsetWidth-3;
+                            target.style.width = "0px";
+                            return width;
+                            },
+                        ease: "back.out(2.0)"
+                    }
+                );
+            
+            gsap.fromTo("#f0_gfx", { opacity:  0 }, { delay: 0.1, duration: dur - 0.2, opacity  : 1, ease: "Power3.easeOut" });
+            gsap.fromTo("#f0_gfx", { x:     -200 }, { delay: 0.1, duration: dur - 0.1, x        : 0, ease: "back.out(2.0)" });
+            gsap.fromTo("#icon"  , { scale:  0 }, { delay: 0.0, duration: dur - 0.0, scale    : 1, ease: "Power3.easeOut" });
+        }
+
+        function runAnimationOUT() {
+            // console.log("runAnimationOUT()");
+            let dur = 0.7;
+            gsap.set("#line1", { delay: dur + 0.0, opacity: 0 });
+            gsap.to("#line1",  { delay: 0.00, duration: dur + 0.00, width:    0, ease: "back.in(1.2)" });
+            gsap.to("#f0_gfx", { delay: 0.00, duration: dur + 0.00, x:     -200, ease: "back.in(1.2)" });
+            gsap.set("#TG",    { delay: dur - 0.0, opacity: 0 });
+            gsap.fromTo("#icon", { scale:  1 }, { delay: 0.0, duration: dur + 0.1, scale     : 0,   ease: "Power4.easeIn" });
+        }
+    </script>
+
+    <style>
+
+        .tgpos{
+            position: absolute;
+            transform-origin: top left;
+            border-left: 1.4rem solid var(--spx-accent-color);
+            display:inline-block;
+            left: 3.2vw;
+            top: 9%;
+            z-index: 10;
+            opacity:0;
+        }
+
+        .icon{
+            position: relative;
+            transform-origin: 25% 50%;
+            height: 3.7rem;
+            width: 3.8rem;
+            background-color: var(--spx-bgcol1-color);
+        }
+
+    </style>
+
+    <script type="text/javascript">
+        window.SPXGCTemplateDefinition = {
+            "description": "Top left with icon",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "7",
+            "webplayout": "7",
+            "out": "manual",
+            "dataformat": "json",
+            "uicolor": "7",
+            "DataFields": [
+                {
+                    "field" : "comment",
+                    "ftype" : "textfield",
+                    "title" : "Nickname of this item on the rundown",
+                    "value" : "[ Item nickname ]"
+                },
+                {
+                    "ftype" : "instruction",
+                    "value" : "This template demonstrates a use of dropdowns. Animated icons are small webm-videos in img-subfolder."
+                },
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Info text",
+                    "value" : "Headquarters"
+                },
+                {
+                    "field": "f1",
+                    "ftype": "dropdown",
+                    "title": "Icon",
+                    "value": "live",
+                    "items": [
+                        {
+                            "text": "No icon",
+                            "value": "0"
+                        },
+                        {
+                            "text": "Telephone",
+                            "value": "phone"
+                        },
+                        {
+                            "text": "Live",
+                            "value": "live"
+                        }
+                    ]
+                },
+                {
+                    "field": "f99",
+                    "ftype": "filelist",
+                    "title": "Visual theme",
+                    "assetfolder" : "./themes/" ,
+                    "extension" : "css",
+                    "value": "./themes/default.css",
+                }  
+
+            ]
+        };
+    </script>
+
+</head>
+
+<body>
+    <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
+        <div id="TG" class="tgpos region SKEW LEFTELEMENTS">
+            <div id="icon" style="display: inline-block;" class="icon fleft">
+                <video id="video" width="200" height="200" style="width:100%;height:100%;" autoplay loop>
+                    <source id="loop" src="" type="video/webm">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div id="line1" class="color1 accentRight region fleft">
+                <div class="font7 nowrap ANTISKEW" id="f0_gfx"></div>
+            </div>
+        </div>
+        <div style="opacity:0;"  id="f0"></div>
+        <div style="opacity:0;"  id="f1"></div>
+        <div style="opacity:0;"  id="f99"></div>
+    </div data-info="SPXWindow ends">
+
+</body>
+</html>

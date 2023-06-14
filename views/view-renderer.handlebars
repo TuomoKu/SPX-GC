@@ -11,8 +11,8 @@
   <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
   <!--      SPX GRAPHICS CONTROLLER      -->
   <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
-  <!--         (c) 2020- SmartPX         -->
-  <!--          http://spxgc.com         -->
+  <!--         (c) 2020- Softpix         -->
+  <!--        http://spx.graphics        -->
   <!--                                   -->
   <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 
@@ -138,6 +138,7 @@
             const limitLayers   = urlParams.get('layers');
             if (limitLayers) {
                 const limitItems   = limitLayers.replace("[","").replace("]","").replace(" ", "").split(","); 
+                // Potential bug! FIXME: The value of LayerNro currently MUST be a string. Not integer!
                 if ( limitItems.includes(LayerNro) ) {
                     // console.log('Commands to layer ' + LayerNro + ' allowed.');
                     return true;
@@ -197,6 +198,22 @@
             let protocol = location.protocol;
             if (protocol != "http:" && protocol != "https:") {
                 alert('Please use this via server! Functions and CORS may not work when used as a file. (Current protocol: ' + protocol + ')');
+            }
+
+
+            // If FPS given in the url param store it. Added in 1.1.3.
+            const queryString   = window.location.search;
+            const urlParams     = new URLSearchParams(queryString);
+            const fps           = urlParams.get('fps');
+
+            if (!window.top.spxRenderer) { window.top.spxRenderer = {} }
+
+            if (fps) {
+                console.log('Framerate specified: ' + fps + ' FPS.');
+                window.top.spxRenderer.fps = fps;
+            } else {
+                // console.log('Framerate not specified.');
+                window.top.spxRenderer.fps = null;
             }
 
             // Resize window according to resolution
@@ -292,11 +309,11 @@
             // The 'templates' is a subfolder in MEDIA, which is 
             // routed as static! At least during dev.
             TemplateRoot = "/templates/";
-            console.log('Local comms using [' + TemplateRoot + '].');
+            // console.log('Local comms using [' + TemplateRoot + '].');
             var socket = io();
         } else {
             TemplateRoot = "templates/";
-            console.log('Remote comms ' + GCserver + ' using [' + TemplateRoot + '].');
+            // console.log('Remote comms ' + GCserver + ' using [' + TemplateRoot + '].');
             var socket = io(GCserver);
         }
 

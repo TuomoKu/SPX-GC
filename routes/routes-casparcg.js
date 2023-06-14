@@ -93,7 +93,8 @@ router.get('/system/:data', (req, res) => {
       break;
 
     case 'TEMPLATEFOLDER':
-      directoryPath = path.normalize(config.general.templatefolder);
+      // directoryPath = path.normalize(config.general.templatefolder);
+      directoryPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates');
       require('child_process').exec('start "" ' + directoryPath);
       break;
 
@@ -281,7 +282,7 @@ router.post('/disable', async (req, res) => {
     res.status(200).send(response); // ok 200 AJAX RESPONSE
   } catch (error) {
       console.error('ERROR', error);
-      let errmsg = 'Server error in /gc/saveConfigChanges [' + error + ']';
+      let errmsg = 'Server error in CCG disable [' + error + ']';
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };

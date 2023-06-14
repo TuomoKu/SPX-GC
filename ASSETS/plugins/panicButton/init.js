@@ -6,7 +6,7 @@ function PluginInstance() {
     var plug = this;
 
     this.render = () => {
-        console.log('PLUGIN panicButton appending to dom...');
+        console.log('PLUGIN loading: panicButton...');
         let options = {
             description: 'Clear playout channels',
             overToolTip: 'Send command to SPX to clear all output layers',

@@ -18,21 +18,23 @@
       padding: 1em;
     }
 
-    a:link {
+    
+    .apiLink {
       font-family: monospace;
       text-decoration: none;
-      font-size: 1.2em;
-      background-color: #eee;
+      font-size: 1.4em;
       font-weight: bold;
       padding: 0.2em 0.2em;
+      background-color: rgba(255,255,255,0.4);
     }
 
-    a:hover {
+    .apiLink:hover {
       background-color: rgb(255, 248, 189);
     }
 
     h3 {
       margin-bottom: 0;
+      font-size: 1.5em;
     }
 
     p {
@@ -44,31 +46,81 @@
       max-width: 100%;
       margin: 0px auto;
     }
+
+    .POST {
+      background-color: rgb(242, 180, 180);
+      width: 5em;
+      text-align: center;
+      font-size: 0.7em;
+    }
+
+    .GET {
+      background-color: rgb(165, 165, 165);
+      width: 5em;
+      text-align: center;
+      font-size: 0.7em;
+    }
+
+    .info {
+      background-color: rgba(255,255,255,0.4);
+    }
+
+    .vers {
+      background-color: rgba(255,255,255,0.4);
+      font-size: 0.7em;
+      text-align: center;
+    }
+
+    td {
+      padding: 0.3em;
+    }
+
+    .api {
+      width: 100%;
+    }
   </style>
 </head>
 
 
 <body class="bg_body">
-  <H1>API v1</H1>
-  <B>http/get</B> commands available for external systems to trigger SPX-GC events.
+  <H1>SPX Graphics / API v1</H1>
+  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); text-transform: uppercase;">SPX Host-ID: <B>{{{getHostID}}}</B></small>
   <BR>
-  SPX-GC will need to be open in a browser (in the same network as the server) for most of these to work.
+  <BR>
+  <B>http/get</B> commands available for external systems to trigger SPX events.
+  <BR>
+  SPX will need to be open in a browser (in the same network as the server) for most of these to work.
   <BR><BR>
   <small>Remember, SPX is primarily targeted to live, manually operated
   workflows and API does not currently allow for modification of template
   data or other advanced procedures.</small>
-  <BR>
-
-
+  <BR><BR>
+  
   {{#each functionList.sections}}
     <BR>
     <h3>{{section}}</h3>
     <p>{{info}}</p>
-    {{#each commands}}
-      <A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A><BR>
-      <p>{{info}}</p>
-    {{/each}}
+    <table class="api">
+      {{#each commands}}
+        <tr>
+          <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+        </tr>
+        <tr>
+          <td class="{{method}}">{{method}}</td>
+          <td class="vers">{{vers}}</td>
+          <td class="info">{{info}}</td>
+        </tr>
+        <tr>
+          <td colspan="3">&nbsp;</td>
+        </tr>
+        
+      {{/each}}
+    </table>
   {{/each}}
+
+  <br>
+  <BR>
+  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); ">If you have needs for additional integrations or graphics, please <A href="https://spx.graphics/contact" target="website">contact us</A>.</B></small>
 
 </body>
 </html>

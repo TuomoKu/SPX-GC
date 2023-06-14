@@ -1,14 +1,14 @@
 /*
-  Copyright 2020 SmartPX
+  Copyright 2020 Softpix
   CSS file for basic stuff. Must be loaded first.
 */
 
 
 html, body {
-    margin: 5px;
-    height: 99.5%;
+    margin: 0px;
+    height: 100%;
     color: white;
-    overflow: hidden;
+    /* overflow: hidden; */
     font-size: 1.5vw;
     box-sizing: border-box;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
@@ -23,13 +23,13 @@ html, body {
 
 
 .HIDE{
-    /* WHILE DEBUGGING unhide OBJECTS with display:no-none */
+    /* WHILE DEBUGGING unhide OBJECTS with display:no-none ++++++++++++++++++++++++++ */
     display     :      none; /*change this to no-none to see debug data in editors */
     border      :      2px dashed rgb(0, 248, 0);
     padding     :      5px;
     margin      :      5px;
     background-color: rgba(173, 76, 11, 0.246);
-    /* +++++++++++++++++++++++++++++++++++++++++++++++++++  */
+    /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  */
 }
     
 
@@ -174,7 +174,7 @@ td.aright{
     font-size: 0.6rem;
     margin-top: 1em;
     padding: 0.6em 0.4em 0.6em 0.4em;
-    overflow: hidden;
+    /* overflow: hidden; */
     background-color: rgba(0,0,0,0.1);
     border-top: 1px solid rgba(0,0,0,0.7) !important;
     border-bottom: 1px solid rgba(255,255,255,0.3) !important;
@@ -199,18 +199,27 @@ td.aright{
     border: 0px solid salmon;
     }
     
-
+.helpid,
 .copyid {
-    margin-left: 1em;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.2em 0.6em;
-    border-radius: 0.4em;
-    color:rgb(255, 255, 255);
-    transition: background-color 0.2s linear ;
+    margin-left: 0.25em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.3em 0.6em;
+    border-radius: 0.2em;
+    color:rgba(255, 255, 255, 0.4);
+    transition: all 0.2s linear ;
     }
 
 .copyid:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    color:rgb(255, 255, 255);
+    transition: all 0.2s linear ;
+    }
+
+.helpid:hover {
+    background: rgb(5, 45, 145);
+    color:rgb(255, 255, 255);
+    transition: all 0.2s linear ;
+    cursor: help;
     }
     
 .content {
@@ -374,7 +383,7 @@ div.curfolder{
     {
         color: rgb(250, 201, 96);
         opacity: 1.0;
-        cursor: pointer;
+        cursor: help;
     }
 
 .tableheaderHelp2
@@ -528,7 +537,27 @@ div.curfolder{
         background-size: 10vw;
     }
 
+.registrationDiv {
+    display: block;
+    padding: 0.05em;
+    background-color: rgba(18, 82, 25, 0.604);
+    border-radius: 200px;
+    color: green;
+    border: 2px solid rgba(0, 128, 0, 0.317);
+    text-align: center;
+    font-size: 0.8em;
+    margin-top: 0.8em;
+    opacity: 0.7;
+    transition: all 0.3s ease-in-out;
+}
 
+.registrationDiv:hover {
+    border: 2px solid orange;
+    background-color: rgba(12, 132, 6, 0.441);
+    transform: scale(0.98);
+    transition: all 0.3s ease-in-out;
+    opacity: 1.0;
+}
 
 .right {
     margin-left: 60%;
@@ -606,6 +635,12 @@ div.curfolder{
         cursor: default;
     }
 
+.spacer {
+    /* empty span between UI controls, spacer ftype */
+    display: block; 
+    background-color: green;
+    height: 1em;
+}
 
 .spxFlexContainer {
     display: flex; /* flex or inline-flex */
@@ -614,6 +649,7 @@ div.curfolder{
     padding: 0.0em;
     border: 0px solid yellow;
     margin: 0px;
+    gap: 2px;
 }
 
 .spxFlexItem {
@@ -714,6 +750,12 @@ div.curfolder{
     white-space: nowrap;
 }
 
+.prvar {
+    color: rgba(255, 255, 255, 0.2);
+    font-family: monospace;
+    float: right;
+    padding-right: 1em;
+}
 
 .spxInfotext {
     font-size: 0.6em;
@@ -723,6 +765,15 @@ div.curfolder{
     text-rendering: optimizeLegibility;
     opacity: 0.7;
     line-height: 120%;
+}
+
+.spxInfoRegtext {
+    font-size: 0.7em;
+    color:rgb(198, 198, 198);
+    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .spxTableHeadsmall {
@@ -751,6 +802,9 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     line-height: 16px;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
     font-size:  14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 
@@ -887,7 +941,7 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 }
 
 .itemrow:hover {
-    background-color: rgba(153, 218, 255, 0.07);
+    background-color: rgba(153, 218, 255, 0.08);
     border-width: 2px 2px 2px 15px;
 }
 
@@ -1003,4 +1057,8 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 
 .closePromo:hover {
     transform: rotate(90deg);
+}
+
+.wrap {
+    white-space: normal;
 }

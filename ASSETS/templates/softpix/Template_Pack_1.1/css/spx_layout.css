@@ -1,0 +1,155 @@
+
+
+/* 
+-------------------------------------------------------------
+(c) Copyright 2020 SmartPX <tuomo@smartpx.fi, www.smartpx.fi>
+-------------------------------------------------------------
+SmartPX's CSS sizing for CasparCG templates.
+
+  - There are two classes, one of them MUST BE USED as a class
+    in SPXWindow element in html:
+
+    SPXFIXSIZE..... for any given 16:9 resolution in pixels such
+                    as 1920x1080 or 1280x720 given below.
+    SPX_AUTOSIZE... for any resolution - notice the browser
+                    viewport MUST BE in 16:9 aspect ratio,
+                    otherwise they layout will break.
+
+Changes:
+  - 120420201327 TK Original completed version
+
+-------------------------------------------------------------
+*/
+
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+
+}
+
+body, html {
+  margin: 0;
+  background-color: rgba(255,255,255,0);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  padding: 0;
+  font-size: 1vw;
+  }
+
+
+/* HTML Tags Above, Custom Classes Below (alphabetized) */
+
+ .sheetTickerDelim::before, .boxBefore::before{
+  content: '\2589';
+  color:  var(--spx-accent-color);
+  font-size: 0.7rem;
+  margin-left: 0.1em;
+  margin-right: 1.3em;
+  transform: translateY(-0.5em);
+  display: inline-block;
+}
+
+
+.SKEW     { transform: skew(var(--skew-amount-degs)); }
+.ANTISKEW { transform: skew(var(--skew-amount-back)); }
+
+.LEFTELEMENTS #line1 { border-top-right-radius:     var(--rounding-first);}
+.LEFTELEMENTS #line2 { border-bottom-right-radius:  var(--rounding-second);}
+
+.RIGHTELEMENTS #line1  { border-top-left-radius:     var(--rounding-first);}
+.RIGHTELEMENTS .color3 { border-bottom-left-radius:     var(--rounding-second);}
+
+
+.color1{
+  /* */
+  background-color:   var(--spx-bgcol1-color);
+  color:              var(--spx-txcol1-color);
+  text-shadow:        0 0 10px var(--spx-txsha1-color);
+  margin:             0px;
+}
+
+.color2{
+  background-color:   var(--spx-bgcol2-color);
+  color:              var(--spx-txcol2-color);
+  text-shadow:        0 0 10px var(--spx-txsha2-color);
+  margin:             0px;
+}
+
+.color3{
+  background-color:   var(--spx-bgcol3-color);
+  color:              var(--spx-txcol3-color);
+  text-shadow:        0 0 10px var(--spx-txsha3-color);
+  margin:0px;
+}
+
+
+:root {
+  --skew-amount-back: calc(var(--skew-amount-degs) * -1);
+}
+
+
+
+
+
+
+.fleft {
+    transform-origin: top left;
+    float: left;
+    margin: 0;
+  }
+
+.fright {
+    transform-origin: top right;
+    float: right;
+  }
+
+.fbreak {
+    clear: both;
+  }
+
+.nowrap{
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+
+.region{
+  white-space: nowrap;
+  overflow-x: scroll;
+  overflow: hidden;
+}
+  
+
+.SPXWindow {
+    position: absolute; 
+    /* background-image: url('../img/arrows.png'); */
+    background-size: 100% 100%;
+    background-color: rgba(255,255,255,0);
+    overflow: hidden;
+    transform-origin: top left;
+    border: rgb(0, 255, 0) 0px solid;
+  }
+
+.SPX_AUTOSIZE {
+  /* Auto scaling of elements. Note: viewport must be 16:9!*/
+  width: 100%;
+  height: calc(100vw*0.5625); 
+  /* padding-top: 56.25%; */
+}
+
+.SPX_FIXSIZE{
+  /* Fixed output size */
+    width: 1920px;
+    height: 1080px;
+}
+
+
+.vtop{
+  vertical-align: top;;
+}

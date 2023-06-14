@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    Ticker from Google Sheet data
+
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions and
+    end of styles -section for customizing section header colors.
+    
+    This template is reading it's content from a Google Spreadsheet, which in turn is getting it's content
+    from BBC News Service. This is an update version of another TICKER SHEET demo template which did not
+    work on CasparCG (data from Google was 'null'). This v.2 uses Google API v4 browser side library for
+    communicating with the API. Keep in mind this requires INTERNET ACCESS and does not work OFFLINE. 
+
+    See the example data source spreadsheet:
+    https://docs.google.com/spreadsheets/d/1scpoPiIc7-Vi_BWW4KFndowM_4AD7isMZKIw1_fP7_0/edit#gid=889875008
+
+    Script on this template requires API-KEY from Google. Read more about getting your own key:
+    https://developers.google.com/sheets/api/guides/authorizing#APIKey
+
+    PLEASE NOTE: API key in this example is restricted to this one specific demo usage and if quota gets
+                 high, this will be closed and the demo will seize to work. I RECOMMEND changing the api-key
+                 to one of your own and also the spreadsheet itself. 
+
+    If you put this in production, you would probably want to change two "textfields" into "hidden" fields
+    (in the SPXGCTemplateDefinition object within the script tag below) to prevent operators from changing
+    API-KEY and Google document ID values by accident... 
+
+    Need custom templates? Get in touch! https://spx.graphics/contact
+
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spx.graphics | Copyright 2022 Softpix
+    Version: 1.1.0 / Dynamic theming
+    Build: Wed Aug 24 2022 16:09:18 GMT+0300 (Itä-Euroopan kesäaika) 
+
+	----
+
+    CHANGES:
+    12.01.2022 Fixed Google Sheet tabs back to NEWS,TECHNOLOGY,BUSINESS. Changed tab colors.
+    29.06.2022 Added FPS value check from SPX renderer
+    24.08.2022 Fixed bug FPS value check (if not available)
+
+-->
+
+<head>
+    <meta charset="utf-8" />
+    <title>TICKER SCROLL</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="js/lib/jquery-3.3.1.min.js"></script>
+    <script src="js/lib/gsap3.2.6.min.js"></script>
+    <script src="js/spx_interface.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+    <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+    <link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+    <script>
+        // start = new Date().getTime();
+        function runAnimationIN() {
+            window.paused = false // let it run
+            let dur = 0.8;
+
+            if (window.top.spxRenderer && window.top.spxRenderer.fps) {
+                gsap.ticker.fps(window.top.spxRenderer.fps);    
+                console.log('spxRenderer: ' + window.top.spxRenderer.fps + ' FPS')
+            }
+
+            gsap.set("#line1", { width:0 });
+            gsap.fromTo("#line1", 0.1, { opacity: 0 }, { delay: 0.2, opacity:1 });
+            gsap.set("#TICKER", {display:"block"});
+            gsap.to("#TICKER", 0.2, {opacity: 1});
+            gsap.fromTo(
+                "#TICKER",
+                dur,
+                    {
+                        x:function(i, target)
+                            {
+                            var x = target.offsetWidth-3;
+                            target.style.left = x;
+                            return x;
+                            },
+                    },
+                    {
+                        x:0,
+                        ease: "power3.out"
+                    }
+                );
+            gsap.fromTo(
+                "#line1",
+                dur+0.2,
+                    {
+                        width:0
+                    },
+                    {
+                        delay: 0.7,
+                        width:function(i, target)
+                            {
+                            target.style.width = "auto"; 
+                            var width = target.offsetWidth;
+                            target.style.width = "0px";
+                            return width;
+                            },
+                        // onComplete:function() { gsap.set("#line1", {width:"auto"});  },
+                        ease: "power3.inOut"
+                    }
+                );
+            // gsap.fromTo("#line1", { borderRightWidth: 10 }, { delay: 1.4, duration: 5.1, borderRightWidth:  0,   ease: "Power3.easeOut" });
+        }
+
+        function runAnimationOUT() {
+            let dur = 0.7;
+            gsap.to("#line1",     { duration: dur + 0.00, width:    0, ease: "back.in(1.2)" });
+            gsap.set("#TICKER",   { delay:    dur, display: "none"});
+
+            setTimeout(() => {
+                // stop scrolling, reset position, section to 0
+                window.paused = true
+                document.getElementById('spxTicker').style.left = '110%';
+                SectionSelector = 0;
+            }, 1000);
+
+
+
+        }
+
+    </script>
+
+    <style>
+
+        #line1 {
+            width: 0px; /* animated */
+        }
+
+        .tickerZone{
+            padding: 0;
+            top: 85.5%;
+            z-index: 10;
+            left: 3.2vw;
+            right: 3.2vw;
+            position: absolute;
+            border: 0px solid yellow;
+        }
+
+        .tgpos{
+            opacity: 0; /* animated */
+            display:block;
+            position: relative;
+            transform-origin: top left;
+            border-left: 1.4rem solid var(--spx-accent-color);
+        }
+
+
+        .ticker {
+            z-index: 1;
+            width: 100%;
+            border-left: 1.4rem;
+            border: 0px solid rgb(21, 255, 0);
+        }
+
+        .spxTicker {
+            left: 108%;
+            bottom: 0.3rem;
+            font-size: 1.6rem;
+            position: relative;
+            line-height: 2.5rem;
+            text-transform: uppercase;
+            color: var(--spx-txcol1-color);
+            padding: 0.9rem 1rem 0.1rem 1rem; 
+            font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+        }
+
+        .LastItem{
+            opacity: 0;
+        }
+
+        .tab{
+            opacity: 0;  
+            margin: 0px;
+            z-index: 20;
+            left: -10px;
+            height: 100%;
+            position: absolute;
+            display: inline-block;
+            box-shadow: black 10px 0px 30px;
+            padding: 0.6rem 2rem 0.1rem 2rem;
+            background-color: rgb(61, 61, 61); /* DEFAULT COLOR FOR TABS */
+        }
+
+
+        /*  If you add other worksheets you can speficy section header colors below.
+            Name is formatted: ".SECTION_<name>" and must be available as template
+            data in f2, such as "NEWS, SPORT, WEATHER", and also in the Google Sheet
+            and a CSS class for each here.
+
+            Note, if Worksheet name has a space in it (such as "SPORT NEWS") the
+            class name must be "SECTION_SPORT_NEWS" (ie. with underscore as space)
+        */
+
+        
+        .SECTION_NEWS {
+            background-color:   #9e0606;
+            color:              #ffffff;
+        }
+        
+        
+        .SECTION_TECHNOLOGY  {
+            background-color:   #ac064b;
+            color:              #ffffff;
+        }
+        
+        .SECTION_BUSINESS {
+            background-color:   #210849;
+            color:              #ffffff;
+        }
+        
+        .SECTION_TOPICS {
+            background-color:   #313131;
+            color:              #ffffff;
+        }
+
+        .SECTION_AUTOT,
+        .SECTION_MEDIA,
+        .SECTION_OSAKKEET {
+            background-color:   #020282;
+            color:              #ffffff;
+        }
+        
+        /* --- add your own section header names/styles above here  -- */
+
+    </style>
+
+
+
+    <script>
+        window.SPXGCTemplateDefinition = {
+            "description": "News ticker from Google Sheet",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "3",
+            "webplayout": "3",
+            "out": "manual",
+            "dataformat": "json",
+            "uicolor": "7",
+            "DataFields": [
+                {
+                    "field" : "comment",
+                    "ftype" : "textfield",
+                    "title" : "Nickname of this item on the rundown",
+                    "value" : "[ Item nickname ]"
+                },
+
+                {
+                    "ftype" : "instruction",
+                    "value" : "Ticker with Google Sheet as the data source. Please change API-KEY and DOCUMENT-ID to your own. Read sourcecode for comments. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+                },
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Google Sheet DocumentID",
+                    "value" : "1scpoPiIc7-Vi_BWW4KFndowM_4AD7isMZKIw1_fP7_0"
+                },
+                {
+                    "field" : "f2",
+                    "ftype" : "textfield",
+                    "title" : "Google API-KEY",
+                    "value" : "AIzaSyB9jTBHXWu5INdNgwyAAHZMPnuIqeXjks4"
+                },
+                {
+                    "ftype" : "instruction",
+                    "value" : "Below Worksheets will be read from the Google Sheet document. You can specify CSS colors for each."
+                },
+                {
+                    "field" : "f1",
+                    "ftype" : "textfield",
+                    "title" : "Worksheets (tabs) to read",
+                    "value" : "NEWS, TECHNOLOGY, BUSINESS"
+                },
+                {
+                    "field": "f99",
+                    "ftype": "filelist",
+                    "title": "Visual theme",
+                    "assetfolder" : "./themes/" ,
+                    "extension" : "css",
+                    "value": "./themes/default.css",
+                }  
+
+            ]
+        };
+    </script>
+</head>
+
+<body>
+    <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
+        <div class="tickerZone region">
+            <div id="TICKER" class="tgpos region SKEW">
+                <div id="line1" class="color1 region accentRight">
+                    <div class="ticker" id="ticker" >
+                        <div class="font3 tab ANTISKEW" id="SectionHeader">&nbsp;</div>
+                        <div class="spxTicker ANTISKEW" id="spxTicker">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- invisible are for incoming template values -->
+    <div style="display: none;" data-info="Hidden placeholders for template data:">
+        <div id="f0" data-info="Document ID placeholder"></div>
+        <div id="f1" data-info="Worksheets list placeholder"></div>
+        <div id="f2" data-info="API-KEY placeholder"></div>
+        <div id="f99" data-info="dynamic theme"></div>
+    </div>
+
+<script>
+    let ScrollSpeed = 3.25; // Typical speed approx 1.5 - 2.0
+    let TickerData=[];
+    let TickerStarted = 0;
+    let SectionSelector = 0;
+    window.paused = true;
+
+    function start() {
+        window.paused = false;
+        StartTicker(SectionSelector)
+    }
+
+    async function StartTicker(CurrentSectionIndex) {
+        // console.log('Starting ticker with section index ' + CurrentSectionIndex);
+        try {
+            if (CurrentSectionIndex===0) {
+                TickerData = await getSheetData()
+            }
+            await populateDom(TickerData, CurrentSectionIndex)
+            setTimeout(function(){ PlayTickerDOM(CurrentSectionIndex) }, 500);  // delayed start
+            window.paused = false;
+        } catch (error) {
+            console.error('Unable to start ticker. Error: ', error)
+        }
+    }; 
+
+    
+    function getSheetData()  {
+        const SHEET_COL = 'C'; // All items from this COLUMN will be loaded
+        const SHEET_ROW = '2'; // starting from this ROW number.
+
+        if (window.paused) {
+            // console.log('PAUSED: Not loading new data')
+            return
+        }
+
+        return new Promise((resolve,reject) => {
+            var rangesArray = []
+            SheetNames = document.getElementById('f1').innerText.split(',');
+            if (SheetNames.length < 1 || SheetNames[0]=='' ) {
+                reject('No worksheet names provided, cannot continue.');
+                return
+            }
+
+            SheetNames.forEach(worksheetName => {
+                rangesArray.push(`${worksheetName.trim()}!${SHEET_COL}${SHEET_ROW}:${SHEET_COL}`)
+            });
+
+            // console.log('RangesArray:', rangesArray);
+
+            gapi.client.init({
+                'apiKey': document.getElementById('f2').innerText,
+                'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4']
+                })
+            .then(function() {
+                gapi.client.sheets.spreadsheets.values.batchGet({
+                    spreadsheetId: document.getElementById('f0').innerText,
+                    ranges: rangesArray
+                })
+                .then(function(response) {
+                    if (response.result.valueRanges) {
+                        response.result.valueRanges.forEach((range, index) => {
+                            TickerData[index] = {}
+                            TickerData[index].section = SheetNames[index].trim()
+                            TickerData[index].items = []
+                            if (range.values) {
+                                range.values.forEach(item => {
+                                    TickerData[index].items.push(item)
+                                });
+                            } else {
+                                console.warn("Please note: section " + SheetNames[index] + " had no items, will scroll blank.")
+                            }
+                        });
+                    } else {
+                        console.log('Empty list');
+                    }
+                    console.log('Ticker loaded from Google Sheet', TickerData)
+                    resolve(TickerData);
+                },
+                function(response) {
+                    console.log('Error while requesting Google API: ' + response.result.error.message);
+                    reject(response);
+                },)
+
+            }, function(reason) {
+                reject(reason);
+            });
+
+        })
+      }
+
+    function populateDom(TickerData, CurrentSectionIndex) {
+        if (window.paused) {
+            // console.log('PAUSED: Not populating data')
+            return
+        }
+
+        // console.log('Populating DOM');
+        let spxTicker = document.getElementById('spxTicker');
+        document.getElementById('spxTicker').innerHTML="&nbsp;";
+        return new Promise(resolve => {
+            spxTicker.innerHTML="&nbsp;";
+            TickerData[CurrentSectionIndex].items.forEach((item,index) => {
+                if (index==0)
+                {
+                    spxTicker.innerHTML=item;
+                }
+                else
+                {
+                    spxTicker.innerHTML+='&nbsp;&nbsp;<span class="sheetTickerDelim" style="margin-left:0.5em;"></span>&nbsp;' + item;
+                }
+            });
+            spxTicker.innerHTML+='<span class="LastItem" id="LastItem">LAST</span>'
+            resolve();
+          }
+        )
+      }
+
+    function PlayTickerDOM(CurrentSectionIndex) {
+        if (window.paused) {
+            console.log('PAUSED: Not playing Ticker')
+            return
+        }
+        try {
+            if (TickerData) {
+                let SectionName = TickerData[CurrentSectionIndex].section || '';
+                document.getElementById('SectionHeader').innerText = SectionName;
+                document.getElementById('SectionHeader').classList = "font3 tab ANTISKEW SECTION_" + SectionName.toUpperCase().replace(' ', '_');
+                // console.log('---- Playing section ' + SectionName);
+                gsap.fromTo("#SectionHeader",  { opacity:    0 }, { delay: 2.0, duration: 0.1, opacity: 1,   ease: "none" }); 
+                gsap.fromTo("#SectionHeader",  { y:       -100 }, { delay: 2.0, duration: 0.7, y:       0,   ease: "back.out(1.5)" }); 
+                gsap.ticker.add(scrollToLeft);
+            }
+        } catch (error) {
+            console.warn('Some problem playing ticker', error)
+        }
+    }
+
+    function scrollToLeft() {
+        if (window.paused) {
+            console.log('PAUSED: Not moving to left')
+            gsap.ticker.remove(scrollToLeft);
+            return
+        }
+        let SheetList = document.getElementById('f1').innerText.split(',');
+        let spxTicker = document.getElementById('spxTicker');
+        let spxTiZone = document.getElementById('TICKER');
+        let LEFT = spxTicker.offsetLeft;
+        let LAST = document.getElementById('LastItem');
+        spxTicker.style.left = (LEFT-ScrollSpeed) + 'px';
+        var zoneRect = spxTiZone.getBoundingClientRect(),
+        elemRect = LAST.getBoundingClientRect(),
+        offset   = elemRect.left - zoneRect.left;
+        if ( offset < 200 ) {
+            gsap.ticker.remove(scrollToLeft);
+            gsap.fromTo("#SectionHeader",  { y:        0 }, { delay: 0.0, duration: 0.6, y:     100,   ease: "back.in(1.5)" }); 
+            gsap.fromTo("#SectionHeader",  { opacity:  1 }, { delay: 0.5, duration: 0.1, opacity: 0,   ease: "none" }); 
+            spxTicker.style.left = '100%';
+            if (SectionSelector>=SheetList.length-1) { SectionSelector=0 }
+            else { SectionSelector+=1 }
+            setTimeout(function(){ StartTicker(SectionSelector) }, 300);
+        }
+    }
+
+    function runTemplateUpdate() {
+        gapi.load('client', start);
+        e('DynamicTheme').href = e('f99').innerText;
+        setTimeout(() => {
+            runAnimationIN()
+        }, 100); // delay to allow time for theme to load
+    }
+     
+    
+</script>
+
+</body>
+</html>
+
+
+

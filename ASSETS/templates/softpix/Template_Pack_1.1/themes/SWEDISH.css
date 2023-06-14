@@ -1,0 +1,59 @@
+/*
+
+  STYLE ..... Swedish furniture
+  SHAPE ..... Straight
+  CORNERS ... Sharp corners
+  COLORS .... Swedish :-)
+
+  ----------------------------------------------------------------------
+
+  This temaplate pack uses "customize.css" to read colors and some shape
+  attributes. Experiment with styles copying and renaming files. See
+  css-folder with few example customization example files.
+
+*/
+
+
+:root {
+  /* BRAND ACCENT COLORS primary and secondary */
+  --spx-accent-color: rgb(248, 213, 0);
+  
+  /* PLATE 1 */
+  --spx-bgcol1-color: rgb(0, 84, 158);
+  --spx-txcol1-color: rgb(248, 213, 0);
+  --spx-txsha1-color: rgba(27, 111, 190, 0.733);
+  
+  /* PLATE 2 */
+  --spx-bgcol2-color: rgb(6, 42, 73);
+  --spx-txcol2-color: rgb(255, 255, 255);
+  --spx-txsha2-color: rgba(255, 255, 255, 0.5);
+
+  /* PLATE 3 */
+  --spx-bgcol3-color: rgb(255, 255, 255);
+  --spx-txcol3-color: rgb(0, 0, 0);
+  --spx-txsha3-color: rgba(8, 37, 71, 0.2); 
+
+  /* SKEW degrees for angled backgrounds (try also negative values, such as -15deg)*/
+  --skew-amount-degs: -0deg;
+  
+  /* ROUNDING VALUES for backgrounds */
+  --rounding-first:  0.0em;
+  --rounding-second: 0.0em;
+  
+}
+
+/* Use <c#>word</c#> tags for inline text colors */
+c1 { color: var(--spx-accent-color); }
+c2 { color: var(--spx-bgcol1-color); }
+c3 { color: red ;}
+c4 { color: orange; }
+c5 { color: yellow; }
+c6 { color: green; }
+c7 { color: cyan; }
+c8 { color: blue; }
+c9 { color: purple; }
+
+@font-face { font-family: "UI-Light";   src: url("../fonts/Oswald-ExtraLight.ttf");  }
+@font-face { font-family: "UI-Regular"; src: url("../fonts/Oswald-Regular.ttf");  }
+@font-face { font-family: "UI-Bold";    src: url("../fonts/Oswald-SemiBold.ttf"); }
+@font-face { font-family: "UI-Black";   src: url("../fonts/Oswald-Bold.ttf");   }

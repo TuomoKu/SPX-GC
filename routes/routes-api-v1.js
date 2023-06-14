@@ -35,16 +35,22 @@ router.get('/', function (req, res) {
           "endpoint"  :     "/api/v1/",
           "commands": [
             {
+              "vers"    :     "v1.0.12",
+              "method"  :     "GET",
               "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
-              "info"    :     "GET (v1.0.12) Uses an invoke handler to call a function in a template. See required parameters in the example call above."
+              "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above."
             },
             {
+              "vers"    :     "v1.0.12",
+              "method"  :     "POST",
               "param"   :     "directplayout",
-              "info"    :     "POST (v1.0.12) Populate template and execute a play/continue/stop -command to it. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"/vendor/pack/template.html\", \"DataFields\": [{field: \"f0\", value: \"Lorem\"},{field: \"f1\", value: \"Ipsum\"}]; \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX configuration."
+              "info"    :     "Populate template and execute a play/continue/stop -command to it. Post request body example here as stringified JSON: {\"casparServer\": \"OVERLAY\",  \"casparChannel\": \"1\",  \"casparLayer\": \"20\",  \"webplayoutLayer\": \"20\", \"relativeTemplatePath\": \"/vendor/pack/template.html\", \"DataFields\": [{field: \"f0\", value: \"Lorem\"},{field: \"f1\", value: \"Ipsum\"}]; \"command\": \"play\"} The casparServer refers to a named CasparCG connection in SPX configuration."
             },
             {
+              "vers"    :     "v1.1.0",
+              "method"  :     "GET",
               "param"   :     "controlRundownItemByID?file=HelloWorld-project/My%20first%20rundown&item=1616702200909&command=play",
-              "info"    :     "GET (v.1.1.0) Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
+              "info"    :     "Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
             }
           ]
         },
@@ -54,28 +60,52 @@ router.get('/', function (req, res) {
           "endpoint"  :     "/api/v1/",
           "commands": [
             {
+              "vers"    :     "v1.0.14",
+              "method"  :     "GET",
               "param"   :     "feedproxy?url=http://corsfeed.net&format=xml",
-              "info"    :     "GET (v1.0.14) A proxy endpoint for passing feed data from CORS protected datasources. Implemented for SPX SocialPlayout Extension."
+              "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources. Implemented for SPX SocialPlayout Extension."
             },
             {
+              "vers"    :     "v1.1.0",
+              "method"  :     "GET",
               "param"   :     "panic",
-              "info"    :     "GET (v1.1.0) Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
+              "info"    :     "Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
             },
             {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
               "param"   :     "getprojects",
-              "info"    :     "GET (v1.1.1), returns projects as an array of strings."
+              "info"    :     "Returns projects as an array of strings."
             },
             {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
               "param"   :     "getrundowns?project=HelloWorld-project",
-              "info"    :     "GET (v1.1.1), returns rundown names of a given project as an array of strings."
+              "info"    :     "Returns rundown names of a given project as an array of strings."
             },
             {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
               "param"   :     "rundown/get",
-              "info"    :     "GET (v1.1.1), returns current rundown as json. "
+              "info"    :     "Returns current rundown as json. "
             },
             {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
               "param"   :     "getlayerstate",
-              "info"    :     "GET (v1.1.1), returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
+              "info"    :     "Returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
+            },
+            {
+              "vers"    :     "v1.1.2",
+              "method"  :     "GET",
+              "param"   :     "version",
+              "info"    :     "Returns SPX version info"
+            },
+            {
+              "vers"    :     "v1.1.3",
+              "method"  :     "GET",
+              "param"   :     "gettemplates?project=HelloWorld-project",
+              "info"    :     "Returns templates and their settings from a given project."
             },
             ]
         },
@@ -87,28 +117,46 @@ router.get('/', function (req, res) {
           "endpoint"  :     "/api/v1/rundown/",
           "commands": [
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "load?file=MyFirstProject/MyFirstRundown",
-              "info"    :     "GET Open rundown from project / file."
+              "info"    :     "Open rundown from project / file."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "focusFirst",
-              "info"    :     "GET Move focus to the first item on the rundown."
+              "info"    :     "Move focus to the first item on the rundown."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "focusNext",
-              "info"    :     "GET Move focus down to next item, will not circle back to top when end is reached."
+              "info"    :     "Move focus down to next item, will not circle back to top when end is reached."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "focusPrevious",
-              "info"    :     "GET Move focus up to previous item, will not circle back to bottom when top is reached."
+              "info"    :     "Move focus up to previous item, will not circle back to bottom when top is reached."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "focusLast",
-              "info"    :     "GET Move focus to the last item on the rundown."
+              "info"    :     "Move focus to the last item on the rundown."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
+              "param"   :     "focusByID/1234567890",
+              "info"    :     "Move focus by ID on the rundown."
+            },
+            {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "stopAllLayers",
-              "info"    :     "GET Animate all layers (used by the current rundown) out, but does not clear layers."
+              "info"    :     "Animate all layers (used by the current rundown) out, but does not clear layers."
             }
 
           ]
@@ -120,28 +168,40 @@ router.get('/', function (req, res) {
           "endpoint"  :     "/api/v1/item/",
           "commands": [
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "play",
-              "info"    :     "GET Start focused item."
+              "info"    :     "Start focused item."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "play/1234567890",
-              "info"    :     "GET Start item by ID on the active rundown."
+              "info"    :     "Start item by ID on the active rundown."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "continue",
-              "info"    :     "GET Issue continue command to selected item. Notice this needs support from the template itself and does not work as play or stop."
+              "info"    :     "Issue continue command to selected item. Notice this needs support from the template itself and does not work as play or stop."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "continue/1234567890",
-              "info"    :     "GET Continue to item by ID on the active rundown. Notice this needs support from the template itself and does not work as play or stop."
+              "info"    :     "Continue to item by ID on the active rundown. Notice this needs support from the template itself and does not work as play or stop."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "stop",
-              "info"    :     "GET Stop focused item."
+              "info"    :     "Stop focused item."
             },
             {
+              "vers"    :     "1.0",
+              "method"  :     "GET",
               "param"   :     "stop/1234567890",
-              "info"    :     "GET Stop item by ID on the active rundown."
+              "info"    :     "Stop item by ID on the active rundown."
             }
 
           ]
@@ -234,6 +294,14 @@ router.get('/', function (req, res) {
       res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
     });
 
+    router.get('/rundown/focusByID/:id', async (req, res) => {
+      let dataOut = {};
+      dataOut.APIcmd  = 'RundownFocusByID';
+      dataOut.itemID  = req.params.id;
+      io.emit('SPXMessage2Controller', dataOut);
+      res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
+    });
+
     router.get('/rundown/stopAllLayers', async (req, res) => {
       let dataOut = {};
       dataOut.APIcmd  = 'RundownStopAll';
@@ -242,6 +310,22 @@ router.get('/', function (req, res) {
     });
 
 // HELPER COMMANDS ----------------------------------------------------------------------------------
+
+    router.get('/version', async (req, res) => {
+      let data = {};
+      data.vendor = "Softpix";
+      data.product = "SPX";
+      data.version = global.vers;
+      data.id = global.pmac;
+      data.os = process.platform;
+      if (global.env && global.env.vendor) {
+        data.env = {}
+        data.env.vendor = global.env.vendor;
+        data.env.product = global.env.product;
+        data.env.version = global.env.version;
+      }
+      return res.status(200).json(data)
+    });
 
     router.get('/panic', async (req, res) => {
       // This WILL NOT change playlist items onair to "false"!
@@ -254,7 +338,6 @@ router.get('/', function (req, res) {
       if (!spx.CCGServersConfigured){ return } // exit early, no need to do any CasparCG work
       PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
       return res.status(200).json({ message: 'Panic executed. Layers cleared forcefully.' })
-
     });
 
     router.get('/feedproxy', async (req, res) => {
@@ -293,6 +376,20 @@ router.get('/', function (req, res) {
       }
       const fileListAsJSON = await spx.GetDataFiles(config.general.dataroot + "/" + project + "/data/");
       return res.status(200).json(fileListAsJSON)
+    });
+
+    router.get('/gettemplates', async (req, res) => {
+      // Added in 1.1.3
+      let project = req.query.project || '';
+      if (!project) {
+        return res.status(500).json({ type: 'error', message: 'Project name required as parameter (eg ?project=ProjecName)' })
+      }
+      const result = await spx.GetTemplatesFromProfileFile(project);
+      if ( result[0]==200 ) {
+        return res.status(200).json(result[1])
+      } else {
+        return res.status(result[0]).json(result[1])
+      }
     });
 
     router.get('/getlayerstate', async (req, res) => {
@@ -403,11 +500,8 @@ router.get('/', function (req, res) {
         let file = req.query.rundownfile || '';
         let oldI = req.query.ID || '';
         let newI = req.query.newID || '';
-
-        console.log('changeItemID - file [' + file + '], old [' + oldI + '], new [' + newI + ']')
-
         if (!file || !oldI || !newI) {
-          console.warn('Missing data: file [' + file + '], old [' + oldI + '], new [' + newI + ']')
+          throw 'Missing data: file [' + file + '], old [' + oldI + '], new [' + newI + ']';
         }
 
         let datafile = path.normalize(file);
@@ -416,8 +510,7 @@ router.get('/', function (req, res) {
         // First check for conflicts
         RundownData.templates.forEach((item,index) => {
           if (item.itemID === newI) {
-            logger.verbose('ID not changed')
-            throw 'ID conflict'
+            throw 'ID-conflict'
           }
         });
 
@@ -428,22 +521,64 @@ router.get('/', function (req, res) {
         });
 
         RundownData.updated = new Date().toISOString();
-        global.rundownData = RundownData; // push to memory also for next take
+        global.rundownData = RundownData;
         await spx.writeFile(datafile,RundownData);
-        // await spx.writeFile(RundownData.filepath,RundownData);
-        // console.log('Saved');
         logger.verbose('Changed item ID to ' + newI);
         return res.status(200).send('ID changed to ' + newI);
       } catch (error) {
-        console.log('Error', error);
-        logger.error('changeItemID error', error)  ;
+        switch (error) {
+          case 'ID-conflict':
+            msg = 'ID conflict, ID was not changed.'
+            lvl = 'warn'
+            break;
+          
+          default:
+            msg = 'Error in changeItemID: ' + error
+            lvl = 'error'
+        }
+        logger[lvl](msg)  ;
         return res.status(409).send('ID not changed');
       }
-});
+    });
 
-router.get('/rundown/get', async (req, res) => {
- res.status(200).send(JSON.stringify(global.rundownData))
-});
+
+    router.get('/changeItemData', async (req, res) => {
+      // Added in 1.1.1
+      // ID button in SPX controller uses this API endpoint:
+      // /api/v1/changeItemData?rundownfile=C:/SPX/DATAROOT/PROJECT/data/list.json & ID=1234567890 & key=out & newValue=manual
+
+      try {
+        let file = req.query.rundownfile || '';
+        let epoc = req.query.ID || '';
+        let prop = req.query.key || '';
+        let valu = req.query.newValue || '';
+        if (!file || !epoc || !prop || !valu) {
+          logger.warn('Missing data from changeItemData: file: [' + file + '], ID: [' + epoc + '], key: [' + prop + '], value: [' + valu + ']')
+          throw 'Missing data, see log.';
+        }
+        let datafile = path.normalize(file);
+        const RundownData = await spx.GetJsonData(datafile);
+        RundownData.templates.forEach((item,index) => {
+          if (item.itemID === epoc) {
+            item[prop] = valu
+          }
+        });
+
+        RundownData.updated = new Date().toISOString();
+        global.rundownData = RundownData; // push to memory also for next take
+        await spx.writeFile(datafile,RundownData);
+        logger.verbose('ChangeItemData: file: [' + file + '], ID: [' + epoc + '], key: [' + prop + '], value: [' + valu + ']')
+        return res.status(200).send(prop + ' changed to ' + valu);
+      } catch (error) {
+        console.log('Error', error);
+        logger.error('changeItemData error', error)  ;
+        return res.status(409).send('Failed to change ' + prop + ' to ' + valu + '!');
+      }
+    });
+
+    router.get('/rundown/get', async (req, res) => {
+      res.status(200).send(JSON.stringify(global.rundownData))
+    });
 
 
 module.exports = router;

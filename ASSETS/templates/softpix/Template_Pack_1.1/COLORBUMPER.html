@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2022 Softpix (MIT License)
+	Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+	
+	A simple color bumper. This template has an out mode of "none" which means the animation can only
+	be started and the play indicator is never "lit" in GC. There is also a "timed out" method 
+	available. Just give a numeric value to "out" parameter, such as 5000 (= 5 seconds).
+
+	Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spx.graphics | Copyright 2022 Softpix
+    Version: 1.1.0 / Dynamic theming
+    Build: Wed Aug 24 2022 16:09:18 GMT+0300 (Itä-Euroopan kesäaika) 
+
+	----
+
+	Changes:
+	20.06.2022 Added headline, replaced gsap with anime.js
+
+-->
+
+	<html>
+    <head>
+			<title>SPX Bumper Demo</title>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<script src="js/lib/anime.min.js"></script>
+			<script src="js/spx_interface.js"></script>
+			<link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+
+			<script>
+
+				function runTemplateUpdate() {
+					e('DynamicTheme').href = e('f99').innerText;
+					e('headline').innerHTML = htmlDecode(e('f0').innerText);
+					setTimeout(function () {
+						runAnimationIN();
+					}, 100);
+				}
+
+				function runAnimationIN() {
+					// Grow
+					anime({
+						targets:    		'.GROW',
+						easing:     		'easeOutCubic',
+						opacity:    		{ value: [0,1], 			delay: 0, duration: 100, easing: 'linear' },
+						width: 				{ value: ['0%', '100%'], 	delay: 0, duration: 600, easing: 'easeInOutCubic' },
+						borderRightWidth: 	{ value: [1, 200], 			delay: 0, duration: 300, easing: 'easeInOutCubic' },
+					});
+
+					anime({
+						targets:    		'#headline',
+						opacity:    		{ value: [0,1],   		delay:  0, duration:  500, easing: 'linear' },
+						translateX:		    { value: ['-20%','0%'], delay: 50, duration: 1500, easing: 'easeOutQuad' },
+					});
+					
+					// Shrink
+					anime({
+						targets:    		'#allGfx',
+						opacity:    		{ value: [1,0], delay: 1200, duration: 600, easing: 'linear' },
+					});
+					anime({
+						targets: 			'.SHRI',
+						delay: 				500,
+						duration: 			600,
+						width: 				['100%','0%'],
+						easing: 			'easeInCubic'
+					});
+				}
+
+				function runAnimationOUT() {
+					console.log('runAnimationOUT does not do anything to bumper');
+				}
+
+			</script>
+			
+
+			<script type="text/javascript">
+				window.SPXGCTemplateDefinition = {
+					"description": "Bumper",
+					"playserver": "OVERLAY",
+					"playchannel": "1",
+					"playlayer": "18",
+					"webplayout": "18",
+					"out": "none",
+					"dataformat": "json",
+					"uicolor": "7",
+					"DataFields": [
+						{
+							"field" : "comment",
+							"ftype" : "textfield",
+							"title" : "Nickname of this item on the rundown",
+							"value" : "[ Item nickname ]"
+						},
+						{
+							"ftype" : "instruction",
+							"value" : "This template has 'none' as the out mode, which means it does not need to be stopped separately."  
+						},
+						{
+							"field": "f0",
+							"ftype": "textfield",
+							"title": "Bumper headline (optional)",
+							"value": "HEADLINE"
+						},
+						{
+							"field": "f99",
+							"ftype": "filelist",
+							"title": "Visual theme",
+							"assetfolder" : "./themes/" ,
+							"extension" : "css",
+							"value": "./themes/default.css",
+						}  
+					]
+				};
+			</script>
+
+			<link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+			<link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+			<link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+			<style type="text/css">
+				.GROW {
+					position: absolute;
+					width: 10%;
+					height: 100%;
+					border-right: 2px solid white;
+					bottom: 0px;
+					top: 0px;
+					opacity:0;
+				}
+
+				.SHRI {
+					position: absolute;
+					width: 100%;
+					height: 100%;
+					right: 0px;
+				}
+
+
+				.COLOR {
+					background-color: var(--spx-accent-color);
+					width: 100%;
+					height: 100%;
+				}
+
+				#fullflex {
+					position: absolute;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					height: 100%;
+					width: 100%;
+					z-index: 2;
+				}
+
+				#headline {
+					color: var(--spx-txcol1-color);
+					font-size: 8em;
+					font-family: 'UI-Bold';
+					opacity: 0; /* animation */
+				}
+
+				#allGfx {
+					position: absolute;
+					height: 100%;
+					width: 100%;
+					z-index: 2;
+				}
+	
+			
+			</style>
+</head>
+	
+	
+	<!-- can put this into body for testing onload="setTimeout(play(),100);" -->
+    <body>
+		<div id="allGfx">
+			<div id="fullflex">
+				<div id="headline"></div>
+			</div>
+			<div class="GROW">
+				<div class="SHRI">
+					<div class="COLOR"></div>
+				</div>
+			</div>
+		</div>
+
+		<span id="f0" style="position: absolute; opacity: 0;"></span>
+		<span id="f99" style="position: absolute; opacity: 0;"></span>
+  	</body>
+  </html>

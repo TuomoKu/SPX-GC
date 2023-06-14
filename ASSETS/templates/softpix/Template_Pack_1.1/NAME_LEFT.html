@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2022 Softpix (MIT License)
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+
+    This demo template does not have linked properties so all layers remain in their positions and
+    do not "make space" for others.
+
+    Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spx.graphics | Copyright 2022 Softpix
+    Version: 1.1.0 / Dynamic theming
+    Build: Wed Aug 24 2022 16:09:18 GMT+0300 (Itä-Euroopan kesäaika) 
+
+	----
+
+	Changes:
+    29.06.2022 Added FPS value check from SPX renderer
+    24.08.2022 Fixed bug FPS value check (if not available)
+
+-->
+
+
+
+<head>
+    <meta charset="utf-8" />
+    <title>LEFT</title>
+    <script type="text/javascript" src="js/lib/gsap3.2.6.min.js"></script>
+    <script type="text/javascript" src="js/spx_interface.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+    <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+    <link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+    <script>
+
+        function runTemplateUpdate() {
+            e('DynamicTheme').href = e('f99').innerText;
+            e('f0_gfx').innerHTML = htmlDecode(e('f0').innerText);
+            e('f1_gfx').innerHTML = htmlDecode(e('f1').innerText);
+            e('f2_gfx').innerHTML = htmlDecode(e('f2').innerText);
+            gsap.set("#line1", { opacity: 0 });
+            let DataVisibilityPairs = [
+                {
+                    id:     'f0',
+                    hide:   'line1'
+                },
+                {
+                    id:     'f1',
+                    hide:   'f1_parent'
+                },
+                {
+                    id:     'f2',
+                    hide:   'f2_parent'
+                }
+            ];
+
+            DataVisibilityPairs.forEach(function(pair,index){
+                let dataElement = document.getElementById(pair.id);
+                let showElement = document.getElementById(pair.hide);
+                if (dataElement.innerText=='')
+                    {
+                        showElement.style.display='none';
+                    }
+                else
+                    {
+                        showElement.style.display='inline-block';
+                    }
+
+            });//end for
+
+            runAnimationIN();
+        }
+
+
+
+        function runAnimationIN() {
+            let dur = 0.8;
+
+            if (window.top.spxRenderer && window.top.spxRenderer.fps) {
+                gsap.ticker.fps(window.top.spxRenderer.fps);    
+                console.log('spxRenderer: ' + window.top.spxRenderer.fps + ' FPS')
+            }
+
+            gsap.set("#TG", { opacity: 1 });
+            gsap.set("#line1", { opacity: 1 });
+            gsap.fromTo(
+                "#line1",
+                dur,
+                    {
+                        // start value
+                        width:0
+                    },
+                    {
+                        // end value
+                        width:function(i, target)
+                            {
+                            target.style.width = "auto"; 
+                            var width = target.offsetWidth;
+                            target.style.width = "0px"; //now reset it to 0
+                            return width; //return the natural height
+                            },
+                        ease: "back.out(2.0)"
+                    }
+                );
+            
+            gsap.fromTo("#f0_gfx", { opacity:  0 }, { delay: 0.1, duration: dur - 0.2, opacity  : 1,       ease: "Power3.easeOut" });
+            gsap.fromTo("#f0_gfx", { x:     -200 }, { delay: 0.1, duration: dur - 0.2, x        : 0,
+                        //ease: "back.out(2.0)"
+                          ease: "Power3.easeOut"
+                        });
+            
+            gsap.fromTo(
+                "#line2",
+                    {
+                        // start value
+                        height:0
+                    },
+                    {
+                        // end value
+                        duration: dur/3,
+                        delay: dur-0.3,
+                        height:function(i, target)
+                            {
+                            target.style.height = "auto"; 
+                            var height = target.offsetHeight;
+                            target.style.height = "0px"; //now reset it to 0
+                            return height; //return the natural value
+                            },
+                        onComplete:function() { gsap.set("#line2", {height:"auto"});  }
+                    }
+                );
+            gsap.set("#line2", { delay: 0.00, opacity: 1 });
+            gsap.fromTo("#f1_gfx", { y:     -200 }, { delay: dur - 0.3, duration: dur - 0.2, y     : 0,          ease: "Power3.easeOut" });
+            gsap.fromTo("#f2_gfx", { y:     -200 }, { delay: dur - 0.2, duration: dur - 0.2, y     : 0,          ease: "Power3.easeOut" });
+        }
+
+        function runAnimationOUT() {
+            let dur = 0.7;
+            gsap.to("#f2_gfx", { delay: 0.00, duration: dur/2, y:     -100, ease: "back.in(1.2)" });
+            gsap.to("#f1_gfx", { delay: 0.10, duration: dur/2, y:     -100, ease: "back.in(1.2)" });
+            gsap.to("#line1",  { delay: 0.00, duration: dur, width:    0, ease: "back.in(1.2)" });
+            gsap.to("#f0_gfx", { delay: 0.00, duration: dur, x:      200, ease: "back.in(1.2)" });
+            gsap.to("#line2",  { delay: 0.00, duration: dur, height:   0, ease: "back.in(1.2)" });
+            gsap.set("#line2", { delay: 0.70, display:"none" });
+            gsap.set("#line1", { delay: dur + 0.0, opacity: 0 });
+            gsap.set("#line2", { delay: dur + 0.0, opacity: 0 });
+            gsap.set("#TG",    { delay: dur - 0.0, opacity: 0 });
+        }
+
+    </script>
+
+    <style>
+        .tgpos{
+            position: absolute;
+            transform-origin: bottom left;
+            border:0px;
+            border-left: 1.4rem solid var(--spx-accent-color);
+            display:block;
+            left: 3.2vw;
+            top: 70%;
+            z-index: 10;
+            padding: 0;
+            margin: 0;
+            opacity:0;
+        }
+    </style>
+
+    <script type="text/javascript">
+        window.SPXGCTemplateDefinition = {
+            "description": "Namestrap left",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "5",
+            "webplayout": "5",
+            "out": "manual",
+            "dataformat": "json",
+            "uicolor": "7",
+            "DataFields": [
+                {
+                    "field" : "comment",
+                    "ftype" : "textfield",
+                    "title" : "Nickname of this item on the rundown",
+                    "value" : "[ Item nickname ]"
+                },
+
+                {
+                    "ftype" : "instruction",
+                    "value" : "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+                },
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Fullname",
+                    "value" : "Angus MacGyver"
+                },
+                {
+                    "field" : "f1",
+                    "ftype" : "textfield",
+                    "title" : "Title",
+                    "value" : "handyman"
+                },
+                {
+                    "field" : "f2",
+                    "ftype" : "textfield",
+                    "title" : "Company or location",
+                    "value" : "Phoenix Foundation"
+                },
+                {
+                    "field": "f99",
+                    "ftype": "filelist",
+                    "title": "Visual theme",
+                    "assetfolder" : "./themes/" ,
+                    "extension" : "css",
+                    "value": "./themes/default.css",
+                }  
+
+            ]
+        };
+    </script>
+
+</head>
+
+<body>
+    <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
+        <div id="TG" class="tgpos SKEW LEFTELEMENTS">
+            <div id="line1" class="color1 accentRight region fleft">
+                <div class="font1 nowrap ANTISKEW" id="f0_gfx"></div>
+            </div>
+            <div id="line2" class="fbreak nowrap region">
+                <div id="f1_parent" class="color2 font2 fleft" style="vertical-align: top;"><div class="ANTISKEW" id="f1_gfx"></div></div>
+                <div id="f2_parent" class="color3 font2 fleft" style="vertical-align: top;"><div class="ANTISKEW" id="f2_gfx"></div></div>
+            </div>
+        </div>
+        <div style="opacity:0;"  id="f0"></div>
+        <div style="opacity:0;"  id="f1"></div>
+        <div style="opacity:0;"  id="f2"></div>
+        <div style="opacity:0;"  id="f99"></div>
+    </div>
+</body>
+</html>

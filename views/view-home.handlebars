@@ -20,7 +20,7 @@
   <script src="/js/anime.min.js"></script>
   <script>
     function website() {
-      window.open('https://spxgc.com', '_spxgccom');
+      window.open('https://spx.graphics', '_spx');
     }
 
     function start() {
@@ -158,8 +158,6 @@
     box-shadow: rgba(0, 0, 0, 0.267) 0px 0px 6px;
   }
 
-
-
   </style>
 
 </head>
@@ -167,11 +165,11 @@
 
 
 <body class="bg_body">
+
   <div class="wrapper">
     <div class="header">
       {{>header page="home"}}
     </div><!-- header ended -->
-
 
     <div class="content">
       <div class="centerColumn pM wrapper ">
@@ -199,18 +197,28 @@
           <table style="width: 100%;" cellspacing="10" border="0">
             <tr>
               <td>
-                <img src="/img/SPXgraphicsLogo64px.png" style="height: 64px; float:right; margin-right: 1em;">
-                <h1 style="padding:0px; margin:0px;">SPX</h1>
-                SmartPX Graphics Controller <BR>
-               <span class="spxInfotext" style="font-size: 0.8em; opacity:0.5;">
-                {{lang 'general.slogan'}}<BR>
+                <div>
+                  <img src="/img/SPX_glossy_255_Transparent_Shadow.png" style="height: 4.0em; float:right; margin-right: 1em;">
+                  <h1 style="padding:0px; margin:0px; font-size: 1.0em;">SPX Graphics</h1>
+                  <span class="spxInfotext" style="font-size: 0.8em; opacity:0.5;">
+                    {{lang 'general.slogan'}}<BR>
+                  </span>
+                </div>
+
+                <div style="clear:both;">&nbsp;</div>
 
                 {{#if greeting}}
-                <div class="greeting" id="greeting">{{greeting}}</div>
+                  <div class="greeting" id="greeting">{{greeting}}</div>
                 {{/if}}
 
+                <div class="spxFlexContainer">
+                  <button onmouseover="tip('{{lang 'hover.navishows'}}');" class="spxformtext btn spxFlexItem bg_orange ripple" onclick="start();">{{lang 'button.launch'}}</button>
+                  <button onmouseover="tip('{{lang 'hover.config'}}');" class="spxformtext btn spxFlexItem bg_grey15 ripple" onclick="appconfig()"><i class="fas fa-wrench"></i>&nbsp;{{lang 'button.config'}}</button>
+                  <button onmouseover="tip('{{lang 'hover.docs'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="help('/')">{{lang 'button.help'}}</button>
+                  <button onmouseover="tip('spx.graphics');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="website()">website</button>
+                </div>
 
-                <!-- Notifications from the SmartPX messaging service: -->
+                <!-- Notifications from the SPX messaging service: -->
                 <div class="message-upgrade" id="upgradeinfo" style="display:none">
                   <div class="messagedate" id="upgrade_date"></div>
                   <div class="messageheadline" id="upgrade_head"></div>
@@ -225,23 +233,14 @@
                   <div id="messagelink" class="message-info"><span id="message_call"></span><a href="" id="message_link"></a></div>
                 </div>
 
-
-              <BR>
-              <div class="spxFlexContainer">
-                <button onmouseover="tip('{{lang 'hover.navishows'}}');" class="spxformtext btn spxFlexItem bg_orange ripple" onclick="start();">{{lang 'button.launch'}}</button>
-                <button onmouseover="tip('{{lang 'hover.config'}}');" class="spxformtext btn spxFlexItem bg_grey15 ripple" onclick="appconfig()"><i class="fas fa-wrench"></i>&nbsp;{{lang 'button.config'}}</button>
-                <button onmouseover="tip('{{lang 'hover.docs'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="help('/')">{{lang 'button.help'}}</button>
-                <button onmouseover="tip('{{lang 'hover.github'}}');" class="spxformtext btn spxFlexItem bg_blue ripple" onclick="website()">website</button>
-              </div>
-
-              <BR>
-              <BR>
-              <A href="https://youtu.be/e5LTFC9MlOI" target="_yt">Introduction video (v 1.0.0)</A>:<BR><BR>
-                <A href="https://youtu.be/e5LTFC9MlOI" target="_yt"><IMG class="auto-resizable-iframe" SRC="/img/yt_mockup.png"></A><BR>
-              </span>
-            </td>
-          </tr>
-        </table>
+                <BR>
+                <div id="promo" style="opacity: 0;">
+                  <A id="homepagepromolink" href="https://youtu.be/e5LTFC9MlOI" target="_yt">
+                  <IMG id="homepagepromopict" class="auto-resizable-iframe" SRC="/img/yt_mockup.png" TITLE="Default image"></A>
+                </div>
+              </td>
+            </tr>
+          </table>
 
 
 
@@ -261,15 +260,36 @@
     // check for upgrade
     document.getElementById('upgradeBubble').style.display="none";
     heartbeat(202); // page identifier
-    getMessages('{{{curVerInfo}}}');
+
+    {{#ifValue config.general.allowstats false}}
+      console.log('No version checking.');
+    {{else}}
+      // console.log('stats permitted');
+      getMessages('{{{curVerInfo}}}');
+    {{/ifValue}}
+
+      // fade in promo after a little delay
+      anime({
+          targets:    '#promo',
+          easing:     'linear',
+          opacity:    1,
+          duration:   300,
+          delay:      200
+      });
+
+
+    // show message when page loaded
+    window.addEventListener('load', (event) => {
+      if ('{{showMessage}}'!='')  {
+        hideMessageSlider();
+        setTimeout(function(){
+          showMessageSlider('{{showMessage}}','happy');
+        }, 100);
+      }
+    });
+
+
+
   </script>
-
-
-
-
-
 </body>
-
-
-
 </html>

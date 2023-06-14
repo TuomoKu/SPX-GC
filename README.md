@@ -4,15 +4,17 @@
 
 <br>
 
-Readme updated Apr 04 2022. 
+Readme updated Jun 29 2022. 
 
->  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.0** Download from [spxgc.com/download](https://spxgc.com/download) or see the [builds](#builds) here.
+>  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.2** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
 <br>
 
 **SPX** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
 
-**[spx.graphics](https://spx.graphics)**
+See the website ▶  **[spx.graphics](https://spx.graphics)**
+
+<br>
 
 ![snapshot](screenshots/00-spx-gc-principle2.png)
 
@@ -26,6 +28,7 @@ Readme updated Apr 04 2022.
 - Install [pre-built packages](#builds) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
+- [Renderer parameters](#renderer)
 - [UI localization](#locales)
 - [Add CasparCG server(s)](#addcaspar)
 - [Projects and rundowns](#dataroot)
@@ -49,11 +52,17 @@ Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://
 > If you need custom HTML templates or functionality get in touch tuomo@smartpx.fi.
 
 ---
+
+<BR>
+
 <a id="demo"></a>
 ## Live demo 🔥
 SPX running in the cloud: **http://35.228.47.121:5000**
 
 > Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+
+
+<BR>
 
 <a id="testdrive"></a>
 ## Template Store & Testdrive 🔥
@@ -70,6 +79,8 @@ A marketplace for free and premium SPX templates and plugins is opened at [spxgc
 > Please be aware: just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day.
 
 
+<BR>
+
 # Screenshots <a id="screenshots"></a>
 |  | |
 | ------ | ------ |
@@ -79,19 +90,26 @@ A marketplace for free and premium SPX templates and plugins is opened at [spxgc
 | [![intro video on Youtube](screenshots/yt_mockup.png)](https://www.youtube.com/watch?v=e5LTFC9MlOI) | An introduction video on Youtube. There are more images in the screenshots -folder.  | 
 
 ----
+
+
+<BR>
+
 # Installation <a id="install"></a>
 
 SPX can be installed using a **ready-to-go binary package** which includes all required software components. Developers can alternatively get the full source code and run SPX with `npm scripts`, see section [install source code](#npminstall).
 
 >Source is updated more frequently than binary packages. See [package.json](package.json) file for current version.
 
+
+<BR>
+
 ### **Available pre-built packages:** <a id="builds"></a>
 
 | Package| Build date | Notes |
 |  ------ | ----- | ----- |
-| **Windows**<BR>[SPX_1_1_0_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_win64.zip   ) | Feb 23 2022 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| **Linux**<BR>[SPX_1_1_0_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_linux64.zip ) | Feb 23 2022 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
-| **MacOS**<BR>[SPX_1_1_0_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_0_macos64.zip ) | Feb 23 2022 | If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
+| **Windows**<BR>[SPX_1_1_2_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_win64.zip   ) | Jun 20 2022 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
+| **Linux**<BR>[SPX_1_1_2_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_linux64.zip ) | Jun 20 2022 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
+| **MacOS**<BR>[SPX_1_1_2_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_macos64.zip ) | Jun 20 2022 | If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
 
 > For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
  Please [get in touch](#feedback) if you have problems downloading or installing these files.
@@ -258,8 +276,7 @@ An example `config.json` of the SPX server
     "logfolder": "X:/GC-DEV/LOG/",
     "port": "5656",
     "dataroot": "X:/DATAROOT/",
-    "templatefolder": "X:/GC-DEV/ASSETS/templates/",
-    "templatesource": "spxgc-ip-address",
+    "templatesource": "spx-ip-address",
     "preview": "selected",
     "renderer": "normal",
     "resolution": "HD",
@@ -309,22 +326,19 @@ An example `config.json` of the SPX server
 
 **`general.hostname`** _Mostly for future use_ This will identify SPX instance for logging purposes.
 
-<a id="templatesources"></a>
-
-**`general.templatefolder`** contains the HTML templates and their resource files (css, js, images, etc). This root folder is used by SPX's template browser and 'Explore templates folder' menu command (Win only). For playout folder see _templatesource_ parameter below.
-
-**`general.templatesource`**  (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX. Supported values are:
-* `spxgc-ip-address` to automatically use SPX's IP address and http -protocol for playing out templates from SPX's template folder. This is the default behaviour.
+<a id="templatesource"></a>
+**`general.templatesource`** (Added in v 1.0.9) For CasparCG playout the templates can be loaded from the _filesystem_ or via _http-connection_ provided by SPX. Supported values are:
+* `spx-ip-address` to automatically use SPX's IP address and http -protocol for playing out templates from SPX's template folder. This is the default behaviour.
 * `casparcg-template-path` to playout templates from target CasparCG server's file system template-path. (See _caspar.config_ file) Note, in this workflow the templates *must be in two places*: in SPX ASSETS/templates -folder *and* CasparCG's templates folder. And if a changes are done to either location, those changes should also be done to the other. `rsync` or other mirroring technique should be considered...
 * `http://<ip-address>` manually entered address can be used when the automatically generated IP address is not usable. For instance Docker containers or VM hosted instances may expose internal IP address which can not be accessed from outside.
 > Please note _templatesource_ only affects CasparCG playout and not web playout. Also file:// protocol is more restrictive in using external data sources and it can yield javascript errors, such as CORS. 
 
-**`general.preview`** Version 1.1.0 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true`parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.1.0 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
-`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. Values available.
+**`general.preview`** Version 1.1.0 introduced the first implementation of preview. Any output renderer is treated as a preview renderer if `preview=true` parameters is present in the renderer URL. CasparCG preview server is not implemented in v.1.1.0 but the `renderer?preview=true` URL can be added to CasparCG "manually" using ACMP protocol commands. 
+`Preview` value dictates which event on the rundown triggers a preview in a the preview renderer. Values available:
 
 * `selected` (the default value) Preview will play whenever a _focus_ is changed on the rundown.
+* `none` preview will not be triggered
 * ~~`next`~~ Preview will play _the next item_ from the rundown when an item is played. (Option coming later) 
-* ~~`none`~~ preview will not be triggered  (Option coming later)
 
 **`general.renderer`** Version 1.1.0 introduced an option to have the local renderer in traditional position at the top right corner of SPX UI **or** taken out to a floating window. This is stored to config file and each consecutive controller reload will act according to set preference. Possible values are
 
@@ -339,6 +353,8 @@ Localization credits:
 | Language | Contributor | Bundled in version |
 |  ------ | ----- | ----- |
 |  Dutch | Koen Willems, Netherlands | v1.0.12 |
+|  Chinese | Anosi Wang, China | v1.1.0 |
+|  Swedish | Christina F., Finland | v1.1.2 |
 
 <BR>
 
@@ -362,6 +378,8 @@ Starting from v.1.0.12 SPX does not have a CasparCG server assigned by default i
 
 Each SPX template has a setting for choosing a target CasparCG server. This server is assigned in the template settings within Project Settings. (Default value comes to the project from the HTML sourcecode of the template as the 'playserver' -parameter of the TemplateDefinition object.) The name must match with one of configured servers for the playout to work.
 
+SPX has three options for loading templates, see section about configuring [template source folder](#templatesource) for more info.
+
 If you have problems during playout it is recommeded to [set log level](#log) higher and observe SPX console window messages for potential cause.
 
 <!-- 
@@ -374,7 +392,27 @@ Template requests CasparCG server [SERVERNAME] but a server by that name was not
 
 > **REMEMBER** SPX server process must be restarted whenever changes are made to configuration. 
 
-----
+<br>
+
+# Renderer parameters <a id="renderer"></a>
+SPX renderer is at `/renderer` URL and it supports additional parameters for specialized workflows. In a typical use (such as 16:9 single renderer production) these can be safely ignored.
+
+| Parameter | Datatype | Example |
+|  ------ | ----- | ----- |
+|  `layers` | Array of numbers | `[1,2,3,4,20]` |
+|  `preview` | Boolean | `true` |
+|  `width` | integer | `1920` |
+|  `height` | integer | `1080` |
+|  `fps` | number | `50` or `29.97` |
+
+An example renderer URL for _"a vertical HD-Ready screen, showing only layers 2 and 3 and at 15 fps refresh rate"_.
+
+```
+renderer/?width=768&height=1366&layers=[2,3]&preview=false&fps=15
+```
+**PLEASE NOTE:** `fps` parameter value is stored to `window.top.spxRenderer.fps` -global variable of the renderer and it's utilization requires support from the templates themselves. See the _Google Sheet Ticker_ -template for an example of this.
+
+<br>
 
 # Projects and rundowns <a id="dataroot"></a>
 All content in SPX is stored as files in `dataroot` folder which is specified in the configuration.
@@ -408,6 +446,35 @@ File structure of dataroot:
 
 > If selected template does NOT have template definition it will cause an `error:templateDefinitionMissing` -message. See section [html templates](#templates).
 
+<a id="projectextras"></a> **showExtras** are additional user interface controls, or _plugins_, shown below preview window in current project as opposed to [globalExtras](#globalextras) which are shown in every project. Each item has an UI component (a button) and associated function call available in the specified `javascript file`.
+
+<a id="variables"></a> **projectVariables** are advanced properties introduced in v.1.1.1. Variables can be used to drive a shared value across several templates on the rundown. If a field in template definition has a `prvar` property defined when template is added to the project, this will cause a _projectVariable_ to be added (or appended to an existing projectVariable of the same name) into the project's `variables` array in `profile.json` file. The latest added template will set the default value of that variable. See example:
+```json
+            /* Example field in the templateDefinition */
+            {
+                "field" : "f0",
+                "ftype" : "textfield",
+                "title" : "Name of the event",
+                "value" : "Fakemusic Fest 2022",
+                "prvar" : "eventName"
+            }
+```
+If several templates use a projectVariable by the same name, this template references will be added to an array. When template is removed from the project, its reference will be removed from the `users` array. See example:
+```json
+          /* Example variables array from profile.json */
+          "variables": [
+            {
+              "prvar": "eventName",
+              "ftype": "textfield",
+              "title": "Name of the event",
+              "value": "Fakemusic Fest 2022",
+              "users": [
+                "softpix/eventpack/lowerthird.html",
+                "softpix/eventpack/agenda.html"
+              ]
+            }
+          ]
+```
 
 <a id="projectextras"></a> **showExtras** are additional user interface controls, or _plugins_, shown below preview window in current project as opposed to [globalExtras](#globalextras) which are shown in every project. Each item has an UI component (a button) and associated function call available in the specified `javascript file`.
 
@@ -629,6 +696,15 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
                 "title": "Click me",
                 "descr": "Describe button function here",
                 "fcall": "myCustomHello('world')"
+            },
+            {
+                "ftype:": "spacer"
+            },
+            {
+                "field": "f8",
+                "ftype": "color",
+                "title": "Text color",
+                "value": "rgba(255, 255, 255, 1.0)"
             }
         ]
     };
@@ -667,6 +743,8 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
 | `checkbox` | `Title` is used as label in UI. _Value_ is "0" or "1" when checked. (Added in 1.0.10) | `[x] Show logo`  |
+| `color` | `Title` is used as label in UI. _Value_ is a valid CSS color string such as `rgb(255,0,0)` (full red) or `rgba(0,0,0,0.33)` (black with 33% opacity). (Added in 1.1.1)<BR>_**Please note**: The Color Picker UI feels a bit flaky, color may need to be selected two or more times for it to register as intended. This may improve in future versions._| `rgba(255,255,255,1.0)`  |
+| `spacer` | Just an empty line to separate out sections. This can be used in very complex templates to visually separate control groups (Added in 1.1.2) | `(no parameters)`|
 
 
 > **Note** additional user interface controls may be added in future releases.
@@ -744,10 +822,12 @@ Strikethrough items are already done.<BR>
 Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.
 
 
+<BR>
+
 ----
 
 # MIT License <a id="license"></a>
-Copyright 2020-2021 Tuomo Kulomaa <tuomo@smartpx.fi>
+Copyright 2020-2022 Tuomo Kulomaa <tuomo@smartpx.fi> & [Softpix Ltd](http://softpix.io) 
 
 This project is licensed under the terms of the MIT license.
 See [LICENSE.txt](LICENSE.txt)

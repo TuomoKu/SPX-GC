@@ -1,6 +1,6 @@
 
 // --------------------------------------------------------------
-// SPX-GC example custom functions for project/global extras.
+// SPX example custom functions for project/global extras.
 // --------------------------------------------------------------
 //
 // These are just SOME THINGS custom controls can do. They can
@@ -17,6 +17,80 @@
 // MIT License.
 //
 // -------------------------------------------------------------- 
+
+
+function HKOvideoControl(argsArr){
+    // request ..... commandRef (startIntroLoop, endWithLogoTransition)
+    // returns ..... post a server command
+    // Examples, see also
+    // "function_onPlay": "HKOvideoControl|startIntroLoop|50|f2",
+    // "function_onStop": "HKOvideoControl|endWithLogoTransition|50|f2",
+
+    let commandRef = argsArr[0]; // startIntroLoop, endWithLogoTransition
+    let condiValue = argsArr[1]; // a value to be used as a conditional (if needed)
+
+
+    // **************************************
+    // SET FILENAMES HERE (WITHOUT .extension)
+    
+    let HKOVideoINTRO = "HKO/INTROLOOPVIDEO"; // 'VIDEO/KENO_3MIN'
+    let HKOVideoTRANS = "HKO/LOGOTRANSITION"; // 'VIDEO/SMARTPXVIDEO/MECHWIPE_RGBAM'
+    
+    // **************************************
+
+    console.log('HKOvideoControl: ' + commandRef + ", conditional value: " + condiValue);
+    if (condiValue == "off" ) {
+        console.log('HKOvideoControl disabled in template. Exiting.');
+        return;
+    };
+
+    let data = {};
+    data.playserver    = 'OVERLAY';
+    data.playchannel   = '1'; 
+    data.webplayout    = '-'; 
+    let x; 
+
+    switch (commandRef) {
+        case 'startIntroLoop':
+            console.log('startIntroLoop video, graphics will follow shortly...');
+            data.relpathCCG    = HKOVideoINTRO;
+            data.playlayer     = '1';
+            data.playoptions   = 'MIX 50'
+            data.command       = 'play'; 
+            x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
+            break;
+
+        case 'endWithLogoTransition':
+            console.log('Fade out graphics, then start logo transition and fadeout introloop...');
+
+            // Play Logo Bumper Transition
+            setTimeout(function () {
+                data.relpathCCG   = HKOVideoTRANS;
+                data.playlayer    = '22';
+                data.playoptions  = 'CUT 0'
+                data.command      = 'play'; 
+                x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
+            }, 100);
+
+            // Fade out loop (with EMPTY)
+            setTimeout(function () {
+                data.relpathCCG    = 'EMPTY';
+                data.playlayer     = '1';
+                data.playoptions   = 'MIX 25'
+                data.command       = 'play'; 
+                x = ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
+            }, 600);
+            break;
+
+        default:
+            console.log('Unknown commandRef: ', commandRef);
+            return;
+            break;
+    }
+}
+
+
+
 
 function demo_popup(message){
     // A basic hello world example
@@ -67,6 +141,7 @@ function wipeClean() {
     }, 50);
 }
  
+/*
 function stopAll(){
     // Will send STOP commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
@@ -80,6 +155,7 @@ function stopAll(){
             }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
         });
     }
+*/
 	
 function playAll(){
     // Will send PLAY commands to all layers used by current rundown.

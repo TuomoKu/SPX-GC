@@ -6,7 +6,7 @@ function PluginInstance() {
     var plug = this;
 
     this.render = () => {
-        console.log('PLUGIN animateAllOut appending to dom...');
+        console.log('PLUGIN loading: animateAllOut...');
         let options = {
             description: 'Animate all graphics out',
             overToolTip: 'Send STOP command to all layers on this rundown',

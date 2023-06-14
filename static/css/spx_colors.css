@@ -1,5 +1,5 @@
 /*
-  Copyright 2020 SmartPX
+  Copyright 2020 Softpix
   CSS file for (bg)colors. Must be loaded after spx_layout.css
 */
 
@@ -91,8 +91,13 @@
     padding: 2px 10px;
     background-color: rgb(39, 95, 58);
     border-radius: 4px;
-    margin-right: 10px;
+    /* margin-right: 10px; */
     font-size: 90%;
     cursor: pointer;
     display: inline-block;
+    margin-top: 5px;
+}
+
+.fg_orange {
+    color: #e57010;
 }

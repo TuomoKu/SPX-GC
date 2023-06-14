@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2022 Softpix (MIT License)
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+
+    This demo template does not have linked properties so all layers remain in their positions and
+    do not "make space" for others.
+
+	This template demonstrates multiphase animations. Play > Continue > Stop.
+	
+	Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spx.graphics | Copyright 2022 Softpix
+    Version: 1.1.0 / Dynamic theming
+    Build: Wed Aug 24 2022 16:09:18 GMT+0300 (Itä-Euroopan kesäaika) 
+
+	----
+
+	Changes:
+	17.10.2020 Added "steps = 2" to template definition
+	03.06.2022 Replaced GSAP with AnimeJS
+	20.06.2022 Added htmlDecode() parsing, removed IN from OUT logic...
+
+-->
+
+  <html>
+    <head>
+		<title>SPX Headline (1 continue)</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<script src="js/lib/anime.min.js"></script>
+		<script src="js/spx_interface.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+		<link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+		<link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+		<script>
+			let MaxSteps = 1;
+			let CurSteps = 0;
+			let Started = false;
+
+			function runTemplateUpdate() {
+				e('DynamicTheme').href = e('f99').innerText;
+				e('f0_gfx').innerHTML = htmlDecode(e('f0').innerText);
+				e('f1_gfx').innerHTML = htmlDecode(e('f1').innerText);
+				CurSteps = 0;
+				Started = false;
+				runAnimationIN();	
+			}
+
+			function runAnimationIN() {
+				anime({
+					targets:    ['#cell1'],
+					easing:     'easeOutQuart',
+					opacity:    { value: 1, duration: 100, easing: 'linear' },
+					translateX: { value: ['-200%', '50% '], duration: 1000},
+				});
+				Started = true;
+			}
+
+
+			function runAnimationNEXT() {
+				if (CurSteps>=MaxSteps) {
+					console.log('Next requested past MaxSteps. Going out!');
+					runAnimationOUT()
+					return;						
+				}
+
+				if (Started) {
+					console.log('Executing Next normally');
+					anime({
+						targets:    ['#cell2'],
+						easing:     'easeOutQuart',
+						opacity:    { value: 1, duration: 100, easing: 'linear' },
+						translateX: { value: ['200%', '70% '], duration: 1000},
+					});
+					CurSteps++;
+				}
+				else{
+					console.log('Start, even Next was requested');
+					runAnimationIN();
+				}
+			}
+
+
+			function runAnimationOUT() {
+				if (Started) {
+					// console.log('Out');
+					anime({
+						targets:    ['#cell1'],
+						easing:     'easeInQuart',
+						translateX: { value: '200%', duration: 600},
+						opacity:    { value: 0, duration: 100, delay: 500, easing: 'linear' },
+					});
+					anime({
+						targets:    ['#cell2'],
+						easing:     'easeInQuart',
+						translateX: { value: '-200%', duration: 600},
+						opacity:    { value: 0, duration: 100, delay: 500, easing: 'linear' },
+					});
+					Started = false;
+				} else {
+					// console.log('OUT was requested, but we havent been started, going IN.'); // remember: UI is left behind...
+					// runAnimationIN();
+				}
+			}
+		</script>
+		<style type="text/css">
+			.full {
+				width: 100%;
+				z-index: 50;
+				height: 100%;
+				display: table;
+				overflow: hidden;
+				position: absolute;
+				border: 0px solid blue;
+			}
+
+
+			.cell1{
+				top: 35%;
+				opacity: 0; /* animated */
+				z-index: 10;
+				transform: translateX(50%);
+				min-width: 45%;
+ 				text-align: right;
+				position: absolute;
+				white-space: nowrap;
+				display: inline-block;
+				border: 0px solid rgba(0, 0, 0, 0.315);
+				background-color: var(--spx-bgcol1-color);
+				border-top-left-radius: var(--rounding-first);
+				border-right: 1.4rem solid var(--spx-accent-color);
+			}
+
+			.cell2 {
+				top: 46%;
+				opacity: 0;  /* animated */
+				z-index: 60;
+				min-width: 30%;
+				text-align: left;
+				position: absolute;
+				white-space: nowrap;
+				display: inline-block;
+				transform: translateX(50%);
+				background-color: var(--spx-bgcol3-color);
+				border-left: 1.4rem solid var(--THEME_accentColor_1);
+				border-bottom-right-radius: var(--rounding-second);
+			}
+
+			.HEADLINE-1 {
+				font-size: 5rem;
+				color: var(--spx-txcol1-color);
+			}
+
+			.HEADLINE-2 {
+				font-size: 2.5rem;
+				color: var(--spx-txcol1-color);
+			}
+
+			.scaleToFill {
+				position: relative;
+				margin: 0;
+				width: 100%;
+				height: 100%;
+				border-top-left-radius: var(--rounding-first);
+			}
+
+			.animatedBG {
+				background: linear-gradient(90deg, rgba(0,0,0,0.0), rgba(255,255,255,0.3), rgba(0,0,0,0.3), rgba(255,255,255,0.0));
+				background-size: 500% 500%;
+				animation: gradient 15s ease infinite;
+			}
+
+			@keyframes gradient {
+				0% {
+					background-position: 0% 50%;
+				}
+				50% {
+					background-position: 100% 50%;
+				}
+				100% {
+					background-position: 0% 50%;
+				}
+			}
+		
+		</style>
+		<script type="text/javascript">
+			window.SPXGCTemplateDefinition = {
+				"defversion": "1",
+				"description": "Headline, 2 phases",
+				"playserver": "OVERLAY",
+				"playchannel": "1",
+				"playlayer": "10",
+				"webplayout": "10",
+				"steps" : "2",
+				"out": "manual",
+				"dataformat": "json",
+				"uicolor": "7",
+				"DataFields": [
+					{
+						"field" : "comment",
+						"ftype" : "textfield",
+						"title" : "Nickname of this item on the rundown",
+						"value" : "[ Item nickname ]"
+					},
+					{
+						"ftype" : "instruction",
+						"value" : "This template demonstrates the CONTINUE command (also Shift+Space). Templates can have several phases, this one has two."
+					},
+					{
+						"field" : "f0",
+						"ftype" : "textfield",
+						"title" : "Headline",
+						"value" : "Now click Continue"
+					},
+					{
+						"field" : "f1",
+						"ftype" : "textfield",
+						"title" : "Subhead",
+						"value" : "This is the second phase"
+					},
+					{
+						"field": "f99",
+						"ftype": "filelist",
+						"title": "Visual theme",
+						"assetfolder" : "./themes/" ,
+						"extension" : "css",
+						"value": "./themes/default.css",
+					}  
+
+				]
+			};
+		</script>
+	</head>
+
+	<body>
+		<div class="full">
+			<div id="cell1" class="cell1 SKEW">
+				<div class="animatedBG scaleToFill">
+					<div class="HEADLINE-1 font5 ANTISKEW" id="f0_gfx"></div>
+				</div>
+			</div>
+			<div id="cell2" class="cell2 SKEW">
+				<div class="HEADLINE-2 font2 ANTISKEW" id="f1_gfx"></div>
+			</div>
+		</div>
+		<div style="display:none;"  id="f0"></div>
+		<div style="display:none;"  id="f1"></div>
+		<div style="display:none;"  id="f99"></div>
+  </body>
+  </html>

@@ -20,14 +20,14 @@
             -->
 
             <a id="upgradeBubble"
-            href="https://spxgc.tawk.help/article/latest-changes"
-                class="newVersionBubble"
-                title="{{lang 'hover.newversavailable'}}"
-                onmouseover="hvr('{{lang 'hover.newversavailable'}}')";
-                onmouseout="hvr('')";
-                >
-            <i class="fas fa-bullhorn"></i>&nbsp;<span id="upgradeVersion">v.X.X.X</span>&nbsp;<span id="upg"></span></a></span>
-            </span>
+              href="https://spxgc.tawk.help/article/latest-changes"
+              class="newVersionBubble"
+              title="{{lang 'hover.newversavailable'}}"
+              onmouseover="hvr('{{lang 'hover.newversavailable'}}')";
+              onmouseout="hvr('')";
+              >
+              <i class="fas fa-bullhorn"></i>&nbsp;<span id="upgradeVersion">v.X.X.X</span>&nbsp;<span id="upg"></span></a></span>
+            {{!-- </span> --}}
             <span class="footerTable statusbar" style="opacity:0.53;">
               SPX v.<span id="footerVerDisplay">{{{ShowVersion}}}
                 {{#ifValue width 3840}}
@@ -49,13 +49,10 @@
   if (localStorage.getItem('SPX-GC-NewVersion')){
     document.getElementById('upgradeBubble').style.display="inline";
     document.getElementById('upgradeVersion').innerText=localStorage.getItem('SPX-GC-NewVersion');
-
-    // Added in 1.1.0
-    document.getElementById('newVersionMenuItem').style.display="block";
-  }
-  else {
-    document.getElementById('upgradeBubble').style.display="none";
-    document.getElementById('newVersionMenuItem').style.display="none";
+    document.getElementById('newVersionMenuItem').style.display="block"; // Added in 1.1.0
+  } else {
+    document.getElementById('upgradeBubble').style.display="none"; // none
+    document.getElementById('newVersionMenuItem').style.display="none"; // none
   }
 
   function hvr(msg){

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPX {{SPX.title}} | Register</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+  <style>
+    a,
+    a:visited{color:inherit}
+    a:hover{color:#ff8c00}
+
+    .login {
+      left: 50%;
+      width: 60%;
+      z-index: 20;
+      color: white;
+      padding: 0.3em;
+      margin-top: 1em;
+      position: absolute;
+      vertical-align: top;
+      transform: translateX(-50%);
+      background-color: #495666;
+      box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 20px;
+    }
+
+  body {
+    overflow: auto !important;
+  }
+    
+  </style>
+
+  <script>
+
+    function checkEmail(e) {
+      if (e.value=='') {
+        document.getElementById('newsletter').disabled=true;
+        document.getElementById('inviteDiscord').disabled=true;
+        document.getElementById('checks').style.opacity=0.3;
+      } else {
+        document.getElementById('newsletter').disabled=false;
+        document.getElementById('inviteDiscord').disabled=false;
+        document.getElementById('checks').style.opacity=1;
+      }
+    }
+
+    function skip() {
+      msg = "Really?\n\nRegistration is an important " +
+            "feedback mechanism for us to understand who is using SPX " +
+            "and we would like encourage to help us by submitting some " +
+            "info about you. Everything is optional. All help is highly appreciated!\n\n" + 
+            "Click OK to skip registration.";
+      if (confirm(msg)) {
+        document.location = '/';
+      }
+    }
+
+
+  </script>
+
+</head>
+
+
+
+<body class="bg_body">
+  <form name="login" id="login" method="post">
+    <div>
+      <div class="login" style="border-radius:0.6em;">
+          <table style="width: 100%; height:100%; border:0px solid yellow;" cellspacing="20" border="0">
+            <tr>
+              <td align="left">
+               SPX Graphics Registration<BR><BR>
+               <div class="spxInfoRegtext">
+                 <!--{{lang 'config.authpolicy'}} -->
+                 Registration is completely voluntary but helps us to keep track of the number of users
+                 and give some insight into the usage of SPX. This information is <b>anonymous</b> and
+                 <b>non-identifiable</b>. You can leave any field empty.
+                 <a href="https://spxgc.tawk.help/article/help-registration">Read more about registration and related policies</a>.</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td align="center">
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Country
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                        Where are you located?
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <select class="wide drop bg_grey" name="country">
+                        <option value=""></option>
+                        <option selected value="{{config.registration.country}}">{{config.registration.country}}</option>
+                        <option value="" disabled></option>
+                        <option value="Afganistan">Afghanistan</option>
+                        <option value="Albania">Albania</option>
+                        <option value="Algeria">Algeria</option>
+                        <option value="American Samoa">American Samoa</option>
+                        <option value="Andorra">Andorra</option>
+                        <option value="Angola">Angola</option>
+                        <option value="Anguilla">Anguilla</option>
+                        <option value="Antigua & Barbuda">Antigua & Barbuda</option>
+                        <option value="Argentina">Argentina</option>
+                        <option value="Armenia">Armenia</option>
+                        <option value="Aruba">Aruba</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Austria">Austria</option>
+                        <option value="Azerbaijan">Azerbaijan</option>
+                        <option value="Bahamas">Bahamas</option>
+                        <option value="Bahrain">Bahrain</option>
+                        <option value="Bangladesh">Bangladesh</option>
+                        <option value="Barbados">Barbados</option>
+                        <option value="Belarus">Belarus</option>
+                        <option value="Belgium">Belgium</option>
+                        <option value="Belize">Belize</option>
+                        <option value="Benin">Benin</option>
+                        <option value="Bermuda">Bermuda</option>
+                        <option value="Bhutan">Bhutan</option>
+                        <option value="Bolivia">Bolivia</option>
+                        <option value="Bonaire">Bonaire</option>
+                        <option value="Bosnia & Herzegovina">Bosnia & Herzegovina</option>
+                        <option value="Botswana">Botswana</option>
+                        <option value="Brazil">Brazil</option>
+                        <option value="British Indian Ocean Ter">British Indian Ocean Ter</option>
+                        <option value="Brunei">Brunei</option>
+                        <option value="Bulgaria">Bulgaria</option>
+                        <option value="Burkina Faso">Burkina Faso</option>
+                        <option value="Burundi">Burundi</option>
+                        <option value="Cambodia">Cambodia</option>
+                        <option value="Cameroon">Cameroon</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Canary Islands">Canary Islands</option>
+                        <option value="Cape Verde">Cape Verde</option>
+                        <option value="Cayman Islands">Cayman Islands</option>
+                        <option value="Central African Republic">Central African Republic</option>
+                        <option value="Chad">Chad</option>
+                        <option value="Channel Islands">Channel Islands</option>
+                        <option value="Chile">Chile</option>
+                        <option value="China">China</option>
+                        <option value="Christmas Island">Christmas Island</option>
+                        <option value="Cocos Island">Cocos Island</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="Comoros">Comoros</option>
+                        <option value="Congo">Congo</option>
+                        <option value="Cook Islands">Cook Islands</option>
+                        <option value="Costa Rica">Costa Rica</option>
+                        <option value="Cote DIvoire">Cote DIvoire</option>
+                        <option value="Croatia">Croatia</option>
+                        <option value="Cuba">Cuba</option>
+                        <option value="Curaco">Curacao</option>
+                        <option value="Cyprus">Cyprus</option>
+                        <option value="Czech Republic">Czech Republic</option>
+                        <option value="Denmark">Denmark</option>
+                        <option value="Djibouti">Djibouti</option>
+                        <option value="Dominica">Dominica</option>
+                        <option value="Dominican Republic">Dominican Republic</option>
+                        <option value="East Timor">East Timor</option>
+                        <option value="Ecuador">Ecuador</option>
+                        <option value="Egypt">Egypt</option>
+                        <option value="El Salvador">El Salvador</option>
+                        <option value="Equatorial Guinea">Equatorial Guinea</option>
+                        <option value="Eritrea">Eritrea</option>
+                        <option value="Estonia">Estonia</option>
+                        <option value="Ethiopia">Ethiopia</option>
+                        <option value="Falkland Islands">Falkland Islands</option>
+                        <option value="Faroe Islands">Faroe Islands</option>
+                        <option value="Fiji">Fiji</option>
+                        <option value="Finland">Finland</option>
+                        <option value="France">France</option>
+                        <option value="French Guiana">French Guiana</option>
+                        <option value="French Polynesia">French Polynesia</option>
+                        <option value="French Southern Ter">French Southern Ter</option>
+                        <option value="Gabon">Gabon</option>
+                        <option value="Gambia">Gambia</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Germany">Germany</option>
+                        <option value="Ghana">Ghana</option>
+                        <option value="Gibraltar">Gibraltar</option>
+                        <option value="Great Britain">Great Britain</option>
+                        <option value="Greece">Greece</option>
+                        <option value="Greenland">Greenland</option>
+                        <option value="Grenada">Grenada</option>
+                        <option value="Guadeloupe">Guadeloupe</option>
+                        <option value="Guam">Guam</option>
+                        <option value="Guatemala">Guatemala</option>
+                        <option value="Guinea">Guinea</option>
+                        <option value="Guyana">Guyana</option>
+                        <option value="Haiti">Haiti</option>
+                        <option value="Hawaii">Hawaii</option>
+                        <option value="Honduras">Honduras</option>
+                        <option value="Hong Kong">Hong Kong</option>
+                        <option value="Hungary">Hungary</option>
+                        <option value="Iceland">Iceland</option>
+                        <option value="Indonesia">Indonesia</option>
+                        <option value="India">India</option>
+                        <option value="Iran">Iran</option>
+                        <option value="Iraq">Iraq</option>
+                        <option value="Ireland">Ireland</option>
+                        <option value="Isle of Man">Isle of Man</option>
+                        <option value="Israel">Israel</option>
+                        <option value="Italy">Italy</option>
+                        <option value="Jamaica">Jamaica</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Jordan">Jordan</option>
+                        <option value="Kazakhstan">Kazakhstan</option>
+                        <option value="Kenya">Kenya</option>
+                        <option value="Kiribati">Kiribati</option>
+                        <option value="Korea North">Korea North</option>
+                        <option value="Korea Sout">Korea South</option>
+                        <option value="Kuwait">Kuwait</option>
+                        <option value="Kyrgyzstan">Kyrgyzstan</option>
+                        <option value="Laos">Laos</option>
+                        <option value="Latvia">Latvia</option>
+                        <option value="Lebanon">Lebanon</option>
+                        <option value="Lesotho">Lesotho</option>
+                        <option value="Liberia">Liberia</option>
+                        <option value="Libya">Libya</option>
+                        <option value="Liechtenstein">Liechtenstein</option>
+                        <option value="Lithuania">Lithuania</option>
+                        <option value="Luxembourg">Luxembourg</option>
+                        <option value="Macau">Macau</option>
+                        <option value="Macedonia">Macedonia</option>
+                        <option value="Madagascar">Madagascar</option>
+                        <option value="Malaysia">Malaysia</option>
+                        <option value="Malawi">Malawi</option>
+                        <option value="Maldives">Maldives</option>
+                        <option value="Mali">Mali</option>
+                        <option value="Malta">Malta</option>
+                        <option value="Marshall Islands">Marshall Islands</option>
+                        <option value="Martinique">Martinique</option>
+                        <option value="Mauritania">Mauritania</option>
+                        <option value="Mauritius">Mauritius</option>
+                        <option value="Mayotte">Mayotte</option>
+                        <option value="Mexico">Mexico</option>
+                        <option value="Midway Islands">Midway Islands</option>
+                        <option value="Moldova">Moldova</option>
+                        <option value="Monaco">Monaco</option>
+                        <option value="Mongolia">Mongolia</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Morocco">Morocco</option>
+                        <option value="Mozambique">Mozambique</option>
+                        <option value="Myanmar">Myanmar</option>
+                        <option value="Nambia">Nambia</option>
+                        <option value="Nauru">Nauru</option>
+                        <option value="Nepal">Nepal</option>
+                        <option value="Netherland Antilles">Netherland Antilles</option>
+                        <option value="Netherlands">Netherlands (Holland, Europe)</option>
+                        <option value="Nevis">Nevis</option>
+                        <option value="New Caledonia">New Caledonia</option>
+                        <option value="New Zealand">New Zealand</option>
+                        <option value="Nicaragua">Nicaragua</option>
+                        <option value="Niger">Niger</option>
+                        <option value="Nigeria">Nigeria</option>
+                        <option value="Niue">Niue</option>
+                        <option value="Norfolk Island">Norfolk Island</option>
+                        <option value="Norway">Norway</option>
+                        <option value="Oman">Oman</option>
+                        <option value="Pakistan">Pakistan</option>
+                        <option value="Palau Island">Palau Island</option>
+                        <option value="Palestine">Palestine</option>
+                        <option value="Panama">Panama</option>
+                        <option value="Papua New Guinea">Papua New Guinea</option>
+                        <option value="Paraguay">Paraguay</option>
+                        <option value="Peru">Peru</option>
+                        <option value="Phillipines">Philippines</option>
+                        <option value="Pitcairn Island">Pitcairn Island</option>
+                        <option value="Poland">Poland</option>
+                        <option value="Portugal">Portugal</option>
+                        <option value="Puerto Rico">Puerto Rico</option>
+                        <option value="Qatar">Qatar</option>
+                        <option value="Republic of Montenegro">Republic of Montenegro</option>
+                        <option value="Republic of Serbia">Republic of Serbia</option>
+                        <option value="Reunion">Reunion</option>
+                        <option value="Romania">Romania</option>
+                        <option value="Russia">Russia</option>
+                        <option value="Rwanda">Rwanda</option>
+                        <option value="St Barthelemy">St Barthelemy</option>
+                        <option value="St Eustatius">St Eustatius</option>
+                        <option value="St Helena">St Helena</option>
+                        <option value="St Kitts-Nevis">St Kitts-Nevis</option>
+                        <option value="St Lucia">St Lucia</option>
+                        <option value="St Maarten">St Maarten</option>
+                        <option value="St Pierre & Miquelon">St Pierre & Miquelon</option>
+                        <option value="St Vincent & Grenadines">St Vincent & Grenadines</option>
+                        <option value="Saipan">Saipan</option>
+                        <option value="Samoa">Samoa</option>
+                        <option value="Samoa American">Samoa American</option>
+                        <option value="San Marino">San Marino</option>
+                        <option value="Sao Tome & Principe">Sao Tome & Principe</option>
+                        <option value="Saudi Arabia">Saudi Arabia</option>
+                        <option value="Senegal">Senegal</option>
+                        <option value="Seychelles">Seychelles</option>
+                        <option value="Sierra Leone">Sierra Leone</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Slovakia">Slovakia</option>
+                        <option value="Slovenia">Slovenia</option>
+                        <option value="Solomon Islands">Solomon Islands</option>
+                        <option value="Somalia">Somalia</option>
+                        <option value="South Africa">South Africa</option>
+                        <option value="Spain">Spain</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="Sudan">Sudan</option>
+                        <option value="Suriname">Suriname</option>
+                        <option value="Swaziland">Swaziland</option>
+                        <option value="Sweden">Sweden</option>
+                        <option value="Switzerland">Switzerland</option>
+                        <option value="Syria">Syria</option>
+                        <option value="Tahiti">Tahiti</option>
+                        <option value="Taiwan">Taiwan</option>
+                        <option value="Tajikistan">Tajikistan</option>
+                        <option value="Tanzania">Tanzania</option>
+                        <option value="Thailand">Thailand</option>
+                        <option value="Togo">Togo</option>
+                        <option value="Tokelau">Tokelau</option>
+                        <option value="Tonga">Tonga</option>
+                        <option value="Trinidad & Tobago">Trinidad & Tobago</option>
+                        <option value="Tunisia">Tunisia</option>
+                        <option value="Turkey">Turkey</option>
+                        <option value="Turkmenistan">Turkmenistan</option>
+                        <option value="Turks & Caicos Is">Turks & Caicos Is</option>
+                        <option value="Tuvalu">Tuvalu</option>
+                        <option value="Uganda">Uganda</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Ukraine">Ukraine</option>
+                        <option value="United Arab Erimates">United Arab Emirates</option>
+                        <option value="United States of America">United States of America</option>
+                        <option value="Uraguay">Uruguay</option>
+                        <option value="Uzbekistan">Uzbekistan</option>
+                        <option value="Vanuatu">Vanuatu</option>
+                        <option value="Vatican City State">Vatican City State</option>
+                        <option value="Venezuela">Venezuela</option>
+                        <option value="Vietnam">Vietnam</option>
+                        <option value="Virgin Islands (Brit)">Virgin Islands (Brit)</option>
+                        <option value="Virgin Islands (USA)">Virgin Islands (USA)</option>
+                        <option value="Wake Island">Wake Island</option>
+                        <option value="Wallis & Futana Is">Wallis & Futana Is</option>
+                        <option value="Yemen">Yemen</option>
+                        <option value="Zaire">Zaire</option>
+                        <option value="Zambia">Zambia</option>
+                        <option value="Zimbabwe">Zimbabwe</option>
+                        <option value="other">Other</option>
+                      </select>
+                     
+                    </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Industry
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                        What is your main focus?
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <select class="wide drop bg_grey" name="indus">
+                        <option {{{ifValueMatch config.registration.indus "empty" "selected" ""}}} value = "empty"></option>
+                        <option {{{ifValueMatch config.registration.indus "broad" "selected" ""}}} value = "broad">Broadcast TV</option>
+                        <option {{{ifValueMatch config.registration.indus "strea" "selected" ""}}} value = "strea">Streaming</option>
+                        <option {{{ifValueMatch config.registration.indus "event" "selected" ""}}} value = "event">Events</option>
+                        <option {{{ifValueMatch config.registration.indus "educa" "selected" ""}}} value = "educa">Education</option>
+                        <option {{{ifValueMatch config.registration.indus "other" "selected" ""}}} value = "other">Other</option>
+                      </select>
+                    </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Usage
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                        What is or will most likely be the main use of SPX?
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <select class="wide drop bg_grey" name="usage">
+                        <option {{{ifValueMatch config.registration.usage "empty" "selected" ""}}} value = "empty"></option>
+                        <option {{{ifValueMatch config.registration.usage "perso" "selected" ""}}} value = "perso">For personal use</option>
+                        <option {{{ifValueMatch config.registration.usage "nonpr" "selected" ""}}} value = "nonpr">For non-profit projects</option>
+                        <option {{{ifValueMatch config.registration.usage "educa" "selected" ""}}} value = "educa">For education related projects</option>
+                        <option {{{ifValueMatch config.registration.usage "mybus" "selected" ""}}} value = "mybus">For my own business</option>
+                        <option {{{ifValueMatch config.registration.usage "workb" "selected" ""}}} value = "workb">For my employer's internal projects</option>
+                        <option {{{ifValueMatch config.registration.usage "servi" "selected" ""}}} value = "servi">For selling production services</option>
+                        <option {{{ifValueMatch config.registration.usage "other" "selected" ""}}} value = "other">Other</option>
+                      </select>
+                     
+                    </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Developer level
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                      What is your (organizations's) HTML/CSS template development skill level?
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <select class="wide drop bg_grey" name="skill">
+                        <option {{{ifValueMatch config.registration.devlevel "empty" "selected" ""}}} value = "empty"></option>
+                        <option {{{ifValueMatch config.registration.devlevel "highl" "selected" ""}}} value = "highl">Highly skilled in web development</option>
+                        <option {{{ifValueMatch config.registration.devlevel "somew" "selected" ""}}} value = "somew">Some web development skills</option>
+                        <option {{{ifValueMatch config.registration.devlevel "modif" "selected" ""}}} value = "modif">Can modify existing code</option>
+                        <option {{{ifValueMatch config.registration.devlevel "learn" "selected" ""}}} value = "learn">Learning</option>
+                        <option {{{ifValueMatch config.registration.devlevel "avoid" "selected" ""}}} value = "avoid">Trying to avoid</option>
+                        <option {{{ifValueMatch config.registration.devlevel "noint" "selected" ""}}} value = "noint">Not interested</option>
+                      </select>
+                     
+                    </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Anything else?
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                      If there is something you would like us to know about, feel free to add it here.
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <textarea class="wide drop bg_grey" style="height: 6em;" name="freetext" id="freetext">{{config.registration.freetext}}</textarea>
+                      </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; margin-top: 0.2em;" cellspacing="15" border="0">
+                  <tr>
+                    <td class="vmid spxConfigHead wrap" style="width: 30%;">
+                      Email
+                      <div style="font-size: 0.7em; margin-top: 1em; opacity: 0.7;">
+                      Your email is never shared with any third parties
+                      add you will not be spammed by us either.
+                      </div>
+                    </td>
+                    <td class="vmid">
+                      <input type="text" class="wide drop bg_grey" name="email" id="email" value="{{config.registration.email}}" oninput="checkEmail(this)">
+                      <div style="font-size: 0.6em; margin-top: 1em; opacity: 0.5;">
+                        All users registered with an email will receive a <span class="fg_orange">20%
+                        discount code</span> for any purchase in the <a href="https://spx.graphics/store">SPX Store</a>! 
+                        <BR><BR>
+                        <div id="checks">
+                          <input  {{{ifValueMatch config.registration.newsletter true "checked" ""}}}
+                                  type="checkbox"
+                                  name="newsletter"
+                                  id="newsletter"
+                                  style="transform: scale(1.5);"
+                                  >&nbsp;&nbsp;Join SPX newsletter (max 4 messages/year)
+                          <BR>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <table style="width: 100%; border-radius:0em; background-color: #0000003a; border:0px solid yellow; margin-top: 0.2em;" cellspacing="25" border="0">
+                  <tr>
+                    <td class="vmid">
+                      <div class="wide spxInfotext center" style="font-size: 0.55em;">
+                        This information is stored in <i>config.json</i> and if removed a menu item appears again.
+                        <BR>
+                        <BR>
+                        <input type="submit" class="spxformtext btn w50 bg_green ripple" value="Submit" style="margin:0.0em 0em 0.4em; font-size:1.2em;">
+                        <br>
+                        <div style="text-align: center; opacity: 0.4; margin-top: 1em; font-size: 0.8em;">
+                        <a href="#" onClick="skip();">Skip registration</a></span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+                      <span style="font-size: 0.55em; opacity:0.9; color:#000000;">
+                        v.{{{ShowVersion}}} | <a href="https://spx.graphics">&copy; 2022 Softpix</a>
+                      </span>
+              </td>
+            </tr>
+          </table>
+      </div><!-- center wrapper ended -->
+    </div><!-- content ended -->
+  </form>
+</body>
+</html>

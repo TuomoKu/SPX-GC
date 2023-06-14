@@ -2,7 +2,7 @@
 // Client javascript for SPX
 // Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2021 SmartPX
+// (c) 2020-2021 Softpix
 // ***************************************
 
 var socket = io();
@@ -104,6 +104,9 @@ socket.on('SPXMessage2Controller', function (data) {
         case 'RundownFocusLast':
             let lastIndex = document.querySelectorAll('.itemrow').length-1;
             focusRow(lastIndex)
+            break;
+        case 'RundownFocusByID':
+            focusRow(getElementByEpoch(data.itemID))
             break;
 
         case 'RundownStopAll':
@@ -263,6 +266,8 @@ function ajaxpost(urlPath, data, prepopulated='false'){
         if (error.response) {
             // statusbar('GC server returned error, see console and logs','error')
             statusbar(error.response.data,'error')
+            showMessageSlider(error.response.data, 'error')
+            // msg, type='info', persist=false
             console.log(error.response.data);
             console.log(error.response.status);
             console.log(error.response.headers);
@@ -454,8 +459,7 @@ function checkKey(e) {
     // console.log('--- ' + e.keyCode + ' --- ' + APPSTATE);
 
     // FIRST GENERIC keycodes for all situations
-    switch (e.keyCode)
-    {
+    switch (e.keyCode) {
         case 116: // F5
             updateItem();
             e.preventDefault(); // do not refresh browser
@@ -493,8 +497,7 @@ function checkKey(e) {
         // EDITING (while editor open)
         case "EDITING":
             // console.log('Captured keypress while editing');    
-            switch (e.keyCode)
-            {
+            switch (e.keyCode) {
                 case 13: // enter
                     if ( document.activeElement.nodeName === "TEXTAREA" && document.hasFocus()) {
                         // console.log('Come on, we are multilining here');
@@ -521,8 +524,8 @@ function checkKey(e) {
 
         // OTHER MODES, (while editor closed)
         default:
-            switch (e.keyCode)
-            {
+            // console.log('Captured keypress while NOT editing'); 
+            switch (e.keyCode) {
                 case 13: // enter
                     ToggleExpand()
                     e.preventDefault();
@@ -532,10 +535,13 @@ function checkKey(e) {
                     if (e.shiftKey) {
                         // Shift + Space = NEXT
                         nextItem();
-                    }
-                    else
-                    {
+                    } else {
                         // Space = PLAY
+                        // Bug fix added in 1.1.1. Dblcheck if we are opened...
+                        if (getFocusedRow().querySelector('#Expanded').style.display!="none") {
+                            // console.log('Ignoring play while opened for editing');
+                            return; 
+                        }
                         playItem();
                     }
                     
@@ -674,6 +680,7 @@ function continueUpdateStop(command, itemrow='') {
     if (!itemrow) { itemrow = getFocusedRow(); }
     switch (command) {
         case 'stop':
+            // console.log('Stopping item', itemrow);
             playItem(itemrow, 'stop');
             break;
 
@@ -724,7 +731,48 @@ async function revealItemID(button) {
     } else {
         // alert("Same ID " + newID)
     }
-}
+} // revealItemID
+
+
+async function revealItemTiming(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change timing here. Use 'manual', 'none' or millisecond values (1000=1s):", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=out&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item out mode changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=out]')[0].value = newValue;
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
+        });
+    }
+} // revealItemTiming
+
+async function revealItemLayer(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 20:", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item webplay layer changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=webplayout]')[0].value = newValue;
+            // document.querySelectorAll('.itemrow')[0].querySelectorAll('input[id^=out]')[0];
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
+        });
+    }
+} // revealItemLayer
+
 
 function copyRendererUrl(preview=false) {
 
@@ -865,7 +913,11 @@ function edi() {
     document.location = '/shows/' + filename;
 } // edi ended
 
-
+function openRelpathFolder(itemrow) {
+    // added in 1.1.1 - Open a file for editing.
+    let fileRef = itemrow.querySelector("[id^='relpath']").value;
+    AJAXGET('/api/openFileFolder?file=' + fileRef);
+}
 
 
 function eps() {
@@ -896,7 +948,7 @@ function exportItemAsCSV(rowItem) {
     // Added in 1.0.15
     let data = {};
     data.foldername   = document.getElementById('foldername').value;
-    data.datafile     = document.getElementById('datafile').value;
+    data.datafile     = document.getElementById('filebasename').value;
     data.itemID       = rowItem.getAttribute('data-spx-epoch');
     working('Generating CSV file to ASSETS/csv -folder.');
     ajaxpost('/api/exportCSVfile',data);
@@ -1051,12 +1103,15 @@ function getElementIdOfFocusedItem() {
 
 function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
-    for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-        if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
-            // console.log('Focused row is ' + nro + ' and is ' + document.querySelectorAll('.itemrow')[nro].getAttribute('data-spx-epoch'));
-            return document.querySelectorAll('.itemrow')[nro];
-        };
-    }
+
+    return document.querySelectorAll('.inFocus')[0];
+
+    // for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
+    //     if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
+    //         console.log('Focused row is ' + nro + ' ID: ' + document.querySelectorAll('.itemrow')[nro].getAttribute('data-spx-epoch'));
+    //         return document.querySelectorAll('.itemrow')[nro];
+    //     };
+    // }
 }
 
 function getElementByEpoch(itemID) {
@@ -1148,11 +1203,9 @@ function getMessages(curVerInfo) {
     //              All passed data is anonymous and non-identifiable
     // -------------------------------------------------------------
 
-    // DEPRECATION WARNING -    This function to be removed in 1.1.x
-    //                          And will be replaced with v2
-    //                          which is partially implemented.
-
-    // console.log('getMessages ', curVerInfo);
+    
+    let versionStr = curVerInfo.split('v=')[1].split('&')[0].trim();
+    // console.log('getMessages [' + versionStr + ']', curVerInfo);
 
     localStorage.removeItem('SPX-GC-NewVersion');
     document.getElementById('upgradeinfo').style.display="none";
@@ -1198,8 +1251,23 @@ function getMessages(curVerInfo) {
         document.getElementById('message_link').href=messages.notification.href;
         document.getElementById('message_link').innerText=messages.notification.link;
       }
-      // console.log('Latest: ' + latestVer);
 
+      // Added in 1.1.2
+      // versionStr = "1.0.0"; // DEBUG## with specific version number
+      if (messages.homepagepromo[versionStr] ) {
+        // console.log('Promo available for v.' + versionStr, messages.homepagepromo[versionStr]);
+        document.getElementById('homepagepromolink').href=messages.homepagepromo[versionStr].link;
+        document.getElementById('homepagepromopict').src=messages.homepagepromo[versionStr].pict;
+        document.getElementById('homepagepromopict').title=messages.homepagepromo[versionStr].titl;
+      } else {
+        // Check if there is a default promo
+        if (messages.homepagepromo && messages.homepagepromo.default && messages.homepagepromo.default.active ){
+            // console.log('Using active default promo.', messages.homepagepromo.default);
+            document.getElementById('homepagepromolink').href=messages.homepagepromo.default.link;
+            document.getElementById('homepagepromopict').src=messages.homepagepromo.default.pict;
+            document.getElementById('homepagepromopict').title=messages.homepagepromo.default.titl;
+          }
+      }
     })
     .catch((error) => {
         console.error('SPX error in getMessages().',error)
@@ -1242,10 +1310,12 @@ function help(section) {
         case "GLOBALEXTRAS":        HELP_PAGE = "article/help-config-globalextras"  ; break;
         case "PROJECTGENERAL":      HELP_PAGE = "article/help-project-general"      ; break;
         case "PROJECTTEMPLATES":    HELP_PAGE = "article/help-project-templates"    ; break;
+        case "PROJECTVARIABLES":    HELP_PAGE = "article/help-project-variables"    ; break;
         case "PROJECTEXTRAS":       HELP_PAGE = "article/help-project-extras"       ; break;
         case "CONTROLLER":          HELP_PAGE = "article/help-controller"           ; break;
         case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
         case "API":                 HELP_PAGE = "article/help-api"                  ; break;
+        case "ITEM-DETAILS":        HELP_PAGE = "article/help-item-details"         ; break;
         default: break;
     }
 
@@ -1348,6 +1418,7 @@ function playItem(itemrow='', forcedCommand='') {
     // and playout handler will parse required data and so on. 
 
     if (!itemrow) { itemrow = getFocusedRow();  }
+    // console.log('playItem with forcedcommand "' + forcedCommand + '"', itemrow);
 
     if (!itemrow) {
         // console.log('No active rows, skip command.');
@@ -1358,6 +1429,7 @@ function playItem(itemrow='', forcedCommand='') {
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
     data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
+
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
@@ -1373,7 +1445,6 @@ function playItem(itemrow='', forcedCommand='') {
     let isPlay = false;
     if (data.command=="play" || data.command=="playonce") {
         isPlay = true;
-        
 
         // Added in 1.1.0 FIXME: This has some issues, previewing wrong items etc...
         if (document.getElementById('previewMode').value==='next') {
@@ -1386,46 +1457,61 @@ function playItem(itemrow='', forcedCommand='') {
         }
 
     }
-     
+
+    // Check for function_onPlay event (improved in 1.1.4):
     let onPlayField = itemrow.querySelector('[name="RundownItem[function_onPlay]"]');
     if (isPlay && onPlayField && onPlayField.value!="") {
-        let onPlayCommand = onPlayField.value;
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Executing: ' + onPlayCommand);
-        let FunctionName  = String(onPlayCommand.split("|")[0].trim());
-        let ArgsArray     = onPlayCommand.split("|")[1].trim().split(",");
-        let TempData      = {};
-        TempData.server   = String(ArgsArray[0]);
-        TempData.channel  = String(ArgsArray[1]);
-        TempData.layer    = String(ArgsArray[2]); // 
-        TempData.video    = String(ArgsArray[3]); // 'PARTICLESANDFLUIDCORNER_RGBAS_1080P50_V2'
-        TempData.looping  = String(ArgsArray[4]); // 'true'
-        ExecuteDelay      = parseInt(ArgsArray[5]) || 40; // 500 (ms)
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName + ', args: ', TempData);
+        // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
+        // Examples of valid "function_onPlay/nStop" values:
+        // 
+        //  myCustomMethod | {'foo': 'bar'} | 500 | f1
+        //  myCustomMethod | 'foo'          | 500 | f1
+        // 
+        //  1st: Function name (no parenthesis),
+        //  2nd: an optional JSON object or a string argument,
+        //  3rd: execution delay in ms.
+        //  4th: one of the f-fields (value can be used as a condition in the function)
 
+        let onPlayCommand = onPlayField.value.split('|') || [];
+        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'PLAY event: ' + onPlayCommand);
+        let FunctionName  = String(onPlayCommand[0] || 'noFunctionName').trim();
+        let FunctionArgs  = String(onPlayCommand[1] || 'NoArgs').trim();
+        let ExecuteDelay  = String(onPlayCommand[2] || '100').trim();
+        let ConditFField  = String(onPlayCommand[3] || 'XXX').trim();
+        let conditionVal = null;
+        let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
+        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            window[FunctionName](TempData);
-            }, ExecuteDelay);
+            console.log('FunctionName:' + FunctionName);
+            window[FunctionName]([FunctionArgs, conditionVal]);
+        }, parseInt(ExecuteDelay));
         heartbeat(310); // identifier
     }
 
-    // Check for function_onStop:
-    let onStopField = itemrow.querySelector('[name="RundownItem[function_onCont]"]');
+    // Check for function_onStop event (improved in 1.1.4):
+    let onStopField = itemrow.querySelector('[name="RundownItem[function_onStop]"]');
     if (data.command=="stop" && onStopField && onStopField.value!="") {
-        let onStopCommand = onStopField.value;
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Executing: ' + onStopCommand);
-        let FunctionName2   = String(onStopCommand.split("|")[0].trim());
-        let ArgsArray2      = onStopCommand.split("|")[1].trim().split(",");
-        let TempData2 = {};
-        TempData2.server   = String(ArgsArray2[0]);
-        TempData2.channel  = String(ArgsArray2[1]);
-        TempData2.layer    = String(ArgsArray2[2]);
-        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'Function: ' + FunctionName2 + ', args: ', TempData2);
-        window[FunctionName2](TempData2);
+        // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
+        let onStopCommand = onStopField.value.split('|') || [];
+        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'STOP event: ' + onStopCommand);
+        let FunctionName  = String(onStopCommand[0] || 'noFunctionName').trim();
+        let FunctionArgs  = String(onStopCommand[1] || 'NoArgs').trim();
+        let ExecuteDelay  = String(onStopCommand[2] || '100').trim();
+        let ConditFField  = String(onStopCommand[3] || 'XXX').trim();
+        let conditionVal = null;
+        let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
+        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
+        setTimeout(function () {
+            console.log('FunctionName:' + FunctionName);
+            window[FunctionName]([FunctionArgs, conditionVal]);
+        }, parseInt(ExecuteDelay));
         heartbeat(312); // identifier
     }
 
-    // auto-out trigger UI update
+    // auto-out trigger UI update (FIXME: verify auto-out works over direct API commands?!)
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
+    // console.log('TimeoutAsString: ', TimeoutAsString);
+
     if (!isNaN(TimeoutAsString))
         // value is numerical, so 
         if (data.command=="play" ) {
@@ -1494,11 +1580,13 @@ function setItemButtonStates(itemrow, forcedCommand=''){
     // Response ..... 'play' or 'stop' state after toggle
     // 
 
-    if ( itemrow.querySelector('[name="RundownItem[out]"]').value=="none" )
-        {
-            // console.log('NONE out type in this graphic. Do not set the buttons in any way and return with playonce.');
-            return 'playonce';
+    if ( itemrow.querySelector('[name="RundownItem[out]"]').value=="none" ) {
+        // console.log('NONE out type in this graphic. Do not set the buttons in any way and return with playonce.');
+        if (forcedCommand=='stop') {
+            return 'stop'; // Added in v 1.1.2 to prevent playing bumper at "Stop All"
         }
+        return 'playonce';
+    }
 
     let CommandToExecute = 'play' // default action
     let EXPANDEDPLAY = itemrow.querySelector('[data-spx-name="playbutton"]');
@@ -1617,7 +1705,6 @@ function resizeInput() {
     // changes headline1 width
     this.style.width = (this.value.length + 1.2) + "ch";
 } // resizeInput ended
-
 
 
 function duplicateRundownItem(rowitem) {
@@ -1935,7 +2022,7 @@ function hideMessageSlider() {
     if (!document.getElementById('messageSlider')) { return }
     anime({
         targets:        '#messageSlider',
-        opacity:        [1,0],
+        opacity:        0,
         translateY:     [0,-200],
         translateX:     '-50%',
         duration:       300,
@@ -2041,7 +2128,7 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2022 SmartPX & Softpix  ', 'background: #0e7a27; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2020-2022 Softpix Ltd  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd
@@ -2135,29 +2222,25 @@ function ToggleExpand(rowelement='') {
     let Expanded  = rowelement.querySelector('#Expanded')
     let Collapsed = rowelement.querySelector('#Collapsed')
 
-    if (Collapsed.style.display=="none")
-        { 
+    if (Collapsed.style.display=="none") { 
         // We were open, so lets COLLAPSE
         Collapsed.style.display="block";
         Expanded.style.display="none";
         AppState('DEFAULT');
-        }
-    else
-        {
+    } else {
         // We were closed, so lets EXPAND and set focus to first text field
         Collapsed.style.display="none";
         Expanded.style.display="block";
-        if (Expanded.querySelectorAll('.gcinput').length>0)
-            {
-                // if there are input fields, go to editor mode (and disable dragsort)
-                let firstFormElement = Expanded.querySelectorAll('.gcinput')[0];
-                if (firstFormElement.type=="text") {
-                        firstFormElement.focus();
-                        firstFormElement.select();
-                    }
-                AppState('EDITING');
-            }
+        if (Expanded.querySelectorAll('.gcinput').length>0) {
+            // if there are input fields, go to editor mode (and disable dragsort)
+            let firstFormElement = Expanded.querySelectorAll('.gcinput')[0];
+            if (firstFormElement.type=="text") {
+                    firstFormElement.focus();
+                    firstFormElement.select();
+                }
+            AppState('EDITING');
         }
+    }
 } // ToggleExpand
 
 

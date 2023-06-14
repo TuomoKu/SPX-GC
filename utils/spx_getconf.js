@@ -51,6 +51,7 @@ module.exports = {
                     cfg.general                                 = {}
                     cfg.general.username                        = "admin"
                     cfg.general.password                        = ""
+                    // cfg.general.showusercommapass            = "username,password"
                     cfg.general.hostname                        = ""
                     cfg.general.greeting                        = ""
                     cfg.general.langfile                        = "english.json"
@@ -61,9 +62,11 @@ module.exports = {
                     cfg.general.renderer                        = "normal"
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
-                    cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"
-                    cfg.general.templatesource                  = "spxgc-ip-address"
+                    // cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"
+                    cfg.general.templatesource                  = "spx-ip-address"
                     cfg.general.port                            = "5656"
+                    cfg.general.disableConfigUI                 = false
+                    // cfg.general.allowstats                   = true
 
                     cfg.general.recents                         = []
 
@@ -106,9 +109,9 @@ module.exports = {
                     // newcontrol1.text                             = "VISIT"
                     // newcontrol1.bgclass                          = "bg_green"
                     // newcontrol1.fcall                            = "openSelectedURL"
-                    // newcontrol1.value                            = "https://spxgc.com/store"
+                    // newcontrol1.value                            = "https://spx.graphics/store"
                     // newcontrol1.items                            = []
-                    // newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spxgc.com/store"});
+                    // newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spx.graphics/store"});
                     // newcontrol1.items.push({text: "Knowledge Base &nbsp;",  "value": "https://spxgc.tawk.help"});
                     // newcontrol1.items.push({text: "Give feedback &nbsp;",   "value": "https://forms.gle/T26xMFyNZt9E9S6d8"});
                     // cfg.globalExtras.CustomControls.push(newcontrol1)
@@ -116,7 +119,7 @@ module.exports = {
 
                     // Write config file. Note, this does not use utility function.
                     cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the SPX will overwrite this file.";
-                    cfg.smartpx = "(c) 2020-2022 SmartPX & Softpix";
+                    cfg.smartpx = "(c) 2020- Softpix (https://spx.graphics)";
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);

@@ -29,9 +29,11 @@ module.exports = {
         global.CCGSockets[this.getSockIndex(serverName)].write(ClearAMCPCommand);
       } else {
         // clear all configured servers
-        config.casparcg.servers.forEach((item,index) => {
-          global.CCGSockets[this.getSockIndex(item.name)].write(ClearAMCPCommand);
-        });
+        if ( config.casparcg && config.casparcg.servers ) {
+          config.casparcg.servers.forEach((item,index) => {
+            global.CCGSockets[this.getSockIndex(item.name)].write(ClearAMCPCommand);
+          });
+        }
       }
     logger.verbose('Clearing CasparCG [server: ' + serverName + ']');
   },

@@ -1,10 +1,16 @@
 
 // ===============================================================
 //
-// "SPX" SmartPX Graphics Controller
+// "SPX Graphics Controller"
+// (c) 2020-2022 Softpix (https://spx.graphics)
+// 
+// An open source PROFESSIONAL LIVE GRAPHICS solution for
+// PC, Mac, Linux or the cloud. 
 //
-// (c) 2020-2022 tuomo@smartpx.fi 
-// https://github.com/TuomoKu
+// Website .......... https://spx.graphics
+// Join Discord ..... https://bit.do/joinspx
+// Knowledge Base ... https://spxgc.tawk.help
+// Sourcecode ....... https://github.com/TuomoKu
 // 
 // No front-end frameworks.
 // Core functionality: NodeJS, Express, Handlebars -templating.
@@ -31,8 +37,6 @@ const path = require('path')
 const rfs = require('rotating-file-stream')
 var macaddress = require('macaddress');
 
-// Nope.
-// console.log('\x1b[37m%s\x1b[40m', ''); // console colors to black
 console.log('\n  SPX Graphics Controller server is starting.\n  Closing this window/process will stop the server.\n');
 
 // EXIT HANDLER
@@ -45,7 +49,7 @@ process.on('exit', function(code) {
       break;
 
     case 2:
-      codestr = "Kill request received from GC client. If pm2 used, the server will restart automatically."
+      codestr = "Kill request received from SPX client. If pm2 used, the server will restart automatically."
       break;
 
     case 3:
@@ -77,8 +81,20 @@ const open = require('open');
 var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
+
+global.isDev = process.env.SPX_ROOT_FOLDER ? true : false; // value used internally for SPX & Template dev
 global.vers = vers;
 global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
+
+// Added in 1.1.1.
+global.env = {'vendor':'', 'product':'', 'version':''};
+let envIdfile = path.resolve(spx.getStartUpFolder(),'env.json') // fixed post 1.1.2
+if (fs.existsSync(envIdfile)) {
+  var spxenv = require(envIdfile);
+  if (spxenv.vendor) {global.env.vendor = spxenv.vendor;}
+  if (spxenv.product) {global.env.product = spxenv.product;}
+  if (spxenv.version) {global.env.version = spxenv.version;}
+}
 
 // Added in 1.0.15. An memory persistent object to handle -------------
 // rundown state to avoid unnecessary disk I/O and improve performance. 
@@ -94,6 +110,23 @@ macaddress.one(function (err, mc) {
   let pseudomac = macaddress.split(':').join('').substring(0,8);
   global.hwid = config.general.hostname || pseudomac;
   global.pmac = pseudomac; // an anonymous id
+
+  if (isDev)  {
+    // just dev related test stuff
+    let scrambled = spx.rot(pseudomac);
+    let unscrambd = spx.rot(scrambled, true);
+    console.log('\n  WE ARE IN DEV ENVIRONMENT.');
+    console.log('  pmac = ' + pseudomac);
+    console.log('  rot  = ' + scrambled);
+    console.log('  unsc = ' + unscrambd);
+    console.log('\n  ENV{}:');
+    console.log('  vendor:  ' + global.env.vendor + '\n  product: ' + global.env.product + '\n  version: ' + global.env.version + '\n');
+    console.log('');
+    console.log('Config:\n', config);
+    console.log('');
+  }
+  
+
 });
 
 
@@ -124,10 +157,25 @@ app.engine('handlebars', exphbs({
     // conditional IF helper
     ifValue: function(a, b, options) {
       // console.log('a: ' + a + ', b: ' + b);
-      if(a === b) {
+      if(String(a) === String(b) ) {
         return options.fn(this);
       }
       return options.inverse(this);
+    },
+
+    // conditional IF helper return value A if "value" == "compareTo", B if not
+    ifValueMatch: function(value, compareTo, A, B ) {
+      if(value == compareTo) {
+        return A;
+      } else {
+        return B;
+      }
+    },
+
+    // conditional IF helper
+    itemCount: function(arr) {
+      // console.log('a: ' + a + ', b: ' + b);
+      return arr.length;
     },
 
     // conditional IF helper
@@ -254,31 +302,31 @@ app.engine('handlebars', exphbs({
 
 
     // generate a pretty string for each template to display playout configs
-    GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='' , itemid='')
-    {
+    GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='' , itemid='') {
       let html = '<div data-spx-name="playoutConfig">';
       // html += '<input type="text" data-clipboard-action="copy" data-clipboard-target="#copy' + itemid + '">';
 
-      if (playserver !="-")
-        {
-          html += "<span onmouseover=\"tip('" + spx.lang('hover.ccgserver') + "');\" data-name='srv'>" + playserver + "</span>-";
-          html += "<span onmouseover=\"tip('" + spx.lang('hover.ccgchannel') + "');\" data-name='cha'>" + playchannel + "</span>-";
-          html += "<span onmouseover=\"tip('" + spx.lang('hover.ccglayer') + "');\" data-name='lay'>" + playlayer + "</span>";
-          html += " <span class='delim'></span> ";
-        };
+      if (playserver !="-") {
+        html += "<span onmouseover=\"tip('" + spx.lang('hover.ccgserver') + "');\" data-name='srv'>" + playserver + "</span>-";
+        html += "<span onmouseover=\"tip('" + spx.lang('hover.ccgchannel') + "');\" data-name='cha'>" + playchannel + "</span>-";
+        html += "<span onmouseover=\"tip('" + spx.lang('hover.ccglayer') + "');\" data-name='lay'>" + playlayer + "</span>";
+        html += "&nbsp;";
+        // html += " <span class='delim'></span> ";
+      };
 
-      if (webplayout !="-")
-        {
-          html += "<span onmouseover=\"tip('" + spx.lang('hover.weblayer') + "');\" data-name='web'>" + webplayout + "</span>";
-          html += " <span class='delim'></span> ";
-        };
+      if (webplayout !="-") {
+        html += "<span class=\"copyid\" onclick=\"revealItemLayer(this);\" id=\"layer" + itemid + "\" onmouseover=\"tip('" + spx.lang('hover.weblayer') + "');\" data-name='web'>" + webplayout + "</span>";
+        // html += " <span class='delim'></span> ";
+      };
 
-      if (out)
-        {
-          html += "<span onmouseover=\"tip('" + spx.lang('hover.outmode') + "');\" data-name='out'>" + out + "</span>";
-        };
+      if (out) {
+        html += "<span class=\"copyid\" onclick=\"revealItemTiming(this);\" id=\"out" + itemid + "\" onmouseover=\"tip('" + spx.lang('hover.outmode') + "');\" data-name='out'>" + out + "</span>";
+      };
 
       html += "<span id=\"copy" + itemid + "\" class=\"copyid\" onclick=\"revealItemID(this);\" onmouseover=\"tip('Copy ID " + itemid + "');\" data-name='id'>ID</span>";
+
+      // help button
+      html += "<span class=\"helpid\" onclick=\"help('ITEM-DETAILS');\" onmouseover=\"tip('Help');\">?</span>";
       html += "</div>"
       return html
     },
@@ -474,6 +522,11 @@ app.engine('handlebars', exphbs({
       return myIP;
     },
 
+    // Returns unique ID for this host machine
+    getHostID: function () {
+      return global.pmac;
+    },
+
 
     hookLoadControllerPlugins: function () {
       // Loads init.js files from all sub folders of ASSETS/plugins/<plugName>/
@@ -622,7 +675,7 @@ app.engine('handlebars', exphbs({
     },
 
     // This is used to populate filelist dropdown control type in templates.
-    // Note: these files are returned as http-assets from SPX-GC server
+    // Note: these files are returned as http-assets from SPX server
     // Feature added in 1.0.3. and improved in 1.0.6, 1.0.9
     // v1.0.15 adds relative assets (within template root folder).
     PopulateFilelistOptions(assetfolder, extension, value, relpath=''){
@@ -775,17 +828,16 @@ process.on('uncaughtException', function(err) {
 var server = app.listen(port, (err) => {
 
   let splash = '  Copyright 2020-2022 Softpix\n\n' +
-  `  SPX version ............ ${vers}\n` +  
+  `  SPX version ............ ${global.vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
   '  Homepage ............... https://spx.graphics\n' +
   '  Template Store ......... https://spx.graphics/store\n' +
-  '  Knowledge Base ......... http://spxgc.tawk.help\n' +
+  '  Knowledge Base ......... https://spxgc.tawk.help\n' +
   `  Config file ............ ${configfileref}\n`  +
   `  Cfg / locale ........... ${config.general.langfile}\n`  +
-  `  Cfg / hostname ......... ${config.general.hostname}\n`  +
+  `  Cfg / host-id and name . ${global.pmac} ${config.general.hostname}\n`  +
   `  Cfg / loglevel ......... ${config.general.loglevel} (options: error | warn | info | verbose | debug )\n` + 
   `  Cfg / dataroot ......... ${path.resolve(config.general.dataroot)}\n`  +  
-  /*`  Cfg / template files ... ${path.resolve(config.general.templatefolder)}\n`  + */ 
   `  Cfg / logfolder ........ ${logDirectory}\n`; 
   /* `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n` */
   
@@ -799,9 +851,10 @@ var server = app.listen(port, (err) => {
   }
 
   splash +=
-  `  Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
-  `  See README.pdf and Knowledge Base for more info\n` + 
-  `  and please visit spx.graphics/store to support us.`; 
+  // `  Cfg / templatesource ... ${TemplatesFromInfo}\n\n`  +  
+  // `  See README.pdf and Knowledge Base for more info\n` + 
+  // `  and please visit spx.graphics/store to support us.\n\n` +  
+  `\n  Visit spx.graphics/contact for SPX Creative Services.`; 
   
   console.log(splash);
 

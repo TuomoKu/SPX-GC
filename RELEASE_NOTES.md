@@ -4,25 +4,19 @@
 
 <BR>
 
-## **WORK IN PROGRESS** (list updated Apr 24 2022)
+## WORK IN PROGRESS
 
-> **⚠ PLEASE UNDERSTAND:** Below features and changes may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases.
+> List updated Sept 6 2022
 
-- Added API endpoint `getprojects` that returns all project names in SPX
-- Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project
-- Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`)
-- Added a link to API endpoint list to app config
-- Added `disableConfigUI` boolean to config.json. If `true` config menu is hidden and config page gets locked.
-- Fixed a major path detection bug that appeared after re-importing a template and prevented importing more templates (before server restart). 
-- Fixed a minor bug in filelist field (did not add trailing "/" in filepath)
-- Fixed a bug in rundown item duplication routine (when clicking on the icon - had a clash with preview function)
-- Improved preview mechanism (prevent subsequent previews of the same item)
-- Improved UI by reverting gcinput margin-top fixed back to 5px from zero
-- Improved controller UX by doing init with DOMcontentLoaded ratger than onLoad event
-- Improved template import error handler to prevent SPX crash when errors in template's JS-code. 
-- (New promo option is still WIP)
+**⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases below.
 
+**Completed items**:
+- Added API edpoint `gettemplates?project=MyProject` to return all templates, and their settings, of a given project.
+- Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending and `onCont` is still missing...)
 
+**Waiting**:
+- Rundown Variables (does not remove prVar from profile if no users)
+        
 <BR>
 
 ---
@@ -30,6 +24,47 @@
 <BR>
 
 Published releases:
+
+## **1.1.3** (Jun 29 2022)
+> Version 1.1.3 was never released publicly as binaries. These features will be present in the future releases.
+- New url parameter added to the renderer to pass a desired refresh rate to templates `renderer/?fps=30`. This will require modifications to the templates with controllable update rates, such as the scrolling tickers, using **gsap** animation library (or similar.) See _Google Sheet Ticker_ -template for an example.
+- Minor fixes to registration view (remove Discord, not needed) and enable email checkbox always
+
+## **1.1.2** (Jun 20 2022)
+* >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+- Added API endpoint `getprojects` that returns all project names in SPX.
+- Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project.
+- Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`).
+- Added a link to API endpoint list to app config.
+- Added `disableConfigUI` boolean to config.json. If `true` config menu is hidden and config page gets locked.
+- Added `allowstats` boolean config flag. If `false` anonymous user stats posting is disabled.
+- Added `registration{}` to config and a menu option for it (url `/register`).
+- Added `open template folder` button to rundown item editor (mostly to help template developers). 
+- Added function to change `out` mode of an opened rundown item. (Change duration, for instance)
+- Added function to change `webplayout` layer of an opened rundown item. 
+- Added `color` ftype and a color picker UI into the template item editor.
+- Added `spacer` ftype.
+- Added better error messages if template file is not found.
+- Added preview: `none` option to configuration
+- Fixed a major path detection bug that appeared after re-importing a template and prevented importing more templates (before server restart). 
+- Fixed a minor bug in filelist field (did not add trailing "/" in filepath).
+- Fixed a bug in rundown item duplication routine (when clicking on the icon - had a clash with preview function).
+- Fixed a "play duplicated rundown item" -bug.
+- Fixed a spacebar bug (play) after editing several rundown items.
+- Fixed "import CSV" functionality to generate a bunch of items onto the rundown in one go.
+- Changed `spxgc-ip-address` to `spx-ip-address`
+- Improved default templates to use dynamic themes dropdown selector.
+- Improved preview mechanism (prevent subsequent previews of the same item).
+- Improved UI by reverting gcinput margin-top fixed back to 5px from zero.
+- Improved controller UX / speed by doing init with DOMcontentLoaded rather than onLoad event.
+- Improved template import error handler to prevent SPX crash when errors in template's JS-code. 
+- Improved error handling and error message displays.
+- Binary packages v1.1.2:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_win64.zip),
+    [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_linux64.zip),
+    [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_macos64.zip)
+
+
 
 ## **1.1.0** (Feb 23 2022)
 * >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.

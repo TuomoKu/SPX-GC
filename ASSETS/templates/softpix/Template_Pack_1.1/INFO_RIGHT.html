@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2022 Softpix (MIT License)
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+
+    This demo template does not have linked properties so all layers remain in their positions and
+    do not "make space" for others.
+
+   	Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+    ▸ spx.graphics | Copyright 2022 Softpix
+    Version: 1.1.0 / Dynamic theming
+    Build: Wed Aug 24 2022 16:09:18 GMT+0300 (Itä-Euroopan kesäaika) 
+
+	----
+
+	Changes:
+    29.06.2022 Added FPS value check from SPX renderer
+    24.08.2022 Fixed bug FPS value check (if not available)
+
+-->
+
+
+<head>
+    <meta charset="utf-8" />
+    <title>RIGHT</title>
+    <script type="text/javascript" src="js/lib/gsap3.2.6.min.js"></script>
+    <script type="text/javascript" src="js/spx_interface.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/spx_layout.css" />
+    <link rel="stylesheet" type="text/css" href="css/spx_fonts.css" />
+    <link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/default.css" />
+    <script>
+
+        let norm = 0;
+        let movd = '3.2rem'; // if changed see also script at bottom of this page
+
+        function runTemplateUpdate(){
+            // set initial values to elements
+            e('DynamicTheme').href = e('f99').innerText;
+            e('f0_gfx').innerHTML = htmlDecode(e('f0').innerText);
+            runAnimationIN();
+        }
+
+
+
+        function runAnimationIN() {
+            let dur = 0.8;
+
+            if (window.top.spxRenderer && window.top.spxRenderer.fps) {
+                gsap.ticker.fps(window.top.spxRenderer.fps);    
+                console.log('spxRenderer: ' + window.top.spxRenderer.fps + ' FPS')
+            }
+
+            gsap.set("#TG", { opacity: 1 });
+            gsap.set("#line1", { opacity: 1 });
+            gsap.fromTo(
+                "#line1",
+                dur,
+                    {
+                        // start value
+                        width:0
+                    },
+                    {
+                        // end value
+                        width:function(i, target)
+                            {
+                                target.style.width = "auto"; 
+                                var width = target.offsetWidth-3;
+                                target.style.width = "0px"; //now reset it to 0
+                                return width; //return the natural height
+                            },
+                        ease: "back.out(2.0)"
+                    }
+                );
+            
+            gsap.fromTo("#f0_gfx", { opacity:  0 }, { delay: 0.1, duration: dur - 0.2, opacity  : 1,       ease: "Power3.easeOut" });
+            gsap.fromTo("#f0_gfx", { x:      200 }, { delay: 0.1, duration: dur - 0.1, x     : 0,          ease: "back.out(2.0)" });
+        }
+
+        function runAnimationOUT() {
+            let dur = 0.7;
+            // gsap.to("#f0_gfx", { delay: 0.10, duration: dur/2, y:     -100, ease: "back.in(1.2)" });
+            gsap.to("#line1",  { delay: 0.00, duration: dur, width:    0, ease: "back.in(1.2)" });
+            gsap.to("#f0_gfx", { delay: 0.00, duration: dur, x:      200, ease: "back.in(1.2)" });
+            gsap.set("#line1", { delay: dur + 0.0, opacity: 0 });
+            gsap.set("#TG",    { delay: dur - 0.0, opacity: 0 });
+        }
+
+    </script>
+
+
+    <style>
+
+        .tgpos{
+            transform-origin: top right;
+            position: absolute;
+            border-right: 1.4rem solid var(--spx-accent-color);
+            display:inline-block;
+            right: 3.2vw;
+            top: 9%;
+            z-index: 10;
+            opacity:0;
+        }
+    </style>
+
+    <script type="text/javascript">
+        window.SPXGCTemplateDefinition = {
+            "description": "Top right",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "8",
+            "webplayout": "8",
+            "out": "manual",
+            "dataformat": "json",
+            "uicolor": "7",
+            "DataFields": [
+                {
+                    "field" : "comment",
+                    "ftype" : "textfield",
+                    "title" : "Nickname of this item on the rundown",
+                    "value" : "[ Item nickname ]"
+                },
+
+                {
+                    "ftype" : "instruction",
+                    "value" : "Fields also supports emoji."
+                },
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Infotext top right",
+                    "value" : "👍 #hashtag"
+                },
+                {
+                    "field": "f99",
+                    "ftype": "filelist",
+                    "title": "Visual theme",
+                    "assetfolder" : "./themes/" ,
+                    "extension" : "css",
+                    "value": "./themes/default.css",
+                }  
+
+            ]
+        };
+    </script>
+
+</head>
+
+<body>
+    <div class="SPXWindow SPX_AUTOSIZE" data-spx-remember="Use either SPX_AUTOSIZE or SPX_FIXSIZE">
+        <div id="TG" class="tgpos SKEW RIGHTELEMENTS">
+            <div id="line1" class="color1 accentLeft region fright">
+                <div class="font7 nowrap fright ANTISKEW" id="f0_gfx"></div>
+            </div>
+        </div>
+        <div style="opacity:0;"  id="f0"></div>
+        <div style="opacity:0;"  id="f99"></div>
+    </div>
+</body>
+</html>

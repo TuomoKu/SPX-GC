@@ -6,16 +6,20 @@ function PluginInstance() {
     var plug = this;
 
     this.render = () => {
-        console.log('PLUGIN spxLinks appending to dom...');
+        console.log('PLUGIN loading: spxLinks...');
         let options = {
             overToolTip:    "Open additional SPX related links",
-            description:    "More SPX resources",
-            text:           "VISIT",
+            description:    "Explore SPX resources",
+            text:           "GO",
             color:          "green",
             items: [
                 {
+                    "text": "SPX Discord",
+                    "value":"https://bit.do/joinspx"
+                },
+                {
                     "text": "SPX Store",
-                    "value":"https://spxgc.com/store"
+                    "value":"https://spx.graphics/store"
                 },
                 {
                     "text": "Knowledge Base",
@@ -26,8 +30,16 @@ function PluginInstance() {
                     "value": "https://forms.gle/T26xMFyNZt9E9S6d8"
                 },
                 {
+                    "text": "Latest Changes",
+                    "value": "https://spxgc.tawk.help/article/latest-changes"
+                },
+                {
                     "text": "Discuss Features",
                     "value": "https://spx.kampsite.co"
+                },
+                {
+                    "text": "Contact us",
+                    "value": "https://spx.graphics/contact"
                 }
             ]
         };

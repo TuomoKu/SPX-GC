@@ -16,16 +16,16 @@ module.exports = {
     // THIS FORMATS JSON AND SENDS IT FORWARDS in all cases: play, stop, update...
     let DataType = data.dataformat;
     let TEMPLATEDATA = [];
-    // console.log('Format [' + DataType + '] data.fields coming in before emit', data.fields);
+    //console.log('Format [' + DataType + '] data.fields coming in before emit', data.fields);
     if (data.fields) {
-        data.fields.forEach((item,index) => {
-          let tempObj={};
-          tempObj[item.field] = item.value;
-          TEMPLATEDATA.push(tempObj);
-        });
-        data.fields=TEMPLATEDATA;
-      }
-    // console.log('data.fields going out for emit', data.fields);
+      data.fields.forEach((item,index) => {
+        let tempObj={};
+        tempObj[item.field] = item.value;
+        TEMPLATEDATA.push(tempObj);
+      });
+      data.fields=TEMPLATEDATA;
+    }
+    // console.log('data.fields going out for emit', data);
     io.emit('SPXMessage2Client', data);
   }
 
