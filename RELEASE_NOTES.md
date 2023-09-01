@@ -6,18 +6,30 @@
 
 ## WORK IN PROGRESS
 
-> List updated Sept 6 2022
+> List updated Sept 01 2023
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases below.
 
 **Completed items**:
+- Improved the "Import Errors notification" text in the Server Console.
+- Added functionality to import several templates to a project at once. All/None toggle button added into the template browser user interface.
+- Changed bit.do links to use bit.ly URLs instead
+- Added `allow="autoplay"` to all renderer frames (see info regarding Chrome's `chrome.exe --autoplay-policy=no-user-gesture-required` command line switch at https://goo.gl/xX8pDD)
+- Added API edpoint `executeScript?file=file.bat` to run a shell script/batch file from ASSETS/scripts -folder.
 - Added API edpoint `gettemplates?project=MyProject` to return all templates, and their settings, of a given project.
-- Improved API return messages also format changed to JSON (from strings).
-- Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending and `onCont` is still missing...)
+- Added API edpoint `rundown/focusByID/12345678` to set focus to a specified item on the opened rundown.
+- Improved API return messages also format changed to JSON (from strings). NOTE! This may be a **BREAKING CHANGE** if your own apps utilize SPX API commands and are expecting (parsing) responses in a strictly defined format.
+- Improved `layers`  URL parameter functionality of the renderer (type matching).
+- Improved `panic` functionality to overdrive restricted layers -filter.
+- Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending.
+- Added `onNext` template event handler. See above item also.
+- Added '...FOR OPERATOR ONLY' message to the scalable renderer to clear confusion about its purpose.
 - pkg updated from 4.4.9 to 5.8.0 (due to updated Node16)
 
 **Waiting**:
 - Rundown Variables (does not remove prVar from profile if no users)
+- Select multiple templates for importing to project
+- Select multiple templates for adding to rundown
         
 <BR>
 

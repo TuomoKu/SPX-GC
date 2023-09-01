@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated Sept 6 2022. 
+Readme updated Sept 1 2023. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.2** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
@@ -49,7 +49,7 @@ Graphic templates are typical HTML templates used with CasparCG and other HTML c
 
 Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
 
-> If you need custom HTML templates or functionality get in touch tuomo@smartpx.fi.
+> If you need custom graphics or systems integration please [the website](https://spx.graphics/contact).
 
 ---
 
@@ -66,7 +66,7 @@ SPX running in the cloud: **http://35.228.47.121:5000**
 
 <a id="testdrive"></a>
 ## Template Store & Testdrive 🔥
-A marketplace for free and premium SPX templates and plugins is opened at [spxgc.com/store](https://spxgc.com/store). Each store item can be testdriven, see these examples:
+A marketplace for free and premium SPX templates and plugins is opened at [spx.graphics/store](https://spx.graphics/store). Each store item can be testdriven, see these examples:
 
 | Template | Type | Link |
 | ------ | ------ | ------ |
@@ -74,7 +74,7 @@ A marketplace for free and premium SPX templates and plugins is opened at [spxgc
 | **[ImageLayer](https://www.spxgc.com/store/ImageLayer-p291331877)** - Pick an image and play.  | Free | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20ImageLayer) |
 | **[Texter](https://www.spxgc.com/store/Texter-p291207513)** - An essential template for unbranded text.  | Premium | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20Texter) |
 | **[TwoTone](https://www.spxgc.com/store/Two-Tone-p245011856)** - You have logo. Why not show it?  | Premium | [Test drive](http://35.228.47.121:5009/show/Template%20Demo%20-%20Two-Tone%20Pack) |
-| More ▶ [spxgc.com](https://www.spxgc.com/)  |  |  |
+| And much more ▶ [spx.graphics](https://www.spx.graphics/)  |  |  |
 <BR>
 > Please be aware: just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day.
 
@@ -151,7 +151,7 @@ npm install
 # on Windows:
 npm run dev
 
-# On a Mac there is currently an issue when running SPX with nodemon which causes command line arguments to get mixed up. On Mac run the app with Node traditionally without hot reloading:
+# Or without hot reloading:
 node server.js
 
 ```
@@ -230,7 +230,7 @@ Start making [configuration changes](#config) or creating [projects](#dataroot) 
 3. Go to **Projects**
 4. Add a new project, for instance `My First Project`. (Project's settings opens.)
 5. Click **[ + ]** button to add the first template to the project
-6. Browse to `smartpx > Template_Pack_1` -folder and choose `SPX1_INFO_LEFT.html` -template
+6. Browse to `softpix > Template_Pack_1` -folder and choose `SPX1_INFO_LEFT.html` -template
 7. Go back to **Projects**
 8. Double click `My First Project` to open it
 9. Add a new rundown to this project, for instance `My First Rundown`. (The new empty rundown opens.)
@@ -260,7 +260,7 @@ The default configuration file name is `config.json` but it is possible to run t
 
 To run the server with another config, provide the config file as the first command line argument, for example:
 ```sh
-SPX-GC_win64.exe myOtherConfig.json
+SPX_win64.exe myOtherConfig.json
 ```
 
 
@@ -698,7 +698,7 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
                 "fcall": "myCustomHello('world')"
             },
             {
-                "ftype:": "spacer"
+                "ftype": "spacer"
             },
             {
                 "field": "f8",
@@ -827,7 +827,7 @@ Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.
 ----
 
 # MIT License <a id="license"></a>
-Copyright 2020-2022 Tuomo Kulomaa <tuomo@smartpx.fi> & [Softpix Ltd](http://softpix.io) 
+Copyright 2020-2023 Tuomo Kulomaa <tuomo@softpix.io> & [Softpix Ltd](http://softpix.io) 
 
 This project is licensed under the terms of the MIT license.
 See [LICENSE.txt](LICENSE.txt)
