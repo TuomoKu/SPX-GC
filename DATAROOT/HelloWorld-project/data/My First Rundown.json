@@ -1,7 +1,7 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
-  "smartpx": "(c) 2020-2022 Softpix (https://spx.graphics)",
-  "updated": "2022-09-16T06:20:04.616Z",
+  "smartpx": "(c) 2020-2023 Softpix (https://spx.graphics)",
+  "updated": "2023-09-03T19:12:59.686Z",
   "templates": [
     {
       "description": "Top left with icon",
@@ -95,7 +95,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "dataformat": "xml",
       "imported": "1651834719690",
       "relpath": "softpix/Template_Pack_1.1/INFO_RIGHT.html",
@@ -146,7 +146,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "dataformat": "xml",
       "imported": "1651834722045",
       "relpath": "softpix/Template_Pack_1.1/NAME_LEFT.html",
@@ -197,7 +197,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "dataformat": "xml",
       "imported": "1651834726172",
       "relpath": "softpix/Template_Pack_1.1/NAME_RIGHT.html",
@@ -294,7 +294,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "imported": "1651834733060",
       "relpath": "softpix/Template_Pack_1.1/TICKER_SHEET.html",
       "itemID": "1651844276251"
@@ -361,7 +361,7 @@
           "field": "comment",
           "ftype": "textfield",
           "title": "Nickname of this item on the rundown",
-          "value": "[ Item nickname ]"
+          "value": "axAXacAC"
         },
         {
           "ftype": "instruction",
@@ -407,7 +407,7 @@
           "field": "comment",
           "ftype": "textfield",
           "title": "Nickname of this item on the rundown",
-          "value": "[ Item nickname ]"
+          "value": "axAXac"
         },
         {
           "field": "f0",
@@ -439,7 +439,7 @@
           "field": "comment",
           "ftype": "textfield",
           "title": "Nickname of this item on the rundown",
-          "value": "[ Item nickname ]"
+          "value": "ACacAC"
         },
         {
           "ftype": "instruction",

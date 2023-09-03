@@ -607,6 +607,18 @@ function toggleSwitchHandler(slider, targ, type) {
     handleRendererPopups(data)
 } // toggleSwitchHandler
 
+function toggleRundownSettings() {
+    // Toggle the rundown settings panel
+    let optionsZone = document.getElementById('rdOptionsCollapsible');
+    if (optionsZone.style.maxHeight){
+        optionsZone.style.maxHeight = null;
+        setTimeout(function(){optionsZone.style.display = 'none';}, 300);
+      } else {
+        optionsZone.style.display = 'block';
+        optionsZone.style.maxHeight = optionsZone.scrollHeight + "px";
+      } 
+} // toggleRundownSettings
+
 function toggleTip(targetField, source, attr) {
     document.getElementById(targetField).innerText = source.getAttribute(attr);
 } // toggleTip
@@ -957,6 +969,16 @@ function exportItemAsCSV(rowItem) {
 } // exportItemAsCSV ended
 
 function ModalOn(modalID) {
+    // Added in 1.1.4 - reset selections
+    var allItems = document.getElementsByClassName("filebrowser_file") || [];
+    Array.prototype.forEach.call(allItems, function(el) {
+      el.classList.remove('selectedFile')
+    });
+
+    if (document.getElementById('allToggle')) {
+        document.getElementById('allToggle').innerText=document.getElementById('allToggle').getAttribute('data-all-label');
+    }
+
     document.getElementById(modalID).style.display = "block";
   } //FileBrowserOn
 
@@ -1359,11 +1381,13 @@ function moveFocus(nro) {
 
 function nextItem(itemrow='') {
     // Next / continue command.
-    if (!itemrow)
-        {
-            // itemrow not given, get focused row
-            itemrow = getFocusedRow();
-        }
+
+    console.log('nextItem()', itemrow);
+
+    if (!itemrow) {
+        // itemrow not given, get focused row
+        itemrow = getFocusedRow();
+    }
     data = {};
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch');
@@ -1386,6 +1410,28 @@ function nextItem(itemrow='') {
         setMasterButtonStates(itemrow);
     }
 
+    // Check for function_onNext event (added in 1.1.4):
+    let onNextField = itemrow.querySelector('[name="RundownItem[function_onNext]"]');
+    console.log('onNextField: ', data.command, onNextField);
+    if (onNextField && onNextField.value!="") {
+        console.log('onNextField: ' + onNextField.value);
+        let onNextCommand = onNextField.value.split('|') || [];
+        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'NEXT event: ' + onNextCommand);
+        let FunctionName  = String(onNextCommand[0] || 'noFunctionName').trim();
+        let FunctionArgs  = String(onNextCommand[1] || 'NoArgs').trim();
+        let ExecuteDelay  = String(onNextCommand[2] || '100').trim();
+        let ConditFField  = String(onNextCommand[3] || 'XXX').trim();
+        let conditionVal = null;
+        let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
+        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
+        setTimeout(function () {
+            console.log('FunctionName:' + FunctionName);
+            window[FunctionName]([FunctionArgs, conditionVal, data.epoch]);
+        }, parseInt(ExecuteDelay));
+        heartbeat(314); // identifier
+    }
+
+
   } // nextItem
 
 
@@ -1405,6 +1451,11 @@ function previewItem(itemrow='') {
 
 
 }
+
+function projectSettings() {
+    // Open project settings page from rundown list page
+    document.location.href += '/config' ;
+} // projectSettings
 
 
 function playItem(itemrow='', forcedCommand='') {
@@ -1441,7 +1492,6 @@ function playItem(itemrow='', forcedCommand='') {
 
 
     // playonce (for out type=none) command acts on the server, but the state will not be saved to JSON
-    // Check for function_onPlay:
     let isPlay = false;
     if (data.command=="play" || data.command=="playonce") {
         isPlay = true;
@@ -1461,6 +1511,12 @@ function playItem(itemrow='', forcedCommand='') {
     // Check for function_onPlay event (improved in 1.1.4):
     let onPlayField = itemrow.querySelector('[name="RundownItem[function_onPlay]"]');
     if (isPlay && onPlayField && onPlayField.value!="") {
+
+        // TODO: This needs more work! =============================
+        // Now this expects an array of 4 values, but function calls
+        // can have 0 or several arguments...
+        // ========================================================
+
         // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
         // Examples of valid "function_onPlay/nStop" values:
         // 
@@ -1473,7 +1529,6 @@ function playItem(itemrow='', forcedCommand='') {
         //  4th: one of the f-fields (value can be used as a condition in the function)
 
         let onPlayCommand = onPlayField.value.split('|') || [];
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'PLAY event: ' + onPlayCommand);
         let FunctionName  = String(onPlayCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onPlayCommand[1] || 'NoArgs').trim();
         let ExecuteDelay  = String(onPlayCommand[2] || '100').trim();
@@ -1482,8 +1537,11 @@ function playItem(itemrow='', forcedCommand='') {
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
         if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            console.log('FunctionName:' + FunctionName);
-            window[FunctionName]([FunctionArgs, conditionVal]);
+            if (window[FunctionName]) {
+                window[FunctionName]([FunctionArgs, conditionVal, data.epoch]); // Added data.epoch in 1.1.4
+            } else {
+                console.log('Function "' + FunctionName + '" not found in SPX custom function library. See project settings.');
+            }
         }, parseInt(ExecuteDelay));
         heartbeat(310); // identifier
     }
@@ -1503,10 +1561,13 @@ function playItem(itemrow='', forcedCommand='') {
         if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
             console.log('FunctionName:' + FunctionName);
-            window[FunctionName]([FunctionArgs, conditionVal]);
+            window[FunctionName]([FunctionArgs, conditionVal, data.epoch]);
         }, parseInt(ExecuteDelay));
         heartbeat(312); // identifier
     }
+
+    // Remember, onNext is handled in nextItem();
+
 
     // auto-out trigger UI update (FIXME: verify auto-out works over direct API commands?!)
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
@@ -2128,7 +2189,7 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2020-2022 Softpix Ltd  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2020-2023 Softpix Ltd  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd
@@ -2251,6 +2312,8 @@ function updateItem(itemrow) {
     // Will send data object with an index and playlist filename
     // and playout handler will parse required data and so on. 
 
+    console.log('spxgc - updateItem()');
+
     if (!itemrow) {itemrow = getFocusedRow() }
 
     working('Sending update request.');
@@ -2290,7 +2353,7 @@ function updateItem(itemrow) {
 
 
 function playServerAudio(sfx,message=''){
-    // console.log('%cPlaying sound (' + sfx + ') on server. Log: ' + message + '.', 'background: #622; color: #fff');
+    console.log('%cPlaying sound (' + sfx + ') on server. Log: ' + message + '.', 'background: #622; color: #fff');
     data = {};
     data.sound = sfx;
     data.info  = message;

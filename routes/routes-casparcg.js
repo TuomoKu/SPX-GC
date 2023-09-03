@@ -71,8 +71,10 @@ router.get('/system/:data', (req, res) => {
   // same principle as with /control/:data
   // do OpSys level stuff, open folders etc..
   //
-  // NOTE: This ONLY WORKS in Windows!
-  // 
+  // NOTE: This endpoint is in the WRONG PLACE
+  //       it should be moved to a more generic place
+  //
+  
   data = JSON.parse(req.params.data);
   let directoryPath = "";
   logger.verbose('System utilities / ' + JSON.stringify(data));

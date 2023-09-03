@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPX - scalable renderer view</title>
+    <script src="/js/anime.min.js"></script>
     <style>
 
 
@@ -41,6 +42,26 @@
             margin: 0;
         }
 
+        #message {
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: flex;
+            color: orange;
+            font-size: 2.0vw;
+            line-height: 1.5em;
+            position: absolute;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            text-shadow: 2px 2px 4px black;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .pale {
+            color: #aaa;
+        }
+
     </style>
 </head>
 <body onresize="resizePreview();">
@@ -49,26 +70,44 @@
         <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
     </div>
 
+
+    <div id="message">
+        THIS SCALABLE VIEW IS FOR SPX OPERATOR ONLY
+        <br>
+        <small class="pale">Use transparent <span style="color:#fff;">/renderer</span> for production.</small>
+
+    </div>
+
+
     <script>
-    function resizePreview() {
-        // renderer size set by SPX to {{width}}x{{height}}
-        let DefaultX = {{width}};
-        let DefaultY = {{height}};
 
-        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+        anime({
+            targets:    '#message',
+            opacity:    0,
+            duration:   1000,
+            easing:     'linear',
+            delay:      2000
+        });
 
-        let Wpx = vw// document.getElementById('previewWidthRuler').offsetWidth;
-        let Sca = Wpx/DefaultX;
-        let Hpx = parseInt(DefaultY * Sca);
-        document.getElementById('previewBG').style.width=Wpx+'px';
-        document.getElementById('previewBG').style.height=Hpx+'px';
-        document.getElementById('previewIF').style.transform="scale("+Sca+")";
-        document.getElementById('previewBG').style.display='block';
-        // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
-      }
+        function resizePreview() {
+            // renderer size set by SPX to {{width}}x{{height}}
+            let DefaultX = {{width}};
+            let DefaultY = {{height}};
 
-      resizePreview();
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+            let Wpx = vw// document.getElementById('previewWidthRuler').offsetWidth;
+            let Sca = Wpx/DefaultX;
+            let Hpx = parseInt(DefaultY * Sca);
+            document.getElementById('previewBG').style.width=Wpx+'px';
+            document.getElementById('previewBG').style.height=Hpx+'px';
+            document.getElementById('previewIF').style.transform="scale("+Sca+")";
+            document.getElementById('previewBG').style.display='block';
+            // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
+        }
+
+        resizePreview();
 
     </script>
     

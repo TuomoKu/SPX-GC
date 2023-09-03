@@ -19,6 +19,27 @@
 // -------------------------------------------------------------- 
 
 
+function VEIKKAUS(args) {
+    let data = JSON.parse(args[0]);
+    console.log('We are in VEIKKAUS:', args, data);
+    let url = '/api/v1/invokeTemplateFunction?&webplayout=1&function=playSegment&params=' + data.templateFunctionID;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
+
+
+
+
+
+
+
 function CasparCGPlayback(argArr) {
 
     // EXAMPLE (all options are optional)
@@ -57,6 +78,17 @@ function CasparCGPlayback(argArr) {
 
     // Send the command
     ajaxpost('/gc/controlvideo',data,'true'); // true is prepopulation
+}
+
+
+function playVeikkausBumper() {
+    console.log('playAudiofile Veikkaus Bumper LONG');
+    playServerAudio('media\\wav\\veikkaus\\VV_bumperSound.wav')
+}
+
+function playVeikkausBumper5sek() {
+    console.log('playAudiofile Veikkaus Bumper LONG');
+    playServerAudio('media\\wav\\veikkaus\\VV_bumperSound_5sec.wav')
 }
 
 
@@ -290,4 +322,139 @@ function lottieBumber(){
     console.log('Response:',x);
 }
 
+function ZoomTester(opts){
+     console.log('ZoomTester:',opts);
+     let templateFunction = opts[0];
+     let functionArgument = opts[1];
+     let url = "/api/v1/invokeTemplateFunction?webplayout=10&function=" + templateFunction + "&params=" + functionArgument
+     fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
 
+
+// ========================================================
+// OBS Scene Switcher for SPX-GC ............ smartpx.fi/gc
+// (c) 2020 SmartPX .......................................
+// ========================================================
+// For instructions see README.md delivered with this file.
+// Requires: obs-websocket.js and Websocket plugins to OBS.
+// ========================================================
+
+/*
+    INSTALL:
+
+    - Install https://github.com/Palakis/obs-websocket
+    - (Requires OBS v.25.x)
+    - OBS > Tools > Websocket Server Setting > port '4444'
+    - Copy function code to the end of your ExtraFunctions.js -file.
+    - Edit url for OBS Server 'localhost:4444' in it.
+    - Place obs-websocket.js to modules -folder
+    - Create UI controls:
+    - LIST (selectlist)
+    -   Function: "SPX_OBS_SceneList"
+    -   Default value: 0
+    -   Options: all empty
+    - BUTTON (button)
+    -   Function: "SPX_OBS_Switch('Scenename')" 
+    - Go to SPX-GC rundown and have fun!
+
+    [ UGLIFICATE javascript first ]
+
+
+
+var OBS_WEBSOCKET_URL = 'ws://localhost:4455'; // <== Modify!
+
+var script = document.createElement("script");
+script.src = '/ExtraFunctions/modules/obs-websocket.js';
+document.head.appendChild(script);
+var o = {};
+window.addEventListener("load",function(){
+    o = new OBSWebSocket();
+    let btns = document.querySelectorAll('button');
+    let tget = "";
+    btns.forEach((item,i) => {
+        if (item.getAttribute('onclick') && item.getAttribute('onclick').toString().includes('SPX_OBS_SceneList')){
+			console.log(i + ':' + item.id + ' --> ' + item.getAttribute('onclick').toString());
+            tget = item.getAttribute('onclick').split("'")[1];
+        }
+    });
+    let dropdown = document.getElementById(tget);
+    // clear dropdown
+    if (!dropdown){
+        return
+     }
+    
+    // o.connect({ address: OBS_WEBSOCKET_URL  });
+    o.connect(OBS_WEBSOCKET_URL);
+    o.on('ConnectionOpened', () => {
+        o.send('GetSceneList').then(data => {
+            data.scenes.forEach((scene, index) => {
+                const newOption = new Option(scene.name,scene.name);
+                dropdown.add(newOption,index);
+                if (scene.name == data.currentScene) {
+                    dropdown.options[index].setAttribute('selected','selected');
+                }
+            });
+        })
+    });
+},false);
+
+
+function SPX_OBS_Switch(scenename) {
+    o.send('SetCurrentScene', {
+        'scene-name': scenename
+        });
+}
+
+
+function SPX_OBS_SceneList(selectList) {
+    selectedScene = document.getElementById(selectList).value;
+    SPX_OBS_Switch(selectedScene)
+}
+
+// SPX OBS SceneSwither Ended =============================
+*/
+
+
+function SPX_TL(args) {
+    console.log('SPX_TL:',args);
+    let url = "/api/v1/rundown/get";
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            // console.log('Success:', data);
+            data.templates.forEach((item,i) => {
+                console.log('Template:',item);
+                if (item.itemID == args[2]) {
+                    item.DataFields.forEach((entry,j) => {
+                        if (entry.field == 'f0') {
+                            console.log(i + ' FOUND --> ', entry);
+                            callSPX( args[0], entry.value );
+                        }
+                    });
+                }
+            });
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+
+    function callSPX( call, args ) {
+        console.log('callSPX:',call,args);
+        let URL = '/api/v1/invokeTemplateFunction?webplayout=1&function=' + call;
+        let FUL = URL + '&params=' + decodeURIComponent( args );
+        fetch(FUL)
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+}

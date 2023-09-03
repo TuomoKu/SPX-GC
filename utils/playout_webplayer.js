@@ -25,7 +25,7 @@ module.exports = {
       });
       data.fields=TEMPLATEDATA;
     }
-    // console.log('data.fields going out for emit', data);
+    // console.log('webPlayoutController data.fields going out for emit', data);
     io.emit('SPXMessage2Client', data);
   }
 

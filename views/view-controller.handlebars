@@ -155,24 +155,32 @@
 
 
     <div class="content">
+
         <div class="left pM wrapper">
+
+            <div id="rdOptions">
+              {{>rundownOptions comment=filedata.comment }}
+            </div>
+
             <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2;">
 
-                {{#if filedata.templates}}
-                  <!-- // -->
-                {{else}}
-                  <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
-                    <h2>Empty rundown</h2><BR>
-                    <P> Press 'F1' to open a list of useful keyboard shortcuts.<BR>Add templates to this rundown from + button below.</P>
-
-                  </div> 
-                {{/if}}
 
 
-                <!-- GC ITEMS -->
-                {{#each filedata.templates}}
+              {{#if filedata.templates}}
+                <!-- // -->
+              {{else}}
+                <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
+                  <h2>Empty rundown</h2><BR>
+                  <P> Press 'F1' to open a list of useful keyboard shortcuts.<BR>Add templates to this rundown from + button below.</P>
 
-                  {{#if DataFields}}
+                </div> 
+              {{/if}}
+
+
+              <!-- RUNDOWN ITEMS aka TEMPLATES -->
+              {{#each filedata.templates}}
+
+                {{#if DataFields}}
 
                   <div id="playlistitem{{@index}}"
                     class              = "itemrow row_accent{{uicolor}}"
@@ -545,7 +553,7 @@
 
                             <!-- special event triggers -->
                             <tr><td class="aright">onPlay</td>     <td><input style="width: 100%;" type="text" id="onPlay{{@index}}"      name="RundownItem[function_onPlay]"  value="{{function_onPlay}}"></td></tr>
-                            <tr><td class="aright">onCont</td>     <td><input style="width: 100%;" type="text" id="onCont{{@index}}"      name="RundownItem[function_onCont]"  value="{{function_onCont}}"></td></tr>
+                            <tr><td class="aright">onNext</td>     <td><input style="width: 100%;" type="text" id="onNext{{@index}}"      name="RundownItem[function_onNext]"  value="{{function_onNext}}"></td></tr>
                             <tr><td class="aright">onStop</td>     <td><input style="width: 100%;" type="text" id="onStop{{@index}}"      name="RundownItem[function_onStop]"  value="{{function_onStop}}"></td></tr>
 
                           </table> 
@@ -644,6 +652,7 @@
           <!-- Functions Zone -->
           <div id="controllerFunctionsZone" style="opacity:0;">
             <div id="renderOptionsFoldable" style="position: relative;">
+              
               <!-- TODO: Enable promo notification icon
               <i  class="fas fa-bell"
                   style=" position:absolute;
@@ -652,14 +661,16 @@
                           top:0; right: 0;
                           color: orange;"></i>
               -->
+
               <button id="localRendererCollapsiple" class="collapsibleZone {{{ GenerateLocalRendererOptions 'class' }}}" type="button">OPTIONS</button>
-              
+
               <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2); padding:0;">
+
+                <!--
                 <div  id="promo"
-                      style="width: 100%; height:160px; margin: 0; transform: translateX(-0px); display: none;"
+                      style="width: 100%; height:160px; margin: 0; transform: translateX(-0px); display: block;"
                       data-promo-name="example"
                       >
-                  <!-- this same promo will not be shown anymore -->
                   <div id="closePromo"
                       class="closePromo"
                       onClick="closePromo()"; 
@@ -680,7 +691,9 @@
                           top: 0; width: 100%; height:100%;
                           border: 0;"></iframe>
                 </div>
+                -->
                 <div style="padding:10px;">
+                
 
                 <table style="width:100%;">
                   <tr> 
@@ -751,7 +764,7 @@
                 <!--<table cellspacing="4" style="width: 100%; margin-top: 1em;">
                   <tr>
                     <td style="text-align: right; font-size: 0.7em; padding: 0.2em; background: rgba(0,0,0,0.1);">
-                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spxgc.com">SPX Store</a> for more.</span>
+                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spx.graphics">SPX Store</a> for more.</span>
                     </td>
                   </tr>
                 </table>-->

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<!-- 
+
+  ╔════════════════════════════════════════════════════════════════╗
+  ║  SPX Graphics // Creative Services                             ║
+  ╟────────────────────────────────────────────────────────────────╢
+  ║ Our designers and developers can provide    ____  ______  __   ║
+  ║ solutions for professional projects in     / ___||  _ \ \/ /   ║  
+  ║ broadcast TV, streaming and live events.   \___ \| |_) \  /    ║ 
+  ║ Custom graphics design, template            ___) |  __//  \    ║
+  ║ implementation, workflow automation,       |____/|_|  /_/\_\   ║
+  ║ system integration and more.                                   ║
+  ╟────────────────────────────────────────────────────────────────╢
+  ║                                ▸ https://spx.graphics/contact  ║ 
+  ╚════════════════════════════════════════════════════════════════╝
+
+  ▸ spx.graphics | Copyright 2023 Softpix
+
+  See Knowledge Base for more information:
+  https://spxgc.tawk.help/article/help-api
+
+-->
+
+<html>
+
+  <head>
+    <title>SPX Template | spx.graphics</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="js/lib/anime.min.js"></script>
+    <script src="js/spx_interface.js"></script>
+    <link rel="stylesheet" href="css/spx_layout.css" />
+    <style>
+
+      #gfx {
+        width: 100%;
+        opacity: 0; /* animated */
+        height: 100%;
+        padding: 5vw;
+        display: flex;
+        position: relative;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      #f1, #f2, #f0 {
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        color: #fff;
+        line-height: 1;
+        font-family: 'BOLD';
+        align-items: center;
+        justify-content: center;
+        text-shadow: 0 0.05em 0.1em rgba(0, 0, 0, 0.7);
+      }
+
+
+      #f1 {
+        font-size: 20vw;
+        /* border: 1px solid yellow; */
+      }
+
+      #f0 {
+        font-size: 5vw;
+        align-items: flex-start;
+        /* border: 1px solid red; */
+      }
+
+      #f2 {
+        display: flex;
+        font-size: 2vw;
+        font-family: 'REGU';
+        align-items: flex-end;
+        /* border: 1px solid green; */
+      }
+
+
+
+    </style>
+
+
+    <script type="text/javascript">
+      window.SPXGCTemplateDefinition = {
+        description: "Counter example template for developers",
+        playserver: "OVERLAY",
+        playchannel: "1",
+        playlayer: "6",
+        webplayout: "6",
+        out: "manual",
+        uicolor: "0",
+        dataformat: "json",
+        steps: "9999",
+        DataFields: [
+          {
+            field: "templateNickname",
+            ftype: "textfield",
+            title: "Item name to help operator",
+            value: "[ Item name ]",
+          },
+          {
+            ftype : "instruction",
+            value : "This template is an EXAMPLE on using SPX control API to update a playing template. You can also increment value with CONTINUE. Click the HELP button to learn more."
+          },
+          {
+             "field": "f99",
+             "ftype": "button",
+             "title": "HELP",
+             "descr": "Learn more about control API",
+             "fcall": "openWebpage('https://spxgc.tawk.help/article/help-api')"
+          },
+          {
+             "field": "f0",
+             "ftype": "textfield",
+             "title": "Title text",
+             "value": "Update with an API call"
+          },
+          {
+            "field": "f1",
+            "ftype": "textfield",
+            "title": "Initial counter value",
+            "value": "0"
+          },
+          {
+             "field": "f2",
+             "ftype": "textfield",
+             "title": "Small test",
+             "value": "See the HELP button in the template to learn how to use this."
+          }
+        ],
+      }; // Definition ended
+    </script>
+  </head>
+
+  <body>
+    <div class="SPXWindow">
+      <div id="gfx">
+        <div id="f1"></div>
+        <div id="f0">0</div>
+        <div id="f2"></div>
+      </div>
+    </div>
+
+    <script>
+
+      function runTemplateUpdate() {
+          runAnimationIN();
+      }
+
+      function runAnimationIN() {
+        anime({
+            targets:    '#gfx',
+            opacity:    1,
+            duration:   400,
+            easing:     'linear'
+          });
+      }
+
+      function runAnimationNEXT() {
+        changeValue(1); // CONTINUE increments by 1
+      }
+
+      function runAnimationOUT() {
+        anime({
+            targets:    '#gfx',
+            opacity:    0,
+            duration:   200,
+            easing:     'linear'
+          });
+      }
+
+      function setValue(nro) {
+        if (!parseInt(nro)) nro = 0;
+        updateGfx(nro)
+      }
+
+      function changeValue(nro) {
+        let value = parseInt(e('f1').innerText) + parseInt(nro);
+        updateGfx(value)
+      }
+
+      function updateGfx(value) {
+        e('f1').innerText = value;
+        anime({
+            targets:    '#f1',
+            scale:      [3,1],
+            duration:   300,
+            easing:     'easeOutElastic'
+          });        
+      }
+
+    </script>
+  </body>
+  
+</html>

@@ -251,14 +251,14 @@ function playItem() {
             { 'field': 'f3', 'value': AnimaEasing },
         ]
     
-        // Playout with spxgc (for CasparCG and webplayout)
+        // Playout with spx (for CasparCG and webplayout)
         let spxPlayoutData = {};
         spxPlayoutData.relpath       = extensionConfig.template.file || 'unknownTemplatePathFromItemList';
         spxPlayoutData.dataformat    = extensionConfig.template.dataformat || 'json';
         spxPlayoutData.playserver    = extensionConfig.template.playserver || 'OVERLAY';
-        spxPlayoutData.playchannel   = extensionConfig.template.playchannel || 1;
-        spxPlayoutData.playlayer     = extensionConfig.template.playlayer || 10;
-        spxPlayoutData.webplayout    = extensionConfig.template.webplayout || 10;
+        spxPlayoutData.playchannel   = extensionConfig.template.playchannel || '1';
+        spxPlayoutData.playlayer     = extensionConfig.template.playlayer || '10';
+        spxPlayoutData.webplayout    = extensionConfig.template.webplayout || '10';
         spxPlayoutData.relpathCCG    = spxPlayoutData.relpath.split('.htm')[0];
         spxPlayoutData.fields        = fFields
         spxPlayoutData.command       = 'play';
@@ -289,9 +289,9 @@ function stopItem() {
     spxPlayoutData.relpath       = extensionConfig.template.file || 'unknownTemplatePathFromItemList';
     spxPlayoutData.dataformat    = extensionConfig.template.dataformat || 'json';
     spxPlayoutData.playserver    = extensionConfig.template.playserver || 'OVERLAY';
-    spxPlayoutData.playchannel   = extensionConfig.template.playchannel || 1;
-    spxPlayoutData.playlayer     = extensionConfig.template.playlayer || 10;
-    spxPlayoutData.webplayout    = extensionConfig.template.webplayout || 10;
+    spxPlayoutData.playchannel   = extensionConfig.template.playchannel || '1';
+    spxPlayoutData.playlayer     = extensionConfig.template.playlayer || '10';
+    spxPlayoutData.webplayout    = extensionConfig.template.webplayout || '10';
     spxPlayoutData.relpathCCG    = spxPlayoutData.relpath.split('.htm')[0];
     spxPlayoutData.command       = 'stop';
     if (Array.isArray(spxPlayoutData.playserver)) {
@@ -330,9 +330,9 @@ window.addEventListener('load', async () => {
                 "file" : "smartpx/imagelayer/SPX_Image_Layer2.html",
                 "playserver": "OVERLAY",
                 "dataformat": "json",
-                "playchannel": 1,
-                "playlayer": 2,
-                "webplayout": 2,
+                "playchannel": '1',
+                "playlayer": '2',
+                "webplayout": '2',
                 "imageLayerAnimationStyle": {
                     "inAnimation": "fade",
                     "easing": "linear"

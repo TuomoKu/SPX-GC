@@ -20,11 +20,13 @@ router.get('/', function (req, res) {
   res.send('Looking for this <a href="/api/v1/">api/v1</a>?');
 });
 
+
 router.get('/files', async (req, res) => {
   // Get files
   const fileListAsJSON = await GetDataFiles();
   res.send(fileListAsJSON);
-}); // files route ended
+}); // file
+
 
 router.get('/openFileFolder/', async (req, res) => {
   // 
@@ -45,7 +47,8 @@ router.get('/openFileFolder/', async (req, res) => {
 
   
   res.sendStatus(200)
-}); // files route ended
+}); // openFileFolder of a template for editing
+
 
 router.get('/licBasic/', async (req, res) => {
   // added in 1.1.1 - license check. Minor tweaks in 1.1.3
@@ -60,7 +63,8 @@ router.get('/licBasic/', async (req, res) => {
   } else {
     res.status(403).send('{result:invalid}');
   }
-});
+}); // GET licBasic check ended
+
 
 router.get('/rotBasic/', async (req, res) => {
   // Require host-id, returns key.
@@ -69,7 +73,8 @@ router.get('/rotBasic/', async (req, res) => {
   let revlic = spx.rot(rotlic, true);
   let json = "{\"pmac\":\"" + global.pmac + "\",\"rot\":\"" + rotlic + "\",\"soclic\":\"" + soclic + "\",\"chk\":\"" + revlic + "\"}";
   res.send(json);
-});
+}); // GET rotBasic/?id=12345678
+
 
 router.get('/logger/', async (req, res) => {
   // Minimalistic GET logger for template messages
@@ -81,7 +86,8 @@ router.get('/logger/', async (req, res) => {
   // console.log(msg);
   eval('logger.' + level + '(msg)'); // nasty, eh?
   res.sendStatus(200)
-}); // files route ended
+}); // GET logger route ended
+
 
 router.post('/logger/', async (req, res) => {
   // Minimalistic POST logger for template messages
@@ -93,7 +99,7 @@ router.post('/logger/', async (req, res) => {
   // console.log(msg);
   eval('logger.' + level + '(msg)'); // nasty, eh?
   res.sendStatus(200)
-}); // files route ended
+}); // POST logger route ended
 
 
 router.post('/browseFiles/', async (req, res) => {
@@ -122,7 +128,7 @@ router.post('/browseFiles/', async (req, res) => {
   const fileListAsJSON = await spx.GetFilesAndFolders(navigateTo, extension);
   fileListAsJSON.message=feedbackMs; // force feedback message to UI at RenderFolder()
   res.send(fileListAsJSON);
-}); // browseFiles API post request end
+}); // POST browseFiles API route ended
 
 
 router.post('/heartbeat/', async (req, res) => {
@@ -154,10 +160,7 @@ router.post('/heartbeat/', async (req, res) => {
     res.status(500).send(error);
   };
   
-}); // browseFiles API post request end
-
-
-
+}); // POST heartbeat 
 
 
 router.post('/readExcelData', async (req, res) => {
@@ -198,35 +201,25 @@ router.post('/readExcelData', async (req, res) => {
     logger.error('Error in api/readExcelData while reading Excel ' + excelFile + ": " + error);
     res.status(500).send(error);  }; // Server error
     return;
-});
-
-
+}); // POST readExcelData to get Excel data from file
 
 
 router.post('/savefile/:filebasename', async (req, res) => {
-  // FIXME: Function not in use?
   spx.talk('Saving file ' + req.params.filebasename);
-
-  // save data to the file
-  let datafile = path.join(directoryPath, req.params.filebasename) + '.json';
-  logger.debug('Saving file ' + datafile + '...');
-  
-  let data = req.body;
   try {
+    if (!req.params.filebasename) {
+      throw new Error("Filename missing, cannot save file.");
+    }
+    let datafile = path.join(directoryPath, req.params.filebasename) + '.json';
+    logger.debug('Saving file ' + datafile + '...');
+    let data = req.body;
     await spx.writeFile(datafile,data);
+    res.status(200).send('OK, created file ' + datafile); // ok 200 AJAX RESPONSE
   } catch (error) {
     logger.error('Error while saving ' + datafile + ': ' + err);
+    res.status(500).send(error);
   }; //file written
-
-  // let filedata = JSON.stringify(req.body, null, 2);
-  // fs.writeFile(datafile, filedata, (err) => {
-  //   if (err) {
-  //     logger.error('Error while saving ' + datafile + ': ' + err);
-  //     throw err;
-  //   }
-  //   logger.info('Updated file ' + datafile);
-  // });
-});
+}); // POST savefile API route ended
 
 
 router.post('/exportCSVfile', async (req, res) => {
@@ -333,10 +326,7 @@ router.post('/exportCSVfile', async (req, res) => {
   } catch (error) {
     logger.error('API error in exportCSVfile(): ', error);
   }; //file written
-});
-
-
-
+}); // POST exportCSVfile end
 
 
 // FUNCTIONS -------------------------------------------------------------------------------------------

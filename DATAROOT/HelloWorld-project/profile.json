@@ -17,14 +17,14 @@
           "value": "[ Item nickname ]"
         },
         {
+          "ftype": "instruction",
+          "value": "This template has 'none' as the out mode, which means it does not need to be stopped separately."
+        },
+        {
           "field": "f0",
           "ftype": "textfield",
           "title": "Bumper headline (optional)",
-          "value": "Headline!"
-        },
-        {
-          "ftype": "instruction",
-          "value": "This template has 'none' as the out mode, which means it does not need to be stopped separately."
+          "value": "HEADLINE"
         },
         {
           "field": "f99",
@@ -36,10 +36,65 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713360317",
+      "imported": "1693768191872",
       "relpath": "/softpix/Template_Pack_1.1/COLORBUMPER.html"
     },
     {
+      "defversion": "1",
+      "description": "Headline, 2 phases",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "10",
+      "webplayout": "10",
+      "steps": "2",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "7",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template demonstrates the CONTINUE command (also Shift+Space). Templates can have several phases, this one has two."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Headline",
+          "value": "Now click Continue"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Subhead",
+          "value": "This is the second phase"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1693768191899",
+      "relpath": "/softpix/Template_Pack_1.1/HEADLINE_2_STEPS.html"
+    },
+    {
+      "description": "Top left with icon",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "7",
+      "webplayout": "7",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "7",
       "DataFields": [
         {
           "field": "comment",
@@ -86,15 +141,9 @@
           "value": "./themes/default.css"
         }
       ],
-      "relpath": "/softpix/Template_Pack_1.1/INFO_LEFT.html",
-      "description": "Top left with icon",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "7",
-      "dataformat": "json",
-      "webplayout": "7",
-      "out": "manual",
-      "uicolor": "7"
+      "onair": "false",
+      "imported": "1693768191923",
+      "relpath": "/softpix/Template_Pack_1.1/INFO_LEFT.html"
     },
     {
       "description": "Top right",
@@ -132,7 +181,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713115209",
+      "imported": "1693768191939",
       "relpath": "/softpix/Template_Pack_1.1/INFO_RIGHT.html"
     },
     {
@@ -183,7 +232,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713117383",
+      "imported": "1693768191967",
       "relpath": "/softpix/Template_Pack_1.1/NAME_LEFT.html"
     },
     {
@@ -234,7 +283,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713123353",
+      "imported": "1693768191989",
       "relpath": "/softpix/Template_Pack_1.1/NAME_RIGHT.html"
     },
     {
@@ -275,7 +324,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713126577",
+      "imported": "1693768192019",
       "relpath": "/softpix/Template_Pack_1.1/TICKER_EXCEL.html"
     },
     {
@@ -320,7 +369,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713210393",
+      "imported": "1693768192044",
       "relpath": "/softpix/Template_Pack_1.1/TICKER_MANUAL.html"
     },
     {
@@ -375,171 +424,13 @@
         }
       ],
       "onair": "false",
-      "imported": "1655713137226",
+      "imported": "1693768192082",
       "relpath": "/softpix/Template_Pack_1.1/TICKER_SHEET.html"
-    },
-    {
-      "description": "Corner logo",
-      "dataformat": "json",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "20",
-      "webplayout": "20",
-      "out": "manual",
-      "uicolor": "7",
-      "DataFields": [
-        {
-          "ftype": "instruction",
-          "value": "Add your logo (png) to the Assets folder and pick from here."
-        },
-        {
-          "field": "f0",
-          "ftype": "filelist",
-          "title": "Choose logo",
-          "assetfolder": "/media/images/logo/",
-          "extension": "png",
-          "value": "/media/images/logo/DemoLogo_White_300x300.png"
-        },
-        {
-          "field": "f1",
-          "ftype": "dropdown",
-          "title": "Position",
-          "value": "top-left",
-          "items": [
-            {
-              "text": "Top Left",
-              "value": "top-left"
-            },
-            {
-              "text": "Top Right",
-              "value": "top-right"
-            },
-            {
-              "text": "Bottom Left",
-              "value": "bottom-left"
-            },
-            {
-              "text": "Bottom Right",
-              "value": "bottom-right"
-            }
-          ]
-        },
-        {
-          "field": "f2",
-          "ftype": "dropdown",
-          "title": "Clock",
-          "value": "none",
-          "items": [
-            {
-              "text": "No Time",
-              "value": "none"
-            },
-            {
-              "text": "12-Hour",
-              "value": "12-Hour"
-            },
-            {
-              "text": "24-Hour",
-              "value": "24-Hour"
-            }
-          ]
-        },
-        {
-          "field": "f3",
-          "ftype": "dropdown",
-          "title": "Opacity",
-          "value": "1.0",
-          "items": [
-            {
-              "text": "100%",
-              "value": "1.0"
-            },
-            {
-              "text": "90%",
-              "value": "0.9"
-            },
-            {
-              "text": "75%",
-              "value": "0.75"
-            },
-            {
-              "text": "50%",
-              "value": "0.5"
-            },
-            {
-              "text": "40%",
-              "value": "0.4"
-            },
-            {
-              "text": "25%",
-              "value": "0.25"
-            },
-            {
-              "text": "15%",
-              "value": "0.15"
-            },
-            {
-              "text": "10%",
-              "value": "0.1"
-            }
-          ]
-        }
-      ],
-      "onair": "false",
-      "imported": "1654505318885",
-      "relpath": "smartpx/bug/SPX_Bug.html"
-    },
-    {
-      "defversion": "1",
-      "description": "Headline, 2 phases",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "10",
-      "webplayout": "10",
-      "steps": "2",
-      "out": "manual",
-      "dataformat": "json",
-      "uicolor": "7",
-      "DataFields": [
-        {
-          "field": "comment",
-          "ftype": "textfield",
-          "title": "Nickname of this item on the rundown",
-          "value": "[ Item nickname ]"
-        },
-        {
-          "ftype": "instruction",
-          "value": "This template demonstrates the CONTINUE command (also Shift+Space). Templates can have several phases, this one has two."
-        },
-        {
-          "field": "f0",
-          "ftype": "textfield",
-          "title": "Headline",
-          "value": "Now click Continue"
-        },
-        {
-          "field": "f1",
-          "ftype": "textfield",
-          "title": "Subhead",
-          "value": "This is the second phase"
-        },
-        {
-          "field": "f99",
-          "ftype": "filelist",
-          "title": "Visual theme",
-          "assetfolder": "./themes/",
-          "extension": "css",
-          "value": "./themes/default.css"
-        }
-      ],
-      "onair": "false",
-      "imported": "1655713167025",
-      "relpath": "/softpix/Template_Pack_1.1/HEADLINE_2_STEPS.html"
     }
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
-  "smartpx": "(c) 2020-2022 Softpix (https://spx.graphics)",
-  "updated": "2022-08-24T12:51:17.513Z",
+  "smartpx": "(c) 2020-2023 Softpix (https://spx.graphics)",
+  "updated": "2023-09-03T19:09:52.083Z",
   "general": {
     "background": ""
   }

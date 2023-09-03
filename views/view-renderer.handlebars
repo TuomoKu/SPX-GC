@@ -82,26 +82,26 @@
 
  <body>
     <div id="root">
-        <iframe class="frame f01" id="layer1"  style="z-index: 101;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f02" id="layer2"  style="z-index: 102;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f03" id="layer3"  style="z-index: 103;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f04" id="layer4"  style="z-index: 104;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f05" id="layer5"  style="z-index: 105;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f06" id="layer6"  style="z-index: 106;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f07" id="layer7"  style="z-index: 107;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f08" id="layer8"  style="z-index: 108;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f09" id="layer9"  style="z-index: 109;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f10" id="layer10" style="z-index: 110;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f11" id="layer11" style="z-index: 111;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f12" id="layer12" style="z-index: 112;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f13" id="layer13" style="z-index: 113;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f14" id="layer14" style="z-index: 114;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f15" id="layer15" style="z-index: 115;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f16" id="layer16" style="z-index: 116;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f17" id="layer17" style="z-index: 117;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f18" id="layer18" style="z-index: 118;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f19" id="layer19" style="z-index: 119;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f20" id="layer20" style="z-index: 120;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f01" allow="autoplay" id="layer1"  style="z-index: 101;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f02" allow="autoplay" id="layer2"  style="z-index: 102;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f03" allow="autoplay" id="layer3"  style="z-index: 103;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f04" allow="autoplay" id="layer4"  style="z-index: 104;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f05" allow="autoplay" id="layer5"  style="z-index: 105;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f06" allow="autoplay" id="layer6"  style="z-index: 106;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f07" allow="autoplay" id="layer7"  style="z-index: 107;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f08" allow="autoplay" id="layer8"  style="z-index: 108;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f09" allow="autoplay" id="layer9"  style="z-index: 109;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f10" allow="autoplay" id="layer10" style="z-index: 110;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f11" allow="autoplay" id="layer11" style="z-index: 111;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f12" allow="autoplay" id="layer12" style="z-index: 112;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f13" allow="autoplay" id="layer13" style="z-index: 113;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f14" allow="autoplay" id="layer14" style="z-index: 114;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f15" allow="autoplay" id="layer15" style="z-index: 115;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f16" allow="autoplay" id="layer16" style="z-index: 116;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f17" allow="autoplay" id="layer17" style="z-index: 117;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f18" allow="autoplay" id="layer18" style="z-index: 118;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f19" allow="autoplay" id="layer19" style="z-index: 119;" src="/templates/empty.html"></iframe>
+        <iframe class="frame f20" allow="autoplay" id="layer20" style="z-index: 120;" src="/templates/empty.html"></iframe>
     </div>
     <div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
 
@@ -137,9 +137,9 @@
             const urlParams     = new URLSearchParams(queryString);
             const limitLayers   = urlParams.get('layers');
             if (limitLayers) {
-                const limitItems   = limitLayers.replace("[","").replace("]","").replace(" ", "").split(","); 
-                // Potential bug! FIXME: The value of LayerNro currently MUST be a string. Not integer!
-                if ( limitItems.includes(LayerNro) ) {
+                const limitItems   = limitLayers.replace("[","").replace("]","").replace(" ", "").split(",");  // Ugly, but works.
+                // Potential bug! FIXME: The value of LayerNro currently MUST be a string. Not integer! ==> Fixed in 1.1.4.
+                if ( limitItems.includes(String(LayerNro)) ) { // Forced to string since v.1.1.4
                     // console.log('Commands to layer ' + LayerNro + ' allowed.');
                     return true;
                 } else {
@@ -154,7 +154,6 @@
         function validateLayerNro(LayerNro) {
             // Added in 1.1.0 to add a preview functionality to renderer
             // If renderer is in ?preview=true mode AND layer is within the valid layer rage, then layer is always 1
-
             if (!allowLayerControl(LayerNro)) {
                 // not allowed
                 return false
@@ -181,12 +180,14 @@
         }
 
         function clearLayer(LayerNro){
-            // console.log('clearLayer ' + LayerNro);
-            // if (!allowLayerControl(LayerNro)) return; // check layer param
-            LayerNro = validateLayerNro(LayerNro);
-            if (!LayerNro) { return }
+            let ValidatedLayerNro = validateLayerNro(LayerNro);
 
-            populateLayer(LayerNro,'');
+            // v1.1.4 allow clearing of all layers (even restricted ones)
+            if (!ValidatedLayerNro) {
+                console.log('...but forcefully clearing restricted layer ' + LayerNro + '.');
+                ValidatedLayerNro = LayerNro
+            }
+            populateLayer(ValidatedLayerNro,'',true); // clear layer forcefully
         }
 
         function echo(msg) {
@@ -235,11 +236,13 @@
             document.getElementById(iframe).contentWindow.echo(arg);
         }
 
-        function populateLayer(LayerNro,TemplateFileRef='') {
-            // console.log('populateLayer ' + LayerNro);
-            // if (!allowLayerControl(LayerNro)) return; // check layer param
-            LayerNro = validateLayerNro(LayerNro);
-            if (!LayerNro) { return }
+        function populateLayer(LayerNro,TemplateFileRef='', forced=false) {
+            if (!forced) {
+                // If not forced, then validate layer.
+                // Panic button uses "forced=true" to clear ALL layers.
+                LayerNro = validateLayerNro(LayerNro);
+                if (!LayerNro) { return }
+            }
             let iframe = 'layer' + LayerNro;
             let templa = '';
 
@@ -253,7 +256,7 @@
         }
 
         function playLayer(LayerNro,fieldData) {
-            // console.log('playLayer ' + LayerNro);
+            console.log('playLayer ' + LayerNro, fieldData);
             // if (!allowLayerControl(LayerNro)) return; // check layer param
             LayerNro = validateLayerNro(LayerNro);
             if (!LayerNro) { return }
@@ -262,24 +265,6 @@
             document.getElementById(iframeID).contentWindow.update(formattedJSON); 
             document.getElementById(iframeID).contentWindow.play();
         }
-
-        function formatJSONAndSetDomFields(fieldData, iframeID) {
-            let formattedJsonOut = {};
-            if (fieldData) {
-                var keys = [];
-                for (var k in fieldData) keys.push(k);
-                fieldData.forEach((item,index) => {
-                    let KEY = Object.keys(item)[0];
-                    let VAL = fieldData[index][Object.keys(item)[0]]
-                    formattedJsonOut[KEY]=VAL;
-                    let e = document.getElementById(iframeID).contentWindow.document.getElementById(KEY);
-                    if (e) {
-                        e.innerText=VAL;
-                    }
-                });
-                return JSON.stringify(formattedJsonOut)
-            }
-    }
 
         function updateLayer(LayerNro,fieldData) {
             // console.log('updateLayer ' + LayerNro);
@@ -291,6 +276,30 @@
             let formattedJSON = formatJSONAndSetDomFields(fieldData,iframeID);
             document.getElementById(iframeID).contentWindow.update(formattedJSON);
         }
+
+        function formatJSONAndSetDomFields(fieldData, iframeID) {
+            console.log('formatJSONAndSetDomFields:', iframeID, fieldData);
+            let formattedJsonOut = {};
+            if (fieldData) {
+                var keys = [];
+                for (var k in fieldData) keys.push(k);
+                fieldData.forEach((item,index) => {
+                    let KEY = Object.keys(item)[0];
+                    let VAL = fieldData[index][Object.keys(item)[0]]
+                    formattedJsonOut[KEY]=VAL;
+                    // Removed side effect in v1.1.4. This was here accidentally.
+                    // let e = document.getElementById(iframeID).contentWindow.document.getElementById(KEY);
+                    // if (e) {
+                    //     e.innerText=VAL;
+                    //     console.log("PR#62");
+                    //     // e.innerHTML=VAL; // PR#62 suggestion
+                    // }
+                });
+                return JSON.stringify(formattedJsonOut)
+            }
+    }
+
+
 
         function stopLayer(LayerNro) {
             // console.log('stopLayer ' + LayerNro);
@@ -328,7 +337,7 @@
             // Handles messages coming from server to this client.
             // All comms using 'SPXMessage2Client' as a conduit with data object and
             // data.spxcmd as function identifier. Additional object values are payload.
-            // console.log('SPXMessage2Client ' + JSON.stringify(data));
+            // console.log('SPXMessage2Client ', data);
 
             incomingData = data;
             let LayerNro;
@@ -383,7 +392,12 @@
                 case 'invokeFunction':
                     LayerNro = validateLayerNro(data.webplayout);
                     if (!LayerNro) { return }
-                    eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
+                    // FIXME: show again --> console.log('Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + '.');
+                    try {
+                        eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
+                    } catch(err) {
+                        console.log('ERROR Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + ' failed.', err);
+                    }
                     break;
 
                 case 'setRendererBackgroundImage':

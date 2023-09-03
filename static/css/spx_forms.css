@@ -60,17 +60,13 @@
     font-size: 0.8em;
     color: white;
     border: 2px solid transparent;
-    /* margin-left: 0.1em; */ 
-    /* margin-right: 0.1em; */ 
     text-transform: uppercase;
     font-family: "UI-Bold", Arial, Helvetica, sans-serif;
     text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
     box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
-    /* padding-inline-start: 5px; */
     user-select: none;
     cursor: pointer;
     padding: 0.4em 0; 
-    /* padding: 0.5em 0; */
     margin-bottom: 0.1em;
 }
 
@@ -456,4 +452,8 @@
       box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.5),
                   inset 0 -4px 10px rgba(0, 0, 0, 0.3);
       
+  }
+
+  .selectAll {
+    font-size: 2em;
   }

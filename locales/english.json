@@ -12,6 +12,7 @@
 	   "yes":"Yes",
 	   "no":"No",
 	   "none":"None",
+	   "all":"All",
 	   "fromFolder":"from folder"
 	},
 	"color":{
@@ -49,7 +50,7 @@
 	   "overlayoff":"FX STOP",
 	   "open":"Open rundown",
 	   "play":"Play ►",
-	   "playmaster":"Play ► Space",
+	   "playmaster":"Play ►",
 	   "rename":"Rename",
 	   "replacetemplate":"Re-import",
 	   "selectemplate":"Select",
@@ -57,8 +58,8 @@
 	   "settings":"Project settings",
 	   "shortcuts":"Keyboard shortcuts",
 	   "showwebrenderer":"Open playout window",
-	   "stop":"Stop",
-	   "stopmaster":"Stop ◄ SPACE",
+	   "stop":"Stop ■",
+	   "stopmaster":"Stop ■",
 	   "update":"Update ► F5",
 	   "save":"Save"
 	},

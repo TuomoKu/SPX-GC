@@ -525,6 +525,8 @@ module.exports = {
       let cwd = this.getStartUpFolder();
       let AudioFilePath = path.join(cwd, 'ASSETS', wavFileName);
 
+      console.log('Trying to play audio file [' + AudioFilePath + ']...');
+
       // EXTERNAL AUDIO PLAYER IS CURRENTLY DISABLED. -- See also view-appconfig.
       // let AudioPlayPath = path.normalize(config.general.audioplayer);
       // let AudioPlayOpts = config.general.playerflags;
@@ -786,7 +788,7 @@ module.exports = {
           this.talk('Writing file');
           // this.playAudio('beep.wav', 'spx.writeFile');
           data.warning = "Modifications done in the SPX will overwrite this file.";
-          data.smartpx = "(c) 2020-2022 Softpix (https://spx.graphics)";
+          data.smartpx = "(c) 2020-2023 Softpix (https://spx.graphics)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
           fs.writeFile(filepath, filedata, 'utf8', function (err) {

@@ -78,6 +78,14 @@
     .api {
       width: 100%;
     }
+
+    code {
+      font-family: monospace;
+      font-size: 1.1em;
+      background-color: rgba(0,0,0,0.1);
+      padding: 0.1em 0.5em;
+      border-radius: 0.1em;
+    }
   </style>
 </head>
 
@@ -90,10 +98,11 @@
   <B>http/get</B> commands available for external systems to trigger SPX events.
   <BR>
   SPX will need to be open in a browser (in the same network as the server) for most of these to work.
+  <br><br>
+  API connections can be restricted with an <b>apikey</b> parameter set in the config file and in the URL <code>?apikey=1234567890</code>
   <BR><BR>
   <small>Remember, SPX is primarily targeted to live, manually operated
-  workflows and API does not currently allow for modification of template
-  data or other advanced procedures.</small>
+  workflows and API allows only limited modifications of template data or other advanced procedures.</small>
   <BR><BR>
   
   {{#each functionList.sections}}

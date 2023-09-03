@@ -25,6 +25,10 @@ DATAROOT_*
 DATAROOT/*
 !DATAROOT/HelloWorld-project/
 
+# DEV FOLDERS and FILES
+DEV_*/**
+config_*.json
+
 
 # ASSETS
 !ASSETS/

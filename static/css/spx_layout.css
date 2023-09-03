@@ -148,13 +148,33 @@ td.aright{
     text-transform: uppercase;
 }
 
-
-.browserMessage{
-    font-size: 0.6rem;
-    color:  rgb(255, 255, 255);
-    margin-left: 0.5em;
-    user-select: none;
+.breadcrumbGear {
+    opacity: 0.3;
+    font-size: 0.7em;
+    color:  #ffffff;
+    margin-left: 0.7em;
+    border: 0px solid red;
+    margin-bottom: 3px;
 }
+
+.breadcrumbGear:hover {
+    opacity: 1.0;
+    cursor: pointer;
+}
+
+.breadtd {
+    position: relative;
+}
+
+.breadIcon {
+    height: 100%;
+    width: fit-content;
+    position: absolute;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
 
 .caption{
     font-size: 0.7em;
@@ -1061,4 +1081,28 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 
 .wrap {
     white-space: normal;
+}
+
+#rdOptionsCollapsible {
+    display: none; /* controlled */
+    box-sizing: border-box;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    font-size: 0.5rem;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .RDoptionsText {
+    color: white;
+    border: 2px solid transparent;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
+    padding-inline-start: 5px;
+    font-size: 0.8em;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
 }

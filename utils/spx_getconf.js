@@ -60,6 +60,7 @@ module.exports = {
                     cfg.general.resolution                      = "HD"
                     cfg.general.preview                         = "selected"
                     cfg.general.renderer                        = "normal"
+                    cfg.general.apikey                          = ""
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
                     // cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"

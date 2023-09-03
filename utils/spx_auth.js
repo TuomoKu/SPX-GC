@@ -2,6 +2,28 @@
 const logger = require('./logger.js');
 const spx = require('../utils/spx_server_functions.js');
 
+function CheckAPIKey(req,res,next) {
+  // Middleware to check API key in each API endpoint
+  if ( !config.general.apikey || config.general.apikey=='' ) {
+    // No API key in config, authorize all
+    logger.verbose('CheckAPIKey: No API key in config, authorize the request.');
+    next();
+    return true;
+  }
+
+  if ( req.query.apikey && req.query.apikey==config.general.apikey) {
+    logger.verbose('CheckAPIKey: API key "' + req.query.apikey + '" authorized ok.'); 
+    next();
+    return true;
+  } else {
+    logger.warn('CheckAPIKey: API key "' + req.query.apikey + '" not authorized.'); 
+    let dataOut = {};
+    dataOut.error = 'API key not authorized.'
+    res.status(403).json(dataOut);
+    return false;
+  }
+}
+
 
 function CheckLogin(req,res,next) {
     // Middleware to check auth in each router.
@@ -56,6 +78,7 @@ function Logout(req,res,next) {
 }
 
 module.exports = {
+  CheckAPIKey,
   CheckLogin,
   Logout
 } 

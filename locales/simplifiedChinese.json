@@ -11,6 +11,7 @@
 		"yes": "是",
 		"no": "否",
 		"none": "无",
+		"all":"All",
 		"fromFolder": "从文件夹"
 	},
 	"color": {

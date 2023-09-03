@@ -1,0 +1,70 @@
+ <div id="commentRow"
+    class              = "commentrow row_accent0"
+    ondblclick         = "ToggleExpand(this);"
+    onmouseover        = "tip('{{lang 'hover.item'}}');">
+
+<form name="comment" id="comment" method="post" action="/gc/saveItemChanges">
+
+  <div class="handle wide" id="commentItem" style="padding: 6px; padding-left:12px;">
+
+  <!-- COLLAPSED to small line-->
+  <div id="Collapsed" style="position:relative;">
+    <div class="vmid spxTableHeadsmall" style="text-transform:uppercase;">Rundown comment</div>
+  </div>
+
+  <!-- EXPANDED to an editor -->
+  <div id="Expanded" style="display: none;">
+    <table class="wide" style="border-spacing: 2px; margin-top:2px;">
+      <TR>
+        <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
+          <span>Opened comment</span>&nbsp;&nbsp;
+        </TD>
+      </TR>
+      <TR>
+        <TD width="65%" class="vtop">
+            <div class="wide HIDE">
+              <table class="wide spxTableHeadsmall">
+                <tr>
+                  <td class="aright">ftype</td>
+                  <td>
+                    <input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textarea"></td></tr>
+              </table>
+            </div>
+            <textarea rows="8"
+                name="commentContent"
+                ondblclick="event.stopPropagation();"
+                class="gcinput"> {{content}}</textarea><BR>
+        </TD>
+
+        <TD class="vtop">
+            <table class="wide" style="border-spacing: 5px; margin-top:0px;">
+              <tr>
+                <td colspan="2" class="vtop">
+                  <button type="button"
+                    onClick="saveTemplateItemChangesByElement(this.closest('.itemrow'));"
+                    class="wide spxFlexItem btnsmall bg_grey15 ripple"
+                    onmouseover="tip('{{lang 'hover.submitthis'}}');"
+                    >{{lang 'button.save'}} </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Foo
+                </td>
+                <td>
+                  Bar
+                </td>
+              </tr>
+            </table>
+        </TD>
+        <TD class="vtop center">
+          <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
+        </TD>
+      </TR>
+    </table>
+  </div>
+  </div>
+</form>
+</div>
+
+

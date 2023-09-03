@@ -1,12 +1,12 @@
         
         <div id="messageSlider" style="opacity:0;"></div>
         
-        <table style="width: 100%; height: 100%; border: 0px solid cornsilk; padding:7px;" border="0">
+        <table style="width: 100%; border: 0px solid cornsilk; padding:5px; border-spacing:0;">
             <tr>
                 {{!-- <td width="1" style="vertical-align: middle;">
                   <img src="/img/spx.svg" class="logo">
                 </td> --}}
-                <td>
+                <td class="breadtd">
                   <div class="dropdown">
                     <!-- <i class="fas fa-home home-icon" style="cursor: pointer;"></i> -->
 
@@ -35,6 +35,7 @@
                       {{else}}
                         <HR class="menuDivider">
                         <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A><BR>
+                        <A HREF="/api/v1"><i class="fas fa-file-code"></i>&nbsp; API {{lang 'button.docs'}}...</A><BR>
                       {{/ifValue}}
 
                       {{#ifValue page "controller"}}
@@ -59,7 +60,7 @@
 
                       <HR class="menuDivider">
                       <A HREF="https://spx.graphics/store" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; spx.graphics/store</A><BR>
-                      <A HREF="https://bit.do/joinspx" target="_new"><i class="fab fa-discord"></i>&nbsp; Join SPX Discord</A>
+                      <A HREF="https://bit.ly/joinspx" target="_new"><i class="fab fa-discord"></i>&nbsp; Join SPX Discord</A>
                       <A id="newVersionMenuItem" class="newVersionBubble" HREF="https://spxgc.tawk.help/article/latest-changes" target="_new"><i class="fas fa-bullhorn"></i>&nbsp; New version available!</A>
 
                       <!-- add a link to register -->
@@ -100,6 +101,10 @@
                     <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
                     <span class="caret-icon">&#9654;</span>
                     <span  class="breadcrumbs">{{folder}}</span>
+
+                    <div class="breadIcon">
+                      <span onClick="projectSettings();" class="breadcrumbGear" title="Project settings"><i class="fas fa-cog"></i></span>
+                    </div>
                   {{/ifValue}}
 
                   {{#ifValue page "controller"}}
@@ -109,6 +114,11 @@
                     <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
                     <span class="caret-icon">&#9654;</span>
                     <span  class="breadcrumbs">{{filebasename}}</span>
+                    <!--  Rundown options and project variables are disabled for now
+                    <div class="breadIcon">
+                      <a class="breadcrumbGear" href="#" onClick="toggleRundownSettings();" title="Rundown options"><i class="fa fa-wrench"></i></a>
+                    </div>
+                    -->
                   {{/ifValue}}
               </td>
               <td class="aright breadcrumbs">

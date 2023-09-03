@@ -29,19 +29,23 @@
     </div>
 
     <div class="modal_bottom">
-      <table class="wide">
-        <tr>
-          <td width="10%">
-            <a href="https://spxgc.com/store" target="_blank"><img border="0" alt="Template Store" title="SPX Store" src="/img/storeicon.png"></a></span>
-            
-          </td>
-          <td width="60%" valign="middle">
+          <div class="storeIcon"
+            onmouseover="showMessage('Visit SPX Store for more templates')"
+            onclick="window.open('https://spx.graphics/store', '_blank');"
+            ></div>
+          <div style="flex-grow: 1;">
             <span id="browserMessage" class="browserMessage"></span>
-          </td>
-          <td class="spxFlexContainer aright" >
-            <button style="width:25%;" class="spxformtext btn spxFlexItem bg_grey15 ripple"  onClick="ModalOff('fileoverlay')">{{lang 'button.cancel'}}</button>
-            <button style="width:25%; opacity:0.2;" id="btnChooseTemplate" class="spxformtext btn spxFlexItem bg_blue ripple"  onClick="openSelectedFile();">{{lang 'button.selectemplate'}}</button>
-          </td>
+          </div>
+          <div>
+            <button class="btn bg_grey15 ripple"  onClick="ModalOff('fileoverlay')">{{lang 'button.cancel'}}</button>
+            <button style="opacity:0.2;" id="btnChooseTemplate" class="btn bg_blue ripple"  onClick="openSelectedFiles();">{{lang 'button.selectemplate'}}</button>
+            <button class="spxformtext btn bg_blue ripple"
+                    onClick="toggleAll();"
+                    id="allToggle"
+                    data-all-label={{lang 'general.all'}}
+                    data-none-label={{lang 'general.none'}}
+                    >{{lang 'general.all'}}</button>
+          </div>
         </tr>
       </table>
     </div>

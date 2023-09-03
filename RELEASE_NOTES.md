@@ -11,6 +11,7 @@
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases below.
 
 **Completed items**:
+- Added support for API key in the config.json to allow external triggers only with matching `apikey` url parameter
 - Improved the "Import Errors notification" text in the Server Console.
 - Added functionality to import several templates to a project at once. All/None toggle button added into the template browser user interface.
 - Changed bit.do links to use bit.ly URLs instead
@@ -28,9 +29,7 @@
 
 **Waiting**:
 - Rundown Variables (does not remove prVar from profile if no users)
-- Select multiple templates for importing to project
 - Select multiple templates for adding to rundown
-        
 <BR>
 
 ---

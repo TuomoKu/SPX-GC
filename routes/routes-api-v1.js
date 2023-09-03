@@ -23,6 +23,7 @@ const xlsx = require('node-xlsx').default;
 const axios = require('axios')
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 const { query } = require("../utils/logger");
+const spxAuth = require('../utils/spx_auth.js');
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -38,7 +39,7 @@ router.get('/', function (req, res) {
               "vers"    :     "v1.0.12",
               "method"  :     "GET",
               "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
-              "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above."
+              "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above. JSON objects can be passed as params by urlEncoding stringified JSON. Search SPX Knowledge Base for more info with keyword 'invoke'."
             },
             {
               "vers"    :     "v1.0.12",
@@ -106,6 +107,12 @@ router.get('/', function (req, res) {
               "method"  :     "GET",
               "param"   :     "gettemplates?project=HelloWorld-project",
               "info"    :     "Returns templates and their settings from a given project."
+            },
+            {
+              "vers"    :     "v1.1.4",
+              "method"  :     "GET",
+              "param"   :     "executeScript?file=open-calculator.bat",
+              "info"    :     "Execute a shell script/batch file in ASSETS/scripts folder using a shell associated with a given file extension."
             },
             ]
         },
@@ -214,7 +221,7 @@ router.get('/', function (req, res) {
 
 
 // DIRECT COMMANDS (bypassing rundown) ----------------------------------------------------------
-  router.get('/invokeTemplateFunction/', async (req, res) => {
+  router.get('/invokeTemplateFunction/', spxAuth.CheckAPIKey, async (req, res) => {
 
     // Init params
     let params = req.query.params || ''; // improved in 1.1.4 to avoid undefined
@@ -233,12 +240,13 @@ router.get('/', function (req, res) {
     } else {
       dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(params) + '\")'; // encode added in v1.1.0
     }
+    console.log('invokeTemplateFunction: ' + dataOut.invoke);
     res.status(200).json(dataOut);
     spx.httpPost(dataOut,'/gc/playout')
   });
 
 
-  router.post('/directplayout', async (req, res) => {
+  router.post('/directplayout', spxAuth.CheckAPIKey, async (req, res) => {
     let dataOut = {};
     dataOut.message      = 'Sent request to SPX server.'
     dataOut.playserver   = req.body.casparServer || 'OVERLAY';
@@ -254,13 +262,13 @@ router.get('/', function (req, res) {
     spx.httpPost(dataOut,'/gc/playout')
   });
 
-  router.get('/directplayout', async (req, res) => {
+  router.get('/directplayout', spxAuth.CheckAPIKey, async (req, res) => {
     res.status(404).send('Sorry, this endpoint only available as POST REQUEST with parameters, see the example text or see controlRundownItemByID -endpoint for basic play/stop controls.');
   });
 
 
 // RUNDOWN COMMANDS -----------------------------------------------------------------------------
-    router.get('/rundown/load/', async (req, res) => {
+    router.get('/rundown/load/', spxAuth.CheckAPIKey, async (req, res) => {
       let file = req.query.file;
       let dataOut = {};
       dataOut.message      = 'Sent request to SPX controller.'
@@ -270,7 +278,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/rundown/focusFirst/', async (req, res) => {
+    router.get('/rundown/focusFirst/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusFirst';
@@ -278,7 +286,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/rundown/focusNext/', async (req, res) => {
+    router.get('/rundown/focusNext/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusNext';
@@ -286,7 +294,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/rundown/focusPrevious/', async (req, res) => {
+    router.get('/rundown/focusPrevious/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusPrevious';
@@ -294,7 +302,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/rundown/focusLast/', async (req, res) => {
+    router.get('/rundown/focusLast/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownFocusLast';
@@ -302,7 +310,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/rundown/focusByID/:id', async (req, res) => {
+    router.get('/rundown/focusByID/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.APIcmd  = 'RundownFocusByID';
       dataOut.itemID  = req.params.id;
@@ -310,7 +318,7 @@ router.get('/', function (req, res) {
       res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
     });
 
-    router.get('/rundown/stopAllLayers', async (req, res) => {
+    router.get('/rundown/stopAllLayers', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'RundownStopAll';
@@ -320,7 +328,7 @@ router.get('/', function (req, res) {
 
 // HELPER COMMANDS ----------------------------------------------------------------------------------
 
-    router.get('/version', async (req, res) => {
+    router.get('/version', spxAuth.CheckAPIKey, async (req, res) => {
       let data = {};
       data.vendor = "Softpix";
       data.product = "SPX";
@@ -336,7 +344,7 @@ router.get('/', function (req, res) {
       return res.status(200).json(data)
     });
 
-    router.get('/panic', async (req, res) => {
+    router.get('/panic', spxAuth.CheckAPIKey, async (req, res) => {
       // This WILL NOT change playlist items onair to "false"!
 
       // Clear Webplayout ---------------------------
@@ -344,12 +352,13 @@ router.get('/', function (req, res) {
       io.emit('SPXMessage2Controller', {APIcmd:'RundownAllStatesToStopped'}); // stop UI and save stopped values to rundown
 
       // Clear CasparCG -----------------------------
-      if (!spx.CCGServersConfigured){ return } // exit early, no need to do any CasparCG work
-      PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
+      if (spx.CCGServersConfigured){
+        PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
+      } 
       return res.status(200).json({ message: 'Panic executed. Layers cleared forcefully.' })
     });
 
-    router.get('/feedproxy', async (req, res) => {
+    router.get('/feedproxy', spxAuth.CheckAPIKey, async (req, res) => {
       // added in 1.0.14
       axios.get(req.query.url)
       .then(function (response) {
@@ -371,13 +380,13 @@ router.get('/', function (req, res) {
       });
     });
 
-    router.get('/getprojects', async (req, res) => {
+    router.get('/getprojects', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1
       let projects = await spx.GetSubfolders(config.general.dataroot); 
       return res.status(200).json(projects)
     });
     
-    router.get('/getrundowns', async (req, res) => {
+    router.get('/getrundowns', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1
       let project = req.query.project || '';
       if (!project) {
@@ -387,7 +396,7 @@ router.get('/', function (req, res) {
       return res.status(200).json(fileListAsJSON)
     });
 
-    router.get('/gettemplates', async (req, res) => {
+    router.get('/gettemplates', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.3
       let project = req.query.project || '';
       if (!project) {
@@ -401,7 +410,7 @@ router.get('/', function (req, res) {
       }
     });
 
-    router.get('/getlayerstate', async (req, res) => {
+    router.get('/getlayerstate', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1
       // REMEMBER!  This ONLY reports items which are in memory. So if direct API commands
       //            are used to play out templates, this will not return reliable results.
@@ -432,9 +441,30 @@ router.get('/', function (req, res) {
       return res.status(200).json(layers)
     });
 
+    router.get('/executeScript', spxAuth.CheckAPIKey, async (req, res) => {
+      // This will seek for a file in ASSETS/scripts and execute it using
+      // operating systems shell.  This is a security risk, so use with caution.
+
+      // Added in 1.1.4
+      let script = req.query.file || '';
+      if (!script) {
+        return res.status(500).json({ type: 'error', message: 'Script name required as parameter (eg ?file=scriptname)' })
+      } else {
+        let scriptPath = path.resolve(spx.getStartUpFolder(),'ASSETS/scripts/', script);
+        console.log('Executing script: ' + scriptPath);
+        if (!fs.existsSync(scriptPath)) {
+          return res.status(500).json({ type: 'error', message: 'Script not found: ' + scriptPath })
+        } else {
+          // let result = await spx.ExecuteScript(scriptPath);
+          require('child_process').exec(scriptPath); // execute script
+          return res.status(200).json({ type: 'info', message: 'Executed: ' + scriptPath })
+        }
+      }
+    }); // end executeScript file
+
 
 // ITEM COMMANDS ------------------------------------------------------------------------------------
-    router.get('/item/play', async (req, res) => {
+    router.get('/item/play', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemPlay';
@@ -442,7 +472,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/item/play/:id', async (req, res) => {
+    router.get('/item/play/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemPlayID';
@@ -451,7 +481,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/item/continue', async (req, res) => {
+    router.get('/item/continue', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemContinue';
@@ -459,7 +489,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/item/continue/:id', async (req, res) => {
+    router.get('/item/continue/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemContinueID';
@@ -468,7 +498,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/item/stop', async (req, res) => {
+    router.get('/item/stop', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemStop';
@@ -476,7 +506,7 @@ router.get('/', function (req, res) {
       res.status(200).json(dataOut);
     });
 
-    router.get('/item/stop/:id', async (req, res) => {
+    router.get('/item/stop/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.message = 'Sent request to SPX controller.'
       dataOut.APIcmd  = 'ItemStopID';
@@ -486,7 +516,7 @@ router.get('/', function (req, res) {
     });
 
 
-    router.get('/controlRundownItemByID', async (req, res) => {
+    router.get('/controlRundownItemByID', spxAuth.CheckAPIKey, async (req, res) => {
       try {
         // added in 1.1.0 and removed obsolete datafile read/write logic
         let fold = req.query.file.split('/')[0];
@@ -592,7 +622,7 @@ router.get('/', function (req, res) {
       }
     });
 
-    router.get('/rundown/get', async (req, res) => {
+    router.get('/rundown/get', spxAuth.CheckAPIKey, async (req, res) => {
       res.status(200).json(global.rundownData)
     });
 

@@ -116,7 +116,7 @@ function applyFileSelection(e) {
       fils[fi].classList.remove('selectedFile');
     }
     setTimeout(function () { e.target.parentElement.classList.add('selectedFile'); }, 10);
-    setTimeout(function () { openSelectedFile(); }, 50);
+    setTimeout(function () { openSelectedFiles(); }, 50);
   }
 
 function openSelectedCSVFile() {

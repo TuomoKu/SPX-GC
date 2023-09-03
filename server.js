@@ -2,13 +2,13 @@
 // ===============================================================
 //
 // "SPX Graphics Controller"
-// (c) 2020-2022 Softpix (https://spx.graphics)
+// (c) 2020-2023 Softpix (https://spx.graphics)
 // 
 // An open source PROFESSIONAL LIVE GRAPHICS solution for
 // PC, Mac, Linux or the cloud. 
 //
 // Website .......... https://spx.graphics
-// Join Discord ..... https://bit.do/joinspx
+// Join Discord ..... https://bit.ly/joinspx
 // Knowledge Base ... https://spxgc.tawk.help
 // Sourcecode ....... https://github.com/TuomoKu
 // 
@@ -827,7 +827,7 @@ process.on('uncaughtException', function(err) {
 
 var server = app.listen(port, (err) => {
 
-  let splash = '  Copyright 2020-2022 Softpix\n\n' +
+  let splash = '  Copyright 2020-2023 Softpix\n\n' +
   `  SPX version ............ ${global.vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
   '  Homepage ............... https://spx.graphics\n' +
@@ -840,6 +840,11 @@ var server = app.listen(port, (err) => {
   `  Cfg / dataroot ......... ${path.resolve(config.general.dataroot)}\n`  +  
   `  Cfg / logfolder ........ ${logDirectory}\n`; 
   /* `  Cfg / lauchchrome ...... ${config.general.launchchrome}\n` */
+
+
+  if (config.general.apikey && config.general.apikey != '') {
+    splash += `  Cfg / apikey ........... Set in config.json\n`;
+  }
   
   // Where are CasparCG templates loaded from (file:// or http://):
   let TemplatesFromInfo;
