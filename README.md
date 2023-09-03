@@ -284,7 +284,8 @@ An example `config.json` of the SPX server
     "renderer": "normal",
     "resolution": "HD",
     "launchchrome": false,
-    "disableConfigUI": true
+    "disableConfigUI": true,
+    "apikey": ""
   },
   "casparcg": {
     "servers": [
