@@ -284,6 +284,7 @@ td.aright{
     font-family: "UI-Light", Arial, Helvetica, sans-serif;
     text-align: left;
     vertical-align: middle;
+    z-index:500;
 }
 
 .dropdown-content {

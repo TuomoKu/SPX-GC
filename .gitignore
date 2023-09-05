@@ -27,6 +27,7 @@ DATAROOT/*
 
 # DEV FOLDERS and FILES
 DEV_*/**
+DEF_*/**
 config_*.json
 
 
@@ -38,6 +39,7 @@ config_*.json
 !ASSETS/csv/
 ASSETS/csv/*.csv
 ASSETS/media/video/
+ASSETS/media/e-urheilu/
 ASSETS/media/images/hd/
 ASSETS/media/images/bg/
 ASSETS/media/images/demo/
@@ -167,3 +169,4 @@ _env.json
 .gitignore
 static/tt2020_reactions.json
 
+ASSETS/default_assets.txt

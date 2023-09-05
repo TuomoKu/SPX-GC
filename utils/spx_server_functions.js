@@ -401,12 +401,18 @@ module.exports = {
     // console.log('Trying to get subfolders of ' + strFOLDER);
     try {
       let FOLDER = path.normalize(strFOLDER);
+      if (fs.existsSync(FOLDER)) {
       return fs.readdirSync(FOLDER).filter(function (file) {
         return fs.statSync(FOLDER+'/'+file).isDirectory();
       });
+      } else {
+        logger.error('Source folder didnt exist "' + strFOLDER + '", so it was created.');
+        fs.mkdirSync(FOLDER);
+        return;
+      }
     }
     catch (error) {
-      logger.error('Failed to read folder ' + strFOLDER + ': ' + error);
+      logger.error('GetSubfolders / Failed to read folder ' + strFOLDER + ': ' + error);
       return (error);
     }
   }, // GetSubfolders
@@ -416,6 +422,11 @@ module.exports = {
     // return a list of all json files in the dataroot folder
     logger.debug("Getting json files from " + FOLDERstr + "...");
     let FOLDER = path.normalize(FOLDERstr);
+    if (!fs.existsSync(FOLDER)) {
+      logger.debug("Fixed an issue, created a missing folder " + FOLDER + "...");
+      fs.mkdirSync(FOLDER);
+    }
+
     let jsonData = [];
     try {
       // console.log('reading',FOLDER);
@@ -431,8 +442,9 @@ module.exports = {
       return jsonData;
     }
     catch (error) {
-      logger.error('Failed to read folder ' + FOLDERstr + ': ' + error);
-      return ('Failed to read folder: ' + FOLDERstr);
+      let errPrefix = 'GetDataFiles / Failed to read folder '
+      logger.error(errPrefix + FOLDERstr + ': ' + error);
+      return (errPrefix + FOLDERstr);
     }
   }, // GetDataFiles ended
 
@@ -788,7 +800,7 @@ module.exports = {
           this.talk('Writing file');
           // this.playAudio('beep.wav', 'spx.writeFile');
           data.warning = "Modifications done in the SPX will overwrite this file.";
-          data.smartpx = "(c) 2020-2023 Softpix (https://spx.graphics)";
+          data.copyright = "(c) 2020-2023 Softpix (https://spx.graphics)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
           fs.writeFile(filepath, filedata, 'utf8', function (err) {

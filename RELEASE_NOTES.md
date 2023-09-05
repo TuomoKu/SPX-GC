@@ -6,7 +6,7 @@
 
 ## WORK IN PROGRESS
 
-> List updated Sept 01 2023
+> List updated Sept 05 2023
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
@@ -45,10 +45,15 @@ Published releases:
 - Improved `layers`  URL parameter functionality of the renderer (type matching).
 - Improved `panic` functionality to overdrive restricted layers -filter.
 - Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending.)
+- Improved stability if dataroot- or project folder(s) are missing they are generated on the fly
 - Added `onNext` template event handler. See above item also.
 - Added '...FOR OPERATOR ONLY' message to the scalable renderer to clear confusion about its purpose.
 - Fixed bugs in API play/continue/stop by ID routines, that would control the first item incorrectly on the rundown when the given ID was not found
 - pkg updated from 4.4.9 to 5.8.0 (due to updated Node16)
+- Binary packages v1.2.0:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_win64.zip),
+    [  Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_linux64.zip),
+        [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_macos64.zip)
 
 ## **1.1.3** (Jun 29 2022)
 > Version 1.1.3 was never released publicly as binaries. These features will be present in the future releases.

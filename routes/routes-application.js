@@ -1697,49 +1697,6 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
 
 // FUNCTIONS --------------------------------------------------------------------------------------------------
 
-/*
-async function GetSubfolders(strFOLDER) {
-  // return a list of all subfolders in a given folder
-  // console.log('Trying to get subfolders of ' + strFOLDER);
-  try {
-    let FOLDER = path.normalize(strFOLDER);
-    return fs.readdirSync(FOLDER).filter(function (file) {
-      return fs.statSync(FOLDER+'/'+file).isDirectory();
-    });
-  }
-  catch (error) {
-    logger.error('Failed to read folder ' + strFOLDER + ': ' + error);
-    return (error);
-  }
-} // GetDataFiles ended
-*/
-
-/*
-
-async function GetDataFiles(FOLDERstr) {
-  // return a list of all json files in the dataroot folder
-  logger.debug("Getting json files from " + FOLDERstr + "...");
-  let FOLDER = path.normalize(FOLDERstr);
-  let jsonData = [];
-  try {
-    // console.log('reading',FOLDER);
-    
-    fs.readdirSync(FOLDER).forEach(file => {
-      let bname = path.basename(file, '.json');
-      let ext = path.extname(file).toUpperCase();
-      if (ext == ".JSON") {
-        // console.log('Filename', bname);
-        jsonData.push(bname);
-      }
-    });
-    return jsonData;
-  }
-  catch (error) {
-    logger.error('Failed to read folder ' + FOLDERstr + ': ' + error);
-    return ('Failed to read folder ' + FOLDERstr + '!');
-  }
-} // GetDataFiles ended
-*/
 
 function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex=null) {
 
@@ -1913,7 +1870,7 @@ async function orgGetDataFiles(FOLDERstr) {
     return jsonData;
   }
   catch (error) {
-    logger.error('Failed to read folder ' + FOLDERstr + ': ' + error);
+    logger.error('orgGetDataFiles / Failed to read folder ' + FOLDERstr + ': ' + error);
     return (error);
   }
 } // orgGetDataFiles ended

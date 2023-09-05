@@ -36,6 +36,17 @@
   body {
     overflow: auto !important;
   }
+
+  #email,
+  #freetext {
+    padding: 0.25em;
+  }
+
+  #email::placeholder,
+  #freetext::placeholder {
+    color: #ffffff5b;
+    text-shadow: none;
+  }
     
   </style>
 
@@ -434,7 +445,12 @@
                       </div>
                     </td>
                     <td class="vmid">
-                      <textarea class="wide drop bg_grey" style="height: 6em;" name="freetext" id="freetext">{{config.registration.freetext}}</textarea>
+                      <textarea class="wide drop bg_grey"
+                                style="height: 6em;"
+                                name="freetext"
+                                style=""
+                                placeholder="Feedback, comments, ideas, etc."
+                                id="freetext">{{config.registration.freetext}}</textarea>
                       </td>
                   </tr>
                 </table>
@@ -449,7 +465,9 @@
                       </div>
                     </td>
                     <td class="vmid">
-                      <input type="text" class="wide drop bg_grey" name="email" id="email" value="{{config.registration.email}}" oninput="checkEmail(this)">
+                      <input type="text" class="wide drop bg_grey"
+                      placeholder="name@inter.net"
+                      name="email" id="email" value="{{config.registration.email}}" oninput="checkEmail(this)">
                       <div style="font-size: 0.6em; margin-top: 1em; opacity: 0.5;">
                         All users registered with an email will receive a <span class="fg_orange">20%
                         discount code</span> for any purchase in the <a href="https://spx.graphics/store">SPX Store</a>! 
@@ -485,7 +503,7 @@
                   </tr>
                 </table>
                       <span style="font-size: 0.55em; opacity:0.9; color:#000000;">
-                        v.{{{ShowVersion}}} | <a href="https://spx.graphics">&copy; 2022 Softpix</a>
+                        v.{{{ShowVersion}}} | <a href="https://spx.graphics">&copy; 2023 Softpix</a>
                       </span>
               </td>
             </tr>

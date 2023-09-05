@@ -256,7 +256,6 @@
         }
 
         function playLayer(LayerNro,fieldData) {
-            console.log('playLayer ' + LayerNro, fieldData);
             // if (!allowLayerControl(LayerNro)) return; // check layer param
             LayerNro = validateLayerNro(LayerNro);
             if (!LayerNro) { return }
@@ -268,8 +267,6 @@
 
         function updateLayer(LayerNro,fieldData) {
             // console.log('updateLayer ' + LayerNro);
-            // if (!allowLayerControl(LayerNro)) return; // check layer param
-            // LayerNro = validateLayerNro(LayerNro);
             LayerNro = validateLayerNro(LayerNro);
             if (!LayerNro) { return }
             let iframeID = 'layer' + LayerNro;
@@ -278,7 +275,7 @@
         }
 
         function formatJSONAndSetDomFields(fieldData, iframeID) {
-            console.log('formatJSONAndSetDomFields:', iframeID, fieldData);
+            // console.log('formatJSONAndSetDomFields:', iframeID, fieldData);
             let formattedJsonOut = {};
             if (fieldData) {
                 var keys = [];
@@ -287,13 +284,6 @@
                     let KEY = Object.keys(item)[0];
                     let VAL = fieldData[index][Object.keys(item)[0]]
                     formattedJsonOut[KEY]=VAL;
-                    // Removed side effect in v1.1.4. This was here accidentally.
-                    // let e = document.getElementById(iframeID).contentWindow.document.getElementById(KEY);
-                    // if (e) {
-                    //     e.innerText=VAL;
-                    //     console.log("PR#62");
-                    //     // e.innerHTML=VAL; // PR#62 suggestion
-                    // }
                 });
                 return JSON.stringify(formattedJsonOut)
             }

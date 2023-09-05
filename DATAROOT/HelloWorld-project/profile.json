@@ -429,7 +429,7 @@
     }
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
-  "smartpx": "(c) 2020-2023 Softpix (https://spx.graphics)",
+  "copyright": "(c) 2020-2023 Softpix (https://spx.graphics)",
   "updated": "2023-09-05T10:45:42.980Z",
   "general": {
     "background": ""

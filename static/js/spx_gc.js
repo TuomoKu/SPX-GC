@@ -2,7 +2,7 @@
 // Client javascript for SPX
 // Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2021 Softpix
+// (c) 2020-2023 Softpix
 // ***************************************
 
 var socket = io();
@@ -32,11 +32,13 @@ socket.on('SPXMessage2Client', function (data) {
     switch (data.spxcmd) {
         case 'notifyMultipleControllers':
             let notification = document.getElementById('severalDetected');
-            if (data.count && data.count>1) {
-                console.log(data.count + ' SPX Controllers detected by the server. Displaying notification.');
-                notification.style.display = 'flex';
-            } else {
-                notification.style.display = 'none';
+            if (notification) { // controller view
+                if (data.count && data.count>1) {
+                    console.log(data.count + ' SPX Controllers detected by the server. Displaying notification.');
+                    notification.style.display = 'flex';
+                } else {
+                    notification.style.display = 'none';
+                }
             }
             break;
 
@@ -1529,15 +1531,10 @@ function playItem(itemrow='', forcedCommand='') {
         return;
     }
 
-    
-
     data = {};
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
     data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
-
-    console.log('SPXGC playItem()', data);
-
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
     working('Sending ' + data.command + ' request.');
     ajaxpost('/gc/playout',data);
@@ -1546,7 +1543,6 @@ function playItem(itemrow='', forcedCommand='') {
     if (data.command == 'play' || data.command=="playonce") { heartbeat(302) }
     if (data.command == 'continue' ) { heartbeat(304) }
     if (data.command == 'stop' ) { heartbeat(306) }
-
 
     // playonce (for out type=none) command acts on the server, but the state will not be saved to JSON
     let isPlay = false;

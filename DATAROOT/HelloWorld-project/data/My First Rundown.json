@@ -1,7 +1,7 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
-  "smartpx": "(c) 2020-2023 Softpix (https://spx.graphics)",
-  "updated": "2023-09-05T10:44:32.113Z",
+  "copyright": "(c) 2020-2023 Softpix (https://spx.graphics)",
+  "updated": "2023-09-05T14:39:40.588Z",
   "templates": [
     {
       "description": "Top left with icon",
@@ -56,7 +56,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "dataformat": "xml",
       "imported": "1651834717300",
       "relpath": "softpix/Template_Pack_1.1/INFO_LEFT.html",
@@ -107,7 +107,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "dataformat": "xml",
       "imported": "1651834722045",
       "relpath": "softpix/Template_Pack_1.1/NAME_LEFT.html",
@@ -342,7 +342,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "imported": "1655677374610",
       "relpath": "/softpix/Template_Pack_1.1/HEADLINE_2_STEPS.html",
       "itemID": "1655677380500"
@@ -388,7 +388,7 @@
           "value": "./themes/default.css"
         }
       ],
-      "onair": "true",
+      "onair": "false",
       "imported": "1655713210393",
       "relpath": "/softpix/Template_Pack_1.1/TICKER_MANUAL.html",
       "itemID": "1655713217433"
