@@ -4,9 +4,9 @@
 
 <br>
 
-Readme updated Sept 1 2023. 
+Readme updated Sept 4 2023. 
 
->  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.1.2** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
+>  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.2.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
 <br>
 
@@ -110,9 +110,9 @@ SPX can be installed using a **ready-to-go binary package** which includes all r
 
 | Package| Build date | Notes |
 |  ------ | ----- | ----- |
-| **Windows**<BR>[SPX_1_1_2_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_win64.zip   ) | Jun 20 2022 | The app is cross-platform and is mostly developed and tested on Windows. Approx 56% users are on Windows.
-| **Linux**<BR>[SPX_1_1_2_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_linux64.zip ) | Jun 20 2022 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 38% of users are on Linux|
-| **MacOS**<BR>[SPX_1_1_2_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_macos64.zip ) | Jun 20 2022 | If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 6% of current users are on Mac.|
+| **Windows**<BR>[SPX_1_2_0_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_win64.zip   ) | Sep 04 2023 | The app is cross-platform and is mostly developed and tested on Windows. Approx 57% users are on Windows.
+| **Linux**<BR>[SPX_1_2_0_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_linux64.zip ) | Sep 04 2023 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 32% of users are on Linux|
+| **MacOS**<BR>[SPX_1_2_0_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_macos64.zip ) | Sep 04 2023 | If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 11% of users are on Mac.|
 
 > For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
  Please [get in touch](#feedback) if you have problems downloading or installing these files.

@@ -72,6 +72,7 @@
 "authpolicy":"Inloggningsdefinition",
 "home":"Välkommen",
 "login":"Logga in",
+"pickAllTemplates":"Lägg till alla templaten i rundown",
 "picktemplate":"Lägg till templaten i rundown",
 "selectshow":"Välj projekten",
 "select":"Välj en innehållsfil",
@@ -149,7 +150,8 @@
 },
 "warning":{
 "notemplates":"Gå till projektinställningar och lägg till templater i projektet",
-"showprofilebackup":"Det rekommenderas att du säkerhetskopierar filen profile.json innan du gör några ändringar."
+"showprofilebackup":"Det rekommenderas att du säkerhetskopierar filen profile.json innan du gör några ändringar.",
+"severalControllers": "Flera kontroller är anslutna till SPX-servern! Endast en rekommenderas."
 },
 "hover":{
 "accent":"Templatens markeringsfärg i rundown",

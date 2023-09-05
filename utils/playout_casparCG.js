@@ -87,7 +87,7 @@ module.exports = {
     let GFX_Serv = data.playserver;
     let GFX_Chan = data.playchannel;
     let GFX_Laye = data.playlayer;
-    let DataType = data.dataformat;
+    let DataType = data.dataformat || 'json'; // added in 1.2.0
     let InvFunct = data.invoke;
     data.command = data.command.toUpperCase();
 

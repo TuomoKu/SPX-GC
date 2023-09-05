@@ -22,12 +22,6 @@ socket.on('connect', function () {
         document.body.style="pointer-events: auto;" // restore clickability
         hideMessageSlider();
     }
-
-    data={};
-    data.name   = 'SPX_CONTROLLER'; // <---- Name of this socket connection
-    data.spxcmd = 'identifyClient';
-    socket.emit('SPXMessage2Server', data);
-
 }); // end connect
 
 socket.on('SPXMessage2Client', function (data) {
@@ -36,6 +30,16 @@ socket.on('SPXMessage2Client', function (data) {
     // data.spxcmd as function identifier. Additional object values are payload.
     // console.log('SPXMessage2Client received', data)
     switch (data.spxcmd) {
+        case 'notifyMultipleControllers':
+            let notification = document.getElementById('severalDetected');
+            if (data.count && data.count>1) {
+                console.log(data.count + ' SPX Controllers detected by the server. Displaying notification.');
+                notification.style.display = 'flex';
+            } else {
+                notification.style.display = 'none';
+            }
+            break;
+
         case 'updateServerIndicator':
             e = document.getElementById(data.indicator);
             if (e) {e.style.color = data.color;}
@@ -79,7 +83,7 @@ socket.on('SPXMessage2Controller', function (data) {
     // data.APIcmd as function identifier. Additional object values are payload.
     // Feature added in v.1.0.8.
 
-    // console.log('SPXMessage2Controller received', data)
+    let el = null;
     let DomItemID;
     switch (data.APIcmd) {
 
@@ -105,6 +109,7 @@ socket.on('SPXMessage2Controller', function (data) {
             let lastIndex = document.querySelectorAll('.itemrow').length-1;
             focusRow(lastIndex)
             break;
+
         case 'RundownFocusByID':
             focusRow(getElementByEpoch(data.itemID))
             break;
@@ -132,7 +137,14 @@ socket.on('SPXMessage2Controller', function (data) {
             break;
 
         case 'ItemPlayID':
-            playItem(getElementByEpoch(data.itemID), 'play')
+            console.log('ItemPlayID stopping here! ', data.itemID)
+            el = getElementByEpoch(data.itemID);
+            if (el) {
+                // console.log('ItemPlayID: Element found', data.itemID, el);
+                playItem(el,'play')
+            } else {
+                console.warn('ItemPlayID: Element not found', data.itemID);
+            }
             break;
 
         case 'ItemContinue':
@@ -140,7 +152,12 @@ socket.on('SPXMessage2Controller', function (data) {
             break;
 
         case 'ItemContinueID':
-            nextItem(getElementByEpoch(data.itemID))
+            el = getElementByEpoch(data.itemID);
+            if (el) {
+                nextItem(el)
+            } else {
+                console.warn('ItemContinueID: Element not found', data.itemID);
+            }
             break;
 
         case 'ItemStop':
@@ -148,7 +165,12 @@ socket.on('SPXMessage2Controller', function (data) {
             break;
 
         case 'ItemStopID':
-            playItem(getElementByEpoch(data.itemID), 'stop')
+            el = getElementByEpoch(data.itemID);
+            if (el) {
+                playItem(el,'stop')
+            } else {
+                console.warn('ItemStopID: Element not found', data.itemID);
+            }
             break;
 
         default:
@@ -233,6 +255,16 @@ function addSelectedTemplate(idx) {
   data.listname      = document.getElementById('filebasename').value;
   data.datafile      = document.getElementById('datafile').value;
   data.templateindex = idx;
+  post('', data, 'post');
+}
+
+function addAllTemplatesToRundown() {
+  // Added in 1.2.0
+  data={};
+  data.command       = "addAllItemsToRundown";
+  data.foldername    = document.getElementById('foldername').value;
+  data.listname      = document.getElementById('filebasename').value;
+  data.datafile      = document.getElementById('datafile').value;
   post('', data, 'post');
 }
 
@@ -589,6 +621,25 @@ function clearAttributes(attName, attValue) {
         }
     })
 } // clearAttributes ended
+
+
+function toggleLRendererHandler(slider, targ) {
+    let Cfgdata = {};
+    Cfgdata.key = 'disableLocalRenderer'
+    if (slider.checked) {
+        document.getElementById(targ).innerText = 'YES';
+        document.getElementById('previewIF').src = '/templates/empty.html';
+        document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
+        Cfgdata.val = true;
+        
+    } else {
+        document.getElementById('previewIF').src = '/renderer';
+        document.getElementById(targ).innerText = 'NO';
+        document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
+        Cfgdata.val = false;
+    }
+    ajaxpost('/gc/saveConfigChanges',Cfgdata);
+}
 
 
 function toggleSwitchHandler(slider, targ, type) {
@@ -1141,11 +1192,12 @@ function getElementByEpoch(itemID) {
     let DomItemID;
     for (let index = 0; index < document.querySelectorAll('.itemrow').length; index++) {
         DomItemID = document.querySelectorAll('.itemrow')[index].getAttribute('data-spx-epoch');
-        if (DomItemID==itemID)
-            {
-                return document.querySelectorAll('.itemrow')[index]
-            };
+        // console.log('Checking ' + DomItemID + ' against ' + itemID + '...');
+        if (DomItemID==itemID) {
+            return document.querySelectorAll('.itemrow')[index]
+        };
     }
+    return false; // added in 1.2.0
 }
 
 
@@ -1338,6 +1390,7 @@ function help(section) {
         case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
         case "API":                 HELP_PAGE = "article/help-api"                  ; break;
         case "ITEM-DETAILS":        HELP_PAGE = "article/help-item-details"         ; break;
+        case "SEVERAL":             HELP_PAGE = "article/help-several-controllers"  ; break;
         default: break;
     }
 
@@ -1476,10 +1529,14 @@ function playItem(itemrow='', forcedCommand='') {
         return;
     }
 
+    
+
     data = {};
     data.datafile      = document.getElementById('datafile').value;
     data.epoch         = itemrow.getAttribute('data-spx-epoch') || 0;
     data.command       = setItemButtonStates(itemrow, forcedCommand);       // update buttons and return command (play/stop/playonce). ForcedCommand (stop) overrides.
+
+    console.log('SPXGC playItem()', data);
 
     setMasterButtonStates(itemrow, 'from playItem');                        // update master button UI 
     working('Sending ' + data.command + ' request.');

@@ -45,6 +45,59 @@
       z-index: 9999;
       display: none;
     }
+
+    .stripedMessage {
+      --darkCol: rgba(0, 0, 0, 0.1);
+      --liteCol: rgba(0, 0, 0, 0.2);
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: none; /* flex / controlled by JS logic */
+      z-index: 10;
+      padding: 0.5em;
+      font-size: 0.7em;
+      position: relative;
+      align-items: center;
+      border-radius: 0.0em;
+      margin-bottom: 0.4em;
+      justify-content: center;
+      background-size: 3vw 3vw;
+      color: rgb(181, 181, 181);
+      text-shadow: 1px 1px 1px rgb(0, 0, 0);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+      background-image: linear-gradient(
+        135deg,
+        var(--darkCol) 25%,
+        var(--liteCol) 25%,
+        var(--liteCol) 50%,
+        var(--darkCol) 50%,
+        var(--darkCol) 75%,
+        var(--liteCol) 75%,
+        var(--liteCol) 100%);
+    }
+
+    .stripedMessage a {
+      color: rgb(161, 161, 161);
+    }
+
+    .stripedMessage a:hover {
+      color: rgb(255, 255, 255);
+      cursor: help;
+    }
+
+    .ListHeaderButtons {
+      width: 100%;
+      margin-bottom: 1em;
+      align-items: center;
+      justify-content: center;
+      padding: 0.7em;
+      border-left: 10px solid blue;
+      background-color: rgba(255, 255, 255, 0.1);
+      box-shadow: ;
+    }
+
+
   </style>
 
   
@@ -54,9 +107,6 @@
     // See: js/spx_gc.js
   </script>
 </head>
-
-
-
 
 <body onresize="resizePreview();" class="bg_body">
 
@@ -76,7 +126,7 @@
       <div class="modal_top height2">
         <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
           <tr style="background-color: rgba(255,255,255,0.2);">
-            <td valign="middle" style="font-size: 0.8em;">
+            <td valign="middle" style="font-size: 0.8em; border: 0px solid white">
               &nbsp;{{lang 'pagetitle.picktemplate'}} &nbsp; <a href="/show/{{folder}}/config"><i class="fas fa-cog"></i></a></small>
             </td>
             <td valign="middle" class="aright">
@@ -88,13 +138,22 @@
 
       <div class="modal_content content scroller">
           <div id="treeview" class="filebrowser" style="padding: 2em;">
+
+
             {{{ generateTemplateList folder }}}
 
-            <BR>
+            <br>
+
+            <div class="addTemplateItem row_accent0">
+              <button type="button" class="addbtn bg_blue ripple" onClick="addAllTemplatesToRundown();" style="float:right;">{{lang 'general.all'}}</button>
+              <span class="templateName">{{lang 'pagetitle.pickAllTemplates'}}</span><BR>
+              <span class="templateDesc">Add all project templates to rundown with a single click</span>
+            </div>
+
             <div onClick="openImportDialog();" class="addTemplateItem row_accent0">
-            <button type="button" class="addbtn bg_blue ripple" onClick="openImportDialog();" style="float:right; padding:0.2em 0.4em;"><i class="fas fa-file-import"></i></button>
-            <span class="templateName">CSV-file import</span><BR>
-            <span class="templateDesc">Generate multiple rundown items from a CSV file &nbsp;<span class="tableheaderHelp2" title="{{lang 'general.help'}}" onClick="help('csv');"><i class="far fa-question-circle"></i>&nbsp;</span></span>
+              <button type="button" class="addbtn bg_blue ripple" onClick="openImportDialog();" style="float:right; padding:0.2em 0.4em;"><i class="fas fa-file-import"></i></button>
+              <span class="templateName">CSV-file import</span><BR>
+              <span class="templateDesc">Generate multiple rundown items from a CSV file &nbsp;<span class="tableheaderHelp2" title="{{lang 'general.help'}}" onClick="help('csv');"><i class="far fa-question-circle"></i>&nbsp;</span></span>
             </div>
 
           </div>
@@ -149,6 +208,16 @@
 
   <div class="wrapper" onmouseover="tip('');">
 
+    <div id="severalDetected" class="stripedMessage">
+      {{lang 'warning.severalControllers'}} &nbsp;
+      <a title="{{lang 'general.help'}}"
+        onClick="help('several');"
+        class="hoverWhite"
+        onmouseover="tip('{{lang 'hover.help'}}');">
+        <i class="far fa-question-circle"></i>
+      </a>
+    </div>
+
     <div class="header">
         {{>header page="controller" }}       
     </div><!-- header end -->
@@ -166,13 +235,13 @@
 
 
 
+
               {{#if filedata.templates}}
                 <!-- // -->
               {{else}}
                 <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
                   <h2>Empty rundown</h2><BR>
                   <P> Press 'F1' to open a list of useful keyboard shortcuts.<BR>Add templates to this rundown from + button below.</P>
-
                 </div> 
               {{/if}}
 
@@ -629,20 +698,42 @@
                    width:100%;
                    height:27%;
                    overflow: hidden;
+                   position: relative;
                    {{#ifValue renderer "popup"}}
                     display: none;
                    {{else}}
                     display: block;
                    {{/ifValue}}
                    opacity:0.1;">
+            <div  id="LocalRendererDisabledNotification"
+                  style="width: 100%;
+                  {{#ifValue disableLRender "true"}}
+                  opacity: 1;
+                  {{else}}
+                  opacity: 0;
+                  {{/ifValue}}
+                  position: absolute;
+                  top: 0; left: 0;
+                  height: 100%; 
+                  z-index:10;
+                  text-align: center;
+                  display: flex; 
+                  justify-content: center; 
+                  align-items:center;
+                  background: transparent;
+                  color: rgb(54, 54, 54);">Local SPX Renderer<br>DISABLED</div>
             <iframe
               width={{width}}
               height={{height}} 
               id="previewIF"
-              src="/renderer"
+              {{#ifValue disableLRender "true"}}
+                src="/templates/empty.html"
+              {{else}}
+                src="/renderer"
+              {{/ifValue}}
               class="renderer"
               {{#if background}}
-              style="background-image: url('/{{background}}'); background-size: 100% 100%;"
+              style="background-image: url('/{{background}}'); background-size: 100% 100%; position: absolute; top: 0; left: 0;"
               {{/if}}
               ></iframe>
             
@@ -661,41 +752,86 @@
                           top:0; right: 0;
                           color: orange;"></i>
               -->
+              
 
               <button id="localRendererCollapsiple" class="collapsibleZone {{{ GenerateLocalRendererOptions 'class' }}}" type="button">OPTIONS</button>
 
               <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2); padding:0;">
 
                 <!--
-                <div  id="promo"
-                      style="width: 100%; height:160px; margin: 0; transform: translateX(-0px); display: block;"
-                      data-promo-name="example"
+                
+                <div id="promo"
+                      style="width: 100%;
+                            height:20vh;
+                            padding: 0.5em;
+                            display: block;
+                            position: relative;
+                            border: 0px solid yellow;
+                            box-sizing: border-box;"
                       >
-                  <div id="closePromo"
-                      class="closePromo"
-                      onClick="closePromo()"; 
-                      style="position: absolute;
-                            cursor: pointer;
-                            width: 20px; height: 20px;
-                            z-index:2; top: 3px; right: 8px;
-                            background-color:rgba(0, 0, 0, 0.459);
-                            display: flex; align-items: center; justify-content: center;">
-                            <i  class="fas fa-times"
-                                style=" position:absolute;
-                                font-size: 0.7em;
-                                color: white;"></i></div>
-                  <iframe src="https://smartpx.fi/gc/messageservice2/promo/example/"
-                          id="promoFrame"
-                          class="scroller"
-                          style="position: relative;
-                          top: 0; width: 100%; height:100%;
-                          border: 0;"></iframe>
+                    <div id="closePromo"
+                        class="closePromo"
+                        onClick="closePromo()"; 
+                        style="position: absolute;
+                              cursor: pointer;
+                              width: 25px; height: 25px;
+                              z-index:2; top: 0px; right: 0px;
+                              background-color:rgba(0, 0, 0, 0.459);
+                              display: flex; align-items: center; justify-content: center;">
+                              <i  class="fas fa-times"
+                                  style=" position:absolute;
+                                  font-size: 0.7em;
+                                  color: white;"></i></div>
+                    <div id="promo"
+                        style="width: 100%;
+                              height:100%;
+                              top: 0; left: 0;
+                              display: block;
+                              border: 0px solid red;
+                              border-radius: 0.5em;
+                              overflow: hidden;
+                              box-sizing: border-box;"
+                        data-promo-name="example"
+                        >
+
+                    <iframe src="https://smartpx.fi/gc/messageservice2/promo/example/"
+                            id="promoFrame"
+                            class="scroller"
+                            style="position: relative;
+                            top: 0; width: 100%; height:100%;
+                            border: 0;"></iframe>
+                  </div>
                 </div>
                 -->
+                
                 <div style="padding:10px;">
                 
 
                 <table style="width:100%;">
+                  <tr>
+                    <td width="60%" style="font-size: 0.7em;">Disable local renderer</td>
+                    <td width="20%" ALIGN="center">
+                      <div class="toggle-container">
+                        <label class="vc-switch">
+                        <input  id="toggleRendererWindowProgram"
+                                {{#ifValue disableLRender "true"}}
+                                  checked
+                                {{/ifValue}}
+                                type="checkbox"
+                                class="vc-switch-input"
+                                onClick="toggleLRendererHandler(this, 'toggleLRender');"/>
+                        <span id="recSlider" class="vc-switch-label"></span>
+                        <span class="vc-handle" id="toggleLRender">
+                            {{#ifValue disableLRender "true"}}
+                              YES
+                            {{else}}
+                              NO
+                            {{/ifValue}}
+                        </span>
+                        </label>
+                      </div>
+                    </td>
+                  </tr>
                   <tr> 
                     <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
                       Popup renderer
@@ -801,7 +937,6 @@
     // console.log('Init tooltip');
     var tooltip = new Tooltip();
 
-
     function colorPicker(sourceButton, initialColor) {
       // Color picker
       // alert('Picker to ' + initialColor)
@@ -858,19 +993,19 @@
     }
 
     function resizePreview() {
-        let DefaultX = {{width}}  // 1920 by default;
-        let DefaultY = {{height}} // 1080 by default;
-        let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
-        let Sca = Wpx/DefaultX;
-        let Hpx = parseInt(DefaultY * Sca);
-        document.getElementById('previewBG').style.width=Wpx+'px';
-        document.getElementById('previewBG').style.height=Hpx+'px';
-        document.getElementById('previewIF').style.transform="scale("+Sca+")";
-        //document.getElementById('previewBG').style.display='block';
-        document.getElementById('previewBG').style.opacity=1;
-        document.getElementById('controllerFunctionsZone').style.opacity=1;
-        // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
-      }
+      let DefaultX = {{width}}  // 1920 by default;
+      let DefaultY = {{height}} // 1080 by default;
+      let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
+      let Sca = Wpx/DefaultX;
+      let Hpx = parseInt(DefaultY * Sca);
+      document.getElementById('previewBG').style.width=Wpx+'px';
+      document.getElementById('previewBG').style.height=Hpx+'px';
+      document.getElementById('previewIF').style.transform="scale("+Sca+")";
+      //document.getElementById('previewBG').style.display='block';
+      document.getElementById('previewBG').style.opacity=1;
+      document.getElementById('controllerFunctionsZone').style.opacity=1;
+      // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       // added in 1.1.1 - UX is greatly improve with this change
@@ -879,8 +1014,16 @@
       pageInit();
     })
 
+    socket.on('connect', function () {
+        data={};
+        data.spxcmd = 'identifyClient';
+        data.name   = 'SPX_CONTROLLER'; // <---- Name of this socket connection
+        socket.emit('SPXMessage2Server', data);
+    });
+
 
 
   </script>
 </body>
+
 </html>

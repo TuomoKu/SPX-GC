@@ -75,6 +75,7 @@
 	   "home":"Tervetuloa",
 	   "login":"Kirjaudu",
 	   "picktemplate":"Lisää template ajolistalle",
+	   "pickAllTemplates":"Lisää kaikki templates ajolistalle",
 	   "selectshow":"Valitse projekti",
 	   "select":"Valitse sisältötiedosto",
 	   "selectshowextra":"Lisää projektiin lisätoiminto",
@@ -151,7 +152,8 @@
 	},
 	"warning":{
 	   "notemplates":"Mene projektin asetuksiin ja lisää projektiin templateja",
-	   "showprofilebackup":"On suositeltavaa ottaa profile.json tiedostosta varmuuskopio ennen muutosten tekemistä."
+	   "showprofilebackup":"On suositeltavaa ottaa profile.json tiedostosta varmuuskopio ennen muutosten tekemistä.",
+	   "severalControllers": "Useita kontrollereita yhdistyneenä SPX serveriin! Vain yhtä suositellaan."
 	},
 	"hover":{
 	   "accent":"Templaten korostusväri ajolistoissa",

@@ -17,15 +17,6 @@ const port = config.general.port || 5656;
 
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 
-// function getAllMediaFiles(serverName='') {
-//   this.pukkaa('OVERLAY', function(error, data){
-//       console.log('Received ALKAA------------' + data + "LOPPUI--------------")
-//       return data
-//   })
-// }
-
-
-
 
 // ROUTES CCG -----------------------------------------------------------------------------------
 router.get('/', function (req, res) {

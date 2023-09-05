@@ -73,6 +73,7 @@
 	   "authpolicy":"Configureer gebruikerstoegang",
 	   "home":"Welkom",
 	   "login":"Inloggen",
+	   "pickAllTemplates":"Voeg alle sjablonen toe aan het overzicht",
 	   "picktemplate":"Voeg sjabloon toe aan rundown",
 	   "selectshow":"Kies een project",
 	   "select":"Kies een rundown",
@@ -150,7 +151,8 @@
 	},
 	"warning":{
 	   "notemplates":"Ga naar de projectinstellingen en voeg sjablonen toe aan het project",
-	   "showprofilebackup":"Het wordt aangeraden om een reserverkopie van het profielbestand te maken voor wijzigingen aan te brengen."
+	   "showprofilebackup":"Het wordt aangeraden om een reserverkopie van het profielbestand te maken voor wijzigingen aan te brengen.",
+	   "severalControllers": "Er zijn meerdere controllers verbonden met de SPX-server! Slechts één aanbevolen."
 	},
 	"hover":{
 	   "accent":"Accentkleur voor rundowns in sjabloon",

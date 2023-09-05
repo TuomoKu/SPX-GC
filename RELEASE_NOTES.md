@@ -8,28 +8,17 @@
 
 > List updated Sept 01 2023
 
-**⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use published binary releases below.
+**⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
 **Completed items**:
-- Added support for API key in the config.json to allow external triggers only with matching `apikey` url parameter
-- Improved the "Import Errors notification" text in the Server Console.
-- Added functionality to import several templates to a project at once. All/None toggle button added into the template browser user interface.
-- Changed bit.do links to use bit.ly URLs instead
-- Added `allow="autoplay"` to all renderer frames (see info regarding Chrome's `chrome.exe --autoplay-policy=no-user-gesture-required` command line switch at https://goo.gl/xX8pDD)
-- Added API edpoint `executeScript?file=file.bat` to run a shell script/batch file from ASSETS/scripts -folder.
-- Added API edpoint `gettemplates?project=MyProject` to return all templates, and their settings, of a given project.
-- Added API edpoint `rundown/focusByID/12345678` to set focus to a specified item on the opened rundown.
-- Improved API return messages also format changed to JSON (from strings). NOTE! This may be a **BREAKING CHANGE** if your own apps utilize SPX API commands and are expecting (parsing) responses in a strictly defined format.
-- Improved `layers`  URL parameter functionality of the renderer (type matching).
-- Improved `panic` functionality to overdrive restricted layers -filter.
-- Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending.
-- Added `onNext` template event handler. See above item also.
-- Added '...FOR OPERATOR ONLY' message to the scalable renderer to clear confusion about its purpose.
-- pkg updated from 4.4.9 to 5.8.0 (due to updated Node16)
+These items have been added to the source code but not yet released publicly.
+- (no changes after binary release)
+
+<br>
 
 **Waiting**:
 - Rundown Variables (does not remove prVar from profile if no users)
-- Select multiple templates for adding to rundown
+- Add all project templates to the rundown at once
 <BR>
 
 ---
@@ -38,13 +27,36 @@
 
 Published releases:
 
+## **1.2.0** (Sep 05 2023)
+ >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+- Added "Several SPX Controllers are connected" warning to the user interface and a corresponding config entry `general.disableSeveralControllersWarning` 
+- Added "Disable Local Renderer" toggle to the UI and corresponding config entry `general.disableLocalRenderer`. This can come in handy when computer resources are limited.
+- Added support for API key in the config.json to allow external triggers only with matching `apikey` url parameter
+- Improved security of customTemplate function invocations. Only functions found at runtime will be executed. This prevents running any arbitrary JS code in the renderer.
+- Improved the "Import Errors notification" text in the Server Console.
+- Added functionality to import several templates to a project at once by Ctrl+Click or by using the All/None toggle button added into the template browser user interface.
+- Added functionality to add all project's templates to a rundown with a single click in the "Add template to rundown" -view.
+- Changed bit.do links to use bit.ly URLs instead
+- Added `allow="autoplay"` to all renderers (see info regarding Chrome's `chrome.exe --autoplay-policy=no-user-gesture-required` command line switch at https://goo.gl/xX8pDD)
+- Added API edpoint `executeScript?file=file.bat` to run a shell script/batch file from ASSETS/scripts -folder.
+- Added API edpoint `gettemplates?project=MyProject` to return all templates, and their settings, of a given project.
+- Added API edpoint `rundown/focusByID/12345678` to set focus to a specified item on the opened rundown.
+- Improved API return messages also format changed to JSON (from strings). NOTE! This may be a **BREAKING CHANGE** if your own apps utilize SPX API commands and are expecting (parsing) responses in a strictly defined format.
+- Improved `layers`  URL parameter functionality of the renderer (type matching).
+- Improved `panic` functionality to overdrive restricted layers -filter.
+- Improved `onPlay` and `onStop` template event handlers. (This feature hasn't been documented intentionally since it was mostly untested. Now it has been improved to be able to create more functionality with it, like CasparCG video playback commands etc. Documentation is still pending.)
+- Added `onNext` template event handler. See above item also.
+- Added '...FOR OPERATOR ONLY' message to the scalable renderer to clear confusion about its purpose.
+- Fixed bugs in API play/continue/stop by ID routines, that would control the first item incorrectly on the rundown when the given ID was not found
+- pkg updated from 4.4.9 to 5.8.0 (due to updated Node16)
+
 ## **1.1.3** (Jun 29 2022)
 > Version 1.1.3 was never released publicly as binaries. These features will be present in the future releases.
 - New url parameter added to the renderer to pass a desired refresh rate to templates `renderer/?fps=30`. This will require modifications to the templates with controllable update rates, such as the scrolling tickers, using **gsap** animation library (or similar.) See _Google Sheet Ticker_ -template for an example.
 - Minor fixes to registration view (remove Discord, not needed) and enable email checkbox always
 
 ## **1.1.2** (Jun 20 2022)
-* >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+>See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - Added API endpoint `getprojects` that returns all project names in SPX.
 - Added API edpoint `getrundowns?project=MyProject` that returns all rundowns of given project.
 - Added width and height url params to renderer (`/renderer?width=1000&height=500&preview=true`).
@@ -80,7 +92,7 @@ Published releases:
 
 
 ## **1.1.0** (Feb 23 2022)
-* >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+>See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - Changed default port to **5656** to avoid clash with Apple Airplay receiver process. (Thanks Chris 'Lower' Fenwick, for in-depth troubleshooting 😉)
 - Added preview functionality and required UI changes. Preview functionality is **very much WIP** and `Take-next-on-play` -preview mode is disabled due to bugs.
 - Added "renderer options" area below the renderer to move local renderer to a popup window. Renderer options area also has buttons to copy Program and Preview URLs.

@@ -73,6 +73,7 @@
 	   "authpolicy":"Configurar acesso dos utilizadores",
 	   "home":"Bem-vindo",
 	   "login":"Autenticar",
+	   "pickAllTemplates":"Adicione template os modelos ao resumo",
 	   "picktemplate":"Adicionar template ao rundown",
 	   "selectshow":"Escolher projeto",
 	   "select":"Escolher rundown",
@@ -150,7 +151,8 @@
 	},
 	"warning":{
 	   "notemplates":"Vá para as configurações do projeto e adicione modelos ao projeto",
-	   "showprofilebackup":"É recomendado fazer um backup do arquivo profile.json antes de fazer qualquer alteração"
+	   "showprofilebackup":"É recomendado fazer um backup do arquivo profile.json antes de fazer qualquer alteração",
+	   "severalControllers": "Vários controladores estão conectados ao servidor SPX! Apenas um recomendado."
 	},
 	"hover":{
 	   "accent":"Cor de destaque da template nos rundowns",

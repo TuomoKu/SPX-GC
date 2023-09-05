@@ -235,12 +235,14 @@ router.get('/', function (req, res) {
     dataOut.playlayer    = req.query.playlayer || '1';
     dataOut.webplayout   = req.query.webplayout || '1';
     dataOut.command      = 'invoke';
+    dataOut.function     = req.query.function || ''; // refactored in v.1.2.0 to use separate function and params
+    dataOut.params       = encodeURIComponent(req.query.params) || '';
     if (params=='') {
-      dataOut.invoke       = req.query.function + '()'; // improved in 1.1.4 to avoid undefined
+      dataOut.invoke       = req.query.function + '()'; // improved in 1.2.0 to avoid undefined
     } else {
       dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(params) + '\")'; // encode added in v1.1.0
     }
-    console.log('invokeTemplateFunction: ' + dataOut.invoke);
+    logger.verbose('invokeTemplateFunction: [' + dataOut.function + '] with params: [' + dataOut.params + '].');
     res.status(200).json(dataOut);
     spx.httpPost(dataOut,'/gc/playout')
   });

@@ -299,8 +299,6 @@
             }
     }
 
-
-
         function stopLayer(LayerNro) {
             // console.log('stopLayer ' + LayerNro);
             if (!allowLayerControl(LayerNro)) return; // check layer param
@@ -394,7 +392,45 @@
                     if (!LayerNro) { return }
                     // FIXME: show again --> console.log('Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + '.');
                     try {
-                        eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
+
+                        // Important change! --------------------------------------------------
+                        // Starting from version 1.2.0 it is recommended to use
+                        // "data.function" and "data.params" instead of "data.invoke"
+                        // that was a string representation of a function call with
+                        // parameters. Server will log all uses of the old "data.invoke"
+                        // and will recommend to use the new "data.function" and "data.params"
+                        // instead. The old "data.invoke" will be deprecated in the future.
+                        // --------------------------------------------------------------------
+
+                        if (data.function) {
+                            let myFunction = data.function;
+                            let myParamets = data.params;
+                            let type = typeof(document.getElementById('layer' + LayerNro).contentWindow.myFunction);
+                            console.log('Type is ' + type);
+                            if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
+                                console.log('Executing ' + myFunction + '() on layer ' + LayerNro + ' with params', myParamets);
+                                document.getElementById('layer' + LayerNro).contentWindow[myFunction](myParamets);
+                            } else {
+                                console.log('Renderer / invokeFunction [' + myFunction + '] on layer ' + LayerNro + ' is NOT a function.');
+                            }
+                        } else {
+                            if  (data.invoke) {
+                                let warning = '\DEPRECATION WARNING\n';
+                                warning    += '`data.invoke` will be deprecated in the next SPX version. Refactor your extensions to '
+                                warning    += 'use `data.function` and `data.params` instead when calling the /gc/playout API or use ';
+                                warning    += 'the public API endpoint /api/v1/invokeTemplateFunction instead.\n';
+                                warning    += 'You had a call [' + data.invoke + '].\n\n';
+                                console.warn(warning);
+                                let myFunction = data.invoke.split('(')[0]; // Checking if template has this function
+                                if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
+                                    console.log('Evaluating existing function "' + data.invoke + '" on layer ' + LayerNro + '.');
+                                    eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
+                                    // TODO: This should be removed in the future.
+                                } else {
+                                    console.log('Renderer / invokeFunction "' + myFunction + '" on layer ' + LayerNro + ' is NOT a function.');
+                                }
+                            }
+                        }
                     } catch(err) {
                         console.log('ERROR Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + ' failed.', err);
                     }

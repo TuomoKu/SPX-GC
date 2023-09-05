@@ -67,6 +67,8 @@ module.exports = {
                     cfg.general.templatesource                  = "spx-ip-address"
                     cfg.general.port                            = "5656"
                     cfg.general.disableConfigUI                 = false
+                    cfg.general.disableLocalRenderer            = false
+                    cfg.general.disableSeveralControllersWarning = false
                     // cfg.general.allowstats                   = true
 
                     cfg.general.recents                         = []

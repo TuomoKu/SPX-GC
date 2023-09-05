@@ -72,6 +72,7 @@
 		"authpolicy": "管理用户访问",
 		"home": "欢迎",
 		"login": "登录",
+		"pickAllTemplates":"将所有模板添加到列表中",
 		"picktemplate": "新建模板到播出表",
 		"selectshow": "选择工程",
 		"select": "选择播出表",
@@ -147,7 +148,8 @@
 	},
 	"warning": {
 		"showprofilebackup": "建议在进行更改之前对工程文件进行备份。",
-		"notemplates": "转到工程设置并向工程添加模板"
+		"notemplates": "转到工程设置并向工程添加模板",
+		"severalControllers": "多个控制器连接到 SPX 服务器！只推荐一款。"
 	},
 	"hover": {
 		"accent": "播出表模板强调色",

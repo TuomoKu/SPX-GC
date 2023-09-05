@@ -755,9 +755,10 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
 router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, res) => { 
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
   let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
+  
   const fileDataAsJSON = await GetJsonData(datafile);
   global.rundownData = fileDataAsJSON; // added in 1.0.15 populate rundown data to memory
-  global.rundownData.filepath = datafile;
+  // global.rundownData.filepath = datafile; // TODO: Removed in 1.2.0. Is this needed?!
 
   let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
   const profileDataJSONobj = await GetJsonData(showprofile);
@@ -781,12 +782,12 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     height  = 2160;
   }
 
-  // these added in 1.1.0
-  let recents       = config.general.recents  || []        
-  let preview       = config.general.preview  || 'none'    
-  let rnrtype       = config.general.renderer || 'normal'  
-  let assetsFolder  = path.resolve(spx.getStartUpFolder(),'ASSETS') || ''
+  let recents       = config.general.recents  || [] // added in 1.1.0
+  let preview       = config.general.preview  || 'none' // added in 1.1.0
+  let rnrtype       = config.general.renderer || 'normal'  // added in 1.1.0
+  let assetsFolder  = path.resolve(spx.getStartUpFolder(),'ASSETS') || '' // added in 1.1.0
   let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
+  let disableLRenderer = config.general.disableLocalRenderer || false // added in 1.2.0
 
   res.render('view-controller', {
     layout:         false,
@@ -808,6 +809,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     assetsFolder:   assetsFolder,
     disableConfigUI: disableConfigUI,
     config:         config,
+    disableLRender: disableLRenderer
   });
 
   let bgImage = ''
@@ -1035,22 +1037,41 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 
       break;
 
-    case 'addItemToRundown': 
-      // ADD TEMPLATE ITEM TO RUNDOWN ///////////////////////////////////////////////////////////////////////////////////////////////////
+    case 'addAllItemsToRundown': 
+      // ADD ALL TEMPLATES TO RUNDOWN /// Added in 1.2.0
+      try {      
+        logger.verbose('Adding all show profile templates to rundown ' + data.listname );
+        showprofile = path.join(config.general.dataroot, data.foldername, 'profile.json');
+        profileDataJSONobj = await GetJsonData(showprofile);
+        let ProfileTemplatesArray = profileDataJSONobj.templates || [];
+
+        ProfileTemplatesArray.forEach((template,index) => {
+          template.itemID = String(Date.now()+index); // generate EPOCH for each template
+        });
+
+        rundownDataJSONobj = await GetJsonData(data.datafile);
+        if (!rundownDataJSONobj.templates) {
+          rundownDataJSONobj.templates=ProfileTemplatesArray;
+        } else {
+          rundownDataJSONobj.templates = rundownDataJSONobj.templates.concat(ProfileTemplatesArray);
+        }
+        await spx.writeFile(data.datafile, rundownDataJSONobj);
+        res.redirect('/gc/' + data.foldername + '/' + data.listname);  
+        return;
+      } catch (error) {
+          logger.error('addAllItemsToRundown Error while saving file: ', error);
+      }; //file written
+      break;
+
+    case 'addItemToRundown':
+      // ADD TEMPLATE ITEM TO RUNDOWN ///////
       try {      
         logger.verbose('Adding show profile template[' + data.templateindex + '] to rundown ' + data.listname );
-        // console.log('Adding template[' + data.templateindex + '] from show profile to rundown file ' + data.datafile );
-        // * read template[index] from show profile
         showprofile = path.join(config.general.dataroot, data.foldername, 'profile.json');
         profileDataJSONobj = await GetJsonData(showprofile);
         let TemplateModel = profileDataJSONobj.templates[data.templateindex];
-
         TemplateModel.itemID = String(Date.now());  // Generate ID (epoch milliseconds) for this rundown item (from v. 0.9.8 onwards)
                                                     // This will be used to control UI (play, remove, sort, etc...)
-
-        // console.log('data', data);
-        // console.log('TemplateModel', TemplateModel);
-
         rundownDataJSONobj = await GetJsonData(data.datafile);
         if (!rundownDataJSONobj.templates) {
           rundownDataJSONobj.templates=[];
@@ -1063,7 +1084,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
           logger.error('addItemToRundown Error while saving file: ', error);
           // console.log('addItemToRundown Error while saving file: ', error);
       }; //file written
-      break;
 
     case 'removeItemFromRundown': 
       // REMOVE TEMPLATE ITEM FROM RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
@@ -1100,7 +1120,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       var duplicateData = "";
       var duplicated = false;
 
-      logger.info('Cloning item [' + data.sourceEpoch + '] to [' + freshID + '] in file [' + data.listname + '].');
+      logger.verbose('Cloning item [' + data.sourceEpoch + '] to [' + freshID + '] in file [' + data.listname + '].');
       rundownDataJSONobj = await GetJsonData(data.datafile);
 
       var NewTemplateArray = [];
@@ -1157,7 +1177,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   //        after being in the rundown view (so memory has been populated).
 
   let templateIndex = -1; // was 0 
-
   try {
     let dataOut     = {}; // new object
     dataOut.fields  = []; // init it with an empty arr as placeholder
@@ -1188,8 +1207,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         notifyDataSource = 'from memory:'
         RundownData = global.rundownData; // use memory only 
       }
-      // console.log('RundownData ' + notifyDataSource, RundownData);
-
       RundownData.templates.forEach((template,index) => {
         if (template.itemID == req.body.epoch) {
             templateIndex=index;
@@ -1197,7 +1214,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       });
 
       if (templateIndex<0) {
-        throw 'TemplateIndex ' + templateIndex + ' not found using ID ' + req.body.epoch+ '.';
+        throw 'Requested item ' + req.body.epoch + ' not found on current rundown! Aborting ' + req.body.command + ' command.'; 
       }
 
       let ItemData = RundownData.templates[templateIndex];
@@ -1290,7 +1307,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         } else {
           logger.warn('No Webplayout playout layer given');
         }
-
 
         // iterate all templates and allow only the latest update (for same playout) to be on-air at once
         if (RundownData.templates){
@@ -1426,7 +1442,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
 
       default:
-        logger.warn('/gc/playout did not recognize command [' + playOutCommand + '].');
+        logger.warn('/gc/playout did not recognize command "' + playOutCommand + '".');
         break;
     }
 
@@ -1438,7 +1454,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       }
     // res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
 
-    // Check if file exists. Function implroved in 1.1.3
+    // Check if file exists. Function improved in 1.1.3
     if (dataOut.relpath) {
       let templateAbsPath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', dataOut.relpath);
       if (!fs.existsSync(templateAbsPath)) {
@@ -1448,7 +1464,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try
   catch (error) {
-    logger.error('ERROR in /gc/playout [' + error + '].');
+    logger.error('ERROR in /gc/playout. ' + error);
     res.status(500).send('Error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
   };
 });
@@ -1773,7 +1789,7 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
   let SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition || 'notFound'; // there must be "window.SPXGCTemplateDefinition{}" -object in template file!
 
-  console.log('\n\n----------------------- Import done ----------------------------\n\n');
+  // console.log('\n\n----------------------- Import done ----------------------------\n\n');
   
   if (SPXGCTemplateDefinition=="notFound"){
     logger.warn('Cancel: Template ' + TemplatePath + ' did not had SPXGCTemplateFields[].' );

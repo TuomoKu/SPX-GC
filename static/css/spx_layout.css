@@ -33,7 +33,7 @@ html, body {
 }
     
 
-ul{
+ul {
     padding-left: 2em;
 }
 
@@ -987,6 +987,7 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     left: 50%;
     opacity: 0; /* animated */
     display: flex;
+    z-index: 1000;
     min-width: 10%;
     font-size: 0.8em;
     position: absolute;

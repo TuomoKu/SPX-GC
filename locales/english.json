@@ -74,6 +74,7 @@
 	   "authpolicy":"Configure user access",
 	   "home":"Welcome",
 	   "login":"Login",
+	   "pickAllTemplates":"Add all templates to the rundown",
 	   "picktemplate":"Add template to rundown",
 	   "selectshow":"Choose a project",
 	   "select":"Choose a rundown",
@@ -153,7 +154,8 @@
 	},
 	"warning":{
 	   "notemplates":"Go to project settings and add templates to project",
-	   "showprofilebackup":"It is recommended to make a backup copy of profile file before making changes."
+	   "showprofilebackup":"It is recommended to make a backup copy of profile file before making changes.",
+	   "severalControllers": "Several controllers are connected to the SPX server! Only one recommended."
 	},
 	"hover":{
 	   "accent":"Template accent color on rundowns.",
