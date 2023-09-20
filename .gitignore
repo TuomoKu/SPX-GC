@@ -29,6 +29,7 @@ DATAROOT/*
 DEV_*/**
 DEF_*/**
 config_*.json
+__env.json
 
 
 # ASSETS

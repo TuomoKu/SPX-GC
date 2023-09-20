@@ -27,6 +27,16 @@ These items have been added to the source code but not yet released publicly.
 
 Published releases:
 
+## **1.2.1** (Sep 20 2023)
+ >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+- This patch fixes a bug in the example rundown file `HelloWorld/MyFirstRundown` that caused SPX server to hang when navigating off that rundown view. The bug does not effect any other created rundown files, but was annoying for first time users. 
+- Binary packages v1.2.1:
+    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_win64.zip),
+    [  Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_linux64.zip),
+        [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_macos64.zip)
+
+<br>
+
 ## **1.2.0** (Sep 05 2023)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - Added "Several SPX Controllers are connected" warning to the user interface and a corresponding config entry `general.disableSeveralControllersWarning` 
