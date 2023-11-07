@@ -49,7 +49,7 @@ Software is based on a NodeJS server and can be run on Windows, Mac or Linux com
 
 Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX is done by adding _a template definition_ (javascript-snippet) to them.
 
-Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. Thanks **Markus Nygård** for the challenge! 🤘
+Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. The first version was released in September 2020. Thanks **Markus Nygård** for the challenge! 🤘
 
 > If you need custom graphics or systems integration please [the website](https://spx.graphics/contact).
 
