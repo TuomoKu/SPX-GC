@@ -11,7 +11,7 @@ function PluginInstance() {
             overToolTip:    "Open additional SPX related links",
             description:    "Explore SPX resources",
             text:           "GO",
-            color:          "gray",
+            color:          "green",
             items: [
                 {
                     "text": "SPX Discord",
@@ -40,10 +40,6 @@ function PluginInstance() {
                 {
                     "text": "Contact us",
                     "value": "https://spx.graphics/contact"
-                },
-                {
-                    "text": "SPX API",
-                    "value":"https://spxgc.tawk.help/article/help-api"
                 }
             ]
         };

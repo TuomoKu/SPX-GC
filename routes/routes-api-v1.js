@@ -24,6 +24,8 @@ const axios = require('axios')
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 const { query } = require("../utils/logger");
 const spxAuth = require('../utils/spx_auth.js');
+let apiCache = [] // used to cache [undocumented] API calls
+
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
@@ -249,6 +251,20 @@ router.get('/', function (req, res) {
 
 
   router.post('/directplayout', spxAuth.CheckAPIKey, async (req, res) => {
+
+    // Example, TODO: Add to docs:
+    // let directplayoutData  = {
+    //   casparServer = "OVERLAY" /* named CCG server */,
+    //   casparChannel = '1' /* CCG channel number as string */,
+    //   casparLayer = '1' /* CCG layer number as string */,
+    //   webplayoutLayer = '1' /* webplayout layer number as string */,
+    //   relativeTemplatePath = '/vendor/pack/template.html', /* within ASSETS folder */
+    //   command = 'play' /* next, stop */,
+    //   dataformat = 'json' /* json, xml */,
+    //   DataFields = '{field: f0, value: "Lorem ipsum"}',
+    // }
+
+
     let dataOut = {};
     dataOut.message      = 'Sent request to SPX server.'
     dataOut.playserver   = req.body.casparServer || 'OVERLAY';
@@ -278,7 +294,7 @@ router.get('/', function (req, res) {
       dataOut.file    = file;
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
-    });
+    }); // end load
 
     router.get('/rundown/focusFirst/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
@@ -286,7 +302,7 @@ router.get('/', function (req, res) {
       dataOut.APIcmd  = 'RundownFocusFirst';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
-    });
+    }); // end focusFirst
 
     router.get('/rundown/focusNext/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
@@ -294,7 +310,7 @@ router.get('/', function (req, res) {
       dataOut.APIcmd  = 'RundownFocusNext';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
-    });
+    }); // end focusNext
 
     router.get('/rundown/focusPrevious/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
@@ -302,7 +318,7 @@ router.get('/', function (req, res) {
       dataOut.APIcmd  = 'RundownFocusPrevious';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
-    });
+    }); // end focusPrevious
 
     router.get('/rundown/focusLast/', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
@@ -310,7 +326,7 @@ router.get('/', function (req, res) {
       dataOut.APIcmd  = 'RundownFocusLast';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
-    });
+    }); // end focusLast
 
     router.get('/rundown/focusByID/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
@@ -318,7 +334,7 @@ router.get('/', function (req, res) {
       dataOut.itemID  = req.params.id;
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
-    });
+    }); // end focusByID
 
     router.get('/rundown/stopAllLayers', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
@@ -326,7 +342,7 @@ router.get('/', function (req, res) {
       dataOut.APIcmd  = 'RundownStopAll';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
-    });
+    }); // end stopAllLayers
 
 // HELPER COMMANDS ----------------------------------------------------------------------------------
 
@@ -344,7 +360,7 @@ router.get('/', function (req, res) {
         data.env.version = global.env.version;
       }
       return res.status(200).json(data)
-    });
+    }); // end version
 
     router.get('/panic', spxAuth.CheckAPIKey, async (req, res) => {
       // This WILL NOT change playlist items onair to "false"!
@@ -358,7 +374,58 @@ router.get('/', function (req, res) {
         PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
       } 
       return res.status(200).json({ message: 'Panic executed. Layers cleared forcefully.' })
-    });
+    }); // end panic
+
+
+
+    router.get('/bearerAuthProxy', spxAuth.CheckAPIKey, async (req, res) => {
+      // added in 1.2.2 [UNDOCUMENTED INTENTIONALLY]
+      // This is a proxy endpoint for passing feed data from CORS protected datasources.
+      // Also this caches all requests to avoid flooding the API
+      let url, bearerAuthToken;
+      url = req.query.url.replace(/#/g, '%23'); // replace # with %23 (yuck)
+      let headers = new Headers();
+      let customCfgSection = req.query.proxyConfigSection || '';
+      bearerAuthToken = global.config.bearerAuthProxyOptions[customCfgSection].bearerAuthToken;
+
+      let timeNow = Date.now();
+      let delayMS = 5000; // <== how long to cache
+      let nextTime = apiCache[url]?.timestamp + delayMS;
+      let timeLeft = nextTime - timeNow;
+      // console.log('apiCache has ' + Object.keys(apiCache).length + ' items.');
+      if (apiCache[url] && timeLeft > 0) {
+        console.log('--Return cached API data for another ' + Math.max(timeLeft, 0) + ' ms...');
+        let returnData = apiCache[url].data;
+        //  keep only the first items in the array (to prevent memory leak)
+        let CacheItemAmount = 50
+        if (Object.keys(apiCache).length > CacheItemAmount) {
+            // console.log('apiCache BEFORE: ' + Object.keys(apiCache).length + ' items.');
+            let last = Object.keys(apiCache)[Object.keys(apiCache).length - 1];
+            delete apiCache[last] // delete last item
+            // console.log('apiCache AFTER: ' + Object.keys(apiCache).length + ' items.');
+        }
+
+        return res.status(200).json(returnData)
+      } else {
+        console.log('--Get fresh data from external API:' + url);
+        headers.set('Authorization', 'Bearer ' + bearerAuthToken);
+        fetch(url, {
+          method:'GET',
+          headers: headers,
+        })
+        .then(response => response.json())
+        .then(json => {
+          res.send(json)
+          apiCache[url] = {};
+          apiCache[url].timestamp = Date.now();
+          apiCache[url].data = json;
+        })
+        .catch(function (error) {
+          console.log(error.message);
+          return res.status(500).json({ type: 'error', message: error.message })
+        });
+      }
+    }); // end bearerAuthProxy. (Dont ask)
 
     router.get('/feedproxy', spxAuth.CheckAPIKey, async (req, res) => {
       // added in 1.0.14
@@ -379,14 +446,14 @@ router.get('/', function (req, res) {
       .catch(function (error) {
         console.log(error);
         return res.status(500).json({ type: 'error', message: error.message })
-      });
-    });
+      }); 
+    }); // end feedproxy
 
     router.get('/getprojects', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1
       let projects = await spx.GetSubfolders(config.general.dataroot); 
       return res.status(200).json(projects)
-    });
+    }); // end getprojects
     
     router.get('/getrundowns', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1
@@ -396,7 +463,7 @@ router.get('/', function (req, res) {
       }
       const fileListAsJSON = await spx.GetDataFiles(config.general.dataroot + "/" + project + "/data/");
       return res.status(200).json(fileListAsJSON)
-    });
+    }); // end getrundowns
 
     router.get('/gettemplates', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.3
@@ -410,7 +477,7 @@ router.get('/', function (req, res) {
       } else {
         return res.status(result[0]).json(result[1])
       }
-    });
+    }); // end gettemplates
 
     router.get('/getlayerstate', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1

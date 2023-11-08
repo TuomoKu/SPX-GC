@@ -1522,6 +1522,8 @@ function playItem(itemrow='', forcedCommand='') {
     //
     // Will send data object with an index and playlist filename
     // and playout handler will parse required data and so on. 
+    //
+    // FIXME: Bug found 2023-11-07 Step counter in DOM needs to be reset on Play
 
     if (!itemrow) { itemrow = getFocusedRow();  }
     // console.log('playItem with forcedcommand "' + forcedCommand + '"', itemrow);
@@ -1645,7 +1647,7 @@ function playItem(itemrow='', forcedCommand='') {
             CancelOutTimerIfRunning(itemrow);
         }
 
-  } // playItem
+} // playItem
 
 function renameRundown() {
     // Rename an existing rundown

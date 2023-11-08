@@ -21,7 +21,6 @@ devnotes.txt
 DATAROOT_*
 
 # DATAROOT - Add just the DATAROOT/HelloWorld-project
-!DATAROOT/
 DATAROOT/*
 !DATAROOT/HelloWorld-project/
 
@@ -34,29 +33,31 @@ __env.json
 
 # ASSETS
 !ASSETS/
-# ASSETS/*
+ASSETS/*
 !ASSETS/excel/ticker/
 !ASSETS/templates/softpix/Template_Pack_1.1/*
 !ASSETS/csv/
 ASSETS/csv/*.csv
-ASSETS/media/video/
-ASSETS/media/e-urheilu/
-ASSETS/media/images/hd/
-ASSETS/media/images/bg/
-ASSETS/media/images/demo/
-ASSETS/media/images/logo/
-ASSETS/media/images/hd_org/
-ASSETS/media/images/bg_old/
-ASSETS/media/images/logo_org/
-ASSETS/media/images/smartpx_internal/
+# ASSETS/media/video/
+# ASSETS/media/e-urheilu/
+# ASSETS/media/images/hd/
+# ASSETS/media/images/bg/
+# ASSETS/media/images/demo/
+# ASSETS/media/images/logo/
+# ASSETS/media/images/hd_org/
+# ASSETS/media/images/bg_old/
+# ASSETS/media/images/logo_org/
+# ASSETS/media/images/smartpx_internal/
+# ASSETS/media/images/_*
+# ASSETS/template_stash/
+# ASSETS/templates_dev/
+# ASSETS/hot_or_not
+# ASSETS/xml/demo.xml
+# ASSETS/excel/tellyo/
 
-ASSETS/media/images/_*
+ASSETS_DEF/
 
-ASSETS/template_stash/
-ASSETS/templates_dev/
-ASSETS/hot_or_not
-ASSETS/xml/demo.xml
-ASSETS/excel/tellyo/
+static/*.json
 
 
 
@@ -66,40 +67,42 @@ ASSETS/excel/tellyo/
 # extensions and plugins are not public
 #######################################
 ASSETS/plugins/_*
-ASSETS/plugins/spxSocial
-ASSETS/plugins/scoreboard
-ASSETS/plugins/spxAnalytics
-ASSETS/plugins/spxImagelist
-ASSETS/plugins/spxLeaderboard
-ASSETS/plugins/spxResultsboard
-ASSETS/plugins/spxProjectLogger
-ASSETS/plugins/spxResultsboard_4x
-ASSETS/plugins/spxCasparCGMediaplayer
+ASSETS/plugins/*kopio*
+#ASSETS/plugins/spxSocial
+#ASSETS/plugins/scoreboard
+#ASSETS/plugins/spxAnalytics
+#ASSETS/plugins/spxImagelist
+#ASSETS/plugins/spxLeaderboard
+#ASSETS/plugins/spxResultsboard
+#ASSETS/plugins/spxProjectLogger
+#ASSETS/plugins/spxResultsboard_4x
+#ASSETS/plugins/spxCasparCGMediaplayer
 
 
 #######################################
 # non-public templates
 #######################################
-ASSETS/templates_*
-ASSETS/templates/smartpx
-ASSETS/templates/codetive
-ASSETS/templates/smartpx_demo
-ASSETS/templates/smartpx_internal
-ASSETS/templates/smartpx/scoreboard
+# ASSETS/templates
+# ASSETS/templates/smartpx
+# ASSETS/templates/codetive
+# ASSETS/templates/smartpx_demo
+# ASSETS/templates/smartpx_internal
+# ASSETS/templates/smartpx/scoreboard
+# ASSETS/templates/softpix/*_old
+# ASSETS/templates/softpix/spxSocial/
+# ASSETS/templates/softpix/HIFK_Jumbo/
+# ASSETS/templates/softpix/techmahindra/
+# ASSETS/templates/softpix/SPX_GoogleMaps
+# ASSETS/templates/softpix/picturall_core_templates
+# ASSETS/templates/softpix/SPX_Speaker_Countdown/
+# ASSETS/templates/softpix/SPX_Speaker_Countdown_Lang/
+# ASSETS/templates/Tellyo/
+# ASSETS/templates/analogway/
+# ASSETS/templates/TechMahindra/
+# ASSETS/templates/community-creations/
+# ASSETS/templates/yle/
+# ASSETS/templates/Veikkaus/
 
-ASSETS/templates/softpix/*_old
-ASSETS/templates/softpix/spxSocial/
-ASSETS/templates/softpix/HIFK_Jumbo/
-ASSETS/templates/softpix/techmahindra/
-ASSETS/templates/softpix/SPX_GoogleMaps
-ASSETS/templates/softpix/picturall_core_templates
-ASSETS/templates/softpix/SPX_Speaker_Countdown/
-ASSETS/templates/softpix/SPX_Speaker_Countdown_Lang/
-
-ASSETS/templates/Tellyo/
-ASSETS/templates/analogway/
-ASSETS/templates/TechMahindra/
-ASSETS/templates/community-creations/
 
 
 #######################################
@@ -163,11 +166,8 @@ config_ORGjson
 TESTAUS_CHECKLIST.txt
 TODO.md
 
-
 env.json
-
 _env.json
 .gitignore
-static/tt2020_reactions.json
 
 ASSETS/default_assets.txt
