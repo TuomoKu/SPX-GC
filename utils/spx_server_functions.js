@@ -118,25 +118,41 @@ module.exports = {
     }
   }, // checkServerConnections
 
-  duplicateFile: function (fileRefe, suffix) {
-    // TODO: Tämä on kesken!
-    try {
-      return new Promise(resolve => {
-        let fldrname = path.dirname(fileRefe);
-        let extename = path.extname(fileRefe);
-        let basename = path.basename(fileRefe, extename);
-        let copyfile =  path.normalize(path.join(fldrname, basename + suffix + extename));
-        fs.copyFile(fileRefe, copyfile, (err) => {
-            if (err) throw err;
-            logger.info('Rundown file ' + fileRefe + ' was copied to ' + copyfile + '.');
-            resolve()
-            return true
-          });
-      })
-    } catch (error) {
-      logger.error('spx.duplicateFile - Error while duplicating: ' + fileRefe + ': ' + error);    
-      return false
+  duplicateFile: function (fileRefe, suffix = ' - Copy') {
+    const fldrname = path.dirname(fileRefe);
+    const extename = path.extname(fileRefe);
+    const basename = path.basename(fileRefe, extename);
+
+    const createCopyPath = (name) => {
+      const copyFilePath =  path.normalize(path.join(fldrname, `${name}${extename}`));
+
+      if (fs.existsSync(copyFilePath)) {
+        const { groups } = /\((?<copyNum>[0-9]+)\)$/.exec(name) ?? {}
+        const { copyNum } = groups ?? {}
+
+        return createCopyPath(
+          copyNum
+          ? name.replace(/^(.*) \(([0-9]+)\)$/, `$1 (${Number(copyNum) + 1})`)
+          : `${name} (1)`)
+      } else {
+        return copyFilePath
+      }
     }
+
+    return new Promise((resolve, reject) => {
+      try {
+        const copyPath = createCopyPath(`${basename}${suffix}`)
+
+        fs.copyFile(fileRefe, copyPath, (err) => {
+          if (err) throw err;
+          logger.info('Rundown file ' + fileRefe + ' was copied to ' + copyPath + '.');
+          resolve(copyPath);
+        });
+      } catch (error) {
+        logger.error('spx.duplicateFile - Error while duplicating: ' + fileRefe + ': ' + error);    
+        reject();
+      }
+    })
   }, // duplicateFile
  
   fileNameFromPath: function (filepath) {
