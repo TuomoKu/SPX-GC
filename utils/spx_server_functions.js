@@ -122,19 +122,21 @@ module.exports = {
     const fldrname = path.dirname(fileRefe);
     const extename = path.extname(fileRefe);
     const basename = path.basename(fileRefe, extename);
+    let copyNum
 
     const createCopyPath = (name) => {
       const copyFilePath =  path.normalize(path.join(fldrname, `${name}${extename}`));
 
+      const { groups } = /\((?<existingCopyNum>[0-9]+)\)$/.exec(name) ?? {};
+      const { existingCopyNum } = groups ?? {};      
+      
       if (fs.existsSync(copyFilePath)) {
-        const { groups } = /\((?<copyNum>[0-9]+)\)$/.exec(name) ?? {}
-        const { copyNum } = groups ?? {}
-
         return createCopyPath(
-          copyNum
-          ? name.replace(/^(.*) \(([0-9]+)\)$/, `$1 (${Number(copyNum) + 1})`)
-          : `${name} (1)`)
+          existingCopyNum
+          ? name.replace(/^(.*) \(([0-9]+)\)$/, `$1 (${Number(existingCopyNum) + 1})`)
+          : `${name} (2)`)
       } else {
+        copyNum = existingCopyNum
         return copyFilePath
       }
     }
@@ -146,7 +148,7 @@ module.exports = {
         fs.copyFile(fileRefe, copyPath, (err) => {
           if (err) throw err;
           logger.info('Rundown file ' + fileRefe + ' was copied to ' + copyPath + '.');
-          resolve(copyPath);
+          resolve({path: copyPath, copyNum});
         });
       } catch (error) {
         logger.error('spx.duplicateFile - Error while duplicating: ' + fileRefe + ': ' + error);    

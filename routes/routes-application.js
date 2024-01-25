@@ -1591,12 +1591,13 @@ router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
   let filename = req.body.filename;
   let filerefe = path.normalize(path.join(config.general.dataroot,foldname, 'data', filename));
   try {
-    const newFilePath = await spx.duplicateFile(filerefe);
+    const {path, copyNum} = await spx.duplicateFile(filerefe);
 
     // for each template in the duplicated rundown, append "_" to the itemID to avoid conflicts with the old rundown
-    const newRundown = spx.GetJsonData(newFilePath)
-    newRundown?.templates?.forEach((_, index) => newRundown.templates[index].itemID += '_')
-    await spx.writeFile(newFilePath,newRundown);
+    const newRundown = spx.GetJsonData(path)
+    const appendString = `_copy${copyNum || 1}`
+    newRundown?.templates?.forEach((_, index) => newRundown.templates[index].itemID += appendString)
+    await spx.writeFile(path,newRundown);
     
     res.status(200).send('Item duplicated.'); // ok 200 AJAX RESPONSE
   } catch (error) {
