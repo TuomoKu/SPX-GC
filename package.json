@@ -32,7 +32,7 @@
     "express-handlebars": "^5.3.1",
     "express-session": "^1.17.1",
     "glob": "^7.1.6",
-    "ip": "^1.1.5",
+    "ip": "^1.1.9",
     "jsdom": "^16.4.0",
     "macaddress": "^0.5.1",
     "moment": "^2.27.0",
