@@ -14,7 +14,8 @@ COPY package*.json ./
 RUN npm install --only production
 
 COPY . ./
+RUN chmod +x entrypoint.sh
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
 
 EXPOSE 5656
