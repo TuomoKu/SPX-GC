@@ -1,6 +1,5 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  script: |
-    docker build -t us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc .
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc', '.']
 images:
 - 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc:latest'
