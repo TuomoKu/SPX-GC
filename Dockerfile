@@ -8,7 +8,6 @@ COPY package*.json ./
 RUN npm install --only production
 
 COPY . ./
-RUN chmod +x entrypoint.sh
 
 CMD [ "node", "server.js"]
 
