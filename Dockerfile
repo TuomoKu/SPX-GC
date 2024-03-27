@@ -1,7 +1,5 @@
 FROM node:18-slim
 
-RUN apt-get update && apt-get install -y curl lsb-release gnupg
-
 WORKDIR /usr/src/app
 
 COPY package*.json ./

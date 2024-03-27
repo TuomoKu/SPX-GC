@@ -1,7 +1,11 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc', '.']
+  args: ['build', '-t', '_IMAGE', '.']
 - name: "gcr.io/cloud-builders/gke-deploy"
-  args: ['run', '--filename=./kubernetes', '--image=us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc:latest', '--location=us-central1', '--cluster=spx-gc-demo-cluster']
+  args: ['run', '--filename=./kubernetes', '--image=_IMAGE:latest', '--location=_LOCATION', '--cluster=_CLUSTER']
 images:
-- 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc:latest'
+- '_IMAGE:latest'
+substitutions:
+  _IMAGE: 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc'
+  _LOCATION: 'us-central1'
+  _CLUSTER: 'spx-gc-demo-cluster'

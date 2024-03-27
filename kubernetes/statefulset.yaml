@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: demo-spx-gc-container
-        image: us-central1-docker.pkg.dev/mystupidgcp/mystupidgcp/spxgc:latest
+        image: _IMAGE:latest
         ports:
         - containerPort: 5656
           name: demo-app-port
