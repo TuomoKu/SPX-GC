@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: demo-spx-gc-backend
+spec:
+  selector:
+    matchLabels:
+      app: demo-spx-gc
+  serviceName: "demo"
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: demo-spx-gc
+    spec:
+      containers:
+      - name: demo-spx-gc-container
+        image: us-central1-docker.pkg.dev/mystupidgcp/mystupidgcp/spxgc:latest
+        ports:
+        - containerPort: 5656
+          name: demo-app-port
+        volumeMounts:
+        - name: demo-logs
+          mountPath: /usr/src/app/LOGS
+        - name: demo-assets
+          mountPath: /usr/src/app/ASSETS
+        - name: demo-dataroot
+          mountPath: /usr/src/app/DATAROOT
+  volumeClaimTemplates:
+  - metadata:
+      name: demo-logs
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100M
+  - metadata:
+      name: demo-assets
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100M
+  - metadata:
+      name: demo-dataroot
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100M
