@@ -1,6 +1,6 @@
 steps:
-#- name: 'gcr.io/cloud-builders/docker'
-#  args: ['build', '-t', '${_IMAGE}', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', '${_IMAGE}', '.']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
   args:
