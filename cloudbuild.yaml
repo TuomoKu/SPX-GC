@@ -1,9 +1,9 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', '${_IMAGE}', '.']
+#- name: 'gcr.io/cloud-builders/docker'
+#  args: ['build', '-t', '${_IMAGE}', '.']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
-  args: ['-c', 'sed', "-i", '"s#_IMAGE#${_IMAGE}#g"', 'kubernetes/statefulset.yaml']  
+  args: ['-c', 'sed', '-i', 's#_IMAGE#${_IMAGE}#g', 'kubernetes/statefulset.yaml']  
 - name: "gcr.io/cloud-builders/gke-deploy"
   args: ['run', '--filename=./kubernetes', '--image=${_IMAGE}:latest', '--location=${_LOCATION}', '--cluster=${_CLUSTER}']
 substitutions:
