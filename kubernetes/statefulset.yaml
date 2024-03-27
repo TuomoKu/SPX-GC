@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: demo-spx-gc-container
-        image: _IMAGE:latest
+        image: _IMAGE
         ports:
         - containerPort: 5656
           name: demo-app-port
