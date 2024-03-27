@@ -5,7 +5,7 @@ steps:
   args: ['run', '--filename=./kubernetes', '--image=${_IMAGE}:latest', '--location=${_LOCATION}', '--cluster=${_CLUSTER}']
 substitutions:
   _LOCATION: 'us-central1'
-  _IMAGE: '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/spxgc'
+  _IMAGE: '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${PROJECT_ID}/spxgc'
   _CLUSTER: 'spx-gc-demo-cluster'
 images:
 - '${_IMAGE}:latest'
