@@ -6,7 +6,7 @@ steps:
   args:
     - -c
     - |
-      sed -i "s#_IMAGE#${_IMAGE}#g\" kubernetes/statefulset.yaml
+      sed -i "s#_IMAGE#${_IMAGE}#g" kubernetes/statefulset.yaml
 - name: "gcr.io/cloud-builders/gke-deploy"
   args: ['run', '--filename=./kubernetes', '--image=${_IMAGE}:latest', '--location=${_LOCATION}', '--cluster=${_CLUSTER}']
 substitutions:
