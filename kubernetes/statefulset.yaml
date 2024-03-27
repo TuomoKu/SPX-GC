@@ -1,50 +1,46 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: demo-spx-gc-backend
+  name: spx-gc-demo-backend
 spec:
   selector:
     matchLabels:
-      app: demo-spx-gc
-  serviceName: "demo"
+      app: spx-gc-demo
   replicas: 1
-  updateStrategy:
-    type: RollingUpdate
   template:
     metadata:
       labels:
-        app: demo-spx-gc
+        app: spx-gc-demo
     spec:
       containers:
-      - name: demo-spx-gc-container
+      - name: spx-gc-demo-container
         image: _IMAGE
         ports:
         - containerPort: 5656
-          name: demo-app-port
         volumeMounts:
-        - name: demo-logs
+        - name: spx-gc-demo-logs
           mountPath: /usr/src/app/LOGS
-        - name: demo-assets
+        - name: spx-gc-demo-assets
           mountPath: /usr/src/app/ASSETS
-        - name: demo-dataroot
+        - name: spx-gc-demo-dataroot
           mountPath: /usr/src/app/DATAROOT
   volumeClaimTemplates:
   - metadata:
-      name: demo-logs
+      name: spx-gc-demo-logs
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
           storage: 100M
   - metadata:
-      name: demo-assets
+      name: spx-gc-demo-assets
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
           storage: 100M
   - metadata:
-      name: demo-dataroot
+      name: spx-gc-demo-dataroot
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

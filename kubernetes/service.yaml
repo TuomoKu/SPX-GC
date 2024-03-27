@@ -1,13 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo
-  labels:
-    app: demo-spx-gc
+  name: spx-gc-demo-service
 spec:
   type: NodePort
-  ports:
-  - port: 5656
-    name: demo-app-port
   selector:
-    app: demo-spx-gc
+    app: spx-gc-demo
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5656
