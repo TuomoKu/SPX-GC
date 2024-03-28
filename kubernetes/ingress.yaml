@@ -13,6 +13,7 @@ metadata:
   annotations:
     ingressClassName: "gce"
     kubernetes.io/ingress.global-static-ip-name: demo-spx-gc-public-ip
+    networking.gke.io/v1beta1.FrontendConfig: spx-gc-demo-frontend-config
 spec:
   rules:
   - http:
