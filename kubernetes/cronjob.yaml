@@ -18,11 +18,11 @@ spec:
             image: _IMAGE
             args:
             - ./reset.sh
+            volumeMounts:
+            - name: spx-gc-demo-logs
+              mountPath: /usr/src/app/LOGS
+            - name: spx-gc-demo-assets
+              mountPath: /usr/src/app/ASSETS
+            - name: spx-gc-demo-dataroot
+              mountPath: /usr/src/app/DATAROOT
           restartPolicy: OnFailure
-          volumeMounts:
-          - name: spx-gc-demo-logs
-            mountPath: /usr/src/app/LOGS
-          - name: spx-gc-demo-assets
-            mountPath: /usr/src/app/ASSETS
-          - name: spx-gc-demo-dataroot
-            mountPath: /usr/src/app/DATAROOT
