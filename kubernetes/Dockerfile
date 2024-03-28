@@ -6,8 +6,12 @@ COPY package*.json ./
 RUN npm install --only production
 
 COPY . ./
+RUN mv ASSETS _ASSETS && \
+    mv DATAROOT _DATAROOT && \
+    mv kubernetes/*.sh ./ && \
+    chmod +x *.sh
 
-CMD [ "node", "server.js"]
+CMD [ "start.sh" ]
 
 VOLUME ["/usr/src/app/ASSETS", "/usr/src/app/DATAROOT", "/usr/src/app/LOGS"]
 
