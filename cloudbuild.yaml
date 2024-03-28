@@ -1,19 +1,19 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', '${_IMAGE}:${COMMIT_SHA}', '-f', 'kubernetes/Dockerfile', '.']
+  args: ['build', '-t', '${_IMAGE}', '-f', 'kubernetes/Dockerfile', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', '${_IMAGE}:${COMMIT_SHA}']
+  args: ['push', '${_IMAGE}']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: bash
   args:
     - -c
     - |
-      sed -i "s#_IMAGE#${_IMAGE}:${COMMIT_SHA}#g" kubernetes/statefulset.yaml
+      sed -i "s#_IMAGE#${_IMAGE}#g" kubernetes/statefulset.yaml
 - name: "gcr.io/cloud-builders/gke-deploy"
-  args: ['run', '--filename=./kubernetes', '--image=${_IMAGE}:${COMMIT_SHA}', '--location=${_LOCATION}', '--cluster=${_CLUSTER}']
+  args: ['run', '--filename=./kubernetes', '--image=${_IMAGE}', '--location=${_LOCATION}', '--cluster=${_CLUSTER}']
 substitutions:
   _LOCATION: 'us-central1'
   _IMAGE: '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${PROJECT_ID}/spxgc'
   _CLUSTER: 'spx-gc-demo-cluster'
 images:
-- '${_IMAGE}:${COMMIT_SHA}'
+- '${_IMAGE}'

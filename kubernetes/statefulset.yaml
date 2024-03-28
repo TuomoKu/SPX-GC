@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
       - name: spx-gc-demo-container
+        imagePullPolicy: Always
         image: _IMAGE
         ports:
         - containerPort: 5656
