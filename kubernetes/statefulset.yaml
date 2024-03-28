@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -25,25 +26,14 @@ spec:
           mountPath: /usr/src/app/ASSETS
         - name: spx-gc-demo-dataroot
           mountPath: /usr/src/app/DATAROOT
-  volumeClaimTemplates:
-  - metadata:
-      name: spx-gc-demo-logs
-    spec:
-      accessModes: [ "ReadWriteMany" ]
-      resources:
-        requests:
-          storage: 100M
-  - metadata:
-      name: spx-gc-demo-assets
-    spec:
-      accessModes: [ "ReadWriteMany" ]
-      resources:
-        requests:
-          storage: 100M
-  - metadata:
-      name: spx-gc-demo-dataroot
-    spec:
-      accessModes: [ "ReadWriteMany" ]
-      resources:
-        requests:
-          storage: 100M
+      volumes:
+      - name: spx-gc-demo-logs
+        persistentVolumeClaim:
+          claimName: spx-gc-demo-logs-claim
+      - name: spx-gc-demo-assets
+        persistentVolumeClaim:
+          claimName: spx-gc-demo-assets-claim
+      - name: spx-gc-demo-dataroot
+        persistentVolumeClaim:
+          claimName: spx-gc-demo-dataroot-claim
+

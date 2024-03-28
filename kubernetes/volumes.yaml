@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spx-gc-demo-logs-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100M
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spx-gc-demo-assets-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100M
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spx-gc-demo-dataroot-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100M

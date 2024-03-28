@@ -25,4 +25,14 @@ spec:
               mountPath: /usr/src/app/ASSETS
             - name: spx-gc-demo-dataroot
               mountPath: /usr/src/app/DATAROOT
+          volumes:
+          - name: spx-gc-demo-logs
+            persistentVolumeClaim:
+              claimName: spx-gc-demo-logs-claim
+          - name: spx-gc-demo-assets
+            persistentVolumeClaim:
+              claimName: spx-gc-demo-assets-claim
+          - name: spx-gc-demo-dataroot
+            persistentVolumeClaim:
+              claimName: spx-gc-demo-dataroot-claim          
           restartPolicy: OnFailure
