@@ -6,6 +6,14 @@ spec:
   redirectToHttps:
     enabled: true
 ---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: spx-gc-demo-certificate
+spec:
+  domains:
+    - demo.spx.graphics
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -14,6 +22,7 @@ metadata:
     ingressClassName: "gce"
     kubernetes.io/ingress.global-static-ip-name: demo-spx-gc-public-ip
     networking.gke.io/v1beta1.FrontendConfig: spx-gc-demo-frontend-config
+    networking.gke.io/managed-certificates: spx-gc-demo-certificate
 spec:
   rules:
   - http:
