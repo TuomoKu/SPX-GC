@@ -29,21 +29,21 @@ spec:
   - metadata:
       name: spx-gc-demo-logs
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: [ "ReadWriteMany" ]
       resources:
         requests:
           storage: 100M
   - metadata:
       name: spx-gc-demo-assets
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: [ "ReadWriteMany" ]
       resources:
         requests:
           storage: 100M
   - metadata:
       name: spx-gc-demo-dataroot
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: [ "ReadWriteMany" ]
       resources:
         requests:
           storage: 100M

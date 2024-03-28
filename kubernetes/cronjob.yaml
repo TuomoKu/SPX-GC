@@ -19,3 +19,32 @@ spec:
             args:
             - ./reset.sh
           restartPolicy: OnFailure
+          volumeMounts:
+          - name: spx-gc-demo-logs
+            mountPath: /usr/src/app/LOGS
+          - name: spx-gc-demo-assets
+            mountPath: /usr/src/app/ASSETS
+          - name: spx-gc-demo-dataroot
+            mountPath: /usr/src/app/DATAROOT
+  volumeClaimTemplates:
+  - metadata:
+      name: spx-gc-demo-logs
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      resources:
+        requests:
+          storage: 100M
+  - metadata:
+      name: spx-gc-demo-assets
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      resources:
+        requests:
+          storage: 100M
+  - metadata:
+      name: spx-gc-demo-dataroot
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      resources:
+        requests:
+          storage: 100M          
