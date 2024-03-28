@@ -17,7 +17,5 @@ spec:
           - name: spx-gc-demo-reset-container
             image: _IMAGE
             args:
-            - /bin/sh
-            - -c
             - ./reset.sh
           restartPolicy: OnFailure
