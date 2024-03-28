@@ -11,8 +11,8 @@ RUN mv ASSETS _ASSETS && \
     mv kubernetes/*.sh ./ && \
     chmod +x *.sh
 
-ENTRYPOINT [ "/bin/sh -c" ]
-CMD [ "start.sh" ]
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD [ "./start.sh" ]
 
 VOLUME ["/usr/src/app/ASSETS", "/usr/src/app/DATAROOT", "/usr/src/app/LOGS"]
 
