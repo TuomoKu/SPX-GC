@@ -4,6 +4,7 @@ metadata:
   name: spx-gc-demo-ingress
   annotations:
     ingressClassName: "gce"
+    kubernetes.io/ingress.global-static-ip-name: demo-spx-gc-public-ip
 spec:
   rules:
   - http:
