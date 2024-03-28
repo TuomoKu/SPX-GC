@@ -1,6 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', '${_IMAGE}:${COMMIT_SHA}', '-f', '/kubernetes/Dockerfile', '.']
+  args: ['build', '-t', '${_IMAGE}:${COMMIT_SHA}', '-f', 'kubernetes/Dockerfile', '.']
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', '${_IMAGE}:${COMMIT_SHA}']
 - name: 'gcr.io/cloud-builders/gcloud'
