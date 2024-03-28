@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: spx-gc-demo-reset-job
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 100
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: spx-gc-demo-reset-container
+            image: _IMAGE
+            args:
+            - /bin/sh
+            - -c
+            - ./reset.sh
+          restartPolicy: OnFailure
