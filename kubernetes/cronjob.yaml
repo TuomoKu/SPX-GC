@@ -15,6 +15,7 @@ spec:
         spec:
           containers:
           - name: spx-gc-demo-reset-container
+            imagePullPolicy: Always
             image: _IMAGE
             args:
             - ./reset.sh
