@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
       - name: spx-gc-demo-app-container
-        image: us-central1-docker.pkg.dev/smartpxcloudbu/smartpxcloudbu/spxgc:latest
+        image: _IMAGE
         ports:
         - containerPort: 5656
         volumeMounts:
@@ -84,7 +84,7 @@ spec:
           containers:
           - name: spx-gc-demo-reset-container
             imagePullPolicy: Always
-            image: us-central1-docker.pkg.dev/smartpxcloudbu/smartpxcloudbu/spxgc:latest
+            image: _IMAGE
             args:
             - ./reset.sh
             volumeMounts:
@@ -93,10 +93,10 @@ spec:
             - name: spx-gc-data-volume
               mountPath: /usr/src/app/DATAROOT
           volumes:
-          - name: spx-gc-assets-pvc
+          - name: spx-gc-assets-volume
             persistentVolumeClaim:
               claimName: spx-gc-assets-pvc
-          - name: spx-gc-data-pvc
+          - name: spx-gc-data-volume
             persistentVolumeClaim:
               claimName: spx-gc-data-pvc
           restartPolicy: OnFailure
