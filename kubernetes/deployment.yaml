@@ -17,7 +17,7 @@ metadata:
   name: spx-gc-assets-pvc
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 100M
@@ -28,7 +28,7 @@ metadata:
   name: spx-gc-data-pvc
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 100M
