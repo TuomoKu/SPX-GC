@@ -71,7 +71,7 @@ kind: CronJob
 metadata:
   name: spx-gc-demo-reset-job
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "* */3 * * *"
   concurrencyPolicy: Forbid
   startingDeadlineSeconds: 100
   suspend: false
