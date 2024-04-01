@@ -1,0 +1,139 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spx-gc-demo-service
+spec:
+  type: NodePort
+  selector:
+    app: spx-gc-demo
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5656
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spx-gc-assets-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100M
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spx-gc-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100M
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spx-gc-demo-backend
+spec:
+  serviceName: spx-gc-demo-service
+  selector:
+    matchLabels:
+      app: spx-gc-demo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spx-gc-demo
+    spec:
+      containers:
+      - name: spx-gc-demo-app-container
+        image: _IMAGE
+        ports:
+        - containerPort: 5656
+        volumeMounts:
+        - name: spx-gc-assets-volume
+          mountPath: /usr/src/app/ASSETS
+        - name: spx-gc-data-volume
+          mountPath: /usr/src/app/DATAROOT
+      volumes:
+      - name: spx-gc-assets-volume
+        persistentVolumeClaim:
+          claimName: spx-gc-assets-pvc
+      - name: spx-gc-data-volume
+        persistentVolumeClaim:
+          claimName: spx-gc-data-pvc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: spx-gc-demo-reset-job
+spec:
+  schedule: "* */3 * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 100
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: spx-gc-demo-reset-container
+            imagePullPolicy: Always
+            image: _IMAGE
+            args:
+            - ./reset.sh
+            volumeMounts:
+            - name: spx-gc-assets-volume
+              mountPath: /usr/src/app/ASSETS
+            - name: spx-gc-data-volume
+              mountPath: /usr/src/app/DATAROOT
+          volumes:
+          - name: spx-gc-assets-volume
+            persistentVolumeClaim:
+              claimName: spx-gc-assets-pvc
+          - name: spx-gc-data-volume
+            persistentVolumeClaim:
+              claimName: spx-gc-data-pvc
+          restartPolicy: OnFailure
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: spx-gc-demo-frontend-config
+spec:
+  redirectToHttps:
+    enabled: true
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: spx-gc-demo-certificate
+spec:
+  domains:
+    - demo.spx.graphics
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spx-gc-demo-ingress
+  annotations:
+    ingressClassName: "gce"
+    kubernetes.io/ingress.global-static-ip-name: demo-spx-gc-public-ip
+    networking.gke.io/v1beta1.FrontendConfig: spx-gc-demo-frontend-config
+    networking.gke.io/managed-certificates: spx-gc-demo-certificate
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: spx-gc-demo-service
+            port:
+              number: 80
