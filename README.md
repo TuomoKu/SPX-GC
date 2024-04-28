@@ -361,6 +361,7 @@ Localization credits:
 |  Dutch | Koen Willems, Netherlands | v1.0.12 |
 |  Chinese | Anosi Wang, China | v1.1.0 |
 |  Swedish | Christina F., Finland | v1.1.2 |
+|  Japanese | Masakazu Nakano, Japan | v1.2.3 |
 
 <BR>
 
@@ -613,7 +614,7 @@ Another approach is to copy the templates to **both locations** but this can bec
 
 TemplateDefinition configures how a template is supposed to work within SPX; what kinds of controls are shown to the operator and how the graphic should playout, on which server and layer for instance. These values are template's `defaults` and can be changed in the Project Settings view after the template is added to the project.
 
-
+Theoretically all properties are optional, but it's recommended most properties, especially playout layers, are carefully given to prevent clashes during playout.
 
 > See details about supported values below the snippet.
 
@@ -729,9 +730,9 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
   * `none` play only. Suitable for wipes / bumpers
   * `[numeric]` milliseconds until STOP is executed
 * **steps**: how many phases in animation? For normal in-out templates this is 1. For templates with 2 or more steps the _Continue_ button gets enabled.
-* **dataformat**: how template is expecting data
-    - `xml` the default
-    - `json` used in some special templates
+* **dataformat**: how template logic is expecting data
+    - `json` the default value (from 1.2.2)
+    - `xml` for compatibility with older CasparCG templates
 * **ftypes**
     -  _ftypes_ (for field types) define template's GUI controls in SPX controller
     - the values of first two fileds are used as content preview in the rundown, so the order of fields should be considered for the ease of use
@@ -770,6 +771,10 @@ If you have several inputs (for instance for multiple presenters) you can limit 
 ```
 http://localhost:5656/renderer/?layers=[2,4,20]
 ```
+
+See [Youtube video](https://www.youtube.com/watch?v=YwXYWadiFoE) on using SPX with OBS.
+
+
 
 ----
 # Control SPX with external devices such as Elgato Stream Deck... <a id="controlApi"></a>

@@ -2,7 +2,7 @@
 // Client javascript for SPX
 // Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2023 Softpix
+// (c) 2020-2024 Softpix
 // ***************************************
 
 var socket = io();
@@ -10,10 +10,8 @@ var socket = io();
 // Global App State
 let APPSTATE = "INIT";  // see AppState()
 let sortable = "";      // a global sortable object so can be disabled at will, see spxinit()
-
 let messageSliderOutTimer // a global var for message slider timeout
 document.onkeydown = checkKey;
-
 
 socket.on('connect', function () {
     // Added in 1.1.0:
@@ -23,6 +21,30 @@ socket.on('connect', function () {
         hideMessageSlider();
     }
 }); // end connect
+
+socket.on('SPXMessage2Extension', function (data) {
+    // Handles messages coming from server to an extension.
+    // All SPX extensions must have 3 tags in their HTML:
+    //
+    //  <script src="/js/socket.io.js"></script>
+    //  <script>var socket = io();</script>
+    //  <script src="/js/spx_gc.js"></script>
+    //
+    // Also if the extension JS code is a module the
+    // functions will need to be exposed to the window scope.
+    // This is done by adding the following line to the end
+    // of the module:
+    //
+    //  window.functionName = functionName;
+    //
+    if (typeof window[data.function] === "function") { 
+        console.log('API invokeExtensionFunction called --> ' + data.function + '(' + data.params + ')');
+        window[data.function](data.params);
+    } else {
+        console.error('Function not found in extension [' + data.function + ']. Is it exposed?');
+    }
+
+}); // end SPXMessage2Extension
 
 socket.on('SPXMessage2Client', function (data) {
     // Handles messages coming from server to this client.
@@ -54,6 +76,13 @@ socket.on('SPXMessage2Client', function (data) {
             localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
             break;
 
+        case 'showMessageSlider':
+            // Shows a message in the message slider, an extension may initiate this.
+            showMessageSlider(data.msg, data.type, data.persist);
+            // clearTimeout(localStorage.getItem('SPX_CT_StatusTimer'));
+            // statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
+            // localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
+            break;
         case 'clientLostNotification':
             switch (data.clientName) {
                 case 'SPX_PROGRAM':
@@ -187,10 +216,18 @@ socket.on('disconnect', function () {
         showMessageSlider('Disconnected from SPX server', type='error', true)
         document.body.style="pointer-events: none;"  // disable clickability
     }
-}); // end disconnect 
+}); // end disconnect
 
 // see also spxInit()
 // ##########################################################################################################
+
+
+function rundownPopup(mode) {
+    // get current url
+    let url = window.location.href;
+    url = url + '/light'
+    window.open(url);
+}
 
 
 
@@ -246,9 +283,6 @@ function tip(msg) {
 
 
 
-
-
-
 function addSelectedTemplate(idx) {
   // alert('Selected index ' + idx);
   data={};
@@ -258,7 +292,7 @@ function addSelectedTemplate(idx) {
   data.datafile      = document.getElementById('datafile').value;
   data.templateindex = idx;
   post('', data, 'post');
-}
+} // addSelectedTemplate
 
 function addAllTemplatesToRundown() {
   // Added in 1.2.0
@@ -268,10 +302,7 @@ function addAllTemplatesToRundown() {
   data.listname      = document.getElementById('filebasename').value;
   data.datafile      = document.getElementById('datafile').value;
   post('', data, 'post');
-}
-
-
-
+} // addAllTemplatesToRundown
 
 function ajaxpost(urlPath, data, prepopulated='false'){
     // This is a utility function using Axios to POST
@@ -315,19 +346,10 @@ function ajaxpost(urlPath, data, prepopulated='false'){
         }
         console.log(error.config);
       });
-}
-
-
-
-
+} // ajaxpost ended
 
 function ajaxpostform(urlPath, FormNro){
-}
-
-
- 
-
-
+} // ajaxpostform ended
 
 function aFunctionTest() {
     // execute a test function on the server
@@ -335,8 +357,6 @@ function aFunctionTest() {
     console.log('Sending testfunction request to server. See server console / log with PING -identifier...')
     AJAXGET('/CCG/testfunction/');
 } //aFunctionTest
-
- 
 
 function add() {
     // require ..... nothing
@@ -347,7 +367,6 @@ function add() {
     }
 } //add
 
-
 function addshow() {
     // require ..... nothing
     // returns ..... posts a name of a folder to server which redirects
@@ -356,8 +375,6 @@ function addshow() {
         post('', { foldername: foldername }, 'post');
     }
 } // addshow
-
-
 
 async function AJAXGET(URL) {
     // Sends a GET request to server.
@@ -383,8 +400,6 @@ async function AJAXGET(URL) {
     xmlhttp.send();
 } // AJAXGET ended
 
-
-
 function applyTextEditChanges(event, e) {
     // end editing a TG field
     setMasterButtonStates(e.closest('.itemrow'));
@@ -395,8 +410,6 @@ function applyTextEditChanges(event, e) {
         ToggleExpand();
     }
 } // applyTextEditChanges
-
-
 
 function AppState(NewState) {
     // **********************************************************************
@@ -426,7 +439,6 @@ function AppState(NewState) {
     // **********************************************************************
 } // AppState
 
-
 function CancelOutTimerIfRunning(CURITEM){
     // if item has a running timeout attribute, then stop and clear it
     let TimerID = CURITEM.getAttribute('data-spx-timerid') || '';
@@ -437,9 +449,7 @@ function CancelOutTimerIfRunning(CURITEM){
         document.getElementById('deleteSmall' + CURITEM.getAttribute('data-spx-index')).style.display="inline-block";
         document.getElementById('deleteLarge' + CURITEM.getAttribute('data-spx-index')).style.display="block";
     }
-}
-
-
+} // CancelOutTimerIfRunning
 
 function cas() {
     // Opens the selected (or current) file in controller.
@@ -462,14 +472,12 @@ function cas() {
     document.location = '/gc/' + folder + "/" + filename;
 } // cas ended
 
-
 function cfg() {
     // Show settings
     // Called from Settings button in episodes page.
     let foldname = document.getElementById("hidden_folder").value;
     document.location = '/show/' + foldname + "/config";
 } // del ended
-
 
 function checkAllConnections() {
     // require ..... nothing
@@ -479,7 +487,6 @@ function checkAllConnections() {
         AJAXGET('/CCG/testfunction/');
     }
 } //checkAllConnections
-
 
 function checkKey(e) {
     // require ..... keyboard event
@@ -523,7 +530,6 @@ function checkKey(e) {
             return;
             break;
     }
-
 
 
     // THEN APPSTATE dependent keycodes
@@ -594,6 +600,13 @@ function checkKey(e) {
                     updateItem();
                     e.preventDefault(); // do not refresh browser
                     break;
+                case 20: // CapsLock
+                    if (e.getModifierState("CapsLock")) {
+                        showItemIDs(true);
+                    } else {
+                        showItemIDs(false);
+                    }
+                    break;
             }
             break;
     }
@@ -603,10 +616,6 @@ function checkKey(e) {
 
     return;
 } //checkKey
-
-
-
-
 
 function clearAttributes(attName, attValue) {
     // This is called from TGbuttonAction when TG Play button is
@@ -624,7 +633,34 @@ function clearAttributes(attName, attValue) {
     })
 } // clearAttributes ended
 
+function copyItemID(itemID, api='') {
+    let currentHost = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+    let str = itemID;
+    let inf = 'itemID';
+    switch (api.toUpperCase()) {
+        case 'PLAY':
+            str = currentHost + '/api/v1/item/play/' + itemID;
+            inf = 'API play command'
+            break;
 
+        case 'STOP':
+            str = currentHost + '/api/v1/item/stop/' + itemID;
+            inf = 'API stop command'
+            break;
+
+        case 'CONTINUE':
+            str = currentHost + '/api/v1/item/continue/' + itemID;
+            inf = 'API continue command'
+            break;
+
+        default:
+            break;
+
+    }
+    copyText(str);
+    showMessageSlider('Copied ' + inf + ' to clipboard', 'happy');
+    showItemIDs(false)
+} // copyItemID
 function toggleLRendererHandler(slider, targ) {
     let Cfgdata = {};
     Cfgdata.key = 'disableLocalRenderer'
@@ -736,8 +772,6 @@ function CollectJSONFromDOM() {
     return JSONdata;
 } // CollectJSONFromDOM ended
 
-
-
 function continueUpdateStop(command, itemrow='') {
     // request ..... command, itemrow (optional)
     // returns ..... ajax response
@@ -763,7 +797,6 @@ function continueUpdateStop(command, itemrow='') {
     }
 } // ContinueUpdateStop() ended
 
-
 async function revealItemID(button) {
     let item = button.closest('.itemrow')
     let ID = item.getAttribute('data-spx-epoch');
@@ -778,7 +811,7 @@ async function revealItemID(button) {
 
         axios.get(URL)
         .then(function (response) {
-            showMessageSlider('Item renamed to ' + newID)
+            showMessageSlider('Item renamed to ' + newID + '. Reload recommended.')
             item.setAttribute('data-spx-epoch', newID);
             item.querySelector('.copyid').setAttribute('onmouseover', `tip('Copy ID ${newID}')`);
         })
@@ -838,7 +871,6 @@ async function revealItemLayer(button) {
     }
 } // revealItemLayer
 
-
 function copyRendererUrl(preview=false) {
 
     let page = '/renderer/';
@@ -848,7 +880,7 @@ function copyRendererUrl(preview=false) {
     var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + page;
     copyText(RendererUrl);
     showMessageSlider('Copied URL to clipboard', 'happy');
-}
+} // copyRendererUrl ended
 
 function copyText(txt) {
     const temp = document.createElement('input');
@@ -863,7 +895,7 @@ function copyText(txt) {
         // console.log('Oops, unable to copy');
     }
     temp.parentNode.removeChild(temp);
-}
+} // copyText ended
 
 function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     // see notes TDT=00d86114
@@ -911,7 +943,6 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     localStorage.setItem(ls, st)
 } // dirty deeds done. 
 
-
 function del() {
     // Episodes -view
     // Delete a datafile from disk.
@@ -926,8 +957,6 @@ function del() {
     }
 } // del ended
 
-
-
 function delshow() {
     // Shows -view
     // Delete a folder from disk.
@@ -941,9 +970,6 @@ function delshow() {
         }
 } // delshow ended
 
-
-
-
 function delRow(e) {
     // console.log('Would delete', e);
     if (!e){return};
@@ -951,8 +977,6 @@ function delRow(e) {
     // save data 
     SaveNewSortOrder();
 } // delRow ended
-
-
 
 function duplicateRundown() {
     // Duplicate a rundown
@@ -965,11 +989,57 @@ function duplicateRundown() {
     setTimeout(function(){ document.location = '/show/' + data.foldname; }, 500);
 } // duplicateRundown ended
 
+function duplicateRundownItem(rowitem) {
+    if (!rowitem){
+        rowitem = getFocusedRow();
+    }
 
+    // Collect data for the server to duplicating the item
+    data={};
+    data.command       = "duplicateRundownItem";
+    data.sourceEpoch   = rowitem.getAttribute('data-spx-epoch');
+    data.cloneEpoch    = String(Date.now()); // create epoch and give this to server also
+    data.foldername    = document.getElementById('foldername').value;
+    data.listname      = document.getElementById('filebasename').value;
+    data.datafile      = document.getElementById('datafile').value;
+    
+    var newItem = rowitem.cloneNode(true);
+    newItem.style.opacity=0;
 
+    // update table id's for sorting to keep up. A bug found right after 1.0.12 was released.
+    updateFormIndexes()
+    rowitem.after(newItem);
 
+    let list = [
+        newItem.setAttribute('data-spx-epoch', data.cloneEpoch),
+        newItem.setAttribute('data-spx-onair', "false"),
+        newItem.querySelector('.copyid').setAttribute('onmouseover', 'tip("Duplicated item ' + data.cloneEpoch + '")'),
+        newItem.querySelector('.utilityOverlay').innerHTML="Reload page to update this duplicated item.",																										 
+        newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'),
+        newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'),
+        newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'),
+        newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'),
+        newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'),
+        rowitem.classList.remove('inFocus'),
+        newItem.classList.add('inFocus'),
+        newItem.style.opacity=1
+    ]
 
+    applyCommands(list);
+    working('Sending ' + data.command + ' request.');
+    ajaxpost('',data);
 
+    function applyCommands(list) {
+        // delay commands utility
+        let totalDelay = 0;
+        let stepDelay = 10;
+        list.forEach((item,index) => {
+            totalDelay += stepDelay;
+            setTimeout(function () { (item) }, totalDelay);
+        });
+    }
+
+} // duplicateRundownItem ended
 
 function edi() {
     // Edit a datafile on disk.
@@ -982,8 +1052,7 @@ function openRelpathFolder(itemrow) {
     // added in 1.1.1 - Open a file for editing.
     let fileRef = itemrow.querySelector("[id^='relpath']").value;
     AJAXGET('/api/openFileFolder?file=' + fileRef);
-}
-
+} // openRelpathFolder ended
 
 function eps() {
     // Opens the selected (or current) file in controller.
@@ -1004,7 +1073,6 @@ function eps() {
     if (foldername==""){return};
     document.location = '/show/' + foldername;
 } // cas ended
-
 
 function exportItemAsCSV(rowItem) {
     // export an item as a CSV file, which then can be
@@ -1033,7 +1101,7 @@ function ModalOn(modalID) {
     }
 
     document.getElementById(modalID).style.display = "block";
-  } //FileBrowserOn
+} //FileBrowserOn
 
 function ModalOff(modalID) {
     document.getElementById(modalID).style.display = "none";
@@ -1043,7 +1111,7 @@ function openImportDialog() {
     ModalOff('overlayTemplatePicker')
     ModalOn('filebrowserModal')
     // console.log('Opening File browser dialog');
-}
+} // openImportDialog
 
 function filterProjects() {
     // Added in 1.1.0 - will hide/show items in the allProjects list
@@ -1067,8 +1135,7 @@ function filterProjects() {
         lists.appendChild(opt);
       }
     }
-  }
-
+} // filterProjects ended
 
 function focusRow(rowitemOrIndex) {
     // will make TG item focused and will set masterbutton states.
@@ -1119,11 +1186,6 @@ function focusRow(rowitemOrIndex) {
      setMasterButtonStates(TargetElement, 'from focusRow');
 } // focusRow ended
 
-
-
-
-
-
 function org_focusRow(index, useID=false) {
     // FIXME: This is archived version of this function.
     // Delete at some point -----------------------------
@@ -1163,8 +1225,6 @@ function org_focusRow(index, useID=false) {
      setMasterButtonStates(index, 'from focusRow');
 } // focusRow ended
 
-
-
 function getElementIdOfFocusedItem() {
     // FIXME: Is this in use? From old logic?
     // a utility to iterate DOM items, return element ID of focused
@@ -1174,7 +1234,7 @@ function getElementIdOfFocusedItem() {
                 return getElementIdByDomIndex(nro)
             };
     }
-}
+} // getElementIdOfFocusedItem ended
 
 function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
@@ -1187,7 +1247,7 @@ function getFocusedRow() {
     //         return document.querySelectorAll('.itemrow')[nro];
     //     };
     // }
-}
+} // getFocusedRow ended
 
 function getElementByEpoch(itemID) {
     // get element by epoch id (added in 1.0.8)
@@ -1200,7 +1260,7 @@ function getElementByEpoch(itemID) {
         };
     }
     return false; // added in 1.2.0
-}
+} // getElementByEpoch ended
 
 
 function getIndexOfRowItem(rowitem) {
@@ -1210,8 +1270,7 @@ function getIndexOfRowItem(rowitem) {
             return i;
         }
     })
-}
-
+} // getIndexOfRowItem ended
 
 function getElementIdByDomIndex(domIndex)
 {
@@ -1223,8 +1282,7 @@ function getElementIdByDomIndex(domIndex)
     let ElementFullID = document.querySelectorAll('.itemrow')[domIndex].id;
     let JustElementID = ElementFullID.replace('playlistitem','');
     return JustElementID
-}
-
+} // getElementIdByDomIndex ended
 
 function getDomIndexByElementId(ElementId)
 {
@@ -1241,10 +1299,7 @@ function getDomIndexByElementId(ElementId)
                 return DomNro
             };
     }
-}
-
-
-
+} // getDomIndexByElementId ended
 
 function getLayerFromProfile(buttonName) {
     // Make JSON from profiledata string from a hidden field and search it...
@@ -1348,7 +1403,7 @@ function getMessages(curVerInfo) {
     .catch((error) => {
         console.error('SPX error in getMessages().',error)
     });
-  }
+} // getMessages ended
 
 function getMessages2(or) {
     // This is called from heartbeat after a day change and will
@@ -1357,9 +1412,40 @@ function getMessages2(or) {
     // This function is in early stage in v 1.1.0 and will be
     // fully implemented in future versions.
     ajaxpost('/api/heartbeat', {data:or});
-}
+} // getMessages2 ended
 
+function handleRendererPopups(data) {
+    // open / close renderer popups 
+    // data: {type:preview}
+    // Save to config.json general.renderer as "normal" (embedded inline renderer) or "popup" (floating window)
+    
+    let URL;
+    let socketData = {};
+    var w = 1280;
+    var h = 720;
+    var left = (screen.width/2)-(w/2);
+    var top = (screen.height/2)-(h/2);
+    var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
 
+    if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
+    if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
+
+    if (data.command == 'open')  {
+        // open the popup
+        window.open(URL, winRef, OPT);
+    } 
+    
+    if (data.command == 'close')  {
+        // send message request to close the popup
+        // send message to close the window without prompts (closeprogram closepreview)
+        socketData.spxcmd = 'close' + data.type;
+        socket.emit('SPXWebRendererMessage', socketData);
+    }
+
+    if (data.type == 'program') {
+        toggleNormalRenderer(data.command)
+    }
+} // handleRendererPopups ended
 
 function help(section) {
     // Help is massively a WORK-IN-PROGRESS thing!
@@ -1400,11 +1486,6 @@ function help(section) {
     window.open(FULL_URL, 'GCHELP', '_blank,width=980,height=800,scrollbars=yes,location=yes,status=yes');
 } // help ended
  
-
-
-
-
-
 function moveFocus(nro) {
     // Move highlighted row up/down with keyboard commands
     // Request .... nro = negative (-1) or positive (1)
@@ -1431,8 +1512,6 @@ function moveFocus(nro) {
         focusRow(newIndex);
     }
 } // moveFocus ended
-
-
 
 function nextItem(itemrow='') {
     // Next / continue command.
@@ -1487,8 +1566,7 @@ function nextItem(itemrow='') {
     }
 
 
-  } // nextItem
-
+} // nextItem
 
 function previewItem(itemrow='') {
     // Added in 1.1.0
@@ -1505,13 +1583,12 @@ function previewItem(itemrow='') {
     heartbeat(308); // identifier
 
 
-}
+} // previewItem
 
 function projectSettings() {
     // Open project settings page from rundown list page
     document.location.href += '/config' ;
 } // projectSettings
-
 
 function playItem(itemrow='', forcedCommand='') {
     // Play item toggle.
@@ -1665,7 +1742,6 @@ function renameRundown() {
     }
 } // renameRundown ended
 
-
 function versInt(semver){
     // Returns a numeric value representing "1.0.0" formatted semantic version string.
     // This works as long as max value of each field is 99!
@@ -1678,7 +1754,6 @@ function versInt(semver){
     // console.log('Semver ' + semver + ' = versInt ' + versInt);
     return versInt
   }
-
 
 function setItemButtonStates(itemrow, forcedCommand=''){
     // Utility function which will toggle play indicators in
@@ -1788,11 +1863,7 @@ function setItemButtonStates(itemrow, forcedCommand=''){
             }
     })
     return CommandToExecute
-}
-
-
-
-
+} // setItemButtonStates ended
 
 function post(path, params, method) {
     // Creates a hidden form in DOM, populates it and posts it to server.
@@ -1815,66 +1886,83 @@ function post(path, params, method) {
     form.submit();
 } // post ended
 
-
-
 function resizeInput() {
     // changes headline1 width
     this.style.width = (this.value.length + 1.2) + "ch";
 } // resizeInput ended
 
+async function revealItemID(button) {
+    let item = button.closest('.itemrow')
+    let ID = item.getAttribute('data-spx-epoch');
+    copyText(ID)
+    // alert("Item ID " + ID + " was copied to clipboard.");
+    var newID = prompt("Item ID " + ID + " was copied to clipboard.\nYou can change the ID here:", ID);
+    if (newID != null && newID != ID) {
+        // alert("New ID " + newID)
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemID?rundownfile=${file}&ID=${ID}&newID=${newID}`
+        let IDchanged
 
-function duplicateRundownItem(rowitem) {
-    if (!rowitem){
-        rowitem = getFocusedRow();
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item renamed to ' + newID + '. Reload recommended.')
+            item.setAttribute('data-spx-epoch', newID);
+            item.querySelector('.copyid').setAttribute('onmouseover', `tip('Copy ID ${newID}')`);
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to rename. Use unique ID and try again.', 'error')
+        });
+
+
+        // if (IDchanged) {
+        //     // success
+        //     item.setAttribute('data-spx-epoch', newID);
+        // } else {
+        //     alert("Unable to change ID to " + newID + " (" + IDchanged + ").\nMake sure the ID is unique and try again.");
+        // }
+    } else {
+        // alert("Same ID " + newID)
     }
+} // revealItemID
 
-    // Collect data for the server to duplicating the item
-    data={};
-    data.command       = "duplicateRundownItem";
-    data.sourceEpoch   = rowitem.getAttribute('data-spx-epoch');
-    data.cloneEpoch    = String(Date.now()); // create epoch and give this to server also
-    data.foldername    = document.getElementById('foldername').value;
-    data.listname      = document.getElementById('filebasename').value;
-    data.datafile      = document.getElementById('datafile').value;
-    
-    var newItem = rowitem.cloneNode(true);
-    newItem.style.opacity=0;
-
-    // update table id's for sorting to keep up. A bug found right after 1.0.12 was released.
-    updateFormIndexes()
-    rowitem.after(newItem);
-
-    let list = [
-        newItem.setAttribute('data-spx-epoch', data.cloneEpoch),
-        newItem.setAttribute('data-spx-onair', "false"),
-        newItem.querySelector('.copyid').setAttribute('onmouseover', 'tip("Duplicated item ' + data.cloneEpoch + '")'),
-        newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'),
-        newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'),
-        newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'),
-        newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'),
-        newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'),
-        rowitem.classList.remove('inFocus'),
-        newItem.classList.add('inFocus'),
-        newItem.style.opacity=1
-    ]
-
-    applyCommands(list);
-    working('Sending ' + data.command + ' request.');
-    ajaxpost('',data);
-
-    function applyCommands(list) {
-        // delay commands utility
-        let totalDelay = 0;
-        let stepDelay = 10;
-        list.forEach((item,index) => {
-            totalDelay += stepDelay;
-            setTimeout(function () { (item) }, totalDelay);
+async function revealItemTiming(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change timing here. Use 'manual', 'none' or millisecond values (1000=1s):", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=out&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item out mode changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=out]')[0].value = newValue;
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
         });
     }
+} // revealItemTiming
 
-} // duplicateRundownItem ended
-
-
+async function revealItemLayer(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 20:", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item webplay layer changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=webplayout]')[0].value = newValue;
+            // document.querySelectorAll('.itemrow')[0].querySelectorAll('input[id^=out]')[0];
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
+        });
+    }
+} // revealItemLayer
 
 function removeItemFromRundown(itemrow)
 {
@@ -1899,7 +1987,6 @@ function removeItemFromRundown(itemrow)
 
 } // removeItemFromRundown ended
 
-
 function updateFormIndexes() {
     // This needs to run whenever items are sorted or removed.
     // Sorting routine needs the IndexList for saving sorting to a file.
@@ -1914,9 +2001,14 @@ function updateFormIndexes() {
     });
     // console.log('New form list sort order before saving to file', IndexList);
     return IndexList
-}
+} // updateFormIndexes ended
 
-
+function rundownPopup(mode) {
+    // get current url
+    let url = window.location.href;
+    url = url + '/light'
+    window.open(url);
+} // rundownPopup ended
 
 function SaveNewSortOrder() {
     // This will save the rundown opened in SPX, for instance when
@@ -1929,8 +2021,6 @@ function SaveNewSortOrder() {
     ajaxpost('/gc/sortTemplates',data);
    
 } // SaveNewSortOrder ended
-
-
 
 function saveTemplateItemChanges(elementID) {
     // This is a utility function using Axios to POST
@@ -1996,8 +2086,6 @@ function saveTemplateItemChanges(elementID) {
       });
 } // saveTemplateItemChanges
 
-
-
 function saveTemplateItemChangesByElement(itemrow) {
     working('Saving changed data to server...');
     data={};
@@ -2051,9 +2139,21 @@ function saveTemplateItemChangesByElement(itemrow) {
       });
 } // saveTemplateItemChanges
 
-
-
-
+function showItemIDs(show=true) {
+    // Show item ID's in GUI
+    let rows = document.querySelectorAll('.itemrow');
+    rows.forEach((item,index) => {
+        if (show==true) {
+            item.querySelector('.utilityOverlay').classList.remove('hidden');
+            // document.getElementById('rundownInfoMessage').style='display:flex;';
+        } else if (show==false) {
+            item.querySelector('.utilityOverlay').classList.add('hidden');
+            // document.getElementById('rundownInfoMessage').style='display:none;';
+        } else {
+            item.querySelector('.utilityOverlay').classList.toggle('hidden');
+        }
+    });
+} // showItemIDs ended
 
 function setMasterButtonStates(itemrow, debugMessage='') {
     // this triggers when row focuses or when Play or Stop pressed or item changed.
@@ -2066,9 +2166,9 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 
     if (document.querySelectorAll('.itemrow').length<1){
         // no items on page, so disable buttons and bale out
-        TOGGLEBUTTON.classList.add('disabled'); 
-        UPDATEBUTTON.classList.add('disabled'); 
-        CONTINBUTTON.classList.add('disabled'); 
+        if (TOGGLEBUTTON) {TOGGLEBUTTON.classList.add('disabled')}; 
+        if (UPDATEBUTTON) {UPDATEBUTTON.classList.add('disabled')}; 
+        if (CONTINBUTTON) {CONTINBUTTON.classList.add('disabled')}; 
         return
     }
 
@@ -2098,14 +2198,15 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 
 
     // UPDATE
-    UPDATEBUTTON.classList.add('disabled');            
-    if (chngd && onair)
-        {
-            setTimeout(function () {
-                UPDATEBUTTON.classList.remove('disabled');
-                itemrow.querySelector('[data-spx-name="updatebutton"]').classList.remove('disabled');
-            }, 2);
-        }
+    // Lines disabled in Pro 1.2.2 ==> 
+    // UPDATEBUTTON.classList.add('disabled');            
+    // if (chngd && onair)
+    //     {
+    //         setTimeout(function () {
+    //             UPDATEBUTTON.classList.remove('disabled');
+    //             itemrow.querySelector('[data-spx-name="updatebutton"]').classList.remove('disabled');
+    //         }, 2);
+    //     }
 
     // CONTINUE
     CONTINBUTTON.classList.add('disabled');
@@ -2133,7 +2234,6 @@ function setMasterButtonStates(itemrow, debugMessage='') {
         }
 } // setTGButtonStates ended 
 
-
 function hideMessageSlider() {
     if (!document.getElementById('messageSlider')) { return }
     anime({
@@ -2144,7 +2244,7 @@ function hideMessageSlider() {
         duration:       300,
         easing:         'easeInCubic'
     });
-}
+} // hideMessageSlider
 
 function showMessageSlider(msg, type='info', persist=false) {
     // show a sliding message at the top of the page
@@ -2189,7 +2289,7 @@ function showMessageSlider(msg, type='info', persist=false) {
         });
     }, 2000);
 
-}
+} // showMessageSlider
 
 function spx_system(cmd,servername='') {
     // system command handler
@@ -2239,12 +2339,11 @@ function spx_system(cmd,servername='') {
     }
 } // end spx_system
 
-
 function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2020-2023 Softpix Ltd  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2020- SPX Graphics  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd
@@ -2264,7 +2363,6 @@ function spxInit() {
     document.getElementById('itemList').style.opacity=1;
 } // end spxInit
 
-
 function setProfile(profileName) {
     // FIXME: remove?
     // change profile to profileName and save to localStorage
@@ -2276,8 +2374,6 @@ function setProfile(profileName) {
     localStorage.SPX_CT_ProfileName = profileName;
 } // setProfile ended
 
-
-
 function statusbar(sMsg, sLevel="x") {
     /* Usage
         - statusbar('This is a normal message')
@@ -2285,6 +2381,7 @@ function statusbar(sMsg, sLevel="x") {
         - statusbar('Red alert', "error")
     */
 
+	if (!document.getElementById('statusbar')) { return } // not in controller				
    let msglevel = sLevel.toUpperCase();
    // console.log('statusbar level: [' + msglevel +'], msg: [' + sMsg + '].');
    document.getElementById('statusbar').classList="statusbar";
@@ -2297,10 +2394,8 @@ function statusbar(sMsg, sLevel="x") {
             break;
         }
     document.getElementById('statusbar').innerText=sMsg;
-  } // statusbar
+} // statusbar
 
-
- 
 function stopAll(){
     // Will send STOP commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
@@ -2314,10 +2409,7 @@ function stopAll(){
             continueUpdateStop('stop', templateItem);
             }, (itemNro * 20)); // 20, 40, 60, 80ms etc...
         });
-    }
-
-
-
+} // stopAll
 
 function swap2HTMLntities(str){
     // This fixes issue #5 re special characters
@@ -2327,7 +2419,119 @@ function swap2HTMLntities(str){
     return str;
 } // end swap2HTMLntities
 
+function Test(routine) {
+    // execute a test function on the server
+    // this gets triggered by menu > ping
+    let data = {};
+    switch (routine) {
+        case 'A':
+            data.spxcmd     = 'loadTemplate';
+            data.layer      = '10';
+            data.template   = 'spxtestgrid.html';
+            socket.emit('SPXWebRendererMessage', data);
+            break;
 
+        case 'B':
+            data.spxcmd     = 'playTemplate';
+            data.layer      = '10';
+            socket.emit('SPXWebRendererMessage', data);
+            break;
+
+        case 'C':
+            data.spxcmd     = 'stopTemplate';
+            data.layer      = '10';
+            socket.emit('SPXWebRendererMessage', data);
+            break;
+
+
+        default:
+            console.log('Uknown Test', routine);
+        }
+} // Test ended
+
+function tip(msg) {
+    // request ..... 
+    // returns ..... 
+    // Describe the function here 
+    e = document.getElementById('statusbar') || null;
+    if (e) {
+        document.getElementById('statusbar').innerText=msg;
+        event.stopPropagation();
+        // playServerAudio('beep', 'We are in TIP function');
+    }
+} // tip mgsed
+
+function toggleLRendererHandler(slider, targ) {
+    let Cfgdata = {};
+    Cfgdata.key = 'disableLocalRenderer'
+    if (slider.checked) {
+        document.getElementById(targ).innerText = 'YES';
+        document.getElementById('previewIF').src = '/templates/empty.html';
+        document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
+        Cfgdata.val = true;
+        
+    } else {
+        document.getElementById('previewIF').src = '/renderer';
+        document.getElementById(targ).innerText = 'NO';
+        document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
+        Cfgdata.val = false;
+    }
+    ajaxpost('/gc/saveConfigChanges',Cfgdata);
+} // toggleLRendererHandler
+
+function toggleSwitchHandler(slider, targ, type) {
+    // When program/preview toggle buttons are clicked.
+    // console.log('toggleSwitchHandler', slider, targ);
+    let data    = {}
+    data.type   =  type;
+    let handle = slider.querySelector('.vc-handle');
+    if (slider.checked) {
+        data.command = 'open';
+        document.getElementById(targ).innerText = 'ON';
+    } else {
+        data.command = 'close';
+        document.getElementById(targ).innerText = 'OFF';
+    }
+    handleRendererPopups(data)
+} // toggleSwitchHandler
+
+function toggleRundownSettings() {
+    // Toggle the rundown settings panel
+    let optionsZone = document.getElementById('rdOptionsCollapsible');
+    if (optionsZone.style.maxHeight){
+        optionsZone.style.maxHeight = null;
+        setTimeout(function(){optionsZone.style.display = 'none';}, 300);
+      } else {
+        optionsZone.style.display = 'block';
+        optionsZone.style.maxHeight = optionsZone.scrollHeight + "px";
+      } 
+} // toggleRundownSettings
+
+function toggleTip(targetField, source, attr) {
+    document.getElementById(targetField).innerText = source.getAttribute(attr);
+} // toggleTip
+
+function toggleActive(ServerName='') {
+    // Will enable / disable commands to the server
+    // CCG/disable {server:'OVERLAY, disable:false}
+    let e = document.getElementById('server'+ ServerName);
+    let targetState = false;
+    if (e && e.classList.contains('disabledServer')) {
+        // Enable
+        e.classList.remove('disabledServer')
+        targetState = false
+    } else {
+        // Disable
+        e.classList.add('disabledServer')
+        targetState = true
+    }
+
+    let data = {};
+    data.server       = ServerName;
+    data.disabled     = targetState;
+    working('Changing server connection state to [' + targetState + ']...');
+    ajaxpost('/CCG/disable',data);
+} // toggleActive
 
 function ToggleExpand(rowelement='') {
     if (!rowelement){
@@ -2358,8 +2562,6 @@ function ToggleExpand(rowelement='') {
         }
     }
 } // ToggleExpand
-
-
 
 function updateItem(itemrow) {
     // request ..... rundown template index
@@ -2405,67 +2607,28 @@ function updateItem(itemrow) {
     ajaxpost('/gc/playout',data, 'true');
   } // updateItem
      
-
-
 function playServerAudio(sfx,message=''){
     console.log('%cPlaying sound (' + sfx + ') on server. Log: ' + message + '.', 'background: #622; color: #fff');
     data = {};
     data.sound = sfx;
     data.info  = message;
     ajaxpost('/gc/playaudio/', data)
-}
+} // playServerAudio
 
 
 
 function working(StatusMsg){
-    // console.log("[ " + StatusMsg + " ]");
+	if ( !document.getElementById('working') ) return ; // not in controller
     if (StatusMsg==""){
       document.getElementById('working').innerText="";
       document.getElementById('working').style.display="none";
-    }
-    else
-    {
+    } else {
       document.getElementById('working').innerText=StatusMsg;
       document.getElementById('working').style.display="inline-block";
     }
-  } //working
+} //working
 
-
-  function handleRendererPopups(data) {
-    // open / close renderer popups 
-    // data: {type:preview}
-    // Save to config.json general.renderer as "normal" (embedded inline renderer) or "popup" (floating window)
-    
-    let URL;
-    let socketData = {};
-    var w = 1280;
-    var h = 720;
-    var left = (screen.width/2)-(w/2);
-    var top = (screen.height/2)-(h/2);
-    var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
-
-    if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
-    if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
-
-    if (data.command == 'open')  {
-        // open the popup
-        window.open(URL, winRef, OPT);
-    } 
-    
-    if (data.command == 'close')  {
-        // send message request to close the popup
-        // send message to close the window without prompts (closeprogram closepreview)
-        socketData.spxcmd = 'close' + data.type;
-        socket.emit('SPXWebRendererMessage', socketData);
-    }
-
-    if (data.type == 'program') {
-        toggleNormalRenderer(data.command)
-    }
-  }
-
-
-  function toggleNormalRenderer(cmd) {
+function toggleNormalRenderer(cmd) {
     // Added in 1.1.0
     // This [closing of popup] can happen in any SPX view,
     // not necessarily in the controller view...
@@ -2489,4 +2652,4 @@ function working(StatusMsg){
         document.getElementById('previewBG').style.display='block';
         document.getElementById('previewIF').src='/renderer';
     }
-  }
+} // toggleNormalRenderer

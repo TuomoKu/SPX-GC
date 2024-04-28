@@ -18,6 +18,153 @@
 //
 // -------------------------------------------------------------- 
 
+function yleLogo(opts="") {
+    console.log('ExtraFunctions: yleLogo',opts);
+    let templateFunction = 'logoOutIn';
+    let functionArgument = '';
+    let targetSPXLayerNo = 10;
+    let url = "/api/v1/invokeTemplateFunction?"
+    url += 'webplayout=' + targetSPXLayerNo
+    url += '&function=' + templateFunction
+    url += "&params=" + functionArgument
+    fetch(url)
+       .then(response => response.json())
+       .then(data => {
+           console.log('Success:', data);
+       })
+       .catch((error) => {
+           console.error('Error:', error);
+       });    
+}
+
+
+function APIConnector(mode='') {
+    let apiURL = '/api/v1/invokeTemplateFunction';
+    let layer = 10;
+    let fcall = 'templateFunction';
+
+    let url = apiURL + '?&webplayout=' + layer + '&function=' + fcall + '&params=' + mode;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
+
+function clearEJPData(itemID) {
+    // Clear all fields
+    let template = document.querySelector('[data-spx-epoch="' + itemID + '"]');
+    if (!template) {
+        showMessageSlider('Item not found: ' + itemID, 'warn');
+        return
+    }
+
+    switch (itemID) {
+        case 'intro':
+            template.querySelector('[data-update="f0"]').value = '';
+            template.querySelector('[data-update="f1"]').value = '';
+            template.querySelector('[data-update="f2"]').value = '';
+            template.querySelector('[data-update="f3"]').value = '';
+            break;
+
+        default:
+            break;
+    }
+    showMessageSlider('Template ' + itemID + ' cleared.', 'happy');
+}
+
+async function getEJPData(itemID) {
+    let template = document.querySelector('[data-spx-epoch="' + itemID + '"]');
+    if (!template) {
+        showMessageSlider('Item not found: ' + itemID, 'warn');
+        return
+    }
+
+    try {
+        await getXMLData(false, 'http://localhost:5959/eurojackpot')
+        .then(EJPDATA=> {
+            console.log('EJPDATA ==> ', EJPDATA);
+            let weirdDateItems = Array.from(String(EJPDATA.drawNro), Number); // 2022481 = "2022", week "48", day of week "1" (Mon)
+            let weekNroFromWeird = String(weirdDateItems[4]) + String(weirdDateItems[5]);
+
+            switch (itemID) {   
+                case 'intro':
+                    template.querySelector('[data-update="f0"]').value = 'Kierros ' + weekNroFromWeird;
+                    template.querySelector('[data-update="f1"]').value = 'Viikonpäivä tähän';
+                    template.querySelector('[data-update="f2"]').value = 'Suomennettava: ' + EJPDATA.drawDay;
+                    break;
+        
+                default:
+                    break;
+            }
+        
+
+        });
+    } catch (error) {
+        console.log('ERROR CATCH', error);
+    }    
+
+    showMessageSlider('Template ' + itemID + ' filled, no errors. <br>Remember to save!', 'happy');
+
+}
+
+
+
+async function getXMLData(backup=false, downloaderAPI) {
+    let XMLdata = null;
+    const HTTP_TIMEOUT = 3000;
+    // downloaderAPI += '?weekdaynro=' + ejpwdayno;
+    // if (e('manu').checked) {
+    //     downloaderAPI += '&forcedate=' + forceDate;
+    // }
+    if (backup) { downloaderAPI += '&usebackup=true'; }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), HTTP_TIMEOUT);
+    try {
+        await fetch(downloaderAPI, { signal: controller.signal })
+        .then(response=> {
+            switch (response.status) {
+                case 200:
+                    console.log('DATA OK');
+                    return response.json()
+                    break;
+
+                case 404:
+                    console.log('FILE NOT FOUND');
+                    return false
+                    break;
+
+                case 500:
+                    console.log('DATA GATEWAY ERROR, SEE LOGS');
+                    return false
+                    break;
+            
+                default:
+                    console.log('DEFAULT');
+                    break;
+            }
+        })
+        .then(json=> {
+            if (!json.success) {
+                return console.log('Errors occurred, see console and error logs!')
+            };
+            XMLdata = json;
+            return XMLdata;
+        })
+        return XMLdata;
+    } catch (error) {
+        console.error('ERROR CATCH', error);
+        status(['error', error]);
+    } finally {
+        clearTimeout(timeoutId);
+    }
+    return XMLdata
+} // getXMLData
+
 
 function VEIKKAUS(args) {
     let data = JSON.parse(args[0]);

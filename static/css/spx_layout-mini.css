@@ -3,15 +3,20 @@
   CSS file for basic stuff. Must be loaded first.
 */
 
+:root {
+    --darkGrey: #2A3641;
+}
+
 
 html, body {
     margin: 0px;
     height: 100%;
     color: white;
-    /* font-size: 1.5vw; */
-    font-size: clamp(1.0rem, 1.5vw, 2.0rem);
+    /* overflow: hidden; */
+    font-size: 1.0em;
     box-sizing: border-box;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    background-color: var(--darkGrey);
 }
 
 *, *:before, *:after {
@@ -31,7 +36,88 @@ html, body {
     background-color: rgba(173, 76, 11, 0.246);
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  */
 }
-    
+
+.minicontent {
+    flex-grow: 1;
+    overflow: auto;
+    border: 0px solid red;
+    background-color: var(--darkGrey);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0.4em;
+}
+
+
+.wrapper {
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    border: 0px dotted green;
+}
+
+.viewer {
+    flex-grow: 0;
+    /* overflow: hidden; */
+    border: 0px solid red;
+}
+
+#footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--darkGrey);
+    padding: 0.4em;
+  }
+
+.itemrow {
+    background-color: rgba(255,255,255,0.05);
+    border-top: 2px solid transparent !important;
+    border-right: 2px solid transparent !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: border-left 0.3s, color 0.2s, background-color 0.2s, border-width 0.2s;
+}
+
+.itemrow:hover {
+    background-color: rgba(153, 218, 255, 0.08);
+    border-width: 2px 2px 2px 15px;
+}
+
+.scroller::-webkit-scrollbar-track
+    {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.0);
+    border-radius: 0px;
+    background-color: #414C5A;
+}
+
+.scroller::-webkit-scrollbar
+    {
+    width: 14px;
+    background-color: #414C5A;
+    border: 0px solid yellow;
+    }
+
+
+
+.scroller::-webkit-scrollbar-thumb
+    {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.0);
+    background-color: #677180;
+    padding: 10px;
+    }
+
+.scroller::-webkit-scrollbar-thumb:hover
+    {
+    background-color: #718cb4;
+    }
+
 
 ul {
     padding-left: 2em;
@@ -141,11 +227,11 @@ td.aright{
 
 
 .breadcrumbs{
-    color:  #B9BDC2;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
     font-size: 0.9rem;
+    color:  #B9BDC2;
     border: 0px solid yellow;
     text-transform: uppercase;
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
 }
 
 .breadcrumbGear {
@@ -155,6 +241,7 @@ td.aright{
     margin-left: 0.7em;
     border: 0px solid red;
     margin-bottom: 3px;
+    display: inline-block;
 }
 
 .breadcrumbGear:hover {
@@ -163,11 +250,7 @@ td.aright{
 }
 
 .breadtd {
-    gap: 0.2em;
-    display: flex;
     position: relative;
-    align-items: center;
-    justify-content: flex-start;
 }
 
 .breadIcon {
@@ -198,6 +281,7 @@ td.aright{
     font-size: 0.6rem;
     margin-top: 1em;
     padding: 0.6em 0.4em 0.6em 0.4em;
+    /* overflow: hidden; */
     background-color: rgba(0,0,0,0.1);
     border-top: 1px solid rgba(0,0,0,0.7) !important;
     border-bottom: 1px solid rgba(255,255,255,0.3) !important;
@@ -245,11 +329,7 @@ td.aright{
     cursor: help;
     }
     
-.content {
-    flex: 1;
-    overflow: auto;
-    border: 0px solid red;
-    }
+
 
 
 .delim {
@@ -276,76 +356,65 @@ td.aright{
 }
 
 #logo {
-    /* width: 2em; *//*50px;*/
-    width: clamp(1.0rem, 2em, 2.0rem);
+    width: 2em; /*50px;*/
     margin:0;
     opacity:1;
 }
 
 .dropdown {
+    position: relative;
+    display: inline-block;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    text-align: left;
+    vertical-align: middle;
     z-index:500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .scrollingMenuArea {
-    left:0;
-    top: 2em;
-    overflow-y: auto;
-    max-height: 90vh;
-    position: absolute;
-    background-color: #272833;
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    border: 2px solid purple;
+    max-height: 100vh;
+    overflow-y: scroll;
+    position: relative;
 }
 
 
 .dropdown-content {
-    z-index: 1;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
     display: none;
-    padding: 0.5em;
-    padding: 1em;
-    line-height: 2em;
-    font-size: 0.8em;
-    overflow-y: auto;
-    height: fit-content;
-    transform-origin: top left;
-}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-    overflow: auto;
-    border: 0px solid red;
-}
-
-
-.dropdown-content-right {
-    right: 0;
-    top: 2em;
-    z-index: 100;
-    display: none;
-    padding: 0.5em;
-    line-height: 2em;
-    font-size: 0.8em;
-    position: absolute;
-    transform-origin: top left;
-    border: 0px solid green;
+    position: relative;
     background-color: #272833;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    padding: 0.5em;
+    z-index: 1;
+    line-height: 2em;
+    font-size: 0.8em;
 }
 
+.dropdown:hover .dropdown-content,
 .dropdown:hover .dropdown-content-right {
     display: block;
-    overflow: auto;
-    border: 0px solid red;
 }
 
 .dropdown-content a,
 .dropdown-content-right a {
     white-space: nowrap;
 }
+
+
+.dropdown-content-right {
+    /* CasparCG servers dropdown */
+    right: 0;
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    display: none;
+    position: absolute;
+    background-color: #272833;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 0.5em;
+    z-index: 1;
+    line-height: 2em;
+    font-size: 0.8em;
+}
+
 
 .file, .folder{
     user-select: none;
@@ -399,65 +468,71 @@ div.curfolder{
 }
 
 
-.header {
-    padding: 0.5em 0.7em 0.0em 0.7em;
+.header{
+    height: 80px;
     border: 0px solid pink;
-}
+    }
 
 
-.tableheaderText {
-    color: rgb(25, 134, 212);
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: bold;
-}
+.tableheaderText
+    {
+        color: rgb(25, 134, 212);
+        font-family: "UI-Light", Arial, Helvetica, sans-serif;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
 
-.tableheaderHelp {
-    color: rgb(25, 134, 212);
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    font-weight: bold;
-    opacity: 0.5;
-}
+.tableheaderHelp
+    {
+        color: rgb(25, 134, 212);
+        font-family: "UI-Light", Arial, Helvetica, sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.5;
+    }
 
-.tableheaderHelp:hover {
-    color: rgb(250, 201, 96);
-    opacity: 1.0;
-    cursor: help;
-}
+.tableheaderHelp:hover
+    {
+        color: rgb(250, 201, 96);
+        opacity: 1.0;
+        cursor: help;
+    }
 
-.tableheaderHelp2 {
-    color: rgb(186, 226, 255);
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    font-weight: bold;
-    opacity: 0.5;
-}
+.tableheaderHelp2
+    {
+        color: rgb(186, 226, 255);
+        font-family: "UI-Light", Arial, Helvetica, sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        opacity: 0.5;
+    }
 
-.tableheaderHelp2:hover {
-    color: rgb(255, 185, 33);
-    opacity: 1.0;
-    cursor: pointer;
-}
+.tableheaderHelp2:hover
+    {
+        color: rgb(255, 185, 33);
+        opacity: 1.0;
+        cursor: pointer;
+    }
 
 
 .hidden {
-    display: none !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
 
-.home-icon {
+.home-icon{
     font-size: 1.2em;
     color: #B9BDC2;
     margin-left: 20px;
     margin-right: 5px;
 }
 
-.instruction {
+.instruction{
     font-size:          0.6em;
     color:              #a7abad;
     line-height:        1.4em;
@@ -470,14 +545,7 @@ div.curfolder{
 
 
 
-.itemlist  
-    {
-        background-color: #2A3641;
-        /* background-image: url('/media/images/rundown_graphic.png');
-        background-size: 100%;
-        background-repeat: no-repeat;
-        background-position-y: 100%; */
-    }
+
 
 
 .truncate{
@@ -542,8 +610,7 @@ div.curfolder{
 }
 
 
-.pM
-    {
+.pM {
         padding: 10px;
     }
 
@@ -571,38 +638,14 @@ div.curfolder{
         border-right: 3px solid green;
     }
 
-.pluginButtonDiv {
-    /* added in 1.3.0 */
-    min-width: 50%;
-}
 
-.renderer
+.rendererMini
     {
         background-image: url('/img/checker60.png'); /* bgimage for local preview */
         background-size: 10vw;
+        aspect-ratio: 16/9;
+        flex-shrink: 0;
     }
-
-.registrationDiv {
-    display: block;
-    padding: 0.05em;
-    background-color: rgba(18, 82, 25, 0.604);
-    border-radius: 200px;
-    color: green;
-    border: 2px solid rgba(0, 128, 0, 0.317);
-    text-align: center;
-    font-size: 0.8em;
-    margin-top: 0.8em;
-    opacity: 0.7;
-    transition: all 0.3s ease-in-out;
-}
-
-.registrationDiv:hover {
-    border: 2px solid orange;
-    background-color: rgba(12, 132, 6, 0.441);
-    transform: scale(0.98);
-    transition: all 0.3s ease-in-out;
-    opacity: 1.0;
-}
 
 .right {
     margin-left: 60%;
@@ -639,34 +682,7 @@ div.curfolder{
 }
 
 
-.scroller::-webkit-scrollbar-track
-    {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.0);
-    border-radius: 0px;
-    background-color: #414C5A;
-}
 
-.scroller::-webkit-scrollbar
-    {
-    width: 14px;
-    background-color: #414C5A;
-    border: 0px solid yellow;
-    }
-
-
-
-.scroller::-webkit-scrollbar-thumb
-    {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.0);
-    background-color: #677180;
-    padding: 10px;
-    }
-
-.scroller::-webkit-scrollbar-thumb:hover
-    {
-    background-color: #718cb4;
-    }
 
     
 .serverbtn {
@@ -782,9 +798,6 @@ div.curfolder{
     font-size: 0.75em;
     margin: auto auto;
     border: 0px solid pink;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .spxConfigHead {
@@ -967,31 +980,6 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     }
 
 
-.wrapper {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 0px solid green;
-    }
-
-
-.itemrow {
-    background-color: rgba(255,255,255,0.05);
-    border-top: 2px solid transparent !important;
-    border-right: 2px solid transparent !important;
-    border-bottom: 2px solid transparent !important;
-    border-radius: 5px;
-    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 8px;
-    cursor: pointer;
-    margin-bottom: 8px;
-    transition: border-left 0.3s, color 0.2s, background-color 0.2s, border-width 0.2s;
-}
-
-.itemrow:hover {
-    background-color: rgba(153, 218, 255, 0.08);
-    border-width: 2px 2px 2px 15px;
-}
 
 
 .inFocus {
@@ -1038,8 +1026,7 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 }
 
 .warnMsg {
-    background-color: rgba(223, 209, 11, 0.794);
-    color: black !important;
+    background-color: rgba(143, 81, 0, 0.794);
     box-shadow: rgba(0, 0, 0, 0.4) 0 2px 10px;    
 }
 
@@ -1135,33 +1122,4 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     padding-inline-start: 5px;
     font-size: 0.8em;
     font-family: "UI-Light", Arial, Helvetica, sans-serif;
-}
-
-
-.namedContentIndicator {
-    --darkCol: rgba(59, 4, 4, 0.494);
-    --liteCol: rgba(99, 9, 9, 0.375);
-    --textCol: rgb(255, 255, 255);
-    --bordCol: rgba(255, 255, 255, 0.355);
-    z-index: 10;
-    font-size: 0.5em;
-    padding: 0.2em 0.7em;
-    border-radius: 0.4em;
-    margin-left: 1em;
-    justify-content: center;
-    background-size: 1vw 1vw;
-    color: var(--textCol);
-    box-shadow: 0 0 0.4em rgba(204, 13, 13, 0.76);
-    border: 1px solid var(--bordCol);
-    text-shadow: 1px 1px 1px rgb(0, 0, 0);
-    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
-    background-image: linear-gradient(
-      135deg,
-      var(--darkCol) 25%,
-      var(--liteCol) 25%,
-      var(--liteCol) 50%,
-      var(--darkCol) 50%,
-      var(--darkCol) 75%,
-      var(--liteCol) 75%,
-      var(--liteCol) 100%);
 }

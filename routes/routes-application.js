@@ -73,8 +73,15 @@ router.get('/templates/empty.html', function (req, res) {
 
 router.get(['/renderer/index.html','/renderer'], function (req, res) {
   // Added in 1.1.0. Default resolution is HD.
-  let width   = '1920';
-  let height  = '1080';
+  let width      = '1920';
+  let height     = '1080';
+  let hideCursor = false;
+
+  // Added in 1.3.0
+  if ( global.config.general.hideRendererCursor && global.config.general.hideRendererCursor==true) {
+    hideCursor = true;
+  }
+
   if ( global.config.general.resolution && global.config.general.resolution=='4K') {
     width   = '3840';
     height  = '2160';
@@ -84,7 +91,12 @@ router.get(['/renderer/index.html','/renderer'], function (req, res) {
   if (req.query.width ) { width  = req.query.width  }
   if (req.query.height) { height = req.query.height }
   
-  res.render('view-renderer', { layout: false, width:width, height:height} );
+  res.render('view-renderer', { 
+      layout: false,
+      width:width,
+      height:height,
+      hideCursor:hideCursor
+    } );
 });
 
 router.get('/renderer/scalable', function (req, res) {
@@ -752,18 +764,17 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
 });
 
 
-router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, res) => { 
+router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async (req, res) => { 
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
   let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
   
   const fileDataAsJSON = await GetJsonData(datafile);
-  global.rundownData = fileDataAsJSON; // added in 1.0.15 populate rundown data to memory
-  // global.rundownData.filepath = datafile; // TODO: Removed in 1.2.0. Is this needed?!
+  global.rundownData = fileDataAsJSON;
 
   let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
   const profileDataJSONobj = await GetJsonData(showprofile);
   let profileData = JSON.stringify(profileDataJSONobj);
-  let projectBackground = ''; // added in 1.0.15  
+  let projectBackground = '';
 
   if ( profileDataJSONobj && profileDataJSONobj.general && profileDataJSONobj.general.background )  {
     projectBackground = profileDataJSONobj.general.background;
@@ -789,7 +800,17 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
   let disableLRenderer = config.general.disableLocalRenderer || false // added in 1.2.0
 
-  res.render('view-controller', {
+  function getPageTemplate() {
+    // Added in 1.3.0
+    if ( req.params.mode && req.params.mode.toLowerCase() === 'light' ) {
+      return 'view-controllermini';
+    } else {
+      return 'view-controller';
+    }
+  }
+
+
+  res.render(getPageTemplate(), {
     layout:         false,
     globalExtras:   config.globalExtras,
     filedata:       fileDataAsJSON,
@@ -824,7 +845,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     });
     }, 500);
     spx.setRecents(req.params.foldername + '/' + req.params.filename) // Added in 1.1.0
-});
+}); 
 
 
 router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) => { 
@@ -1163,18 +1184,31 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 });
 
 router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
-
   // Request: data object (command, datafile, templateIndex)
   // Returns: AJAX response
+  //
   // Handles playout commands of the rundown items in the controller.
   // This function will collect data from datafile and will send out "stupid" playout commands
   // to all needed renderer interfaces.
+  //
   // This will also persist the onair state to rundown file.
   // 
   // 1.0.15 Performance improvements added by prioritizing memory usage over
   //        disk I/O. Problem was with concurrent events. Now this is done
   //        in memory and data is written to disk only when we SHOW folders
   //        after being in the rundown view (so memory has been populated).
+  //
+  // 1.3.0  MAJOR BUG FIXED! If rundown was populated to memory it was used
+  //        when controlRundownItemByID API call was made. This caused the
+  //        rundown to be read from memory data and not actual rundown file
+  //        that was requested. Now a new forceFileRead parameter is added.
+  //
+  // TODO: This does not work with API calls, when an item has outmode other
+  //       than "manual". Out is never triggered... 
+
+  
+  console.log('gc/playout handler. Request body:', req.body);
+
 
   let templateIndex = -1; // was 0 
   try {
@@ -1183,6 +1217,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     let RundownFile = ""  // file reference
     let RundownData = ""  // file JSON
     let preventSave = false;
+    let forceDisk   = req.body.forceFileReadOnce ? true : false; // Added in 1.3.0. Read Release Notes!
+    let cacheRundownData = null; // Added in 1.3.0
+    let autoOutTimerID = null; // Added in 1.3.0
 
     if (req.body.prepopulated && req.body.prepopulated=="true") {
       // data in pre-generated coming in. So we can just pass that along.
@@ -1199,22 +1236,28 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       RundownFile = path.normalize(req.body.datafile);
       
       // Refactored in 1.0.15 to prioritize memory over disk I/O
+      // 1.3.0 added forceDisk parameter to use when API call is made.
       let notifyDataSource = ''
-      if ( Object.keys(global.rundownData).length === 0 ) {
+      if ( Object.keys(global.rundownData).length === 0 || forceDisk) {
+        if ( Object.keys(global.rundownData).length > 0 ) {
+          cacheRundownData = global.rundownData; // cache it
+        }
         notifyDataSource = 'from file:'
         RundownData = await GetJsonData(RundownFile);
       } else {
         notifyDataSource = 'from memory:'
         RundownData = global.rundownData; // use memory only 
       }
+
       RundownData.templates.forEach((template,index) => {
+        logger.debug('Matching ' + index + ': [' + template.itemID + '] (' + template.description + ') and [' + req.body.epoch + ']');
         if (template.itemID == req.body.epoch) {
             templateIndex=index;
           }
       });
 
-      if (templateIndex<0) {
-        throw 'Requested item ' + req.body.epoch + ' not found on current rundown! Aborting ' + req.body.command + ' command.'; 
+      if (templateIndex==-1) {
+        throw 'Requested itemID [' + req.body.epoch + '] not found on the rundown [' + RundownFile + ']! Aborting ' + req.body.command + ' command.'; 
       }
 
       let ItemData = RundownData.templates[templateIndex];
@@ -1225,7 +1268,8 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       dataOut.playchannel= ItemData.playchannel;
       dataOut.playlayer  = ItemData.playlayer;
       dataOut.webplayout = ItemData.webplayout;
-      dataOut.dataformat = ItemData.dataformat || 'xml'; // TODO: Move this to all template's definition objet. Values 'xml' or 'json', defaulting to 'xml'
+      dataOut.out        = ItemData.out; // 1.3.0 only used with direct API calls
+      dataOut.dataformat = ItemData.dataformat || 'json'; // Changed to JSON in 1.3.0
       ItemData.DataFields.forEach(item => {
         // We pass data as custom JSON format and the format is changed
         // downstream in the playout controller as per renderer's needs.
@@ -1285,6 +1329,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         }
         break;
 
+
       // == PLAY ======================================================
       case 'play':
 
@@ -1331,7 +1376,22 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             }
           });
         }
+
+        // API Call executed. Should we set an autostop?
+        if (forceDisk || req.body.referrer == 'directplayout') {
+          let numeric = parseInt(dataOut.out);
+          if (isNaN(numeric)) {
+            logger.verbose('API call: out was not a number, skipping autostop.');
+          } else {
+            logger.verbose('API call: autostop item in ' + numeric + ' ms.');
+            autoOutTimerID = setTimeout(function() {
+              playoutSTOP(dataOut, preventSave, templateIndex, RundownData);
+            }, numeric);
+         }
+        }
+
         break;
+
 
       // == NEXT / aka CONTINUE  ========================================
       case 'next':
@@ -1342,9 +1402,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           logger.verbose('CasparCG next: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
           PlayoutCCG.playoutController(dataOut);
           if (!preventSave) {RundownData.templates[templateIndex].onair='true';}
-        }
-        else
-        {
+        } else {
           logger.verbose('No CasparCG playout');
         }
         
@@ -1355,41 +1413,38 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           dataOut.spxcmd = 'nextTemplate';
           PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
           // io.emit('SPXMessage2Client', dataOut);
-        } // if web
-        else
-        {
+        } else {
           logger.verbose('No Webplayout playout');
-        } // else web 
+        } 
         break;
-    
 
-      // == STOP ======================================================
-      case 'stop': 
-        logger.verbose('Stopping [' + dataOut.relpath + ']');
-        if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
-        // Send PlayoutCCG.functionCalls() if any ---------------------
-        if (dataOut.playserver!='-'){
-          dataOut.command="STOP";
-          logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
-          PlayoutCCG.playoutController(dataOut);
-        }
-        else
-        {
-          logger.verbose('No CasparCG playout');
-        }
+
+        // == STOP ======================================================
+      case 'stop':
+        
+        await playoutSTOP(dataOut, preventSave, templateIndex, RundownData);
+
+        // logger.verbose('Stopping [' + dataOut.relpath + ']');
+        // if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
+        // // Send PlayoutCCG.functionCalls() if any ---------------------
+        // if (dataOut.playserver!='-'){
+        //   dataOut.command="STOP";
+        //   logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
+        //   PlayoutCCG.playoutController(dataOut);
+        // } else {
+        //   logger.verbose('No CasparCG playout');
+        // }
         
 
-        // Send PlayoutWEB.functionCalls() if any ---------------------
-        if (dataOut.webplayout!='-'){
-          logger.verbose('Webplayout STOP: ' + dataOut.webplayout);
-          dataOut.spxcmd = 'stopTemplate';
-          PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
-          // io.emit('SPXMessage2Client', dataOut);
-        } // if web
-        else
-        {
-          logger.verbose('No Webplayout playout');
-        } // else web 
+        // // Send PlayoutWEB.functionCalls() if any ---------------------
+        // if (dataOut.webplayout!='-'){
+        //   logger.verbose('Webplayout STOP: ' + dataOut.webplayout);
+        //   dataOut.spxcmd = 'stopTemplate';
+        //   PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
+        //   // io.emit('SPXMessage2Client', dataOut);
+        // } else {
+        //   logger.verbose('No Webplayout playout');
+        // }
         break;
     
 
@@ -1403,9 +1458,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           dataOut.command="UPDATE";
           logger.verbose('CasparCG update: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer + ', dataOut: ', dataOut);
           PlayoutCCG.playoutController(dataOut);
-        }
-        else
-        {
+        } else {
           logger.verbose('No CasparCG playout');
         }
 
@@ -1416,13 +1469,12 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           dataOut.fields = req.body.fields;
           // io.emit('SPXMessage2Client', dataOut);
           PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
-        } // if web
-        else
-        {
+        } else {
           logger.verbose('No Webplayout playout');
-        } // else web 
+        }
         break;
     
+
       // == INVOKE ======================================================
       case 'invoke':
         logger.verbose('Invoke [' + dataOut.invoke + ']');
@@ -1449,10 +1501,14 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     // persist to file.
     if (!preventSave) {
       RundownData.updated = new Date().toISOString();
-      // await spx.writeFile(RundownFile,RundownData);
       global.rundownData = RundownData // memory only
-      }
-    // res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
+    }
+
+    // Added in 1.3.0 / Restore cache (after an API call)
+    if (cacheRundownData) {
+      logger.verbose('Restoring rundown data to memory after an API call.');
+      global.rundownData = cacheRundownData; // restore it
+    }
 
     // Check if file exists. Function improved in 1.1.3
     if (dataOut.relpath) {
@@ -1527,29 +1583,6 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
     };
 
 });
-
-
-// Will be removed during 1.0.15
-// router.post('/gc/saveOnairState', spxAuth.CheckLogin, async (req, res) => {
-//   // FIXME: This is NOT in use, see --> playout()
-//   // Stores onair=true/false state of a rundown item
-//   // Request: data 
-//   // Returns: AJAX response
-//   logger.verbose('Save onair = ' + req.body.onair + ' of template[' + req.body.item + '] in file ' + req.body.rundownfile + '.');
-//   try {
-//       let RundownFile = path.normalize(req.body.rundownfile);
-//       let RundownData = await GetJsonData(RundownFile);
-//       RundownData.templates[req.body.item].onair = req.body.onair;
-//       RundownData.updated = new Date().toISOString();
-//       await spx.writeFile(RundownFile,RundownData);
-//       res.status(200).send('Onair state saved.'); // ok 200 AJAX RESPONSE
-//     }
-//   catch (error)
-//     {
-//       logger.error('Error in /gc/saveOnairState. [' + error + '].');
-//       res.status(500).send('Server error in  /gc/saveOnairState [' + error + '].')  // error 500 AJAX RESPONSE
-//     };
-// });
 
 
 router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
@@ -1759,10 +1792,10 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   if (!SPXGCTemplateDefinition.playserver)  {SPXGCTemplateDefinition.playserver  = "-"};
   if (!SPXGCTemplateDefinition.playchannel) {SPXGCTemplateDefinition.playchannel = "1"};
   if (!SPXGCTemplateDefinition.playlayer)   {SPXGCTemplateDefinition.playlayer   = "20"};
-  if (!SPXGCTemplateDefinition.webplayout)  {SPXGCTemplateDefinition.webplayout  = "-"};
+  if (!SPXGCTemplateDefinition.webplayout)  {SPXGCTemplateDefinition.webplayout  = "20"}; // added in 1.2.2
   if (!SPXGCTemplateDefinition.onair)       {SPXGCTemplateDefinition.onair       = "false"};
   if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
-  if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "xml"};
+  if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "json"}; // changed XML to JSON in 1.2.2
   if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
 
   // v.1.0.15 add imported timestamp
@@ -1968,6 +2001,32 @@ async function GetJsonData(fileref) {
     return ('GetJsonData: error',error);
   }
 } // GetJsonData ended
+
+
+async function playoutSTOP(dataOut, preventSave, templateIndex, RundownData) {
+  // Refactored in 1.3.0 to handle stop commands
+  logger.verbose('Stopping [' + dataOut.relpath + ']');
+  if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
+  // Send PlayoutCCG.functionCalls() if any ---------------------
+  if (dataOut.playserver!='-'){
+    dataOut.command="STOP";
+    logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
+    PlayoutCCG.playoutController(dataOut);
+  } else {
+    logger.verbose('No CasparCG playout');
+  }
+  
+
+  // Send PlayoutWEB.functionCalls() if any ---------------------
+  if (dataOut.webplayout!='-'){
+    logger.verbose('Webplayout STOP: ' + dataOut.webplayout);
+    dataOut.spxcmd = 'stopTemplate';
+    PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
+    // io.emit('SPXMessage2Client', dataOut);
+  } else {
+    logger.verbose('No Webplayout playout');
+  }
+}
 
 
 // this is the last line

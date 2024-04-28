@@ -36,7 +36,7 @@ module.exports = {
 
   httpGet: function (url) {
     // A generic http/get sender utility
-    // used by heartbeat pusher
+    // used by heartbeat pusher (and OSC)
     axios.get(url)
     .then(function (response) {
       return response
@@ -371,6 +371,17 @@ module.exports = {
     return false;
   }, // hashcompare
 
+
+  isJson: function(item) {
+    let value = typeof item !== "string" ? JSON.stringify(item) : item;    
+    try {
+      value = JSON.parse(value);
+    } catch (e) {
+      return false;
+    }
+    return typeof value === "object" && value !== null;
+  }, // isJson
+
   lang: function (str) {
     try {
       const spxlangfile = config.general.langfile || 'english.json';
@@ -399,11 +410,14 @@ module.exports = {
   GetSubfolders: async function (strFOLDER) {
     // return a list of all subfolders in a given folder
     // console.log('Trying to get subfolders of ' + strFOLDER);
+    // ignores folders starting with . or _ (Added in 1.3.0)
     try {
       let FOLDER = path.normalize(strFOLDER);
       if (fs.existsSync(FOLDER)) {
       return fs.readdirSync(FOLDER).filter(function (file) {
-        return fs.statSync(FOLDER+'/'+file).isDirectory();
+        return (fs.statSync(FOLDER+'/'+file).isDirectory() &&
+        file.charAt(0) != '.' &&
+        file.charAt(0) != '_');
       });
       } else {
         logger.error('Source folder didnt exist "' + strFOLDER + '", so it was created.');
@@ -760,7 +774,7 @@ module.exports = {
           }
       });
       recentsArray.unshift(rundownRef);
-      if (recentsArray.length > 3 ) {recentsArray.length = 3}; // limit to 3
+      if (recentsArray.length > 5 ) {recentsArray.length = 5}; // limit to 5
       config.general.recents = recentsArray;
       this.writeFile(configfileref,config); //TODO:
     } catch (error) {

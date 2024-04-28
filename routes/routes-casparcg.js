@@ -238,15 +238,6 @@ router.get('/controljson/:data', (req, res) => {
   }
 });
 
-router.get('/testfunction', (req, res) => {
-  // NOTE: Run a test function
-  logger.info("PING! - a testFunction");
-  res.sendStatus(200);
-
-  console.log('Nothing here now');
-
-});
-
 router.post('/disable', async (req, res) => {
   // Added in 1.1.0. Set "disabled" state of the given CasparCG server
   // This only affects playback commands. Initialization works normally.
@@ -283,6 +274,7 @@ if (config.casparcg) {
     const CurName = element.name;
     const CurHost = element.host;
     const CurPort = element.port;
+
     ServerData.push({ name: CurName, host: CurHost, port: CurPort });
 
     // next two lines creates a dynamic variable for this loop iteration
@@ -293,22 +285,15 @@ if (config.casparcg) {
     CurCCG.spxname = CurName; // save each entry a name for later searching!
     CurCCG.spxhost = CurHost; // save each entry a host for later searching! (v.1.0.14)
     CurCCG.spxport = CurPort; // save each entry a port for later searching! (v.1.0.14)
-    // console.log('Connecting to ' + CurCCG.spxname + ' at ' + CurCCG.spxhost + ":" + CurCCG.spxport + '...');
-    // console.log('Still 1 ?', CurCCG.connecting)
 
     CurCCG.connect(CurPort, CurHost, function () {
-      // console.log('Connected to ' + CurName + ' at ' + CurHost + ":" + CurPort + '...');
       ServerData.push({ name: CurName, host: CurHost, port: CurPort });
       data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
       io.emit('SPXMessage2Client', data);
-
       data = { spxcmd: 'updateStatusText', status: 'Communication established with ' + CurName + '.' };
       io.emit('SPXMessage2Client', data);
-
       logger.verbose('SPX connected to CasparCG as \'' + CurName + '\' at ' + CurHost + ":" + CurPort + '.');
     });
-
-    // console.log('Still 2?', CurCCG.connecting)
 
     CurCCG.on('data', function (data) {
       logger.verbose('SPX received data from CasparCG ' + CurName + ': ' + data);
@@ -366,7 +351,7 @@ if (config.casparcg) {
       io.emit('SPXMessage2Client', data);
 
       logger.warn('SPX connection error with "' + CurName + '". Is CasparCG running at ' + CurCCG.spxhost + ':'  + CurCCG.spxport + '? (' + err +')');
-      console.log('Sockets: ', global.CCGSockets);
+      // console.log('Sockets: ', global.CCGSockets);
     });
 
     // console.log('Still 3?', CurCCG.connecting)

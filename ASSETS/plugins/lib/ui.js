@@ -37,6 +37,7 @@ export function button (options) {
 	left.classList = 'spxTableHead';
 	left.innerHTML = options.description || 'Plugin Description missing';
 	righ.style.flex = '1';
+	righ.classList = 'pluginButtonDiv';
 	butn.innerHTML = options.caption || 'Click';
 	butn.classList = 'btn wide ripple';
 	butn.classList.add(style[options.color]);
@@ -86,8 +87,8 @@ export function selectbutton (options) {
 	// Start new TD and put new table in there
 	let t1c2 = document.createElement('td');
 	t1c2.id="t1c2";
+	t1c2.classList = 'pluginButtonDiv';
 	t1r1.appendChild(t1c2);
-
 	let tab2 = document.createElement('table');
 	tab2.classList 				= 'wide';
 	tab2.style.border 			= '0';

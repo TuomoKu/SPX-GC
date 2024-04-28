@@ -6,19 +6,35 @@
 
 ## WORK IN PROGRESS
 
-> List updated Sept 05 2023
+> List updated Apr 03 2024
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
-**Completed items**:
-These items have been added to the source code but not yet released publicly.
-- (no changes after binary release)
+
+**Completed items** (added, but not yet released):
+
+- Improved API documentation and response messages
+- Added `general.hideRendererCursor = true|false` setting to config.json 
+- Added default dataformat from XML to JSON at import (if not given)
+- Changed default webplayout layer from "-" to 20 at import (if not given)
+- Ignore projects (folder names) that start with dot (.) or underscore (_)
+- Added `/allrundowns` endpoint to the API
+- Renderer url params are passed to individual layers for custom work
+- Added "custom content repository" detection to header (see source code for details)
+- Improved main menu by making it scrollable
+- Fixed a major bug in rundown caching mechanism when using `controlRundownItemByID` API call. Cached rundown was conflicting with the API call. Manually triggering rundown items AND API calls could get cache to a broken state. Now these calls are identified better and the caching works more reliably. Enable `verbose` log level to observe the internal runtime logic.
+- Added support for timed "out" modes when using `controlRundownItemByID` or `directplayout` API endpoints.
+
 
 <br>
 
-**Waiting**:
+**Work-in-progress** (not completed):
+- `light` rundown mode
+- Add several (not all) templates to a rundown at once
+- spxpack import/export
+- ctrl+drag rundown items to make them children
+- OSC
 - Rundown Variables (does not remove prVar from profile if no users)
-- Add all project templates to the rundown at once
 <BR>
 
 ---
@@ -26,9 +42,13 @@ These items have been added to the source code but not yet released publicly.
 <BR>
 
 Published releases:
+## **1.3.0** (Apr 01 2024)
+ >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+
+-  
+
 
 ## **1.2.1** (Sep 20 2023)
- >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - This patch fixes a bug in the example rundown file `HelloWorld/MyFirstRundown` that caused SPX server to hang when navigating off that rundown view. The bug does not effect any other created rundown files, but was annoying for first time users. 
 - Binary packages v1.2.1:
     [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_win64.zip),
@@ -38,7 +58,6 @@ Published releases:
 <br>
 
 ## **1.2.0** (Sep 05 2023)
- >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - Added "Several SPX Controllers are connected" warning to the user interface and a corresponding config entry `general.disableSeveralControllersWarning` 
 - Added "Disable Local Renderer" toggle to the UI and corresponding config entry `general.disableLocalRenderer`. This can come in handy when computer resources are limited.
 - Added support for API key in the config.json to allow external triggers only with matching `apikey` url parameter

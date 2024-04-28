@@ -7,7 +7,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPX API v1</title>
+  <title>SPX - OSC interface</title>
   <link rel="icon" type="image/png" href="/img/spx-gc.ico">
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
 
@@ -56,7 +56,7 @@
     }
 
     .GET {
-      background-color: rgb(148, 184, 198);
+      background-color: rgb(165, 165, 165);
       width: 5em;
       text-align: center;
       font-size: 0.7em;
@@ -113,20 +113,14 @@
 
 <body class="bg_body">
   <input type=""hidden id="currServerAddress" value="{{{getServerAddress}}}">
-  <H1>SPX Graphics / API v1</H1>
+  <H1>SPX Graphics / OSC interface</H1>
   <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); text-transform: uppercase;">SPX Host-ID: <B>{{{getHostID}}}</B></small>
   <BR>
   <BR>
-  <B>http/get</B> commands available for external systems to trigger SPX events. See also <a href="/osc">osc</a>.
-  <BR>
-  SPX will need to be open in a browser (in the same network as the server) for most of these to work.
-  <br><br>
-  API connections can be restricted with an <b>apikey</b> parameter set in the config file and in the URL <code>?apikey=1234567890</code>
+  Supported <B>osc</B> commands for external systems to trigger SPX over OSC port (configured in config.json)<br>
+  Since graphics can have a lot of properties, the use of <a href="/api/v1">REST API</a> is highly recommended.
   <BR><BR>
-  <small>Remember, SPX is primarily targeted to live, manually operated
-  workflows and API allows only limited modifications of template data or other advanced procedures.</small>
-  <BR><BR>
-  <input  type="checkbox" id="useLocalhost" onchange="localhostToggle()"> Use "localhost" addresses in examples
+  <span style="color:red;"><B>Note!</B> OSC is not implemented yet. Please keep <code>osc.enable:false</code> in config!</span> <BR>
   <BR><BR>
   
   {{#each functionList.sections}}
@@ -136,22 +130,21 @@
     <table class="api">
       {{#each commands}}
         <tr>
-          <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+          <td class="apiLink" colspan="3">{{../endpoint}}{{param}}</td>
         </tr>
         <tr>
-          <td class="{{method}}">{{method}}</td>
           <td class="vers">{{vers}}</td>
-          <td class="info">{{{info}}}</td>
+          <td class="info">{{info}}</td>
         </tr>
         {{#if code}}
           <tr>
-            <td colspan="3" class="info">
+            <td colspan="2" class="info">
               <pre class="prettyprint lang-js">{{myStringify code}}</pre>
             </td>
           </tr>
         {{/if}}
         <tr>
-          <td colspan="3">&nbsp;</td>
+          <td colspan="2">&nbsp;</td>
         </tr>
         
       {{/each}}

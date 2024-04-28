@@ -77,11 +77,20 @@
                 font-family: 'Courier New', Courier, monospace;
             }
 
+            #cursorHider {
+                z-index: 200;
+                background-color: rgba(0,0,0,0.0);
+                cursor: none;
+            }
+
         </style>
 </head>
 
  <body>
     <div id="root">
+        {{#ifValue hideCursor "true"}}
+            <div id="cursorHider"></div>
+        {{/ifValue}}
         <iframe class="frame f01" allow="autoplay" id="layer1"  style="z-index: 101;" src="/templates/empty.html"></iframe>
         <iframe class="frame f02" allow="autoplay" id="layer2"  style="z-index: 102;" src="/templates/empty.html"></iframe>
         <iframe class="frame f03" allow="autoplay" id="layer3"  style="z-index: 103;" src="/templates/empty.html"></iframe>
@@ -251,8 +260,16 @@
             } else {
                 templa = TemplateRoot + 'empty.html';
             }
+
+            // Pass custom URL params to template url. Added in 1.2.2.
+            let urlParams = new URLSearchParams(window.location.search);
+            let customParams = '';
+            for(let param of urlParams) {
+                customParams += '&' + param[0] + '=' + param[1];
+            }
             let ranNro = (new Date()).getTime() + Math.floor(Math.random() * 1000000);
-            document.getElementById(iframe).src=templa + "?random=" + ranNro;
+            document.getElementById(iframe).src=templa + "?random=" + ranNro + customParams;
+            // console.log("\n\n ====> Loaded " + document.getElementById(iframe).src + ".\n\n")
         }
 
         function playLayer(LayerNro,fieldData) {

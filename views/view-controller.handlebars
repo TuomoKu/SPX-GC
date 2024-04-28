@@ -97,6 +97,98 @@
       box-shadow: ;
     }
 
+  #rundownInfoMessage {
+    display: none; /* flex / controlled by JS logic */
+    width: 100%;
+    padding: 0.2em;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    background-color: rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.2em;
+  }
+
+  .utilityOverlay {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: flex-start;
+    backdrop-filter: blur(4px);
+    color: rgba(225, 225, 225, 0.752);
+    text-shadow: 1px 1px 1px rgb(0, 0, 0);
+    {{!-- background-color: rgba(52, 60, 68, 0.841); --}}
+    background-color: inherit;
+  }
+
+  .utilityOverlay:hover {
+    cursor: pointer;
+    background-color: rgba(0,0,0,0.5);
+  }
+
+  .utilitySection {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em 0.8em;
+    border-radius: 0.5em;
+  }
+  .utilitySection:nth-child(2) {
+    min-width: 12em;
+  }
+
+  .hoverable:hover {
+    transition: all 0.2s ease-in-out;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .utilityTitle {
+    font-size: 0.7em;
+  }
+
+  .utiliteValue {
+    font-size: 0.9em;
+    font-family: 'UI-Regular';
+  }
+
+  .utiliteValueBold {
+    font-size: 0.9em;
+    font-family: 'UI-Bold';
+  }
+
+  .utiliteValueLarge {
+    font-size: 1.5em;
+    font-family: 'UI-Light';
+    padding-right: 0.8em;
+    border-right: rgb(207, 207, 207) 1px solid;
+  }
+
+  .deleteItem {
+    top: 0.4em;
+    right: 0.4em;
+    opacity: 0.5;
+    z-index: 200;
+    {{!-- font-size: 0.5rem; --}}
+    position: absolute;
+    padding: 0.1rem;
+    border-radius: 0.2em;
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    border: 1px solid transparent;
+    transition: background-color opacity 0.2s ease-in-out;
+  }
+
+  .deleteItem:hover {
+    opacity: 1;
+    cursor: pointer;
+    background-color: black;
+    border: 1px solid transparent;
+    transition: background-color opacity 0.2s ease-in-out;
+  }
 
   </style>
 
@@ -198,6 +290,7 @@
             <TR><td>Shift + Space</td><td>Continue animation to next step.<BR><small>Support for next -command must be implemented in the template.</small></td></TR>
             <TR><td>F5</td>           <td>Send an instant update to the template (to fix typos, for instance).<BR><small>Support for update command must be implemented in the template.</small></td></TR>
             <TR><td>Esc</td>          <td>Stop all layers used by current rundown.</td></TR>
+            <TR><td>CapsLock</td>     <td>Show item overlays for quick info and for copying API commands quickly.</td></TR>
         </table>
       </div>
     </div>
@@ -231,10 +324,7 @@
               {{>rundownOptions comment=filedata.comment }}
             </div>
 
-            <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2;">
-
-
-
+            <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2; border-radius: 0.4em;">
 
               {{#if filedata.templates}}
                 <!-- // -->
@@ -245,6 +335,7 @@
                 </div> 
               {{/if}}
 
+              <!-- <div id="rundownInfoMessage" style="display:none;">CapsLock is on - showing item overlays.</div> -->
 
               <!-- RUNDOWN ITEMS aka TEMPLATES -->
               {{#each filedata.templates}}
@@ -270,27 +361,72 @@
                   <input type="hidden" name="rundownfile" value="{{../datafile}}">
                   <input type="hidden" name="TemplIndex"  value="{{@index}}">
 
-                  <div class="handle wide" id="item{{@index}}" style="padding: 6px; margin-bottom:5px; padding-left:12px; padding-bottom:12px;">
-
+                  <div class="handle wide" id="item{{@index}}" style="padding: 0px; margin-bottom:0px; padding-left:0px; padding-bottom:0px;">
                     <!-- COLLAPSED to small line-->
-                    <div id="Collapsed" style="position:relative;">
-                      <div style="position:absolute; right:10px; z-index:50; font-size:1.5em; top:0.6em;">
+                    <div id="Collapsed" style="position:relative; padding: 10px;">
+            
+                      <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="deleteItem fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
+
+                      <!-- UTILITY OVERLAY -->
+                      <div class="utilityOverlay hidden">
+
+                        <div  class="utilitySection "
+                              onClick="copyItemID('{{itemID}}');"
+                              onmouseover="tip('Copy play API command for ItemID: {{itemID}}');">
+                          <span class="utiliteValueLarge">{{webplayout}}</span>
+                        </div>
+
+                        <div  class="utilitySection hoverable"
+                              onClick="copyItemID('{{itemID}}', '');"
+                              onmouseover="tip('Copy ItemID [{{itemID}}]');">
+                          <span class="utilityTitle">ItemID</span>
+                          <span class="utiliteValueBold">{{itemID}}</span>
+                        </div>
+
+                        <div  class="utilitySection hoverable"
+                              onClick="copyItemID('{{itemID}}', 'play');"
+                              onmouseover="tip('Copy API command [item/play/{{itemID}}]');">
+                          <span class="utilityTitle">&nbsp;</span>
+                          <span class="utiliteValue">PLAY</span>
+                        </div>
+
+                        <div  class="utilitySection hoverable"
+                              onClick="copyItemID('{{itemID}}', 'stop');"
+                              onmouseover="tip('Copy API command [item/stop/{{itemID}}]');">
+                          <span class="utilityTitle">&nbsp;</span>
+                          <span class="utiliteValue">STOP</span>
+                        </div>
+
+                        {{#ifGreater steps 1}}
+                          <div  class="utilitySection hoverable"
+                                onClick="copyItemID('{{itemID}}', 'continue');"
+                                onmouseover="tip('Copy API command [item/continue/{{itemID}}]');">
+                            <span class="utilityTitle">&nbsp;</span>
+                            <span class="utiliteValue">CONTINUE</span>
+                          </div>
+                        {{/ifGreater}}
+
+                      </div>
+
+                      <div style="position:absolute;right:10px; z-index:50; font-size:1.5em; top:0.6em;">
 
                         <i id="playIcon{{@index}}" data-spx-name="icon" class="fas fa-play {{{playIconClass onair}}}"></i>
                         <!-- Normal play="fas fa-play", Auto play="far fa-play-circle" -->
                       </div>
                       <table class="wide" style="border-spacing: 2px; margin-top: 2px;">
                         <TR>
-                          <TD class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
+                          <TD colspan="2" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
                             <span><!--item {{@index}} &nbsp;&middot;&nbsp;-->{{{ nameFromTemplatePath relpath }}}
                               {{#if description}}
                               <span class="delim"></span> <span style="opacity:0.5;">{{description}}</span>
                               {{/if}}
                               </span>
                           </TD>
+                          <!--
                           <TD class="vtop aright spxTableHeadsmall">
                             <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
                           </TD>
+                          -->
                         </TR>
                       </table>
                       <div style="width:100%; " class="truncate">
@@ -301,7 +437,7 @@
                     </div>
 
                     <!-- EXPANDED to an editor -->
-                    <div id="Expanded" style="display: none;">
+                    <div id="Expanded" style="display: none; padding: 0px 8px 2px 8px;">
                       <table class="wide" style="border-spacing: 2px; margin-top:2px;">
                         <TR>
                           <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
@@ -639,8 +775,14 @@
                 <!-- GC ITEMS ENDED -->
 
 
-                <div class="wide" style="text-align: center; padding:0.5rem;">
-                  <button type="button" data-tooltip="{{lang 'hover.addrundownitem'}}" data-position="right center" class="addbtn bg_blue ripple" onClick="ModalOn('overlayTemplatePicker');" onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
+                <div class="wide" style="text-align: center; padding: 0.5em 1.0em;">
+                  <button type="button"
+                          data-tooltip="{{lang 'hover.addrundownitem'}}"
+                          data-position="right center"
+                          class="addbtn bg_blue ripple"
+                          onClick="ModalOn('overlayTemplatePicker');"
+                          style="padding: 0.05em 0.75em; border-radius: 0.2em;"
+                          onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
                 </div>
             </div>
 
@@ -977,7 +1119,6 @@
         });
       }
 
-
       // Check msg from URL
       var url = new URL(window.location.href);
       var msg = url.searchParams.get("msg");
@@ -1010,7 +1151,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       // added in 1.1.1 - UX is greatly improve with this change
       //                  compared to previously used onload event
-      // console.log('DOMContentLoaded')
       pageInit();
     })
 

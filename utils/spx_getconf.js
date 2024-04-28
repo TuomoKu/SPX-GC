@@ -8,10 +8,7 @@ module.exports = {
     makeFolderIfNotExist: function (fullfolderpath) {
         try {
             if (!fs.existsSync(fullfolderpath)) {
-                // console.log('makeFolderIfNotExist: creating folder [' + fullfolderpath + '].');
                 fs.mkdirSync(fullfolderpath);
-            } else {
-                // console.log('makeFolderIfNotExist: folder [' + fullfolderpath + '] existed already.');
             }
             return true
         } catch (error) {
@@ -63,12 +60,12 @@ module.exports = {
                     cfg.general.apikey                          = ""
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
-                    // cfg.general.templatefolder                  = path.join(CURRENT_FOLDER, 'ASSETS/templates').replace(/\\/g, "/")+ "/"
                     cfg.general.templatesource                  = "spx-ip-address"
-                    cfg.general.port                            = "5656"
+                    cfg.general.port                            = 5656
                     cfg.general.disableConfigUI                 = false
                     cfg.general.disableLocalRenderer            = false
                     cfg.general.disableSeveralControllersWarning = false
+                    cfg.general.hideRendererCursor               = false
                     // cfg.general.allowstats                   = true
 
                     cfg.general.recents                         = []
@@ -77,48 +74,13 @@ module.exports = {
                     cfg.casparcg.servers                        = []
                     newcasparcg                                 = {}
 
-                    // Default CCG server removed in 1.0.12
-                    // newcasparcg.name                            = "OVERLAY"
-                    // newcasparcg.host                            = "localhost"
-                    // newcasparcg.port                            = "5250"
-                    // cfg.casparcg.servers.push(newcasparcg)
+                    cfg.osc                                     = {}
+                    cfg.osc.enable                              = false
+                    cfg.osc.port                                = 57121
 
                     cfg.globalExtras                            = {}
                     cfg.globalExtras.customscript               = "/ExtraFunctions/demoFunctions.js"
                     cfg.globalExtras.CustomControls             = []
-
-                    // EXTRAS MOVED to plugins from v.1.1.0
-                    // play gfx out
-                    // newcontrol2                                  = {}
-                    // newcontrol2.ftype                            = "button"
-                    // newcontrol2.description                      = "Animate all graphics out"
-                    // newcontrol2.text                             = "Stop all"
-                    // newcontrol2.bgclass                          = "bg_grey"
-                    // newcontrol2.fcall                            = "stopAll()"
-                    // cfg.globalExtras.CustomControls.push(newcontrol2)
-
-                    // panic button
-                    // newcontrol3                                  = {}
-                    // newcontrol3.ftype                            = "button"
-                    // newcontrol3.bgclass                          = "bg_black"
-                    // newcontrol3.text                             = "PANIC"
-                    // newcontrol3.fcall                            = "clearAllChannels()"
-                    // newcontrol3.description                      = "Clear playout channels"
-                    // cfg.globalExtras.CustomControls.push(newcontrol3)
-
-                    // newcontrol1                                  = {}
-                    // newcontrol1.ftype                            = "selectbutton"
-                    // newcontrol1.description                      = "Free graphics and more"
-                    // newcontrol1.text                             = "VISIT"
-                    // newcontrol1.bgclass                          = "bg_green"
-                    // newcontrol1.fcall                            = "openSelectedURL"
-                    // newcontrol1.value                            = "https://spx.graphics/store"
-                    // newcontrol1.items                            = []
-                    // newcontrol1.items.push({text: "SPX Store &nbsp;",       "value": "https://spx.graphics/store"});
-                    // newcontrol1.items.push({text: "Knowledge Base &nbsp;",  "value": "https://spxgc.tawk.help"});
-                    // newcontrol1.items.push({text: "Give feedback &nbsp;",   "value": "https://forms.gle/T26xMFyNZt9E9S6d8"});
-                    // cfg.globalExtras.CustomControls.push(newcontrol1)
-
 
                     // Write config file. Note, this does not use utility function.
                     cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the SPX will overwrite this file.";
@@ -126,7 +88,6 @@ module.exports = {
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);
-                    // console.log('** Writing default config values to [' + CONFIG_FILE + '] **\n') 
                     fs.writeFileSync(CONFIG_FILE, filedata, 'utf8', function (err) {
                     if (err){
                         console.error("Error writing default config to [" + CONFIG_FILE + "]")
@@ -135,8 +96,6 @@ module.exports = {
                         }
                     });
                 } else {
-                    // file was found, let's read and use that
-                    // console.log("Loading config from " + CONFIG_FILE + "...")
                     let configFileStr = fs.readFileSync(CONFIG_FILE);
                     global.config = JSON.parse(configFileStr);
                 }
@@ -146,7 +105,7 @@ module.exports = {
                 let CurrentDataRootF = global.config.general.logfolder || CURRENT_FOLDER + '/DATAROOT'
                 this.makeFolderIfNotExist(CurrentLogFolder);
                 this.makeFolderIfNotExist(CurrentDataRootF);
-                global.configfileref =  CONFIG_FILE; // this is it!
+                global.configfileref =  CONFIG_FILE;
                 resolve()
             }
             catch (error) {
