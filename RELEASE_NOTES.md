@@ -12,29 +12,29 @@
 
 
 **Completed items** (added, but not yet released):
-
+- Improved UI scaling and main menu by making it scrollable
 - Improved API documentation and response messages
 - Added `general.hideRendererCursor = true|false` setting to config.json 
-- Added default dataformat from XML to JSON at import (if not given)
-- Changed default webplayout layer from "-" to 20 at import (if not given)
 - Ignore projects (folder names) that start with dot (.) or underscore (_)
 - Added `/allrundowns` endpoint to the API
 - Renderer url params are passed to individual layers for custom work
 - Added "custom content repository" detection to header (see source code for details)
-- Improved main menu by making it scrollable
 - Fixed a major bug in rundown caching mechanism when using `controlRundownItemByID` API call. Cached rundown was conflicting with the API call. Manually triggering rundown items AND API calls could get cache to a broken state. Now these calls are identified better and the caching works more reliably. Enable `verbose` log level to observe the internal runtime logic.
 - Added support for timed "out" modes when using `controlRundownItemByID` or `directplayout` API endpoints.
 
 
 <br>
 
-**Work-in-progress** (not completed):
+**Work-in-progress** (not completed, must be checked):
 - `light` rundown mode
 - Add several (not all) templates to a rundown at once
 - spxpack import/export
 - ctrl+drag rundown items to make them children
-- OSC
+- OSC implementation is work in progress
+- Added default dataformat from XML to JSON at import (if not given)
+- Changed default webplayout layer from "-" to 20 at import (if not given)
 - Rundown Variables (does not remove prVar from profile if no users)
+
 <BR>
 
 ---

@@ -116,9 +116,9 @@ iframe {
 
 
 td.aright{
+    justify-content: flex-end;
     text-align: right;
 }
-
 
 .beta
     {
@@ -139,11 +139,15 @@ td.aright{
     border-collapse: separate;
 }
 
+#breadCrumsZone {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
 
 .breadcrumbs{
     color:  #B9BDC2;
     font-size: 0.9rem;
-    border: 0px solid yellow;
     text-transform: uppercase;
     font-family: "UI-Light", Arial, Helvetica, sans-serif;
 }
@@ -162,18 +166,16 @@ td.aright{
     cursor: pointer;
 }
 
-.breadtd {
-    gap: 0.2em;
+.serverButtons {
     display: flex;
-    position: relative;
+    flex-grow: 1;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
 }
 
 .breadIcon {
     height: 100%;
     width: fit-content;
-    position: absolute;
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -189,7 +191,7 @@ td.aright{
 .caret-icon{
     font-size: 1.0rem;
     color:  #237BBA;
-    margin: 0px 5px 0px 5px  !important;
+    margin: 0 0.5em !important;
 }
 
 .gcpluginbuttondiv {
@@ -282,70 +284,8 @@ td.aright{
     opacity:1;
 }
 
-.dropdown {
-    z-index:500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.scrollingMenuArea {
-    left:0;
-    top: 2em;
-    overflow-y: auto;
-    max-height: 90vh;
-    position: absolute;
-    background-color: #272833;
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-}
 
 
-.dropdown-content {
-    z-index: 1;
-    display: none;
-    padding: 0.5em;
-    padding: 1em;
-    line-height: 2em;
-    font-size: 0.8em;
-    overflow-y: auto;
-    height: fit-content;
-    transform-origin: top left;
-}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-    overflow: auto;
-    border: 0px solid red;
-}
-
-
-.dropdown-content-right {
-    right: 0;
-    top: 2em;
-    z-index: 100;
-    display: none;
-    padding: 0.5em;
-    line-height: 2em;
-    font-size: 0.8em;
-    position: absolute;
-    transform-origin: top left;
-    border: 0px solid green;
-    background-color: #272833;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    font-family: "UI-Light", Arial, Helvetica, sans-serif;
-}
-
-.dropdown:hover .dropdown-content-right {
-    display: block;
-    overflow: auto;
-    border: 0px solid red;
-}
-
-.dropdown-content a,
-.dropdown-content-right a {
-    white-space: nowrap;
-}
 
 .file, .folder{
     user-select: none;
@@ -404,6 +344,79 @@ div.curfolder{
     border: 0px solid pink;
 }
 
+.headerRow {
+    padding:2px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: 0px dashed cornsilk;
+}
+
+.scrollingMenuArea {
+    left:0.5em;
+    top: 1.8em;
+    overflow-y: auto;
+    max-height: 90vh;
+    position: absolute;
+    background-color: hsla(235, 13%, 18%, 0.95);
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+}
+
+
+.dropdown {
+    z-index:500;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.dropdown-content {
+    z-index: 1;
+    display: none;
+    padding: 0.5em;
+    padding: 1em;
+    line-height: 2em;
+    font-size: clamp(0.8rem, 0.8em, 2.0rem);
+    overflow-y: auto;
+    height: fit-content;
+    transform-origin: top left;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+    overflow: auto;
+    border: 0px solid red;
+}
+
+
+.dropdown-content-right {
+    right: 0;
+    top: 2em;
+    z-index: 100;
+    display: none;
+    padding: 0.5em;
+    line-height: 2em;
+    font-size: 0.8em;
+    position: absolute;
+    transform-origin: top left;
+    border: 0px solid green;
+    background-color: #272833;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    font-family: "UI-Light", Arial, Helvetica, sans-serif;
+}
+
+.dropdown:hover .dropdown-content-right {
+    display: block;
+    overflow: auto;
+    border: 0px solid red;
+}
+
+.dropdown-content a,
+.dropdown-content-right a {
+    white-space: nowrap;
+}
 
 .tableheaderText {
     color: rgb(25, 134, 212);

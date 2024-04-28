@@ -387,7 +387,7 @@ td.aright{
     padding: 0.5em;
     z-index: 1;
     line-height: 2em;
-    font-size: 0.8em;
+    font-size: clamp(0.8rem, 0.8em, 2.0rem);
 }
 
 .dropdown:hover .dropdown-content,
