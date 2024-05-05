@@ -18,6 +18,31 @@
 //
 // -------------------------------------------------------------- 
 
+function hello(options) {
+    // This is a demo function that can be used
+    // with onPlay handler in the te mplate definition
+    // such as
+    //
+    // "function_onPlay": "hello|'World!'|500|f1"
+    //  
+    // This function will be executed in 500ms (in this case) and it
+    // receives paremeters as an array of strings. A basic example:
+    // 
+    // [0] 'World!' ...... the argument passed to the function
+    // [1] 'live icon' ... Current value of the "f1"-field (in this case)
+    // [4] 123456678 ..... ItemID of the rundown item executing the call
+    //
+    // ######################################################################
+
+    let msg = "\nhello() - in ASSETS/ExtraFunctions/demoFunctions.js\n"
+    console.log(msg, options);
+    msg += "Argument ...... " + options[0] + "\n"
+    msg += "Field value ... " + options[1] + "\n"
+    msg += "ItemID ........ " + options[2] + "\n"
+    console.log(msg);
+}
+
+
 function yleLogo(opts="") {
     console.log('ExtraFunctions: yleLogo',opts);
     let templateFunction = 'logoOutIn';

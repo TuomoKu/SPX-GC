@@ -87,13 +87,22 @@
       padding: 0.1em 0.5em;
       border-radius: 0.1em;
     }
+
+    .info pre {
+      background-color: rgba(0,0,0,0.05);
+      margin: 0.2em;
+      padding: 1.0em;
+      border-radius: 0.5em;
+      border: none;
+      font-size: 1.1em;
+    }
   </style>
 
 
   <script>
     // let ipAddess = {{{getServerAddress}}};
     function localhostToggle() {
-      console.log("toggle", document.getElementById("useLocalhost").checked);
+      // console.log("toggle", document.getElementById("useLocalhost").checked);
       if (document.getElementById("useLocalhost").checked) {
         ipAddess = "localhost:5656";
       } else {
@@ -136,7 +145,11 @@
     <table class="api">
       {{#each commands}}
         <tr>
-          <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+          {{#ifValue method "POST"}}
+            <td class="apiLink" colspan="3">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</td>
+          {{else}}
+            <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+          {{/ifValue}}
         </tr>
         <tr>
           <td class="{{method}}">{{method}}</td>

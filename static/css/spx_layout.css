@@ -24,7 +24,7 @@ html, body {
 
 .HIDE{
     /* WHILE DEBUGGING unhide OBJECTS with display:no-none ++++++++++++++++++++++++++ */
-    display     :      none; /*change this to no-none to see debug data in editors */
+    display     :      no-none; /*change this to no-none to see debug data in editors */
     border      :      2px dashed rgb(0, 248, 0);
     padding     :      5px;
     margin      :      5px;
@@ -32,6 +32,21 @@ html, body {
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  */
 }
     
+.footerRegister {
+    margin: 0 0.6em;
+    padding: 0.4em 1.0em;
+    border-radius: 0.7em;
+    font-size: 0.7em;
+    text-transform: uppercase;
+    background-color: rgba(3, 139, 37, 0.7);
+    color: rgb(255, 255, 255);
+    text-shadow: 1px 1px 1px rgb(0, 0, 0);
+  }
+
+.footerRegister:hover {
+    background-color: rgba(0, 217, 54, 0.7);
+    color: rgb(255, 255, 255);
+  }
 
 ul {
     padding-left: 2em;
@@ -246,13 +261,12 @@ td.aright{
     transition: all 0.2s linear ;
     cursor: help;
     }
-    
+
 .content {
-    flex: 1;
+    flex: 1 1;
     overflow: auto;
     border: 0px solid red;
-    }
-
+}
 
 .delim {
     color:          rgba(53, 178, 250, 0.651);
@@ -284,9 +298,6 @@ td.aright{
     opacity:1;
 }
 
-
-
-
 .file, .folder{
     user-select: none;
     display: block;
@@ -294,8 +305,14 @@ td.aright{
 }
 
 .filebrowser {
+    overflow: auto;
     font-size: 0.9em;
     padding: 0.1em;
+    border: 0px solid purple;
+    padding: 0.7em;
+    /* background-color: rgba(0, 0, 0, 0.1); */
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
 }
 
 .selectedFile{
@@ -327,10 +344,10 @@ td.aright{
 }
 
 div.curfolder{
-    margin-top: 1.0em;
-    padding: 0.1em 1em;
+    padding: 0.5em 1em;
     color: rgba(227, 239, 245, 0.589);
     font-size: 0.6em;
+    border: 0px solid purple;
 }
 
 .headlineArea {
@@ -637,6 +654,12 @@ div.curfolder{
     padding-right: 5px;
 }
 
+.scroller {
+    overflow: auto !important;
+    border: 0px dotted yellow;
+}
+
+
 .serverIndicator {
     cursor: pointer;
 }
@@ -651,37 +674,29 @@ div.curfolder{
     color: black;
 }
 
-
-.scroller::-webkit-scrollbar-track
-    {
+.scroller::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.0);
     border-radius: 0px;
     background-color: #414C5A;
 }
 
-.scroller::-webkit-scrollbar
-    {
+.scroller::-webkit-scrollbar {
     width: 14px;
     background-color: #414C5A;
     border: 0px solid yellow;
-    }
+}
 
-
-
-.scroller::-webkit-scrollbar-thumb
-    {
+.scroller::-webkit-scrollbar-thumb {
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.0);
     background-color: #677180;
     padding: 10px;
-    }
+}
 
-.scroller::-webkit-scrollbar-thumb:hover
-    {
+.scroller::-webkit-scrollbar-thumb:hover {
     background-color: #718cb4;
-    }
+}
 
-    
 .serverbtn {
         background-color: rgba(0, 0, 0, 0);
         font-family: "UI-Regular", Arial, Helvetica, sans-serif;
@@ -733,7 +748,7 @@ div.curfolder{
     display: table-row;
     height: 4em;
     color: white;
-    border: 1px solid red !important;
+    border: 0px solid red !important;
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
 }
 

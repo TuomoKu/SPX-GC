@@ -1206,10 +1206,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // TODO: This does not work with API calls, when an item has outmode other
   //       than "manual". Out is never triggered... 
 
-  
-  console.log('gc/playout handler. Request body:', req.body);
-
-
   let templateIndex = -1; // was 0 
   try {
     let dataOut     = {}; // new object

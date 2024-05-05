@@ -371,7 +371,7 @@ td.aright{
 }
 
 .scrollingMenuArea {
-    border: 2px solid purple;
+    border: 0px solid purple;
     max-height: 100vh;
     overflow-y: scroll;
     position: relative;
@@ -425,6 +425,9 @@ td.aright{
 .filebrowser {
     font-size: 0.9em;
     padding: 0.1em;
+    border: 0px solid pink;
+    padding: 0.7em;
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .selectedFile{

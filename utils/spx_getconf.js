@@ -15,7 +15,7 @@ module.exports = {
             console.log('makeFolderIfNotExist: error while checking or creating folder [' + fullfolderpath + '].' + error);
             return false
         }
-      },
+    },
 
 
     readConfig: function () {

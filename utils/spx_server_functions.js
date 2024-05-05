@@ -510,8 +510,10 @@ module.exports = {
         fs.readdirSync(datafolder).forEach((file, index) => {
           const curPath = path.join(datafolder, file);
           if (fs.lstatSync(curPath).isDirectory()) { 
-              // it is folder
-              data.foldArr.push(path.basename(curPath));
+              // it is folder, and does not start with . or _
+              if (file.charAt(0) != '.' && file.charAt(0) != '_') {
+                data.foldArr.push(path.basename(curPath));
+              }
             }
           else {
             // it is file
@@ -807,14 +809,14 @@ module.exports = {
     return versInt
   }, // versInt
 
-  writeFile: function (filepath,data) {
+  writeFile: function (filepath, data) {
     // console.log('Writing file ', filepath);
     try {
         return new Promise(resolve => {
-          this.talk('Writing file');
+          // this.talk('Writing file');
           // this.playAudio('beep.wav', 'spx.writeFile');
           data.warning = "Modifications done in the SPX will overwrite this file.";
-          data.copyright = "(c) 2020-2023 Softpix (https://spx.graphics)";
+          data.copyright = "(c) 2020- Softpix (https://spx.graphics)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
           fs.writeFile(filepath, filedata, 'utf8', function (err) {

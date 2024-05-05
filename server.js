@@ -82,7 +82,7 @@ var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
 
-global.isDev = process.env.SPX_ROOT_FOLDER ? true : false; // value used internally for SPX & Template dev
+// global.isDev = process.env.SPX_ROOT_FOLDER ? true : false; // value used internally for SPX & Template dev
 global.vers = vers;
 global.excel = {'readtime':0000, 'filename':'', 'data':''}; // used as Excel cache
 
@@ -110,23 +110,6 @@ macaddress.one(function (err, mc) {
   let pseudomac = macaddress.split(':').join('').substring(0,8);
   global.hwid = config.general.hostname || pseudomac;
   global.pmac = pseudomac; // an anonymous id
-
-  if (isDev)  {
-    // just dev related test stuff
-    let scrambled = spx.rot(pseudomac);
-    let unscrambd = spx.rot(scrambled, true);
-    console.log('\n  WE ARE IN DEV ENVIRONMENT.');
-    console.log('  pmac = ' + pseudomac);
-    console.log('  rot  = ' + scrambled);
-    console.log('  unsc = ' + unscrambd);
-    console.log('\n  ENV{}:');
-    console.log('  vendor:  ' + global.env.vendor + '\n  product: ' + global.env.product + '\n  version: ' + global.env.version + '\n');
-    console.log('');
-    console.log('Config:\n', config);
-    console.log('');
-  }
-  
-
 });
 
 
@@ -533,7 +516,7 @@ app.engine('handlebars', exphbs({
         let BrowseFolder = path.join(spx.getStartUpFolder(), 'ASSETS', 'plugins');
         const list = spx.GetFilesAndFolders(BrowseFolder);
         list.foldArr.forEach(pluginName => {
-          if ( pluginName.charAt(0) == '_' || pluginName === 'lib' ) {
+          if ( pluginName.charAt(0) == '_' || pluginName.charAt(0) == '.' || pluginName === 'lib' ) {
             html += '<!-- Note: disabled plugin ' + pluginName + ' skipped. -->\n'
           } else {
             logger.verbose('Loading plugin ' + pluginName );
@@ -560,7 +543,7 @@ app.engine('handlebars', exphbs({
 
     // Return object as JSON string
     myStringify(obj) {
-        return JSON.stringify(obj, null, 4);
+        return "// Stringified JSON\n\n" + JSON.stringify(obj, null, 4);
     },
 
     // Get template name from filepath

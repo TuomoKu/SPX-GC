@@ -36,113 +36,6 @@ router.get('/', function (req, res) {
       "sections" : [
 
         {
-          "section"   :     "Direct commands",
-          "info"      :     "Commands which does not require rundown to be loaded",
-          "endpoint"  :     "/api/v1/",
-          "commands": [
-            {
-              "vers"    :     "v1.0.12",
-              "method"  :     "GET",
-              "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
-              "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above. JSON objects can be passed as params by urlEncoding stringified JSON. Search SPX Knowledge Base for more info with keyword <code>invoke</code>.",
-            },
-            {
-              "vers"    :     "v1.0.12",
-              "method"  :     "POST",
-              "param"   :     "directplayout",
-              "info"    :     "Populate template and execute a play/continue/stop -command to it. Post request body example as JSON:",
-              "code"    :     {casparServer: "OVERLAY",  casparChannel: "1", casparLayer: "20", webplayoutLayer: "20", relativeTemplatePath: "/vendor/pack/template.html", out: "manual", DataFields: [{field: "f0", value: "Firstname"},{field: "f1", value: "Lastname"}], command: "play"}
-           },
-            {
-              "vers"    :     "v1.1.0",
-              "method"  :     "GET",
-              "param"   :     "controlRundownItemByID?file=MyProject/FirstRundown&item=1616702200909&command=play",
-              "info"    :     "Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
-            }
-          ]
-        },
-        {
-          "section"   :     "Helpers",
-          "info"      :     "Utility API calls",
-          "endpoint"  :     "/api/v1/",
-          "commands": [
-            {
-              "vers"    :     "v1.0.14",
-              "method"  :     "GET",
-              "param"   :     "feedproxy?url=https://feeds.bbci.co.uk/news/rss.xml&format=xml",
-              "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources. Implemented for SPX SocialPlayout Extension."
-            },
-            {
-              "vers"    :     "v1.1.0",
-              "method"  :     "GET",
-              "param"   :     "panic",
-              "info"    :     "Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "getprojects",
-              "info"    :     "Returns projects as an array of strings."
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "getrundowns?project=HelloWorld-project",
-              "info"    :     "Returns rundown names of a given project as an array of strings."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "allrundowns",
-              "info"    :     "Returns all projects and rundowns"
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "rundown/get",
-              "info"    :     "Returns current rundown as json. "
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "rundown/json?project=HelloWorld-project&rundown=My%20first%20rundown",
-              "info"    :     "Returns content of a specific rundown as json data."
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "getlayerstate",
-              "info"    :     "Returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
-            },
-            {
-              "vers"    :     "v1.1.2",
-              "method"  :     "GET",
-              "param"   :     "version",
-              "info"    :     "Returns SPX version info"
-            },
-            {
-              "vers"    :     "v1.1.3",
-              "method"  :     "GET",
-              "param"   :     "gettemplates?project=HelloWorld-project",
-              "info"    :     "Returns templates and their settings from a given project."
-            },
-            {
-              "vers"    :     "v1.1.4",
-              "method"  :     "GET",
-              "param"   :     "executeScript?file=win-open-calculator.bat",
-              "info"    :     "Execute a shell script/batch file in <code>ASSETS/scripts</code> folder using a shell associated with a given file extension."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "invokeExtensionFunction?function=sendCmd&params=incrementNumber",
-              "info"    :     "Uses SPX's messaging system to call a function in an extension. JSON objects can be passed as params by urlEncoding stringified JSON. The extension will need to implement SPX's messaging system, search SPX Knowledge Base for more info with keyword <code>invokeExtensionFunction</code>."
-            },
-          ]
-        },
-
-
-        {
           "section"   :     "Rundown commands and navigation",
           "info"      :     "Commands to load playlists, move focus on the opened rundown etc.",
           "endpoint"  :     "/api/v1/rundown/",
@@ -237,6 +130,127 @@ router.get('/', function (req, res) {
 
           ]
         },
+
+        {
+          "section"   :     "Direct commands",
+          "info"      :     "Commands which does not require rundown to be loaded",
+          "endpoint"  :     "/api/v1/",
+          "commands": [
+            {
+              "vers"    :     "v1.0.12",
+              "method"  :     "POST",
+              "param"   :     "directplayout",
+              "info"    :     "Populate template and execute a play/continue/stop -command to it. Post request body example as JSON:",
+              "code"    :     {casparServer: "OVERLAY",  casparChannel: "1", casparLayer: "20", webplayoutLayer: "20", relativeTemplatePath: "/vendor/pack/template.html", out: "manual", DataFields: [{field: "f0", value: "Firstname"},{field: "f1", value: "Lastname"}], command: "play"}
+           },
+            {
+              "vers"    :     "v1.1.0",
+              "method"  :     "GET",
+              "param"   :     "controlRundownItemByID?file=MyProject/FirstRundown&item=1616702200909&command=play",
+              "info"    :     "Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
+            }
+          ]
+        },
+
+        {
+          "section"   :     "Helpers",
+          "info"      :     "Utility API calls",
+          "endpoint"  :     "/api/v1/",
+          "commands": [
+            {
+              "vers"    :     "v1.0.14",
+              "method"  :     "GET",
+              "param"   :     "feedproxy?url=https://feeds.bbci.co.uk/news/rss.xml&format=xml",
+              "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources."
+            },
+            {
+              "vers"    :     "v1.3.0",
+              "method"  :     "POST",
+              "param"   :     "feedproxy",
+              "info"    :     "A POST version of the feedproxy endpoint. This endpoint is a helper for GET requests requiring custom headers, such as <code>Authorization</code> or similar. Data is passed in the <code>body</code> of the POST request, in which <code>url</code> is the actual URL of the external endpoint. See principle in the example below, or search SPX Knowledge Base for more info with keyword <code>feedproxy</code>.",
+              "code"    :     {body: {url: "https://api.endpoint.com/requiring/customheaders/", headers: {"key1": "my first value", "key2": "second value"}}}
+            },
+            {
+              "vers"    :     "v1.1.0",
+              "method"  :     "GET",
+              "param"   :     "panic",
+              "info"    :     "Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
+            },
+            {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
+              "param"   :     "getprojects",
+              "info"    :     "Returns projects as an array of strings."
+            },
+            {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
+              "param"   :     "getrundowns?project=HelloWorld-project",
+              "info"    :     "Returns rundown names of a given project as an array of strings."
+            },
+            {
+              "vers"    :     "v1.3.0",
+              "method"  :     "GET",
+              "param"   :     "allrundowns",
+              "info"    :     "Returns all projects and rundowns"
+            },
+            {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
+              "param"   :     "rundown/get",
+              "info"    :     "Returns current rundown as json. "
+            },
+            {
+              "vers"    :     "v1.3.0",
+              "method"  :     "GET",
+              "param"   :     "rundown/json?project=HelloWorld-project&rundown=My%20first%20rundown",
+              "info"    :     "Returns content of a specific rundown as json data."
+            },
+            {
+              "vers"    :     "v1.3.0",
+              "method"  :     "POST",
+              "param"   :     "rundown/json",
+               "info"    :    "Creates or updates a rundown file. This can be used for example with application extensions. POST <code>body:content</code> must contain valid rundown JSON data, otherwise SPX controller may not be able to read it. For more info search SPX Knowledge Base with keyword <code>api rundown/json</code>",
+               "code"    :     {body: {project: "myProjectName", file: "newRundown.json", content: {comment: "Playlist generated by MyApp", templates: [{"description": "First template", "playserver": "OVERLAY", "etc": "..."},{"description": "Second template", "playserver": "OVERLAY", "etc": "..."}]}}}
+            },
+            {
+              "vers"    :     "v1.1.1",
+              "method"  :     "GET",
+              "param"   :     "getlayerstate",
+              "info"    :     "Returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
+            },
+            {
+              "vers"    :     "v1.1.2",
+              "method"  :     "GET",
+              "param"   :     "version",
+              "info"    :     "Returns SPX version info"
+            },
+            {
+              "vers"    :     "v1.1.3",
+              "method"  :     "GET",
+              "param"   :     "gettemplates?project=HelloWorld-project",
+              "info"    :     "Returns templates and their settings from a given project."
+            },
+            {
+              "vers"    :     "v1.3.0",
+              "method"  :     "GET",
+              "param"   :     "executeScript?file=win-open-calculator.bat",
+              "info"    :     "Execute a shell script/batch file in <code>ASSETS/scripts</code> folder using a shell associated with a given file extension."
+            },
+            {
+              "vers"    :     "v1.0.12",
+              "method"  :     "GET",
+              "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
+              "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above. JSON objects can be passed as params by urlEncoding stringified JSON. Search SPX Knowledge Base for more info with keyword <code>invoke</code>.",
+            },
+            {
+              "vers"    :     "v1.3.0",
+              "method"  :     "GET",
+              "param"   :     "invokeExtensionFunction?function=sendCmd&params=incrementNumber",
+              "info"    :     "Uses SPX's messaging system to call a function in an extension. JSON objects can be passed as params by urlEncoding stringified JSON. The extension will need to implement SPX's messaging system, search SPX Knowledge Base for more info with keyword <code>invokeExtensionFunction</code>."
+            },
+          ]
+        }
 
       ]
     }
@@ -435,71 +449,8 @@ router.get('/', function (req, res) {
       if (spx.CCGServersConfigured){
         PlayoutCCG.clearChannelsFromGCServer(req.body.server) // server is optional
       } 
-      return res.status(200).json({ message: 'Panic executed. Layers cleared forcefully.' })
+      return res.status(200).json({ status: 200, message: 'OK', info: 'Panic executed. Layers cleared forcefully.' })
     }); // end panic
-
-
-
-    router.get('/bearerAuthProxy', spxAuth.CheckAPIKey, async (req, res) => {
-      // added in 1.3.0 [UNDOCUMENTED INTENTIONALLY] -- THIS MAY CHANGE!
-      // This is a proxy endpoint for passing feed data from CORS protected datasources.
-      // Also this caches all requests to avoid flooding the API.
-      // Must have config such as:
-      /* 
-        "bearerAuthProxyOptions": {
-          "<token 1 name>": {
-            "bearerAuthToken": "<token 1 value as string>"
-          },
-          "<token 2 name>": {
-            "bearerAuthToken": "<token 2 value as string>"
-          }
-        },
-      */
-
-      let url, bearerAuthToken;
-      url = req.query.url.replace(/#/g, '%23'); // replace # with %23 (yuck)
-      let headers = new Headers();
-      let customCfgSection = req.query.proxyConfigSection || '';
-      bearerAuthToken = global.config.bearerAuthProxyOptions[customCfgSection].bearerAuthToken;
-
-      let timeNow = Date.now();
-      let delayMS = 5000; // <== how long to cache
-      let nextTime = apiCache[url]?.timestamp + delayMS;
-      let timeLeft = nextTime - timeNow;
-      // console.log('apiCache has ' + Object.keys(apiCache).length + ' items.');
-      if (apiCache[url] && timeLeft > 0) {
-        console.log('--Return cached API data for another ' + Math.max(timeLeft, 0) + ' ms...');
-        let returnData = apiCache[url].data;
-        //  keep only the first items in the array (to prevent memory leak)
-        let CacheItemAmount = 50
-        if (Object.keys(apiCache).length > CacheItemAmount) {
-            // console.log('apiCache BEFORE: ' + Object.keys(apiCache).length + ' items.');
-            let last = Object.keys(apiCache)[Object.keys(apiCache).length - 1];
-            delete apiCache[last] // delete last item
-            // console.log('apiCache AFTER: ' + Object.keys(apiCache).length + ' items.');
-        }
-
-        return res.status(200).json(returnData)
-      } else {
-        console.log('--Get fresh data from external API:' + url);
-        headers.set('Authorization', 'Bearer ' + bearerAuthToken);
-        fetch(url, {
-          method:'GET',
-          headers: headers,
-        })
-        .then(response => response.json())
-        .then(json => {
-          res.send(json)
-          apiCache[url] = {};
-          apiCache[url].timestamp = Date.now();
-          apiCache[url].data = json;
-        })
-        .catch(function (error) {
-          console.log(error.message);
-          return res.status(500).json({ type: 'error', message: error.message })
-        });
-      }
-    }); // end bearerAuthProxy. (Dont ask)
 
     router.get('/feedproxy', spxAuth.CheckAPIKey, async (req, res) => {
       // added in 1.0.14
@@ -522,6 +473,38 @@ router.get('/', function (req, res) {
         return res.status(500).json({ type: 'error', message: error.message })
       }); 
     }); // end feedproxy
+
+    router.post('/feedproxy', spxAuth.CheckAPIKey, async (req, res) => {
+      // Added in 1.3.0 for using headers in the outgoing GET request
+      try {
+        if (!req.body.url) {
+          let errMsg = "url missing from POST data. Make sure to have the correct JSON in your request.";
+          throw {status: 400, message: errMsg};
+        }
+        axios.get(req.body.url, {
+          headers: req.body.headers
+        })
+        .then(function (response) {
+            res.header('Access-Control-Allow-Origin', '*')
+            res.send(response.data)
+          })
+          .catch(function (error) {
+            res.status(error.status || 500).json({
+                status: error.status || 500,
+                error: error.message,
+                info: "Search SPX Knowledge Base for more using keyword 'feedproxy'."
+            });
+          }
+        ); 
+        
+      } catch (error) {
+        res.status(error.status || 500).json({
+          status: error.status || 500,
+          error: error.message,
+          info: "Search SPX Knowledge Base for more using keyword 'feedproxy'."
+        });
+      }
+    }); // end feedproxy POST
 
     router.get('/getprojects', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.1.1
@@ -628,6 +611,8 @@ router.get('/', function (req, res) {
     router.get('/item/play', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
       dataOut.info    = ack2
+      dataOut.status  = 200;
+      dataOut.message = 'OK';
       dataOut.APIcmd  = 'ItemPlay';
       io.emit('SPXMessage2Controller', dataOut);
       res.status(200).json(dataOut);
@@ -635,6 +620,8 @@ router.get('/', function (req, res) {
 
     router.get('/item/play/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
+      dataOut.status  = 200;
+      dataOut.message = 'OK';
       dataOut.info    = ack2
       dataOut.APIcmd  = 'ItemPlayID';
       dataOut.itemID  = req.params.id;
@@ -644,6 +631,8 @@ router.get('/', function (req, res) {
 
     router.get('/item/continue', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
+      dataOut.status  = 200;
+      dataOut.message = 'OK';
       dataOut.info    = ack2
       dataOut.APIcmd  = 'ItemContinue';
       io.emit('SPXMessage2Controller', dataOut);
@@ -652,6 +641,8 @@ router.get('/', function (req, res) {
 
     router.get('/item/continue/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
+      dataOut.status  = 200;
+      dataOut.message = 'OK';
       dataOut.info    = ack2
       dataOut.APIcmd  = 'ItemContinueID';
       dataOut.itemID  = req.params.id;
@@ -661,6 +652,8 @@ router.get('/', function (req, res) {
 
     router.get('/item/stop', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
+      dataOut.status  = 200;
+      dataOut.message = 'OK';
       dataOut.info    = ack2
       dataOut.APIcmd  = 'ItemStop';
       io.emit('SPXMessage2Controller', dataOut);
@@ -669,6 +662,8 @@ router.get('/', function (req, res) {
 
     router.get('/item/stop/:id', spxAuth.CheckAPIKey, async (req, res) => {
       let dataOut = {};
+      dataOut.status  = 200;
+      dataOut.message = 'OK';
       dataOut.info    = ack2
       dataOut.APIcmd  = 'ItemStopID';
       dataOut.itemID  = req.params.id;
@@ -760,7 +755,6 @@ router.get('/', function (req, res) {
       }
     });
 
-
     router.get('/changeItemData', async (req, res) => {
       // Added in 1.1.1
       // ID button in SPX controller uses this API endpoint:
@@ -800,7 +794,7 @@ router.get('/', function (req, res) {
     });
 
     router.get('/rundown/json', spxAuth.CheckAPIKey, async (req, res) => {
-      // Added in PRO
+      // Added in v1.3.0
       // /rundown/json?project=HelloWorld-project&rundown=My%20first%20rundown
 
       let project = req.query.project || '';
@@ -817,6 +811,101 @@ router.get('/', function (req, res) {
         res.status(500).send('Error while loading file! ' + error);
       };
     });
+
+    router.post('/rundown/json', spxAuth.CheckAPIKey, async (req, res) => {
+      // Added in 1.3.0 for creating new rundown files
+      // for instance from exteral applications or scripts
+
+      let projectFolder = req.body.project || '';
+      let fileName = req.body.file || '';
+      let content = req.body.content || null;
+      let absFolder = path.join(spx.getStartUpFolder(), 'DATAROOT', projectFolder);
+
+      let jsonFileName = null;
+      if (fileName.indexOf('.json') < 0) {
+        jsonFileName = fileName + '.json';
+      } else {
+        jsonFileName = fileName;
+      }
+
+      let absFile = path.join(absFolder, 'data', jsonFileName);
+      let resultMessage = '';
+      let generatedMessage = '';
+      let startSeconds = String(Date.now());
+
+      try {
+
+        // // Folder checks
+        if ( !projectFolder ) {
+          let errMsg = "'project' missing from POST data.";
+          throw {status: 400, message: errMsg};
+        } 
+        
+        if (!fs.existsSync(absFolder)) {
+          let errMsg = absFolder + " does not exist. This API call requires a valid folder.";
+          throw {status: 404, message: errMsg};
+        } 
+
+        if ( !fileName ) {
+          let errMsg = "'file' missing from POST data.";
+          throw {status: 400, message: errMsg};
+        }
+
+        if (!fs.existsSync(absFile) ) {
+          resultMessage += 'Rundown ' + absFile + ' created. '
+          generatedMessage = 'created';
+        } else {
+          resultMessage += 'Rundown ' + absFile + ' updated. ';
+          generatedMessage = 'overwritten';
+        }
+
+        if ( !content || typeof content !== 'object' || !content.templates || content.templates.length < 1 ) {
+          let errMsg = "Valid 'content' missing from POST data.";
+          throw {status: 400, message: errMsg};
+        } else {
+          resultMessage += 'Data accepted, but structure not verified, manually test with SPX Controller.';
+        }
+
+        let errors = [];
+        content.templates.forEach((template,index) => {
+          let currentID = parseInt(startSeconds) + index;
+          if (!template.itemID) { template.itemID = String(currentID); }
+          if (!template.description) { template.description = 'Description missing ' + (index + 1); }
+          if (!template.playserver) { template.playserver="OVERLAY" }
+          if (!template.playchannel) { template.playchannel="1" }
+          if (!template.playlayer) { template.playlayer="5" }
+          if (!template.webplayout) { template.webplayout="5" }
+          if (!template.out) { template.out="manual" }
+          if (!template.dataformat) { template.dataformat="json" }
+          if (!template.uicolor) { template.uicolor="7" }
+          if (!template.imported) { template.imported=String(startSeconds) }
+          if (!template.relpath) { errors.push('relpath missing from template #' + index) }
+          if (!template.DataFields || template.DataFields.length < 1) { errors.push('DataFields missing from template #' + index) }
+          template.onair="false";
+        });
+
+        if (errors.length > 0) {
+          throw {status: 400, message: errors.length + " errors prevent writing file " + absFile + ": " + errors.join(", ")};
+        }
+
+        content.generated = "File was " + generatedMessage + " by SPX API " + new Date().toISOString();
+        logger.verbose('API endpoint POST: rundown/json ' + generatedMessage + ' ' + absFile + '.')
+        spx.writeFile(absFile, content);
+
+        res.status(200).json({
+          info: "Done. " + resultMessage
+        });
+        
+      } catch (error) {
+        logger.error('API endpoint POST: rundown/json (' + error.status + ') ' + error.message + '.')
+        res.status(error.status || 500).json({
+          status: error.status || 500,
+          error: error.message || "Unknown error.",
+          info: "Search SPX Knowledge Base for more using keyword rundown/json."
+        });
+      }
+
+    }); // end feedproxy POST
 
 
 module.exports = router;

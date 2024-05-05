@@ -34,6 +34,14 @@
                 &nbsp;<span style="color: #f80;"><B> 4K </B></span>&nbsp;
                 {{/ifValue}}
 
+                <!-- add a link to register -->
+                {{#if config.registration.updated }}
+                  <!-- Reg ok -->
+                {{else}}
+                  <A class="footerRegister" HREF="/register"><i class="fas fa-crown"></i>&nbsp; Register</A>
+                {{/if}}
+
+
               </span>
               &nbsp;<A href="http://spx.graphics" target="_spxgccom">spx.graphics</A></span>
             <span class="footerTable statusbar" style="opacity:0.33;"> | 💡 <A href="https://forms.gle/T26xMFyNZt9E9S6d8" target="_feedback">feedback</A></span>

@@ -1667,7 +1667,19 @@ function playItem(itemrow='', forcedCommand='') {
         let ConditFField  = String(onPlayCommand[3] || 'XXX').trim();
         let conditionVal = null;
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
-        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
+
+        console.log('eventCondtFF element:', eventCondtFF)
+
+        if (eventCondtFF) {
+            if (eventCondtFF.tagName == 'SELECT') {
+                conditionVal = eventCondtFF.options[eventCondtFF.selectedIndex].value;
+            } else {
+                conditionVal = eventCondtFF.value;
+            }
+        }
+
+        console.log('onPlayCommand:', conditionVal);
+
         setTimeout(function () {
             if (window[FunctionName]) {
                 window[FunctionName]([FunctionArgs, conditionVal, data.epoch]); // Added data.epoch in 1.1.4
