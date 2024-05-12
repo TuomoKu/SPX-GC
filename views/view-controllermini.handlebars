@@ -9,7 +9,7 @@
 
   <script src="/js/axios.min.js"></script>
   <script src="/js/fontawesome.all.min.js"></script>
-  <script src="/js/Sortable.min.js"></script>
+  <!-- <script src="/js/Sortable.min.js"></script> Not in LIGHT -->
   <script src="/js/socket.io.js"></script>
   <script src="/js/vanilla-js-tooltip.js"></script>
   <!-- <script src="/js/spx_controllerImportFunctions.js"></script> -->
@@ -17,7 +17,6 @@
   <script src="/js/anime.min.js"></script>
   <script src="/js/lib/vanilla-picker.csp.min.js"></script> <!-- added in 1.1.1 -->
   <script>
-
     var socket = io();
 
     function toggle(btn) {
@@ -58,7 +57,7 @@
 
   </script>
 
-  <title>SPX Pro | {{lang 'pagetitle.controller'}}</title>
+  <title>SPX Light | {{lang 'pagetitle.controller'}}</title>
   <link rel="icon" type="image/png" href="/img/spx-gc.ico">
   <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_layout-mini.css">
@@ -72,6 +71,7 @@
   <link rel="stylesheet" type="text/css" href="/css/toggle.css">
 
   <style>
+
     .headlineRow {
       display: flex;
       font-size: 1.1em;
@@ -172,6 +172,8 @@
 
 
 
+
+
   </style>
 </head>
 
@@ -186,6 +188,8 @@
   <input type="hidden" id="previewMode" value="{{previewMode}}">      <!-- previewMode (next/selected) -->
   <input type="hidden" id="assetsroot" value="{{assetsFolder}}">      <!-- used by file browser -->
   <input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
+
+  <div id="messageSlider" style="opacity:0;"></div>
 
   <div class="wrapper" onmouseover="tip('');">
 
@@ -215,8 +219,8 @@
               display: block;
               opacity:1.0;">
         <iframe
-          width={{width}}
-          height={{height}} 
+          width="{{{localPreviewSize width}}}" 
+          height="{{{localPreviewSize height}}}"
           id="previewIF"
           src="/renderer?preview=true"
           class="rendererMini"
@@ -232,7 +236,6 @@
       {{else}}
         <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
           <h2>Empty rundown</h2><BR>
-          <P> Press 'F1' to open a list of useful keyboard shortcuts.<BR>Add templates to this rundown from + button below.</P>
         </div> 
       {{/if}}
 
@@ -280,7 +283,10 @@
                       </span>
                   </TD>
                   <TD class="vtop aright spxTableHeadsmall">
+                    &nbsp;
+                    <!-- hide delete in LIGHT MODE
                     <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
+                    -->
                   </TD>
                 </TR>
               </table>
@@ -573,18 +579,14 @@
                         </tr>
                       </table>
                   </TD>
+                  <!-- Not in LIGHT MODE
                   <TD class="vtop center">
-                    <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
-                    <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
-                      
-                    <!-- export CSV button -->
-                    <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.exportitem'}}');"></i><BR>
-
-                    <!-- import CSV button (moved to add template view) -->
-                    <!--
-                    <i id="importCSV{{@index}}" class="l-icon fas fa-file-import" onClick="appendItemsFromCSV();"  onmouseover="tip('{{lang 'hover.importitems'}}');"></i>
-                    -->
+                      <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
+                      <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
+                      <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.exportitem'}}');"></i><BR>
+                      <i id="importCSV{{@index}}" class="l-icon fas fa-file-import" onClick="appendItemsFromCSV();"  onmouseover="tip('{{lang 'hover.importitems'}}');"></i>
                   </TD>
+                    -->
                 </TR>
                 <TR>
                   <TD colspan="2" class="aright spxTableHeadsmall">
@@ -629,6 +631,7 @@
         <!-- GC ITEMS ENDED -->
 
 
+      <!-- No ADD button in LIGHT mode
               <div class="wide" style="text-align: center; padding: 0.5em 1.0em;">
                 <button type="button"
                         data-tooltip="{{lang 'hover.addrundownitem'}}"
@@ -636,8 +639,9 @@
                         class="addbtn bg_blue ripple"
                         onClick="ModalOn('overlayTemplatePicker');"
                         style="padding: 0.05em 0.75em; border-radius: 0.2em;"
-                        onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
+                        onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button>
               </div>
+      -->
 
       </div>
 
@@ -649,24 +653,29 @@
 
     </div><!-- itemList end -->
 
-    <div id="footer">
-        <button
-          id="MasterTOGGLE"
-          class="btn bg_green ripple disabled"
-          data-spx-graphic="name_left"
-          data-spx-playtext="{{lang 'button.playmaster'}}"
-          data-spx-stoptext="{{lang 'button.stopmaster'}}"
-          onClick="playItem();"
-          onmouseover="tip('{{lang 'hover.masterplay'}}');"
-          >{{lang 'button.playmaster'}}</button>
+    <div class="footerAndInfo">
+      <div id="footer">
+          <button
+            id="MasterTOGGLE"
+            class="btn bg_green ripple disabled"
+            data-spx-graphic="name_left"
+            data-spx-playtext="{{lang 'button.playmaster'}}"
+            data-spx-stoptext="{{lang 'button.stopmaster'}}"
+            onClick="playItem();"
+            onmouseover="tip('{{lang 'hover.masterplay'}}');"
+            >{{lang 'button.playmaster'}}</button>
 
-        <button
-          id="MasterCONTINUE"
-          class="btn bg_green ripple disabled"
-          onClick="nextItem();"
-            onmouseover="tip('{{lang 'hover.mastercontinue'}}');"
-          >{{lang 'button.continue'}}</button>
-    </div><!-- footer end -->
+          <button
+            id="MasterCONTINUE"
+            class="btn bg_green ripple disabled"
+            onClick="nextItem();"
+              onmouseover="tip('{{lang 'hover.mastercontinue'}}');"
+            >{{lang 'button.continue'}}</button>
+      </div><!-- footer end -->
+      <div class="experimentalInfo">
+        Light mode is an experimental feature. Please report any issues.
+      </div>
+    </div>
 
 </div><!-- wrapper end -->
   
@@ -727,7 +736,6 @@
       let projects = fetch('/api/v1/allrundowns')
         .then(response => response.json())
         .then(projects => {
-          console.log(projects);
           document.getElementById('rundownSelector').innerHTML = '';
           projects.forEach(function(project, index) {
             let option = document.createElement('option');
@@ -738,6 +746,11 @@
             document.getElementById('rundownSelector').appendChild(option);
             project.rundowns.forEach(function(rundown, index) {
               let rd = document.createElement('option');
+
+              let CurrentRD = '{{folder}}/{{filebasename}}';
+              if (CurrentRD == project.project + '/' + rundown) {
+                rd.selected = true;
+              }
               rd.value = project.project + '/' + rundown;
               rd.innerHTML = "&nbsp; " + rundown;
               rd.classList.add("optionRundown");
@@ -752,12 +765,12 @@
           });
 
           // Get URL params
-          let url = new URL(window.location.href);
-          let utlText = url.pathname;
-          let pathItems = utlText.split('/');
-          let rundownRef = pathItems[2] + '/' + pathItems[3];
+          // let url = new URL(window.location.href);
+          // let utlText = url.pathname;
+          // let pathItems = utlText.split('/');
+          // let rundownRef = pathItems[2] + '/' + pathItems[3];
           // alert(rundownRef);
-          document.getElementById('rundownSelector').value = rundownRef;
+          // document.getElementById('rundownSelector').value = rundownRef;
 
         });
       
@@ -768,15 +781,35 @@
     }
 
     function resizePreview() {
-      let DefaultX = {{width}}  // 1920 by default;
-      let DefaultY = {{height}} // 1080 by default;
+      // let DefaultX = 1920 // LightMode HD by default;
+      // let DefaultY = 1080 // 
+      // let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
+      // let Sca = Wpx/DefaultX;
+      // let Hpx = parseInt(DefaultY * Sca);
+      // document.getElementById('previewBG').style.width=Wpx+'px';
+      // document.getElementById('previewBG').style.height=Hpx+'px';
+      // document.getElementById('previewIF').style.transform="scale("+Sca+")";
+      // Controller preview resize
+
+      let DefaultX = '{{width}}'; // 1920 by default;
+      let DefaultY = '{{height}}'; // 1080 by default;
+
+      if (DefaultX.includes('vw')) {
+          // Responsive settings, use window size! Added in v1.3.0
+          console.log('Responsive settings, but forcing 16:9 in Controller');
+          DefaultX = '1920px';
+          DefaultY = '1080px';
+      }
+
       let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
-      let Sca = Wpx/DefaultX;
-      let Hpx = parseInt(DefaultY * Sca);
+      let Sca = Wpx/parseInt(DefaultX);
+      let Hpx = parseInt(parseInt(DefaultY) * Sca);
       document.getElementById('previewBG').style.width=Wpx+'px';
       document.getElementById('previewBG').style.height=Hpx+'px';
       document.getElementById('previewIF').style.transform="scale("+Sca+")";
-      // document.getElementById('previewBG').style.opacity=1;
+      document.getElementById('previewBG').style.opacity=1;
+      document.getElementById('controllerFunctionsZone').style.opacity=1;
+      console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
     }
 
     document.addEventListener('DOMContentLoaded', () => {

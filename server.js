@@ -503,6 +503,41 @@ app.engine('handlebars', exphbs({
       return myIP;
     },
 
+
+    // Returns resolution options for App Config > resolution
+    // Added in 1.3.0
+    generateResolutionOptions: function (resolutionOption) {
+      let html = '';
+      let options = [
+        { 'value': 'HD', 'text': 'HD (1080p)' },
+        { 'value': '4K', 'text': '4K (2160p)' },
+        { 'value': 'AUTO', 'text': 'AUTO (responsive)' },
+      ];
+
+      let selectedFound = false;
+      options.forEach((opt,i) => {
+        let sele = '';
+        if (opt.value.toUpperCase() == resolutionOption.toUpperCase()) {
+          selectedFound = true;
+          sele = 'selected'
+        };
+        html += '<option ' + sele + ' value=' + opt.value + '>' + opt.text + '</option>\n';
+      });
+      return html;
+    },
+
+    // See if cssSizeValue has 'vh' or 'vw' in it then return HD values
+    // Added in 1.3.0
+    localPreviewSize: function (cssSizeValue) {
+      if (cssSizeValue.includes('vw')) {
+        return '1920';
+      } else if (cssSizeValue.includes('vh')) {
+        return '1080';
+      } else {
+        return cssSizeValue;
+      }
+    },
+
     // Returns unique ID for this host machine
     getHostID: function () {
       return global.pmac;

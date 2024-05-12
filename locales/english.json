@@ -57,7 +57,7 @@
 	   "select":"Open project",
 	   "settings":"Project settings",
 	   "shortcuts":"Keyboard shortcuts",
-	   "showwebrenderer":"Open playout window",
+	   "showwebrenderer":"Open output window...",
 	   "stop":"Stop ■",
 	   "stopmaster":"Stop ■",
 	   "update":"Update ► F5",

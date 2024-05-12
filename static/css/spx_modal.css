@@ -10,21 +10,28 @@
   --backgroundColor: #2d333b;
 }
 
-.promoBoxHead {
-  font-size: 1.7em;
-  margin-bottom: 0.7em;
-}
 
 .promoBoxCols {
   display: flex;
   flex-direction: row;
-  gap: 1.0em;
+  gap: 1.5em;
 }
 
 .promoLeft {
-  font-size: 0.8em;
   flex-basis: 60%;
   position: relative;
+  font-family: 'UI-Light' !important;
+  font-size: 0.7em;
+}
+
+.promoBoxHead {
+  font-size: 1.5em;
+  margin-bottom: 0.7em;
+}
+
+.promoLeft p {
+  margin-top: 0.5em;
+  opacity: 0.7;
 }
 
 .promoLeft a {
@@ -36,9 +43,7 @@
   color: white;
 }
 
-.promoLeft p {
-  margin-top: 0.5em;
-}
+
 
 .promoLeft h2 {
   font-size: 1.4em;
@@ -54,6 +59,8 @@
 
 .promoLeft li {
   list-style: square;
+  color: inherit;
+  opacity: inherit;
 }
 
 .promoRight {

@@ -5,85 +5,95 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
-  <!--      SPX GRAPHICS CONTROLLER      -->
-  <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
-  <!--         (c) 2020- Softpix         -->
-  <!--        http://spx.graphics        -->
-  <!--                                   -->
-  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
-
-  <!--
-    Scripts, no frameworks.
-    "Some extract of vanilla, enough to feed Godzilla."
-  -->
+    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+    <!--      SPX GRAPHICS CONTROLLER      -->
+    <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
+    <!--         (c) 2020- Softpix         -->
+    <!--        http://spx.graphics        -->
+    <!--                                   -->
+    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+    
+    <!--
+      Scripts, no frameworks.
+      "Some extract of vanilla, enough to feed Godzilla."
+    -->
 
     <script src="./js/socket.io.js"></script>
+    <script src="/js/lib/dotlottie-player.js"></script>
+    <title>SPX Renderer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            overflow: hidden;
+            margin: 0;
+            padding: 0px;
+        }
 
+        body, html {
+            margin: 0;
+            padding: 0px;
+            background-color: transparent;
+            background-color: rgba(0,0,0,0);
+        }
 
-  <title>SPX Renderer</title>
-        <style>
-            * {
-                box-sizing: border-box;
-                overflow: hidden;
-                margin: 0;
-                padding: 0px;
-            }
+        #root {
+            padding: 0px;
+            /* MAIN RENDERER size set by SPX to {{width}}x{{height}} */ 
+            width: {{width}};
+            height: {{height}};
+            position: relative;
+            border: 0px dashed red;
+            background-size: 100% 100%;
+            background-color: rgba(0,0,0,0);
+        }
 
-            body, html {
-                margin: 0;
-                padding: 0px;
-                background-color: transparent;
-                background-color: rgba(0,0,0,0);
-            }
+        .frame {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            position: absolute;
+            border: 0px solid red;
+        }
 
-            #root {
-                padding: 0px;
-                /* renderer size set by SPX to {{width}}x{{height}} */ 
-                width: {{width}}px;
-                height: {{height}}px;
-                position: relative;
-                border: 0px dashed red;
-                background-size: 100% 100%;
-                background-color: rgba(0,0,0,0);
-            }
+        .debugMessage{
+            top: 5%;
+            left: 10%;
+            opacity: 0.0;
+            z-index: 500;
+            font-size: 2em;
+            font-weight: bold;
+            position: absolute;
+            padding: 0.1em 0.5em;
+            display: inline-block;
+            color: rgb(3, 42, 3);
+            transform: rotate(1deg);
+            border: 1px solid green;
+            background-color: rgba(205, 255, 218, 0.85);
+            font-family: 'Courier New', Courier, monospace;
+        }
 
-            .frame {
-                margin: 0;
-                width: 100%;
-                height: 100%;
-                padding: 0px;
-                position: absolute;
-                border: 0px solid red;
-            }
+        #cursorHider {
+            z-index: 200;
+            background-color: rgba(0,0,0,0.0);
+            cursor: none;
+        }
 
-            .debugMessage{
-                top: 5%;
-                left: 10%;
-                opacity: 0.0;
-                z-index: 500;
-                font-size: 2em;
-                font-weight: bold;
-                position: absolute;
-                padding: 0.1em 0.5em;
-                display: inline-block;
-                color: rgb(3, 42, 3);
-                transform: rotate(1deg);
-                border: 1px solid green;
-                background-color: rgba(205, 255, 218, 0.85);
-                font-family: 'Courier New', Courier, monospace;
-            }
+        #wm {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            position: absolute;
+            border: 0px dashed red;
+            background-color: rgba(0,0,0,0);
+        }
 
-            #cursorHider {
-                z-index: 200;
-                background-color: rgba(0,0,0,0.0);
-                cursor: none;
-            }
-
-        </style>
+    </style>
 </head>
 
  <body>
@@ -91,6 +101,7 @@
         {{#ifValue hideCursor "true"}}
             <div id="cursorHider"></div>
         {{/ifValue}}
+        <dotlottie-player id="wm"></dotlottie-player><!-- see notes -->
         <iframe class="frame f01" allow="autoplay" id="layer1"  style="z-index: 101;" src="/templates/empty.html"></iframe>
         <iframe class="frame f02" allow="autoplay" id="layer2"  style="z-index: 102;" src="/templates/empty.html"></iframe>
         <iframe class="frame f03" allow="autoplay" id="layer3"  style="z-index: 103;" src="/templates/empty.html"></iframe>
@@ -117,6 +128,7 @@
     <script>
 
         let incomingData; // a placeholder for templateData
+        let WMtimer = null;
 
         function allowLayerControl(LayerNro) {
             // Usage:
@@ -203,6 +215,87 @@
             document.getElementById('debugMessage').innerText=msg;
         }
         
+        function spxWM(mode=0,ref=0, minMins=15, maxMins=30) {
+            // Watermark player
+            // Can be controlled from any template:
+            // INIT and loop using defaults ---> parent.spxWM?.();
+            // HIDE AND PREVENT FUTURE PLAYS --> parent.spxWM?.(3);
+            // Forcefully play once -----------> parent.spxWM?.(4);
+            let MODES = ['init','wait', 'play','stop', 'force'];
+            const player = document.getElementById('wm');
+            let file = '/img/json/wm-' + ref + '.json';
+            let fadeOutAfterMS = 8000;
+
+            // DEBUG #######
+               minMins = 0.2
+               maxMins = 0.5
+            // #############
+
+            let minMS = parseInt(minMins) * 60 * 1000; // default 15 min
+            let maxMS = parseInt(maxMins) * 60 * 1000; // default 30 min
+
+            switch (MODES[mode]) {
+                case 'init':
+                    console.log('0: spxWM init');
+                    player.style.opacity=0;
+                    player.load(file);
+                    spxWM(1,ref);
+                    return;
+                    break;
+
+                case 'wait':
+                    let rnd = Math.floor(Math.random() * maxMS) + minMS;
+                    rnd = Math.max(rnd, fadeOutAfterMS+500) // minimum gap
+                    console.log('1: spxWM waiting ' + rnd/1000 + ' s');
+                    WMtimer = setTimeout(function () {
+                        spxWM(2,ref);
+                    }, rnd);
+                    return;
+                    break;
+
+                case 'play':
+                    console.log('2: spxWM play');
+                    player.style.opacity=1;
+                    player.seek(0);
+                    player.play();
+                    spxWM(1,ref); // and wait
+                    setTimeout(function () {
+                        player.style.opacity=0;
+                    }, fadeOutAfterMS);
+                    break;
+
+                case 'stop':
+                    console.log('3: spxWM stop');
+                    clearTimeout(WMtimer);
+                    WMtimer = null; 
+                    player.stop();
+                    player.style.opacity=0;
+                    break;
+
+                case 'force':
+                    console.log('4: force play wm');
+                    player.load(file);
+                    setTimeout(function () {
+                        player.seek(0);
+                        player.style.opacity=1;
+                        player.play();
+                    }, 200);
+                    setTimeout(function () {
+                        player.style.opacity=0;
+                        if (WMtimer) {
+                            // Was running, continue with new
+                            clearTimeout(WMtimer);
+                            spxWM(1,ref);
+                        } else {
+                            // Not running, purge just in case
+                            clearTimeout(WMtimer);
+                            WMtimer = null; 
+                        }
+                    }, fadeOutAfterMS);
+                    break;
+            }
+        }
+
         function protocolCheck() {
             // check if we are http or file.
             let protocol = location.protocol;
@@ -234,7 +327,7 @@
             // console.log('Resizing window to ' + w + ' x ' + h + ' px.')
             window.resizeTo(w, h);
 
-        }
+       }
             
         function remoteFunction(LayerNro, functionName, arg) {
             // console.log('remoteFunction ' + LayerNro);
@@ -367,6 +460,11 @@
                     populateLayer(data.webplayout,data.relpath);
                     break;
 
+                case 'forceWM':
+                    // console.log('view-renderer forceWM()...')
+                    spxWM(4); // forcefully play watermark and optionally continue
+                    break;
+
                 case 'playTemplate':
                     // set callback function to the iframe and then load src to it.
                     // Note, for preview the layer number will be set downstream in the renderer is 'preview=true'
@@ -412,10 +510,8 @@
                         if (data.function) {
                             let myFunction = data.function;
                             let myParamets = data.params;
-                            let type = typeof(document.getElementById('layer' + LayerNro).contentWindow.myFunction);
-                            console.log('Type is ' + type);
                             if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
-                                console.log('Executing ' + myFunction + '() on layer ' + LayerNro + ' with params', myParamets);
+                                console.log('Executing ' + myFunction + '() on layer ' + LayerNro + ' with params (first 30 chars):', myParamets.substring(0, 30));
                                 document.getElementById('layer' + LayerNro).contentWindow[myFunction](myParamets);
                             } else {
                                 console.log('Renderer / invokeFunction [' + myFunction + '] on layer ' + LayerNro + ' is NOT a function.');
@@ -469,6 +565,7 @@
         }); // socketMessage handler ended
 
         window.addEventListener('load',protocolCheck,false);
+
 
   </script>
 </body>

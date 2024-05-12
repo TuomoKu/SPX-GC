@@ -64,13 +64,33 @@ html, body {
 }
 
 #footer {
+    width: 100%;
     display: flex;
+    flex-grow: 1;
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    padding: 0.2em;
+}
+
+.footerAndInfo {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border: 0px solid red;
     background-color: var(--darkGrey);
-    padding: 0.4em;
-  }
+}
+
+.experimentalInfo {
+    width: 100%;
+    opacity: 0.4;
+    font-size: 0.7em;
+    text-shadow: none;
+    text-align: center;
+    font-weight: normal;
+    padding: 0 0 0.7em 0;
+    font-family: 'UI-Light';
+}
 
 .itemrow {
     background-color: rgba(255,255,255,0.05);

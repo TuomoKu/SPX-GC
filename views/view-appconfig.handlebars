@@ -200,12 +200,11 @@
               </td>
               <td>
                 <select class="wide drop bg_grey15" name="general[resolution]">
-                  <!-- error, warn, info, verbose, debug -->
-                  <option value="HD" {{#ifValue config.general.resolution "HD"}}selected{{/ifValue}}>HD (1080p)</option> <!-- this is the default -->
-                  <option value="4K" {{#ifValue config.general.resolution "4K"}}selected{{/ifValue}}>4K (2160p)</option>
+                  {{{generateResolutionOptions config.general.resolution}}}
                 </select>
-                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;"><small>
-                  {{lang 'config.resolutioninfo'}}
+                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;">
+                  <small>
+                    {{lang 'config.resolutioninfo'}}
                   </small>
                 </P>
               </td>

@@ -24,7 +24,7 @@ html, body {
 
 .HIDE{
     /* WHILE DEBUGGING unhide OBJECTS with display:no-none ++++++++++++++++++++++++++ */
-    display     :      no-none; /*change this to no-none to see debug data in editors */
+    display     :      none; /*change this to no-none to see debug data in editors */
     border      :      2px dashed rgb(0, 248, 0);
     padding     :      5px;
     margin      :      5px;
@@ -817,13 +817,18 @@ div.curfolder{
 
 .spxConfigHead {
     color: rgba(255, 255, 255, 0.52);
-    font-family: "UI-Regular", Arial, Helvetica, sans-serif;
+    font-family: "UI-Regular";
     text-shadow: rgba(255, 255, 255, 0.1) 0 0 2px;
-    /* line-height:   2em; */
     font-size: 0.75em;
     margin: auto auto;
     border: 0px solid pink;
     white-space: nowrap;
+}
+
+.spxConfigBody {
+    color: rgba(255, 255, 255, 0.52);
+    font-family: "UI-Regular";
+    font-size: 0.7em;
 }
 
 .prvar {
@@ -1163,6 +1168,12 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     padding-inline-start: 5px;
     font-size: 0.8em;
     font-family: "UI-Light", Arial, Helvetica, sans-serif;
+}
+
+.RDoptionsText::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    font-size: inherit;
 }
 
 

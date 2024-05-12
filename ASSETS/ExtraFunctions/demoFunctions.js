@@ -20,7 +20,7 @@
 
 function hello(options) {
     // This is a demo function that can be used
-    // with onPlay handler in the te mplate definition
+    // with onPlay handler in the template definition
     // such as
     //
     // "function_onPlay": "hello|'World!'|500|f1"

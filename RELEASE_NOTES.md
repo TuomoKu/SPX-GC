@@ -6,20 +6,29 @@
 
 ## WORK IN PROGRESS
 
-> List updated Apr 03 2024
+> List updated May 06 2024
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
 
 **Completed items** (added, but not yet released):
 - Improved API, documentation and response messages
-- Added `/allrundowns` endpoint to the API
-- Added POST version of the `feedproxy` API endpoint to supports custom headers
-- Added `/executeScript?file=<myScript.bat>`API endpoint for running scripts from `ASSETS/scripts` -folder
+- Added `/allrundowns` endpoint to the API that returns all projects and their run
+- Added `/feedproxy` POST endpoint for supporting custom headers for ouotgoing GET requests
+- Added `/executeScript?file=<myScript.bat>` API endpoint for running scripts from `ASSETS/scripts` -folder
+- Added `rundown/json?project=<projectName>&rundown=<rundownName>` API endpoint that returns data from a given rundown
+- Added `rundown/json` POST API endpoint for saving (externally generated) rundown to a project
+- Added `invokeExtensionFunction?function=<function>&params=<args>` API endpoint for executing functions within extensions.
+- Added `getFileList?assetsfolder=<folder>` API endpoint for getting a list of files in `ASSETS/<folder>`
+- Added `saveCustomJSON` POST API endpoint for saving arbitrary JSON data to `ASSETS/json/<folder>/<file>`
 - Fixed a major bug in rundown caching mechanism when using `/controlRundownItemByID` API call. Cached rundown was conflicting with the API call. Manually triggering rundown items AND API calls could get cache to a broken state. Now these calls are identified better and the caching works more reliably. Enable `verbose` log level to observe the internal runtime logic.
 - Added support for timed "out" modes when using `controlRundownItemByID` or `directplayout` API endpoints.
-- Improved UI scaling and main menu by making it scrollable
 - Added `general.hideRendererCursor = true|false` setting to config.json 
+- Added new renderer size preset to App Config. Available options are now `HD, 4K, AUTO`. Autowide scales to full height and width of the output device. Please remember, this is just the renderer size. The templates loaded onto the renderer will need to support that size and/or aspect ratio as well. 
+- Improved UI scaling and main menu by making it scrollable
+- Folders and files are sorted alphabetically (case insensitive) in template browser
+- Extra tabs added to template browser to SPX Store, Loopic and StreamShapers' Ferryman
+- Fixed a minor bug in detach/dock local renderer slider UI component
 - Ignore projects (folder names) that start with dot (.) or underscore (_)
 - Renderer url params are passed to individual layers for custom work
 - Added "custom content repository" detection to header (see source code for details)

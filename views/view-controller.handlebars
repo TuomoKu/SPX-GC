@@ -35,6 +35,15 @@
   <link rel="stylesheet" type="text/css" href="/css/toggle.css">
 
   <style>
+
+    #previewIF {
+      border: 0px solid yellow;
+    }
+
+    #previewBG {
+      border: 0px dashed orange;
+    }
+
     #colorPopup {
       position: absolute;
       top: 0;
@@ -211,6 +220,7 @@
   <input type="hidden" id="previewMode" value="{{previewMode}}">      <!-- previewMode (next/selected) -->
   <input type="hidden" id="assetsroot" value="{{assetsFolder}}">      <!-- used by file browser -->
   <input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
+  <input type="hidden" id="identifier" value="controller">            <!-- used by JS logic to identify view -->
 
   <div class="overlay" id="overlayTemplatePicker">
     <!-- This is the file browser modal overlay -->
@@ -865,9 +875,11 @@
                   background: transparent;
                   color: rgb(54, 54, 54);">Local SPX Renderer<br>DISABLED</div>
             <iframe
-              width={{width}}
-              height={{height}} 
+              width="{{{localPreviewSize width}}}" 
+              height="{{{localPreviewSize height}}}"
               id="previewIF"
+              data-comment: "Here we had width: {{width}} and height {{height}}"
+
               {{#ifValue disableLRender "true"}}
                 src="/templates/empty.html"
               {{else}}
@@ -955,7 +967,7 @@
                     <td width="20%" ALIGN="center">
                       <div class="toggle-container">
                         <label class="vc-switch">
-                        <input  id="toggleRendererWindowProgram"
+                        <input  id="toggleRendererWindowProgramMain"
                                 {{#ifValue disableLRender "true"}}
                                   checked
                                 {{/ifValue}}
@@ -1133,19 +1145,35 @@
 
     }
 
+    function forceWM() {
+      // Force watermark when version is double clicked
+      var data = {};
+      data.spxcmd = 'forceWM';
+      socket.emit('SPXWebRendererMessage', data);
+    }
+
     function resizePreview() {
-      let DefaultX = {{width}}  // 1920 by default;
-      let DefaultY = {{height}} // 1080 by default;
+      // Controller preview resize
+
+      let DefaultX = '{{width}}'; // 1920 by default;
+      let DefaultY = '{{height}}'; // 1080 by default;
+
+      if (DefaultX.includes('vw')) {
+          // Responsive settings, use window size! Added in v1.3.0
+          console.log('Responsive settings, but forcing 16:9 in Controller');
+          DefaultX = '1920px';
+          DefaultY = '1080px';
+      }
+
       let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
-      let Sca = Wpx/DefaultX;
-      let Hpx = parseInt(DefaultY * Sca);
+      let Sca = Wpx/parseInt(DefaultX);
+      let Hpx = parseInt(parseInt(DefaultY) * Sca);
       document.getElementById('previewBG').style.width=Wpx+'px';
       document.getElementById('previewBG').style.height=Hpx+'px';
       document.getElementById('previewIF').style.transform="scale("+Sca+")";
-      //document.getElementById('previewBG').style.display='block';
       document.getElementById('previewBG').style.opacity=1;
       document.getElementById('controllerFunctionsZone').style.opacity=1;
-      // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
+      console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
     }
 
     document.addEventListener('DOMContentLoaded', () => {

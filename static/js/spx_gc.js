@@ -87,14 +87,21 @@ socket.on('SPXMessage2Client', function (data) {
             switch (data.clientName) {
                 case 'SPX_PROGRAM':
                     if (document.getElementById('toggleRendererWindowProgram')) {
+                        console.log('SPX_PROGRAM client lost, toggling off');
                         document.getElementById('toggleRendererWindowProgram').checked = false;
+                    } else {
+                        console.log('SPX_PROGRAM client lost, no toggle found');
                     }
                     toggleNormalRenderer('normal');
                     break;
 
                 case 'SPX_PREVIEW':
-                    if ( document.getElementById('toggleRendererWindowPreview') )
+                    if ( document.getElementById('toggleRendererWindowPreview') ) {
+                        console.log('SPX_PREVIEW client lost, toggling off');
                         document.getElementById('toggleRendererWindowPreview').checked = false;
+                    } else {
+                        console.log('SPX_PREVIEW client lost, no toggle found');
+                    }
                     break;
             
                 default:
@@ -427,12 +434,14 @@ function AppState(NewState) {
     // console.log('Old state: ' + APPSTATE, 'New state: ' + NewState);
 
     // disable sorting while editing:
-    if (NewState == 'EDITING')
-        {
-            sortable.option("disabled", true);
+    if (NewState == 'EDITING') {
+        if ( ife('identifier').value=="controller" ) {
+            sortable.option("disabled", true);  
         }
-    else{
+    } else {
+        if ( ife('identifier').value=="controller" ) {
             sortable.option("disabled", false);
+        }
     }
     APPSTATE = NewState;
     //
@@ -1053,6 +1062,12 @@ function openRelpathFolder(itemrow) {
     let fileRef = itemrow.querySelector("[id^='relpath']").value;
     AJAXGET('/api/openFileFolder?file=' + fileRef);
 } // openRelpathFolder ended
+
+function openLightModePanel() {
+    // Open a light mode panel (in Controller only)
+    let newUrl = window.location.href + '/light';
+    window.open(newUrl, 'SPX-LITE', '_blank, width=680, height=850, scrollbars=yes, location=yes,status=yes');
+}
 
 function eps() {
     // Opens the selected (or current) file in controller.
@@ -1859,21 +1874,22 @@ function setItemButtonStates(itemrow, forcedCommand=''){
 
         }
     
-    // finally show or hide delete buttons on all items
-    rows.forEach(function (item, index) {
-        if (item.getAttribute('data-spx-onair')=="true" )
-            {
-                //console.log('Hide delete buttons of ' + item.id);
-                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="hidden";
-                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="hidden";
+    if ( ife('identifier').value=="controller" ) {
+        // finally show or hide delete buttons on all items
+        rows.forEach(function (item, index) {
+            if (item.getAttribute('data-spx-onair')=="true" ) {
+                console.log('Hide delete buttons of ' + item.id);
+                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="hidden" || (console.log('a'));
+                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="hidden" || (console.log('b'));
+            } else {
+                console.log('Show delete buttons of ' + item.id);
+                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="visible" || (console.log('c'));
+                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="visible" || (console.log('d'));
             }
-        else
-            {
-                // console.log('Show delete buttons of ' + item.id);
-                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="visible";
-                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="visible";
-            }
-    })
+        })
+    }
+
+
     return CommandToExecute
 } // setItemButtonStates ended
 
@@ -2351,6 +2367,20 @@ function spx_system(cmd,servername='') {
     }
 } // end spx_system
 
+function e(ID) {
+    return document.getElementById(ID);
+} // e
+
+function ife(ID) {
+    if (document.getElementById(ID)) {
+        // console.log('IFE Element found: ' + ID);
+        return document.getElementById(ID);
+    } else {
+        // console.log('IFE Element NOT found: ' + ID);
+        return false;
+    }
+} // ife
+
 function spxInit() {
     // executes on page load:
     // - load values from localStorage
@@ -2359,20 +2389,23 @@ function spxInit() {
 
 
     // Init sortable and saveData onEnd
-    sortable = Sortable.create(itemList, {
-        handle: '.handle',
-        animation: 150,
-        disabled: false,
-        // sortable.option("disabled", true); // TAI false
-        onEnd: function (evt) {
-            SaveNewSortOrder();
-        },
-    });
+    if ( ife('identifier').value=="controller" ) {
+        sortable = Sortable.create(itemList, {
+            handle: '.handle',
+            animation: 150,
+            disabled: false,
+            // sortable.option("disabled", true); // TAI false
+            onEnd: function (evt) {
+                SaveNewSortOrder();
+            },
+        });
+    }
 
     focusRow(0);
     AppState("DEFAULT");
     spx_system('CHECKCONNECTIONS');
     document.getElementById('itemList').style.opacity=1;
+
 } // end spxInit
 
 function setProfile(profileName) {

@@ -67,6 +67,12 @@ function RenderFolder(data) {
   }
 
   // populate folders
+  // sort folders by name, case insensitive
+  data.foldArr.sort(function(s1, s2){
+      var l=s1.toLowerCase(), m=s2.toLowerCase();
+      return l===m?0:l>m?1:-1;
+  });
+
   data.foldArr.forEach((folder,i) => {
     var node = document.createElement("LI");
     node.classList.add("filebrowser_folder");
@@ -80,6 +86,13 @@ function RenderFolder(data) {
   });
 
   // populate files
+  // sort files by name, case insensitive
+  data.fileArr.sort(function(s1, s2){
+    var l=s1.toLowerCase(), m=s2.toLowerCase();
+    return l===m?0:l>m?1:-1;
+  });
+
+  
   data.fileArr.forEach((file,i) => {
     var node = document.createElement("LI");
     node.classList.add("filebrowser_file");

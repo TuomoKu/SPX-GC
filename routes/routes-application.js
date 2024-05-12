@@ -29,11 +29,8 @@ const axios = require('axios')
 // const { config } = require("winston"); // <!-- this is auto-generated here by the IDE and will screw things up! Beware >:-[
 // global.rundownData is introduced in server.js 
 
-// May need to add custom header capabilities from config.json
-
-
-
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
+
 router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, async function (req, res) {
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let currVer = vers;
@@ -53,28 +50,26 @@ router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, asyn
       showMessage:      req.session.showMessage
     });
     req.session.showMessage = null;
-});
+}); // get / end
 
 router.get('/admin', spxAuth.CheckLogin, function (req, res) {
   res.render('view-admin', { layout: false });
-});
+}); // get /admin end
 
 router.get('/fileBrowser', spxAuth.CheckLogin, function (req, res) {
   // added in 1.1.1
   res.render('view-fileBrowser', { layout: false } );
-});
+}); // get /fileBrowser end
 
 router.get('/templates/empty.html', function (req, res) {
   // let emptyhtml = path.join(__dirname + '/../static/empty.html');
   // console.log('Haetaan empty: ' + emptyhtml);
   // res.sendFile(emptyhtml);
   res.render('view-empty', { layout: false });
-});
+}); // get /templates/empty.html end
 
 router.get(['/renderer/index.html','/renderer'], function (req, res) {
-  // Added in 1.1.0. Default resolution is HD.
-  let width      = '1920';
-  let height     = '1080';
+
   let hideCursor = false;
 
   // Added in 1.3.0
@@ -82,70 +77,55 @@ router.get(['/renderer/index.html','/renderer'], function (req, res) {
     hideCursor = true;
   }
 
-  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
-    width   = '3840';
-    height  = '2160';
-  }
-
-  // Added in 1.1.1: "/renderer?width=1000&height=500&preview=true"
-  if (req.query.width ) { width  = req.query.width  }
-  if (req.query.height) { height = req.query.height }
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
   
   res.render('view-renderer', { 
-      layout: false,
-      width:width,
-      height:height,
-      hideCursor:hideCursor
-    } );
-});
+    layout: false,
+    width:outputSize.width,
+    height:outputSize.height,
+    hideCursor:hideCursor
+  } );
+}); // get /renderer end
 
 router.get('/renderer/scalable', function (req, res) {
-  // Added in 1.1.0. Default resolution is HD.
-  let width   = '1920';
-  let height  = '1080';
-  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
-    width   = '3840';
-    height  = '2160';
-  }
-  // Added in 1.1.1: "/renderer?width=1000&height=500&preview=true"
-  if (req.query.width ) { width  = req.query.width  }
-  if (req.query.height) { height = req.query.height }
-
-  res.render('view-rendererscalable', { layout: false, width:width, height:height} );
-});
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
+  res.render('view-rendererscalable', {
+    layout: false,
+    width:outputSize.width,
+    height:outputSize.height
+  });
+}); // get /renderer/scalable end
 
 router.get('/renderwindow/:type', function (req, res) {
-  // Added in 1.1.0. 
-  let width   = '1920';
-  let height  = '1080';
-  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
-    width   = '3840';
-    height  = '2160';
-  }
-
-  // Added in 1.1.1: "/renderer?width=1000&height=500&preview=true"
-  if (req.query.width ) { width  = req.query.width  }
-  if (req.query.height) { height = req.query.height }
-
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
   let viewFile = '';
-  if (req.params.type === 'preview') { viewFile = 'view-renderwindow_preview'} ;
-  if (req.params.type === 'program') { viewFile = 'view-renderwindow_program'} ;
+  // if (req.params.type === 'preview') { viewFile = 'view-renderwindow_preview'} ;
+  // if (req.params.type === 'program') { viewFile = 'view-renderwindow_program'} ;
+  viewFile = 'view-rendererscalable';
 
   if (viewFile == '') {
     res.send('Invalid URL');
   } else {
-    res.render(viewFile, { layout: false, width:width, height:height} );
+    res.render(viewFile, {
+      layout: false,
+      width:outputSize.width,
+      height:outputSize.height,
+      mode: req.params.type
+    });
   }
-});
+}); // get /renderwindow/:type end
 
 router.get('/logout', spxAuth.Logout, function (req, res) {
   res.redirect('/');
-});
+}); // get /logout end
 
 router.post('/', spxAuth.CheckLogin, function (req, res) {
   //logger.info('User "' + req.session.user + '" logged in');
   res.redirect('/');
-});
+}); // post / end
 
 router.post('/saveauthpolicy', function (req, res) {
   // save settings to config and move on
@@ -187,7 +167,7 @@ router.post('/saveauthpolicy', function (req, res) {
       logger.error('saveAndReadConfig() Error while saving file: ', error);
       res.redirect('/');
     };
-});
+}); // post /saveauthpolicy end
 
 router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
@@ -201,7 +181,7 @@ router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
     configfile: configfileref, 
     recents: recents,
     disableConfigUI: disableConfigUI});
-});
+}); // get /config end
 
 router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   // save incoming json form data to config.json and reload the page
@@ -273,7 +253,7 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
 }; //file written
 
 
-});
+}); // post /config end
 
 router.get('/register', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
@@ -286,7 +266,7 @@ router.get('/register', cors(), spxAuth.CheckLogin, async (req, res) => {
     user: req.session.user, 
     configfile: configfileref, 
   });
-});
+}); // get /register end
 
 router.post('/register', async (req, res) => {
   // Handles modification changes of registratiom.
@@ -329,7 +309,7 @@ router.post('/register', async (req, res) => {
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };
-});
+}); // post /register end
 
 router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
@@ -345,7 +325,7 @@ router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
     recents: recents,
     config: config,
     disableConfigUI: disableConfigUI});
-});
+}); // get /shows end
 
 router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => {
   // Show episodes (files in folder 'data')
@@ -362,7 +342,7 @@ router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => 
     recents: recents,
     config: config,
     disableConfigUI: disableConfigUI});
-});
+}); // get /show/:foldername end
 
 router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   //  Show Configuration
@@ -394,7 +374,7 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
     config: config,
     disableConfigUI: disableConfigUI
   });
-});
+}); // get /show/:foldername/config end
 
 router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async (req, res) => {
   //  Remove template index (0 based)
@@ -423,7 +403,7 @@ router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async
       logger.error('removeTemplate Error while saving file: ' + error);
       // console.log('removeTemplate Error while saving file: ', error);
   }; //file written
-});
+}); // removeTemplate end
 
 router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (req, res) => {
   //  Remove extra index (0 based)
@@ -440,7 +420,7 @@ router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (r
   } catch (error) {
       logger.error('removeExtra Error while saving file: ' + error);
   }; //file written
-});
+}); // removeExtra end
 
 router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req, res) => {
   //  Save extra index (0 based)
@@ -487,7 +467,7 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
   } catch (error) {
       logger.error('saveExtra Error while saving file: ' + error);
   }; //file written
-});
+}); // saveExtra end
 
 router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (req, res) => {
   // Save template index (0 based)
@@ -509,7 +489,7 @@ router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (
   } catch (error) {
       logger.error('saveTemplate Error while saving file: ' + error);
   }; //file written
-});
+}); // saveTemplate end
 
 router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, async (req, res) => {
   // Added in 1.0.15
@@ -534,7 +514,7 @@ router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, 
   } catch (error) {
       logger.error('saveGeneralSettings Error while saving file: ' + error);
   }; //file written
-});
+}); // saveGeneralSettings end
 
 router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => {
   // a POST handler for adding content to the <show>/profile.json.
@@ -678,7 +658,7 @@ router.post('/shows/', spxAuth.CheckLogin, async (req, res) => {
       fs.mkdirSync(targetDataFo);
       res.redirect('/show/' + req.body.foldername + '/config');
   }
-});
+}); // post /shows/ end
 
 
 router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
@@ -704,7 +684,7 @@ router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
       logger.error('Error while creating file: ' + error);
     }; //file written
   }
-});
+}); // post /show/:foldername end
 
 
 router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
@@ -722,7 +702,7 @@ router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
       // client will reload in 500ms
     }
   });
-});
+}); // delete /show/:folder/:file end
 
 
 router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
@@ -761,7 +741,7 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
   const folderListAsJSON = await spx.GetSubfolders(config.general.dataroot);
   res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user });
 
-});
+}); // delete /shows/:foldername end
 
 
 router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async (req, res) => { 
@@ -785,13 +765,8 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
   let csvFileList = '';
   csvFileList = JSON.stringify(spx.GetFilesAndFolders( path.resolve(spx.getStartUpFolder(),'ASSETS', 'csv'), 'csv' ));
 
-  // Added in 1.1.0
-  let width   = 1920;
-  let height  = 1080;
-  if (config.general.resolution && config.general.resolution=='4K') {
-    width   = 3840;
-    height  = 2160;
-  }
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
 
   let recents       = config.general.recents  || [] // added in 1.1.0
   let preview       = config.general.preview  || 'none' // added in 1.1.0
@@ -822,8 +797,8 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
     user:           req.session.user,
     background:     projectBackground,
     csvFileList:    csvFileList,
-    width:          width,
-    height:         height,
+    width:          outputSize.width,
+    height:         outputSize.height,
     previewMode:    preview,
     recents:        recents,
     renderer:       rnrtype,
@@ -845,7 +820,7 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
     });
     }, 500);
     spx.setRecents(req.params.foldername + '/' + req.params.filename) // Added in 1.1.0
-}); 
+}); // get /gc/:foldername/:filename end
 
 
 router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) => { 
@@ -1181,7 +1156,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       logger.warn('Warning: unknown gc-post command: ' + data.command);
       break;
   }
-});
+}); // gc post end
 
 router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // Request: data object (command, datafile, templateIndex)
@@ -1519,7 +1494,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     logger.error('ERROR in /gc/playout. ' + error);
     res.status(500).send('Error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
   };
-});
+}); // playout ended
 
 
 router.post('/gc/playaudio', spxAuth.CheckLogin, (req, res) => {
@@ -1578,7 +1553,7 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
       res.status(500).send('SPX error in gc/clearPlayouts [' + error + '].')  // error 500 AJAX RESPONSE
     };
 
-});
+}); // clearPlayouts ended
 
 
 router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
@@ -1610,7 +1585,7 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
       logger.error('Error in /gc/sortTemplates while sorting data. [' + error + '].');
       res.status(500).send('Server error in /gc/sortTemplates [' + error + '].')  // error 500 AJAX RESPONSE
     };
-});
+}); // sortTemplates ended
 
 
 router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
@@ -1627,7 +1602,7 @@ router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
     logger.error(errmsg);
     res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
   }
-});
+}); // duplicateRundown ended
 
 
 router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
@@ -1645,7 +1620,7 @@ router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
     logger.error(errmsg);
     res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
   }
-});
+}); // renameRundown ended
 
 
 router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
@@ -1674,7 +1649,7 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };
-});
+}); // saveConfigChanges ended
 
 
 router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
@@ -1710,16 +1685,7 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };
-});
-
-
-
-
-
-
-
-
-
+}); // saveItemChanges ended
 
 
 
@@ -1866,7 +1832,6 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   return profileData;
   
 } // addTemplateToProfile ended
-
 
 
 async function orgGetDataFiles(FOLDERstr) {
@@ -2022,7 +1987,45 @@ async function playoutSTOP(dataOut, preventSave, templateIndex, RundownData) {
   } else {
     logger.verbose('No Webplayout playout');
   }
-}
+}  // playoutSTOP ended
+
+function getResolutionFromConfig(cfg, postRequest) {
+  // Added in 1.3.0 to get resolution
+  // returns CSS values: {width: x, height: y}
+
+  let sizeID = cfg.general.resolution || 'HD';
+  let width  = '1920px';
+  let height = '1080px';
+
+  if (postRequest.width ) { width  = postRequest.width  }
+  if (postRequest.height) { height = postRequest.height }
+
+  switch(sizeID) {
+    case '4K':
+        width  = '3840px'
+        height = '2160px'
+        break;	
+
+    case 'AUTO':
+        width  = '100vw'
+        height = '100vh'
+        break;
+
+    default:
+      // HD is the default
+      width  = '1920px'
+      height = '1080px'
+      break;
+
+    };
+
+  return {
+    width: width,
+    height: height,
+  };
+} // getResolutionFromConfig ended
+
+
 
 
 // this is the last line

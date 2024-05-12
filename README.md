@@ -4,9 +4,9 @@
 
 <br>
 
-Readme updated Sept 20 2023. 
+Readme updated May 12 2024. 
 
->  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.2.1** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
+>  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.3.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
 <br>
 
@@ -59,7 +59,9 @@ Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://
 
 <a id="demo"></a>
 ## Live demo 🔥
-Live SPX demo in the cloud: **http://demo.spx.graphics:5000**
+~~Live SPX demo in the cloud: **http://demo.spx.graphics:5000**~~
+
+🔴 _Live demo is OFFLINE at the moment._
 
 > Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
 
@@ -351,6 +353,12 @@ An example `config.json` of the SPX server
 * `normal` an inline renderer view
 * `popup` renderer in a floating window "popup" (notice, it is possible that popup blocker prevent this from working as expected)
 
+**`general.resolution`** Version 1.3.0 introduced a new option for affecting output from SPX. Please note this is the renderer viewport size, templates will *also* need to support set size and aspect ratio. Most templates are implemented, or optimized, for 16:9 aspect ratio and 1920x1080 output size.
+
+* `HD` = 1920 x 1080 pixels (16:9)
+* `4K` = 3840 x 2160 pixels (16:9)
+* `AUTO` = Full output height and width of the browser viewport rendering the template. Please note most SPX templates are prepared for 16:9 HD output and if using other sizes, this may require changes in the template sizing and layout properties. Typically used term for these kind of HTML layouts is "responsive design".
+ 
 <a id="locales"></a>**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
 
 <img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
@@ -404,20 +412,22 @@ Template requests CasparCG server [SERVERNAME] but a server by that name was not
 # Renderer parameters <a id="renderer"></a>
 SPX renderer is at `/renderer` URL and it supports additional parameters for specialized workflows. In a typical use (such as 16:9 single renderer production) these can be safely ignored.
 
-| Parameter | Datatype | Example |
-|  ------ | ----- | ----- |
+| Parameter | Datatype | Example | Remark
+|  ------ | ----- | ----- | ---- |
 |  `layers` | Array of numbers | `[1,2,3,4,20]` |
 |  `preview` | Boolean | `true` |
-|  `width` | integer | `1920` |
-|  `height` | integer | `1080` |
-|  `fps` | number | `50` or `29.97` |
+|  ~~`width`~~ | ~~integer~~ | ~~`1920`~~ | Removed in 1.3.0
+|  ~~`height`~~ | ~~integer~~ | ~~`1080`~~ | Removed in 1.3.0
+|  `fps` | number | `50` or `29.97` | Value is passed to templates but none of the official templates uses this property at all.
 
 An example renderer URL for _"a vertical HD-Ready screen, showing only layers 2 and 3 and at 15 fps refresh rate"_.
 
 ```
-renderer/?width=768&height=1366&layers=[2,3]&preview=false&fps=15
+renderer/?width=768&height=1366&layers=[2,3]
 ```
-**PLEASE NOTE:** `fps` parameter value is stored to `window.top.spxRenderer.fps` -global variable of the renderer and it's utilization requires support from the templates themselves. See the _Google Sheet Ticker_ -template for an example of this.
+**PLEASE NOTE:** `fps` parameter value is stored to `window.top.spxRenderer.fps` -global variable of the renderer and it's utilization requires support from the templates themselves. This value IS NOT USED by any templates at the moment developed by SPX Graphics. 
+
+**PLEASE NOTE:** `width` and `height` parameters were removed in v.1.3.0 as Application Configuration now supports `AUTO` sizing mode that will adjust renderer size to match dimensions of the holding viewport, such as `browser size` settings in OBS or similar software.
 
 <br>
 
