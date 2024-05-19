@@ -848,7 +848,7 @@ Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.
 ----
 
 # MIT License <a id="license"></a>
-Copyright 2020-2023 Tuomo Kulomaa <tuomo@softpix.io> & [Softpix Ltd](http://softpix.io) 
+Copyright 2020-2023 Tuomo Kulomaa <tuomo@softpix.io> & [SPX Graphics](http://spx.graphics) 
 
 This project is licensed under the terms of the MIT license.
 See [LICENSE.txt](LICENSE.txt)

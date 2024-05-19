@@ -420,6 +420,10 @@ function openSelectedURL(selectList){
     }
 
 
+function playAudiofile(file){
+    playServerAudio(file,message='playAudiofile ' + file)
+}
+
 function playSelectedAudio(selectList){
     // Reads a path of audio file (in ASSETS folder) from current value of the select list
     // and triggers a function which will pass the filename to SPX-GC which will play the

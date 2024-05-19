@@ -674,6 +674,17 @@ module.exports = {
     }
   }, // prettifyName
 
+  RemoveFilepathKey: function (RundownData) {
+    if (RundownData.filepath) {
+      // Some version of SPX stored filepath into the
+      // rundown file. This is not needed and should
+      // be removed, so the below line fixes the file.
+      logger.verbose('Removing ".filepath" from "' + RundownData.filepath + '"...');
+      delete RundownData.filepath;
+    }
+    return RundownData;
+  }, // RemoveFilepathKey
+
   renameRundown: function (orgfile, newname) {
     // Rename a file:
     // request ..... full original name (c:/temp/volvo.txt), new basename (toyota)
@@ -810,13 +821,12 @@ module.exports = {
   }, // versInt
 
   writeFile: function (filepath, data) {
-    // console.log('Writing file ', filepath);
     try {
         return new Promise(resolve => {
           // this.talk('Writing file');
           // this.playAudio('beep.wav', 'spx.writeFile');
           data.warning = "Modifications done in the SPX will overwrite this file.";
-          data.copyright = "(c) 2020- Softpix (https://spx.graphics)";
+          data.copyright = "(c) 2020- SPX Graphics (https://spx.graphics)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
           fs.writeFile(filepath, filedata, 'utf8', function (err) {

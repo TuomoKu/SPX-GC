@@ -199,6 +199,45 @@
     transition: background-color opacity 0.2s ease-in-out;
   }
 
+  #loaderHolder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    z-index: 1000;
+    position: absolute;
+    align-items: flex-end;
+    justify-content: flex-start;
+    background-color: transparent;
+    border: 0px dotted white;
+  }
+
+  #loader {
+    width: 50%;
+    height: 1.0%;
+    left: -100%;
+    position: absolute;
+    background-color: rgba(40, 146, 19, 0.8);
+    animation: moveAcross 1s infinite linear;
+  }
+  @keyframes moveAcross {
+    0% {
+      transform: translateX(0vw);
+    }
+
+    100% {
+      transform: translateX(100vw);
+    }
+  }
+
+  .optionsButton {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  .optionsButton:active,
+  .optionsButton:hover {
+    color: white;
+  }
+
   </style>
 
   
@@ -874,6 +913,11 @@
                   align-items:center;
                   background: transparent;
                   color: rgb(54, 54, 54);">Local SPX Renderer<br>DISABLED</div>
+
+            <div id="loaderHolder">
+              <div id="loader"></div>
+            </div>
+
             <iframe
               width="{{{localPreviewSize width}}}" 
               height="{{{localPreviewSize height}}}"
@@ -887,9 +931,10 @@
               {{/ifValue}}
               class="renderer"
               {{#if background}}
-              style="background-image: url('/{{background}}'); background-size: 100% 100%; position: absolute; top: 0; left: 0;"
+                style="background-image: url('/{{background}}'); background-size: 100% 100%; position: absolute; top: 0; left: 0;"
               {{/if}}
-              ></iframe>
+              onLoad="localRendererLoaded();"
+            ></iframe>
             
           </div>
 
@@ -908,7 +953,10 @@
               -->
               
 
-              <button id="localRendererCollapsiple" class="collapsibleZone {{{ GenerateLocalRendererOptions 'class' }}}" type="button">OPTIONS</button>
+              <button id="localRendererCollapsiple"
+                      class="collapsibleZone optionsButton {{{ GenerateLocalRendererOptions 'class' }}}"
+                      type="button"
+                      >OPTIONS</button>
 
               <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2); padding:0;">
 
@@ -959,105 +1007,95 @@
                 -->
                 
                 <div style="padding:10px;">
-                
-
-                <table style="width:100%;">
-                  <tr>
-                    <td width="60%" style="font-size: 0.7em;">Disable local renderer</td>
-                    <td width="20%" ALIGN="center">
-                      <div class="toggle-container">
-                        <label class="vc-switch">
-                        <input  id="toggleRendererWindowProgramMain"
-                                {{#ifValue disableLRender "true"}}
-                                  checked
-                                {{/ifValue}}
-                                type="checkbox"
-                                class="vc-switch-input"
-                                onClick="toggleLRendererHandler(this, 'toggleLRender');"/>
-                        <span id="recSlider" class="vc-switch-label"></span>
-                        <span class="vc-handle" id="toggleLRender">
-                            {{#ifValue disableLRender "true"}}
-                              YES
-                            {{else}}
-                              NO
-                            {{/ifValue}}
-                        </span>
-                        </label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr> 
-                    <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
-                      Popup renderer
-                    </td>
-                    <td width="20%" ALIGN="center">
-                      <div class="toggle-container">
-                        <label class="vc-switch">
-                        <input  id="toggleRendererWindowProgram"
-                                {{#ifValue renderer "popup"}}
-                                  checked
-                                {{/ifValue}}
-                                type="checkbox"
-                                class="vc-switch-input"
-                                onClick="toggleSwitchHandler(this, 'toggle1', 'program');"/>
-                        <span id="recSlider" class="vc-switch-label"></span>
-                        <span class="vc-handle" id="toggle1">
-                            {{#ifValue renderer "popup"}}
-                              ON
-                            {{else}}
-                              OFF
-                            {{/ifValue}}
-                        </span>
-                        </label>
-                      </div>
-                    </td>
-                    <td width="20%"  ALIGN="center" style="padding:0;">
-                      <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0; height: 1.7em;"
-                              class="btn bg_grey ripple"
-                              data-defaultTip = 'Program in a viewer'
-                              data-toggleText = 'Copy program output url'
-                              onmouseover="toggleTip('toggleInfo1', this, 'data-toggleText')"
-                              onmouseout ="toggleTip('toggleInfo1', this, 'data-defaultTip')"
-                              onclick = "copyRendererUrl()"
-                              ><i class="fas fa-clipboard"></i> URL</button>
-                    </td>
-                  </tr>
-                </table>
-
-                <table style="width:100%;">
-                  <tr> 
-                    <td width="60%" id="toggleInfo2" style="font-size: 0.7em;">
-                      Show preview viewer
-                    </td>
-                    <td width="20%" ALIGN="center">
-                      <div class="toggle-container">
-                        <label class="vc-switch">
-                        <input id="toggleRendererWindowPreview" type="checkbox" data-on="LOOP" data-off="OFF" class="vc-switch-input"  onClick="toggleSwitchHandler(this, 'toggle2', 'preview');"/>
-                        <span id="recSlider" class="vc-switch-label"></span>
-                        <span class="vc-handle" id="toggle2">OFF</span>
-                        </label>
-                      </div>
-                    </td>
-                    <td width="20%"  ALIGN="center" style="padding:0;">
+                  <table style="width:100%;">
+                    <tr>
+                      <td width="60%" style="font-size: 0.7em;">Disable local renderer</td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input  id="toggleRendererWindowProgramMain"
+                                  {{#ifValue disableLRender "true"}}
+                                    checked
+                                  {{/ifValue}}
+                                  type="checkbox"
+                                  class="vc-switch-input"
+                                  onClick="toggleLRendererHandler(this, 'toggleLRender');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggleLRender">
+                              {{#ifValue disableLRender "true"}}
+                                YES
+                              {{else}}
+                                NO
+                              {{/ifValue}}
+                          </span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
+                        Popup renderer
+                      </td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input  id="toggleRendererWindowProgram"
+                                  {{#ifValue renderer "popup"}}
+                                    checked
+                                  {{/ifValue}}
+                                  type="checkbox"
+                                  class="vc-switch-input"
+                                  onClick="toggleSwitchHandler(this, 'toggle1', 'program');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggle1">
+                              {{#ifValue renderer "popup"}}
+                                ON
+                              {{else}}
+                                OFF
+                              {{/ifValue}}
+                          </span>
+                          </label>
+                        </div>
+                      </td>
+                      <td width="20%"  ALIGN="center" style="padding:0;">
                         <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0; height: 1.7em;"
-                              class="btn bg_grey ripple"
-                              data-defaultTip = 'Show preview viewer'
-                              data-toggleText = 'Copy preview output url'
-                              onmouseover="toggleTip('toggleInfo2', this, 'data-toggleText')"
-                              onmouseout ="toggleTip('toggleInfo2', this, 'data-defaultTip')"
-                              onclick = "copyRendererUrl(true)"
-                              ><i class="fas fa-clipboard"></i> URL</button>
-                    </td>
-                  </tr>
-                </table>
+                                class="btn bg_grey ripple"
+                                data-defaultTip = 'Program in a viewer'
+                                data-toggleText = 'Copy program output url'
+                                onmouseover="toggleTip('toggleInfo1', this, 'data-toggleText')"
+                                onmouseout ="toggleTip('toggleInfo1', this, 'data-defaultTip')"
+                                onclick = "copyRendererUrl()"
+                                ><i class="fas fa-clipboard"></i> URL</button>
+                      </td>
+                    </tr>
+                  </table>
 
-                <!--<table cellspacing="4" style="width: 100%; margin-top: 1em;">
-                  <tr>
-                    <td style="text-align: right; font-size: 0.7em; padding: 0.2em; background: rgba(0,0,0,0.1);">
-                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spx.graphics">SPX Store</a> for more.</span>
-                    </td>
-                  </tr>
-                </table>-->
+                  <table style="width:100%;">
+                    <tr> 
+                      <td width="60%" id="toggleInfo2" style="font-size: 0.7em;">
+                        Show preview viewer
+                      </td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input id="toggleRendererWindowPreview" type="checkbox" data-on="LOOP" data-off="OFF" class="vc-switch-input"  onClick="toggleSwitchHandler(this, 'toggle2', 'preview');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggle2">OFF</span>
+                          </label>
+                        </div>
+                      </td>
+                      <td width="20%"  ALIGN="center" style="padding:0;">
+                          <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0; height: 1.7em;"
+                                class="btn bg_grey ripple"
+                                data-defaultTip = 'Show preview viewer'
+                                data-toggleText = 'Copy preview output url'
+                                onmouseover="toggleTip('toggleInfo2', this, 'data-toggleText')"
+                                onmouseout ="toggleTip('toggleInfo2', this, 'data-defaultTip')"
+                                onclick = "copyRendererUrl(true)"
+                                ><i class="fas fa-clipboard"></i> URL</button>
+                      </td>
+                    </tr>
+                  </table>
 
                 </div>
               </div>
@@ -1080,7 +1118,6 @@
     </div><!-- content end -->
 
 
-
     {{>footer}}
 </div><!-- wrapper end -->
   
@@ -1090,6 +1127,23 @@
 
     // console.log('Init tooltip');
     var tooltip = new Tooltip();
+
+    function localRendererLoaded() {
+      // console.log('Local renderer loaded!');
+      document.getElementById('loaderHolder').style.display='none';
+      let AutoPlayEnabled = {{{autoplayLocalRenderer}}} || false;
+      if (AutoPlayEnabled) {
+        var items = document.querySelectorAll('[data-spx-onair]');
+        items.forEach((item, index) => {
+          if (item.getAttribute('data-spx-onair') == 'true') {
+            let itemID = item.getAttribute('data-spx-epoch');
+            playItemLocal(itemID);
+          }
+        });
+      } else {
+        // console.log('Autoplay disabled');
+      }
+    }
 
     function colorPicker(sourceButton, initialColor) {
       // Color picker
@@ -1115,8 +1169,7 @@
 
     function pageInit() {
 
-
-     // COLLAPSIPLE HANDLERS
+      // COLLAPSIPLE HANDLERS
       var coll = document.getElementsByClassName("collapsibleZone");
       var i;
       for (i = 0; i < coll.length; i++) {
@@ -1143,7 +1196,7 @@
       heartbeat(210); // page identifier
       spxInit('');
 
-    }
+    } // pageInit
 
     function forceWM() {
       // Force watermark when version is double clicked
@@ -1173,7 +1226,7 @@
       document.getElementById('previewIF').style.transform="scale("+Sca+")";
       document.getElementById('previewBG').style.opacity=1;
       document.getElementById('controllerFunctionsZone').style.opacity=1;
-      console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
+      // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
     }
 
     document.addEventListener('DOMContentLoaded', () => {

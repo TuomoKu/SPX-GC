@@ -62,14 +62,10 @@ router.get('/fileBrowser', spxAuth.CheckLogin, function (req, res) {
 }); // get /fileBrowser end
 
 router.get('/templates/empty.html', function (req, res) {
-  // let emptyhtml = path.join(__dirname + '/../static/empty.html');
-  // console.log('Haetaan empty: ' + emptyhtml);
-  // res.sendFile(emptyhtml);
   res.render('view-empty', { layout: false });
 }); // get /templates/empty.html end
 
 router.get(['/renderer/index.html','/renderer'], function (req, res) {
-
   let hideCursor = false;
 
   // Added in 1.3.0
@@ -748,7 +744,8 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
   let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
   
-  const fileDataAsJSON = await GetJsonData(datafile);
+  const fileDataAsJSON = await spx.RemoveFilepathKey(GetJsonData(datafile));
+  // fileDataAsJSON = spx.RemoveFilepathKey(fileDataAsJSON); // Added in 1.3.0
   global.rundownData = fileDataAsJSON;
 
   let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
@@ -804,8 +801,8 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
     renderer:       rnrtype,
     assetsFolder:   assetsFolder,
     disableConfigUI: disableConfigUI,
-    config:         config,
-    disableLRender: disableLRenderer
+    disableLRender: disableLRenderer,
+    autoplayLocalRenderer: config.general.autoplayLocalRenderer
   });
 
   let bgImage = ''
@@ -1085,6 +1082,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       // REMOVE TEMPLATE ITEM FROM RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
       logger.verbose('Removing template epoch [' + data.epoch + '] from rundown ' + data.listname );
       rundownDataJSONobj = await GetJsonData(data.datafile);
+      rundownDataJSONobj = spx.RemoveFilepathKey(rundownDataJSONobj); // Added in 1.3.0
       let templateIndex = -1;
       rundownDataJSONobj.templates.forEach((template,index) => {
         if ( template.itemID == data.epoch) {
@@ -1178,8 +1176,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   //        rundown to be read from memory data and not actual rundown file
   //        that was requested. Now a new forceFileRead parameter is added.
   //
-  // TODO: This does not work with API calls, when an item has outmode other
-  //       than "manual". Out is never triggered... 
 
   let templateIndex = -1; // was 0 
   try {
@@ -1188,7 +1184,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     let RundownFile = ""  // file reference
     let RundownData = ""  // file JSON
     let preventSave = false;
-    let forceDisk   = req.body.forceFileReadOnce ? true : false; // Added in 1.3.0. Read Release Notes!
+    let forceDiskRead    = req.body.forceFileReadOnce ? true : false; // Added in 1.3.0. Read Release Notes!
     let cacheRundownData = null; // Added in 1.3.0
     let autoOutTimerID = null; // Added in 1.3.0
 
@@ -1207,9 +1203,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       RundownFile = path.normalize(req.body.datafile);
       
       // Refactored in 1.0.15 to prioritize memory over disk I/O
-      // 1.3.0 added forceDisk parameter to use when API call is made.
+      // 1.3.0 added forceDiskRead parameter to use when API call is made.
       let notifyDataSource = ''
-      if ( Object.keys(global.rundownData).length === 0 || forceDisk) {
+      if ( Object.keys(global.rundownData).length === 0 || forceDiskRead ) {
         if ( Object.keys(global.rundownData).length > 0 ) {
           cacheRundownData = global.rundownData; // cache it
         }
@@ -1232,7 +1228,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       }
 
       let ItemData = RundownData.templates[templateIndex];
-      // console.log('gc/playout handler. Current items data:',ItemData);
       dataOut.relpath   = ItemData.relpath;
       dataOut.relpathCCG = ItemData.relpath.split('.htm')[0]; // casparCG needs template path without htm/html -extension. 
       dataOut.playserver = ItemData.playserver;
@@ -1268,9 +1263,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             dataOut.fields.push(FieldItem);
           }
         });
-        // 1.0.12 eventID for "calling home"
-        // 1.1.15 moved out from the forEach loop
-        dataOut.fields.push({'field':'epochID', 'value':req.body.epoch}); 
+      dataOut.fields.push({'field':'epochID', 'value':req.body.epoch}); 
     } // else
     
     let playOutCommand = "";
@@ -1301,30 +1294,41 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         break;
 
 
+      // == AUTOPLAY ===================================================
+      case 'autoPlayLocal':
+        // Update local renderer when a rundown is reloaded
+        logger.verbose('Webplayout autoPlayLocal: ' + dataOut.webplayout);
+        dataOut.spxcmd = 'playTemplate';
+        dataOut.modify = 'autoPlayLocal';
+        PlayoutWEB.webPlayoutController(dataOut);
+        break;
+
       // == PLAY ======================================================
       case 'play':
+        let playingSomewhere = false; // Added in 1.3.0
 
         // Send PlayoutCCG.functionCalls() if any ---------------------
         if ( dataOut.playserver && dataOut.playserver!='-' && spx.CCGServersConfigured ) { // 1.1.3 added dataOut.playserver
           dataOut.command="ADD";
           logger.verbose('CasparCG play: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
+          playingSomewhere = true;
           PlayoutCCG.playoutController(dataOut);
         } else {
           logger.verbose('No CasparCG playout');
         }
         
-        if (!preventSave) {RundownData.templates[templateIndex].onair='true';} // moved from inside of CCG
-
         // Send PlayoutWEB.functionCalls() if any ---------------------
         if (dataOut.webplayout && dataOut.webplayout!='-') {
           logger.verbose('Webplayout PLAY: ' + dataOut.webplayout);
           dataOut.spxcmd = 'playTemplate';
-          PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
+          playingSomewhere = true;
+          PlayoutWEB.webPlayoutController(dataOut);
         } else {
           logger.warn('No Webplayout playout layer given');
         }
 
-        // iterate all templates and allow only the latest update (for same playout) to be on-air at once
+        // iterate all templates and allow only the latest update
+        // (for same playout) to be on-air at once
         if (RundownData.templates){
           // prepopulated does not necessarily have "templates"
           RundownData.templates.forEach((item,index) => {
@@ -1345,18 +1349,22 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             if (index!=templateIndex && thisOutput==dataOutput){
               RundownData.templates[index].onair='false';
             }
+
+            if (index==templateIndex && playingSomewhere){
+              RundownData.templates[index].onair='true';
+            }
           });
         }
 
         // API Call executed. Should we set an autostop?
-        if (forceDisk || req.body.referrer == 'directplayout') {
+        if (forceDiskRead || req.body.referrer == 'directplayout') {
           let numeric = parseInt(dataOut.out);
           if (isNaN(numeric)) {
             logger.verbose('API call: out was not a number, skipping autostop.');
           } else {
             logger.verbose('API call: autostop item in ' + numeric + ' ms.');
             autoOutTimerID = setTimeout(function() {
-              playoutSTOP(dataOut, preventSave, templateIndex, RundownData);
+              playoutSTOP(dataOut, templateIndex, RundownData);
             }, numeric);
          }
         }
@@ -1366,18 +1374,20 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
       // == NEXT / aka CONTINUE  ========================================
       case 'next':
-        
+
+        if (dataOut.playserver!='-' || dataOut.webplayout!='-') {
+          RundownData.templates[templateIndex].onair='true';
+        }
+      
         // Send PlayoutCCG.functionCalls() if any ---------------------
         if (dataOut.playserver!='-'){
           dataOut.command="NEXT";
           logger.verbose('CasparCG next: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
           PlayoutCCG.playoutController(dataOut);
-          if (!preventSave) {RundownData.templates[templateIndex].onair='true';}
         } else {
           logger.verbose('No CasparCG playout');
         }
         
-
         // Send PlayoutWEB.functionCalls() if any ---------------------
         if (dataOut.webplayout!='-'){
           logger.verbose('Webplayout NEXT: ' + dataOut.webplayout);
@@ -1392,37 +1402,15 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
         // == STOP ======================================================
       case 'stop':
-        
-        await playoutSTOP(dataOut, preventSave, templateIndex, RundownData);
-
-        // logger.verbose('Stopping [' + dataOut.relpath + ']');
-        // if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
-        // // Send PlayoutCCG.functionCalls() if any ---------------------
-        // if (dataOut.playserver!='-'){
-        //   dataOut.command="STOP";
-        //   logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
-        //   PlayoutCCG.playoutController(dataOut);
-        // } else {
-        //   logger.verbose('No CasparCG playout');
-        // }
-        
-
-        // // Send PlayoutWEB.functionCalls() if any ---------------------
-        // if (dataOut.webplayout!='-'){
-        //   logger.verbose('Webplayout STOP: ' + dataOut.webplayout);
-        //   dataOut.spxcmd = 'stopTemplate';
-        //   PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
-        //   // io.emit('SPXMessage2Client', dataOut);
-        // } else {
-        //   logger.verbose('No Webplayout playout');
-        // }
+        await playoutSTOP(dataOut, templateIndex, RundownData);
+        RundownData.templates[templateIndex].onair='false';
         break;
     
 
       // == UPDATE ======================================================
       case 'update':
         logger.verbose('Updating [' + dataOut.relpath + ']');
-        if (!preventSave) {RundownData.templates[templateIndex].onair='true';}        
+        // RundownData.templates[templateIndex].onair='true'; // yes. no?
 
         if (dataOut.playserver!='-'){
           // TODO: Update functions not deeply properly tested.
@@ -1438,8 +1426,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           logger.verbose('Webplayout UPDATE: ' + dataOut.webplayout);
           dataOut.spxcmd = 'updateTemplate';
           dataOut.fields = req.body.fields;
-          // io.emit('SPXMessage2Client', dataOut);
-          PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
+          PlayoutWEB.webPlayoutController(dataOut);
         } else {
           logger.verbose('No Webplayout playout');
         }
@@ -1469,10 +1456,12 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         break;
     }
 
-    // persist to file.
-    if (!preventSave) {
-      RundownData.updated = new Date().toISOString();
-      global.rundownData = RundownData // memory only
+    // persist to memory and to disk
+    RundownData.updated = new Date().toISOString();
+    global.rundownData = RundownData // memory only
+    if (playOutCommand == 'play' || playOutCommand == 'stop') {
+      // Added in 1.3.0
+      await spx.writeFile(RundownFile, RundownData);
     }
 
     // Added in 1.3.0 / Restore cache (after an API call)
@@ -1488,6 +1477,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         throw(playOutCommand + ' warning! Template not found: ' + dataOut.relpath);
       }
     }
+
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try
   catch (error) {
@@ -1632,12 +1622,15 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
   try {
     var ConfigFile = global.configfileref;
     var ConfigData = await GetJsonData(ConfigFile);
-    let key = req.body.key;
-    let val = req.body.val;
-    if (!key && !val) {
-      throw 'Key [' + key + '] or val [' + val + '] was missing, skipping save.';
+
+    let key = req.body.key || null;
+    let val = req.body.val || null;
+
+    if (key==null || val==null) {
+      throw 'Key [' + key + '] or val [' + val + '] was missing from request, skipping config save.';
     }
-    
+  
+    // bug fixed in v1.3.0 (checked truthiness before so "false" or "0" would not be saved)
     ConfigData.general[key] = val;
     global.config = ConfigData; // update mem version also
     await spx.writeFile(ConfigFile,ConfigData);
@@ -1661,6 +1654,7 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
     // spx.talk('Saving template changes from rundown.');
     var RundownFile = path.normalize(req.body.rundownfile);
     var RundownData = await GetJsonData(RundownFile);
+    RundownData = spx.RemoveFilepathKey(RundownData); // Added in 1.3.0
     var DataFieldsForCollapsePreview;
     RundownData.templates.forEach((template,TemplateIdx) => {
         if (template.itemID == req.body.epoch){
@@ -1885,7 +1879,7 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
     // console.log('Saving rundown data to disc...', global.rundownData);
 
     if (!global.rundownData) {
-      // console.log('No data in memory to save to disk.');
+      console.log('No data in memory to save to disk.');
       return
     }; // no data to store
 
@@ -1898,14 +1892,13 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
 
       if (filepathFromCSVimport) {
         targetRundownFile = filepathFromCSVimport;
-      } else {
-        targetRundownFile = RundownData.filepath || ''
-        // console.log('-----> targetRundownFile', targetRundownFile);
+      // } else {
+      //   targetRundownFile = RundownData.filepath || ''
       }
 
       if (targetRundownFile) {
-        // delete RundownData.filepath;
         RundownData.updated = new Date().toISOString();
+        RundownData = await spx.RemoveFilepathKey(RundownData); // Added in 1.3.0
         await spx.writeFile(targetRundownFile,RundownData); // 1.1.0
       } else {
         logger.verbose('No targetRundownFile known, cannot save.');
@@ -1964,10 +1957,9 @@ async function GetJsonData(fileref) {
 } // GetJsonData ended
 
 
-async function playoutSTOP(dataOut, preventSave, templateIndex, RundownData) {
+async function playoutSTOP(dataOut, templateIndex, RundownData) {
   // Refactored in 1.3.0 to handle stop commands
   logger.verbose('Stopping [' + dataOut.relpath + ']');
-  if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
   // Send PlayoutCCG.functionCalls() if any ---------------------
   if (dataOut.playserver!='-'){
     dataOut.command="STOP";

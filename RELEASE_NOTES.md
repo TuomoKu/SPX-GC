@@ -6,15 +6,20 @@
 
 ## WORK IN PROGRESS
 
-> List updated May 06 2024
+> List updated May 13 2024
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
+
+**Bugs**
+- Some API calls fail if user/password is set in config.json (discovered by Brad). Text information is shown in the console to explain this issue.
+- 
 
 
 **Completed items** (added, but not yet released):
 - Improved API, documentation and response messages
+- Enabling **CAPS LOCK** will display rundown item's layers and other useful info
 - Added `/allrundowns` endpoint to the API that returns all projects and their run
-- Added `/feedproxy` POST endpoint for supporting custom headers for ouotgoing GET requests
+- Added `/feedproxy` POST endpoint for supporting custom headers for outgoing GET requests
 - Added `/executeScript?file=<myScript.bat>` API endpoint for running scripts from `ASSETS/scripts` -folder
 - Added `rundown/json?project=<projectName>&rundown=<rundownName>` API endpoint that returns data from a given rundown
 - Added `rundown/json` POST API endpoint for saving (externally generated) rundown to a project
@@ -35,6 +40,8 @@
 - Added `light` rundown mode (add `/light` to the end of rundown URL's). This is still an **experimental feature** and may have bugs.
 - Added default dataformat from `XML` to `JSON` at import (if not given)
 - Changed default webplayout layer from `-`  to `20` at import (if not given)
+- Binary packager pkg@5.8.0 replaced with `npm install -g @yao-pkg/pkg`
+- also builder changed from ``
 
 
 <br>

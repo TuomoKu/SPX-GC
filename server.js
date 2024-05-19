@@ -2,7 +2,7 @@
 // ===============================================================
 //
 // "SPX Graphics Controller"
-// (c) 2020- Softpix (https://spx.graphics)
+// (c) 2020- SPX Graphics (https://spx.graphics)
 // 
 // An open source PROFESSIONAL LIVE GRAPHICS solution for
 // PC, Mac, Linux or the cloud. 
@@ -886,7 +886,7 @@ process.on('uncaughtException', function(err) {
 
 var server = app.listen(port, (err) => {
 
-  let splash = '  Copyright 2020- Softpix\n\n' +
+  let splash = '  Copyright 2020- SPX Graphics\n\n' +
   `  SPX version ............ ${global.vers}\n` +  
   '  License ................ See LICENSE.txt\n' +
   '  Homepage ............... https://spx.graphics\n' +

@@ -33,245 +33,245 @@ let ack2 = 'Sent request to SPX Controller. Acknowledgement is not to be expecte
 const apiHandler = require('../utils/api-handlers.js');
 
 
-// ROUTES -------------------------------------------------------------------------------------------
-router.get('/', function (req, res) {
-  let functionsDoc = {
-      "sections" : [
+  // ROUTES -------------------------------------------------------------------------------------------
+  router.get('/', function (req, res) {
+    let functionsDoc = {
+        "sections" : [
 
-        {
-          "section"   :     "Rundown commands and navigation",
-          "info"      :     "Commands to load playlists, move focus on the opened rundown etc.",
-          "endpoint"  :     "/api/v1/rundown/",
-          "commands": [
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "load?file=MyFirstProject/MyFirstRundown",
-              "info"    :     "Open rundown from project / file."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "focusFirst",
-              "info"    :     "Move focus to the first item on the rundown."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "focusNext",
-              "info"    :     "Move focus down to next item, will not circle back to top when end is reached."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "focusPrevious",
-              "info"    :     "Move focus up to previous item, will not circle back to bottom when top is reached."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "focusLast",
-              "info"    :     "Move focus to the last item on the rundown."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "focusByID/1234567890",
-              "info"    :     "Move focus by ID on the rundown."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "stopAllLayers",
-              "info"    :     "Animate all layers (used by the current rundown) out, but does not clear layers."
-            }
+          {
+            "section"   :     "Rundown commands and navigation",
+            "info"      :     "Commands to load playlists, move focus on the opened rundown etc.",
+            "endpoint"  :     "/api/v1/rundown/",
+            "commands": [
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "load?file=MyFirstProject/MyFirstRundown",
+                "info"    :     "Open rundown from project / file."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "focusFirst",
+                "info"    :     "Move focus to the first item on the rundown."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "focusNext",
+                "info"    :     "Move focus down to next item, will not circle back to top when end is reached."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "focusPrevious",
+                "info"    :     "Move focus up to previous item, will not circle back to bottom when top is reached."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "focusLast",
+                "info"    :     "Move focus to the last item on the rundown."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "focusByID/1234567890",
+                "info"    :     "Move focus by ID on the rundown."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "stopAllLayers",
+                "info"    :     "Animate all layers (used by the current rundown) out, but does not clear layers."
+              }
 
-          ]
-        },
+            ]
+          },
 
-        {
-          "section"   :     "Playback controls",
-          "info"      :     "Commands for rundown items. API response is rundown reference, id of rundown item and it's current playout status and server info.",
-          "endpoint"  :     "/api/v1/item/",
-          "commands": [
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "play",
-              "info"    :     "Start focused item."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "play/1234567890",
-              "info"    :     "Start item by ID on the active rundown."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "continue",
-              "info"    :     "Issue continue command to selected item. Notice this needs support from the template itself and does not work as play or stop."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "continue/1234567890",
-              "info"    :     "Continue to item by ID on the active rundown. Notice this needs support from the template itself and does not work as play or stop."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "stop",
-              "info"    :     "Stop focused item."
-            },
-            {
-              "vers"    :     "1.0",
-              "method"  :     "GET",
-              "param"   :     "stop/1234567890",
-              "info"    :     "Stop item by ID on the active rundown."
-            }
+          {
+            "section"   :     "Playback controls",
+            "info"      :     "Commands for rundown items. API response is rundown reference, id of rundown item and it's current playout status and server info.",
+            "endpoint"  :     "/api/v1/item/",
+            "commands": [
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "play",
+                "info"    :     "Start focused item."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "play/1234567890",
+                "info"    :     "Start item by ID on the active rundown."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "continue",
+                "info"    :     "Issue continue command to selected item. Notice this needs support from the template itself and does not work as play or stop."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "continue/1234567890",
+                "info"    :     "Continue to item by ID on the active rundown. Notice this needs support from the template itself and does not work as play or stop."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "stop",
+                "info"    :     "Stop focused item."
+              },
+              {
+                "vers"    :     "1.0",
+                "method"  :     "GET",
+                "param"   :     "stop/1234567890",
+                "info"    :     "Stop item by ID on the active rundown."
+              }
 
-          ]
-        },
+            ]
+          },
 
-        {
-          "section"   :     "Direct commands",
-          "info"      :     "Commands which does not require rundown to be loaded",
-          "endpoint"  :     "/api/v1/",
-          "commands": [
-            {
-              "vers"    :     "v1.0.12",
-              "method"  :     "POST",
-              "param"   :     "directplayout",
-              "info"    :     "Populate template and execute a play/continue/stop -command to it. Post request body example as JSON:",
-              "code"    :     {casparServer: "OVERLAY",  casparChannel: "1", casparLayer: "20", webplayoutLayer: "20", relativeTemplatePath: "/vendor/pack/template.html", out: "manual", DataFields: [{field: "f0", value: "Firstname"},{field: "f1", value: "Lastname"}], command: "play"}
-           },
-            {
-              "vers"    :     "v1.1.0",
-              "method"  :     "GET",
-              "param"   :     "controlRundownItemByID?file=MyProject/FirstRundown&item=1616702200909&command=play",
-              "info"    :     "Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
-            }
-          ]
-        },
+          {
+            "section"   :     "Direct commands",
+            "info"      :     "Commands which does not require rundown to be loaded",
+            "endpoint"  :     "/api/v1/",
+            "commands": [
+              {
+                "vers"    :     "v1.0.12",
+                "method"  :     "POST",
+                "param"   :     "directplayout",
+                "info"    :     "Populate template and execute a play/continue/stop -command to it. Post request body example as JSON:",
+                "code"    :     {casparServer: "OVERLAY",  casparChannel: "1", casparLayer: "20", webplayoutLayer: "20", relativeTemplatePath: "/vendor/pack/template.html", out: "manual", DataFields: [{field: "f0", value: "Firstname"},{field: "f1", value: "Lastname"}], command: "play"}
+            },
+              {
+                "vers"    :     "v1.1.0",
+                "method"  :     "GET",
+                "param"   :     "controlRundownItemByID?file=MyProject/FirstRundown&item=1616702200909&command=play",
+                "info"    :     "Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
+              }
+            ]
+          },
 
-        {
-          "section"   :     "Helpers",
-          "info"      :     "Utility API calls",
-          "endpoint"  :     "/api/v1/",
-          "commands": [
-            {
-              "vers"    :     "v1.0.14",
-              "method"  :     "GET",
-              "param"   :     "feedproxy?url=https://feeds.bbci.co.uk/news/rss.xml&format=xml",
-              "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "POST",
-              "param"   :     "feedproxy",
-              "info"    :     "A POST version of the feedproxy endpoint. This endpoint is a helper for GET requests requiring custom headers, such as <code>Authorization</code> or similar. Data is passed in the <code>body</code> of the POST request, in which <code>url</code> is the actual URL of the external endpoint. See principle in the example below, or search SPX Knowledge Base for more info with keyword <code>feedproxy</code>.",
-              "code"    :     {url: "https://api.endpoint.com/requiring/customheaders/", headers: {"key1": "my first value", "key2": "second value"}}
-            },
-            {
-              "vers"    :     "v1.1.0",
-              "method"  :     "GET",
-              "param"   :     "panic",
-              "info"    :     "Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "getprojects",
-              "info"    :     "Returns projects as an array of strings."
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "getrundowns?project=HelloWorld-project",
-              "info"    :     "Returns rundown names of a given project as an array of strings."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "allrundowns",
-              "info"    :     "Returns all projects and rundowns"
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "rundown/get",
-              "info"    :     "Returns current rundown as json. "
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "rundown/json?project=HelloWorld-project&rundown=My%20first%20rundown",
-              "info"    :     "Returns content of a specific rundown as json data."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "POST",
-              "param"   :     "rundown/json",
-               "info"    :    "Creates or updates a rundown file. This can be used for example with application extensions. POST <code>body:content</code> must contain valid rundown JSON data, otherwise SPX controller may not be able to read it. For more info search SPX Knowledge Base with keyword <code>api rundown/json</code>",
-               "code"    :     {project: "myProjectName", file: "newRundown.json", content: {comment: "Playlist generated by MyApp", templates: [{"description": "First template", "playserver": "OVERLAY", "etc": "..."},{"description": "Second template", "playserver": "OVERLAY", "etc": "..."}]}}
-            },
-            {
-              "vers"    :     "v1.1.1",
-              "method"  :     "GET",
-              "param"   :     "getlayerstate",
-              "info"    :     "Returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
-            },
-            {
-              "vers"    :     "v1.1.2",
-              "method"  :     "GET",
-              "param"   :     "version",
-              "info"    :     "Returns SPX version info"
-            },
-            {
-              "vers"    :     "v1.1.3",
-              "method"  :     "GET",
-              "param"   :     "gettemplates?project=HelloWorld-project",
-              "info"    :     "Returns templates and their settings from a given project."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "executeScript?file=win-open-calculator.bat",
-              "info"    :     "Execute a shell script/batch file in <code>ASSETS/scripts</code> folder using a shell associated with a given file extension."
-            },
-            {
-              "vers"    :     "v1.0.12",
-              "method"  :     "GET",
-              "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
-              "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above. JSON objects can be passed as params by urlEncoding stringified JSON. Search SPX Knowledge Base for more info with keyword <code>invoke</code>.",
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "invokeExtensionFunction?function=sendCmd&params=incrementNumber",
-              "info"    :     "Uses SPX's messaging system to call a function in an extension. JSON objects can be passed as params by urlEncoding stringified JSON. The extension will need to implement SPX's messaging system, search SPX Knowledge Base for more info with keyword <code>invokeExtensionFunction</code>."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "GET",
-              "param"   :     "getFileList?assetsfolder=excel",
-              "info"    :     "Returns an array of filenames fround in a given subfolder of ASSETS, such as <code>excel</code>."
-            },
-            {
-              "vers"    :     "v1.3.0",
-              "method"  :     "POST",
-              "param"   :     "saveCustomJSON",
-               "info"    :    "Creates or updates a JSON file in ASSETS/json folder. This can be used for persisting arbitrary data to a JSON file. The <code>content</code> property of the below example gets saved to <code>ASSETS/json/todoApp/myTodo.json</code>. Note the subfolder property is optional.",
-               "code"    :     {subfolder: "todoApp", filename: "myData.json", content: {note: "Get these done by the end of month", items: [{"task": "Grow a beard", "done": false},{"task": "Get a haircut", "done": true}]}}
-            },
-          ]
-        }
+          {
+            "section"   :     "Helpers",
+            "info"      :     "Utility API calls",
+            "endpoint"  :     "/api/v1/",
+            "commands": [
+              {
+                "vers"    :     "v1.0.14",
+                "method"  :     "GET",
+                "param"   :     "feedproxy?url=https://feeds.bbci.co.uk/news/rss.xml&format=xml",
+                "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources."
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "POST",
+                "param"   :     "feedproxy",
+                "info"    :     "A POST version of the feedproxy endpoint. This endpoint is a helper for GET requests requiring custom headers, such as <code>Authorization</code> or similar. Data is passed in the <code>body</code> of the POST request, in which <code>url</code> is the actual URL of the external endpoint. See principle in the example below, or search SPX Knowledge Base for more info with keyword <code>feedproxy</code>.",
+                "code"    :     {url: "https://api.endpoint.com/requiring/customheaders/", headers: {"key1": "my first value", "key2": "second value"}}
+              },
+              {
+                "vers"    :     "v1.1.0",
+                "method"  :     "GET",
+                "param"   :     "panic",
+                "info"    :     "Force clear to all output layers without out-animations. (Note, this does NOT save on-air state of rundown items to false, so when UI is reloaded the items will show the state before panic was triggered.) This is to be used for emergency situations only and not as a normal STOP command substitute."
+              },
+              {
+                "vers"    :     "v1.1.1",
+                "method"  :     "GET",
+                "param"   :     "getprojects",
+                "info"    :     "Returns projects as an array of strings."
+              },
+              {
+                "vers"    :     "v1.1.1",
+                "method"  :     "GET",
+                "param"   :     "getrundowns?project=HelloWorld-project",
+                "info"    :     "Returns rundown names of a given project as an array of strings."
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "GET",
+                "param"   :     "allrundowns",
+                "info"    :     "Returns all projects and rundowns"
+              },
+              {
+                "vers"    :     "v1.1.1",
+                "method"  :     "GET",
+                "param"   :     "rundown/get",
+                "info"    :     "Returns current rundown as json. "
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "GET",
+                "param"   :     "rundown/json?project=HelloWorld-project&rundown=My%20first%20rundown",
+                "info"    :     "Returns content of a specific rundown as json data."
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "POST",
+                "param"   :     "rundown/json",
+                "info"    :    "Creates or updates a rundown file. This can be used for example with application extensions. POST <code>body:content</code> must contain valid rundown JSON data, otherwise SPX controller may not be able to read it. For more info search SPX Knowledge Base with keyword <code>api rundown/json</code>",
+                "code"    :     {project: "myProjectName", file: "newRundown.json", content: {comment: "Playlist generated by MyApp", templates: [{"description": "First template", "playserver": "OVERLAY", "etc": "..."},{"description": "Second template", "playserver": "OVERLAY", "etc": "..."}]}}
+              },
+              {
+                "vers"    :     "v1.1.1",
+                "method"  :     "GET",
+                "param"   :     "getlayerstate",
+                "info"    :     "Returns current memory state of web-playout layers of the server (not UI). Please note, if API commands are used to load templates, this may not return them as expected!"
+              },
+              {
+                "vers"    :     "v1.1.2",
+                "method"  :     "GET",
+                "param"   :     "version",
+                "info"    :     "Returns SPX version info"
+              },
+              {
+                "vers"    :     "v1.1.3",
+                "method"  :     "GET",
+                "param"   :     "gettemplates?project=HelloWorld-project",
+                "info"    :     "Returns templates and their settings from a given project."
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "GET",
+                "param"   :     "executeScript?file=win-open-calculator.bat",
+                "info"    :     "Execute a shell script/batch file in <code>ASSETS/scripts</code> folder using a shell associated with a given file extension."
+              },
+              {
+                "vers"    :     "v1.0.12",
+                "method"  :     "GET",
+                "param"   :     "invokeTemplateFunction?playserver=OVERLAY&playchannel=1&playlayer=19&webplayout=19&function=myCustomTemplateFunction&params=Hello%20World",
+                "info"    :     "Uses an invoke handler to call a function in a template. See required parameters in the example call above. JSON objects can be passed as params by urlEncoding stringified JSON. Search SPX Knowledge Base for more info with keyword <code>invoke</code>.",
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "GET",
+                "param"   :     "invokeExtensionFunction?function=sendCmd&params=incrementNumber",
+                "info"    :     "Uses SPX's messaging system to call a function in an extension. JSON objects can be passed as params by urlEncoding stringified JSON. The extension will need to implement SPX's messaging system, search SPX Knowledge Base for more info with keyword <code>invokeExtensionFunction</code>."
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "GET",
+                "param"   :     "getFileList?assetsfolder=excel",
+                "info"    :     "Returns an array of filenames fround in a given subfolder of ASSETS, such as <code>excel</code>."
+              },
+              {
+                "vers"    :     "v1.3.0",
+                "method"  :     "POST",
+                "param"   :     "saveCustomJSON",
+                "info"    :    "Creates or updates a JSON file in ASSETS/json folder. This can be used for persisting arbitrary data to a JSON file. The <code>content</code> property of the below example gets saved to <code>ASSETS/json/todoApp/myTodo.json</code>. Note the subfolder property is optional.",
+                "code"    :     {subfolder: "todoApp", filename: "myData.json", content: {note: "Get these done by the end of month", items: [{"task": "Grow a beard", "done": false},{"task": "Get a haircut", "done": true}]}}
+              },
+            ]
+          }
 
-      ]
-    }
-    res.render('view-api-v1', { layout: false, functionList:functionsDoc });
-});
+        ]
+      }
+      res.render('view-api-v1', { layout: false, functionList:functionsDoc });
+  });
 
 
 // DIRECT COMMANDS (bypassing rundown) ----------------------------------------------------------
@@ -440,8 +440,8 @@ router.get('/', function (req, res) {
 
     router.get('/version', spxAuth.CheckAPIKey, async (req, res) => {
       let data = {};
-      data.vendor = "Softpix";
-      data.product = "SPX";
+      data.vendor = "SPX Graphics";
+      data.product = "SPX Server";
       data.version = global.vers;
       data.id = global.pmac;
       data.os = process.platform;
@@ -470,6 +470,12 @@ router.get('/', function (req, res) {
 
     router.get('/feedproxy', spxAuth.CheckAPIKey, async (req, res) => {
       // added in 1.0.14
+
+      if (!req.query.url) {
+        logger.error('URL missing from feedproxy parameters');
+        return res.status(500).json({ type: 'error', message: 'URL missing from parameters' })
+      }
+
       axios.get(req.query.url)
       .then(function (response) {
         res.header('Access-Control-Allow-Origin', '*')

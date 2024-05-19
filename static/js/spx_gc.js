@@ -1,8 +1,7 @@
 // ***************************************
 // Client javascript for SPX
-// Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2024 Softpix
+// (c) 2020-2024 SPX Graphics
 // ***************************************
 
 var socket = io();
@@ -175,7 +174,6 @@ socket.on('SPXMessage2Controller', function (data) {
             break;
 
         case 'ItemPlayID':
-            console.log('ItemPlayID stopping here! ', data.itemID)
             el = getElementByEpoch(data.itemID);
             if (el) {
                 // console.log('ItemPlayID: Element found', data.itemID, el);
@@ -670,23 +668,24 @@ function copyItemID(itemID, api='') {
     showMessageSlider('Copied ' + inf + ' to clipboard', 'happy');
     showItemIDs(false)
 } // copyItemID
-function toggleLRendererHandler(slider, targ) {
-    let Cfgdata = {};
-    Cfgdata.key = 'disableLocalRenderer'
-    if (slider.checked) {
-        document.getElementById(targ).innerText = 'YES';
-        document.getElementById('previewIF').src = '/templates/empty.html';
-        document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
-        Cfgdata.val = true;
+
+// function toggleLRendererHandler(slider, targ) {
+//     let Cfgdata = {};
+//     Cfgdata.key = 'disableLocalRenderer'
+//     if (slider.checked) {
+//         document.getElementById(targ).innerText = 'YES';
+//         document.getElementById('previewIF').src = '/templates/empty.html';
+//         document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
+//         Cfgdata.val = true;
         
-    } else {
-        document.getElementById('previewIF').src = '/renderer';
-        document.getElementById(targ).innerText = 'NO';
-        document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
-        Cfgdata.val = false;
-    }
-    ajaxpost('/gc/saveConfigChanges',Cfgdata);
-}
+//     } else {
+//         document.getElementById('previewIF').src = '/renderer';
+//         document.getElementById(targ).innerText = 'NO';
+//         document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
+//         Cfgdata.val = false;
+//     }
+//     ajaxpost('/gc/saveConfigChanges',Cfgdata);
+// }
 
 
 function toggleSwitchHandler(slider, targ, type) {
@@ -907,7 +906,7 @@ function copyText(txt) {
 } // copyText ended
 
 function heartbeat(dd, getOnly = false) { // 36 24 36 hey
-    // see notes TDT=00d86114
+    // see notes TDT=00d86114 (/..es2/heartbeat)
     let nw, st, key, val, dif; 
     let fD = '|';
     let vD = ':';
@@ -1618,12 +1617,7 @@ function playItem(itemrow='', forcedCommand='') {
     // FIXME: Bug found 2023-11-07 Step counter in DOM needs to be reset on Play
 
     if (!itemrow) { itemrow = getFocusedRow();  }
-    // console.log('playItem with forcedcommand "' + forcedCommand + '"', itemrow);
-
-    if (!itemrow) {
-        // console.log('No active rows, skip command.');
-        return;
-    }
+    if (!itemrow) { return; }
 
     data = {};
     data.datafile      = document.getElementById('datafile').value;
@@ -1683,8 +1677,6 @@ function playItem(itemrow='', forcedCommand='') {
         let conditionVal = null;
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
 
-        console.log('eventCondtFF element:', eventCondtFF)
-
         if (eventCondtFF) {
             if (eventCondtFF.tagName == 'SELECT') {
                 conditionVal = eventCondtFF.options[eventCondtFF.selectedIndex].value;
@@ -1693,8 +1685,7 @@ function playItem(itemrow='', forcedCommand='') {
             }
         }
 
-        console.log('onPlayCommand:', conditionVal);
-
+        // console.log('onPlayCommand:', conditionVal);
         setTimeout(function () {
             if (window[FunctionName]) {
                 window[FunctionName]([FunctionArgs, conditionVal, data.epoch]); // Added data.epoch in 1.1.4
@@ -1727,13 +1718,13 @@ function playItem(itemrow='', forcedCommand='') {
 
     // Remember, onNext is handled in nextItem();
 
-
     // auto-out trigger UI update (FIXME: verify auto-out works over direct API commands?!)
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
     // console.log('TimeoutAsString: ', TimeoutAsString);
 
-    if (!isNaN(TimeoutAsString))
-        // value is numerical, so 
+    if (!isNaN(TimeoutAsString)) {
+        // value is numerical, so
+        console.log('TimeoutAsString is a number, so it is a timeout value.'); 
         if (data.command=="play" ) {
                 // Changed in 1.0.9, failed in 1.0.8.
                 // 1.0.12: Fixed looping issue found by Koen.
@@ -1750,8 +1741,20 @@ function playItem(itemrow='', forcedCommand='') {
         } else {
             CancelOutTimerIfRunning(itemrow);
         }
+    }
 
 } // playItem
+
+function playItemLocal(itemID) {
+    // Just play an item to the local Controller preview
+    // console.log('Sending playItemLocal request (spx-gc) ' + itemID + ' in 5 secs...');
+    data = {};
+    data.datafile = document.getElementById('datafile').value;
+    data.epoch    = itemID || 0;
+    data.command  = 'autoPlayLocal';
+    ajaxpost('/gc/playout',data);
+    heartbeat(308)
+} // playItemLocal
 
 function renameRundown() {
     // Rename an existing rundown
@@ -1878,11 +1881,11 @@ function setItemButtonStates(itemrow, forcedCommand=''){
         // finally show or hide delete buttons on all items
         rows.forEach(function (item, index) {
             if (item.getAttribute('data-spx-onair')=="true" ) {
-                console.log('Hide delete buttons of ' + item.id);
+                // console.log('Hide delete buttons of ' + item.id);
                 item.querySelector('[data-spx-name="deletesmall"]').style.visibility="hidden" || (console.log('a'));
                 item.querySelector('[data-spx-name="deletelarge"]').style.visibility="hidden" || (console.log('b'));
             } else {
-                console.log('Show delete buttons of ' + item.id);
+                // console.log('Show delete buttons of ' + item.id);
                 item.querySelector('[data-spx-name="deletesmall"]').style.visibility="visible" || (console.log('c'));
                 item.querySelector('[data-spx-name="deletelarge"]').style.visibility="visible" || (console.log('d'));
             }
@@ -2276,9 +2279,27 @@ function hideMessageSlider() {
 
 function showMessageSlider(msg, type='info', persist=false) {
     // show a sliding message at the top of the page
+    // type: happy, info, warn, error
+    // persist: if true, do not auto-hide
+    // Example usage in templates (or extensions, remember to
+    // add dom element:)
+    /*
+        <div id="messageSlider" style="opacity:0;"></div>
+    */
+    /*
+        top?.showMessageSlider?.('Hello graphics operator!', 'happy');
+    */
+
 
     let txt = msg;
     let typ = type; // happy, info, warn, error (classes happyMsg, infoMsg, warnMsg, errorMsg...)
+    let domElement
+    if (document.getElementById('messageSlider')) {
+            domElement = document.getElementById('messageSlider');
+    } else {
+        console.warn('SPX message: ' + msg);
+        return;
+    }
 
     switch (msg) {
         case 'invalidCSV':
@@ -2286,10 +2307,10 @@ function showMessageSlider(msg, type='info', persist=false) {
           typ = 'error'
       }
 
-    document.getElementById('messageSlider').innerHTML = txt;
-    document.getElementById('messageSlider').classList =  typ + 'Msg';
-    document.getElementById('messageSlider').style.transform = 'translateX(-50%)'; // init pos
-    document.getElementById('messageSlider').style.opacity = 0;
+    domElement.innerHTML = txt;
+    domElement.classList =  typ + 'Msg';
+    domElement.style.transform = 'translateX(-50%)'; // init pos
+    domElement.style.opacity = 0;
     anime({
         targets:        '#messageSlider',
         opacity:        [0,1],
@@ -2316,7 +2337,6 @@ function showMessageSlider(msg, type='info', persist=false) {
             easing:         'easeInCubic'
         });
     }, 2000);
-
 } // showMessageSlider
 
 function spx_system(cmd,servername='') {
@@ -2521,6 +2541,7 @@ function toggleLRendererHandler(slider, targ) {
         document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
         Cfgdata.val = false;
     }
+    console.log('Sending config change to server', Cfgdata);
     ajaxpost('/gc/saveConfigChanges',Cfgdata);
 } // toggleLRendererHandler
 

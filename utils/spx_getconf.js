@@ -54,9 +54,6 @@ module.exports = {
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
                     cfg.general.launchchrome                    = false
-                    cfg.general.resolution                      = "HD"
-                    cfg.general.preview                         = "selected"
-                    cfg.general.renderer                        = "normal"
                     cfg.general.apikey                          = ""
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"
@@ -66,6 +63,10 @@ module.exports = {
                     cfg.general.disableLocalRenderer            = false
                     cfg.general.disableSeveralControllersWarning = false
                     cfg.general.hideRendererCursor               = false
+                    cfg.general.resolution                      = "HD"
+                    cfg.general.preview                         = "selected"
+                    cfg.general.renderer                        = "normal"
+                    cfg.general.autoplayLocalRenderer           = false
                     // cfg.general.allowstats                   = true
 
                     cfg.general.recents                         = []
@@ -84,7 +85,7 @@ module.exports = {
 
                     // Write config file. Note, this does not use utility function.
                     cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the SPX will overwrite this file.";
-                    cfg.copyright = "(c) 2020- Softpix (https://spx.graphics)";
+                    cfg.copyright = "(c) 2020- SPX Graphics (https://spx.graphics)";
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);
