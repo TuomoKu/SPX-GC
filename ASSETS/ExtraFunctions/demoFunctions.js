@@ -1,4 +1,102 @@
 
+
+function yleTL(opts="") {
+   // Function to handle YLE logo in/out transitions.
+   const localStValue = opts[0]; // otsikko-in, otsikko-out, nimi-in, nimi-out...
+    console.log('yleTL:', localStValue);
+
+    switch (localStValue) {
+        case 'qr-code-play':
+            yleTL_logoContr('out');
+            break;
+
+        case 'qr-code-stop':
+            yleTL_logoContr('altin', true); // forced
+            break;
+
+        case 'logopump-only':
+            yleTL_logoContr('pump');
+            break;
+
+        case 'otsikko-in':
+            yleTL_logoContr('pump');
+            localStorage.setItem('yleTL', localStValue); 
+            break;
+
+        case 'nimi-vain-in':
+        case 'nimi-in':
+            let inUpPosition = opts[1]
+            if ( inUpPosition == false) { // not up, i.e. down...
+                yleTL_logoContr('pump');
+                localStorage.setItem('yleTL', localStValue);
+            }
+            break;
+
+        default:
+            showMessageSlider('Unknown yleTL option "' +  localStValue) + '", doing nothing.';
+            break;
+            return;
+
+    }
+} // yleTL
+
+
+function yleTL_logoContr(animID, forced = false) {
+    let prevent = false;
+    if (localStorage.getItem('yleTL-QR') == 'playing') {
+        prevent = true;
+        if (forced) { prevent = false; }
+    }
+
+    if (prevent) { return; }
+
+    let funCall = '';
+    let waitDelay = 0;
+    switch (animID) {
+        case 'pump':
+            funCall = 'logoOutIn';
+            break;
+
+        case 'in':
+            funCall = 'logoIn';
+            waitDelay = 250;
+            break;
+
+        case 'altin':
+            funCall = 'logoAltIn';
+            waitDelay = 250;
+            break;
+
+        case 'out':
+            funCall = 'logoOut';
+            break;
+        
+        default:
+            console.log('yleTL_logoContr: Unknown funtionCall ' + animID);
+            return;
+            break;
+    }
+
+    setTimeout(function() {
+        let logoLayerNro = 10; // YLE logo layer nro
+        let url = "/api/v1/invokeTemplateFunction?"
+        url += 'webplayout=' + logoLayerNro
+        url += '&function=' + funCall
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });   
+    }, waitDelay);
+
+} // yleTL_logoContr
+
+
+
+
 // --------------------------------------------------------------
 // SPX example custom functions for project/global extras.
 // --------------------------------------------------------------
@@ -42,25 +140,6 @@ function hello(options) {
     console.log(msg);
 }
 
-
-function yleLogo(opts="") {
-    console.log('ExtraFunctions: yleLogo',opts);
-    let templateFunction = 'logoOutIn';
-    let functionArgument = '';
-    let targetSPXLayerNo = 10;
-    let url = "/api/v1/invokeTemplateFunction?"
-    url += 'webplayout=' + targetSPXLayerNo
-    url += '&function=' + templateFunction
-    url += "&params=" + functionArgument
-    fetch(url)
-       .then(response => response.json())
-       .then(data => {
-           console.log('Success:', data);
-       })
-       .catch((error) => {
-           console.error('Error:', error);
-       });    
-}
 
 
 function APIConnector(mode='') {

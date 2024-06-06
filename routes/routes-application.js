@@ -1,6 +1,6 @@
 
 // --------------------------------------------
-// Handle Express server routes for the webapp (at "/")
+// server routes (at "/")
 // --------------------------------------------
 var express = require("express");
 const router = express.Router();
@@ -15,7 +15,7 @@ const cfg = require('../utils/spx_getconf.js');
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 const PlayoutWEB = require('../utils/playout_webplayer.js');
 const spxAuth = require('../utils/spx_auth.js');
-const jsdom = require("jsdom"); // for scanning js within templates
+const jsdom = require("jsdom"); 
 const { JSDOM } = jsdom;
 const cors = require('cors');
 const { timeStamp } = require("console");
@@ -554,7 +554,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         break;
 
       case 'addshowextra':
-        // ------------------------------------------------------------------- ADDING EXTRA -----------------
+        // ------------------------------------- ADDING EXTRA -----------------
         newExtra = {};
         switch (ftype) {
           case 'button':
@@ -609,7 +609,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         break;
 
       case 'addshowextrascript':
-        // ------------------------------------------------------------------- ADDING SHOW EXTRA SCRIPT -----------------
+        // ------------------------------- ADDING SHOW EXTRA SCRIPT -----------------
         if (!profileData.showExtras){
           // lets add a showExtras section to profile
           profileData.showExtras = {};
@@ -619,7 +619,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         break;
 
       default:
-        // ------------------------------------------------------------------- UNKNOWN COMMAND -----------------
+        // --------------------------- UNKNOWN COMMAND -----------------
         logger.warn('Warning: Command ' + command + ' is unknown. Adding nothing to the profile-file.' );
         break;
     }
@@ -1176,6 +1176,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   //        rundown to be read from memory data and not actual rundown file
   //        that was requested. Now a new forceFileRead parameter is added.
   //
+  // console.log('Playout command received.', req.body);
 
   let templateIndex = -1; // was 0 
   try {
@@ -1275,10 +1276,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       playOutCommand = req.body.command;
     }
 
-
     switch (playOutCommand) {
 
-      // == PREVIEW ======================================================
+      // == PREVIEW ===================================================
       case 'preview':
 
         // Send PlayoutWEB.functionCalls() if any ---------------------
@@ -1293,8 +1293,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         }
         break;
 
-
-      // == AUTOPLAY ===================================================
+      // == AUTOPLAY ==================================================
       case 'autoPlayLocal':
         // Update local renderer when a rundown is reloaded
         logger.verbose('Webplayout autoPlayLocal: ' + dataOut.webplayout);
@@ -1303,7 +1302,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         PlayoutWEB.webPlayoutController(dataOut);
         break;
 
-      // == PLAY ======================================================
+      // == PLAY =====================================================
       case 'play':
         let playingSomewhere = false; // Added in 1.3.0
 
@@ -1368,11 +1367,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             }, numeric);
          }
         }
-
         break;
 
-
-      // == NEXT / aka CONTINUE  ========================================
+      // == NEXT / aka CONTINUE  =====================================
       case 'next':
 
         if (dataOut.playserver!='-' || dataOut.webplayout!='-') {
@@ -1399,15 +1396,16 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         } 
         break;
 
-
-        // == STOP ======================================================
+        // == STOP ===================================================
       case 'stop':
-        await playoutSTOP(dataOut, templateIndex, RundownData);
-        RundownData.templates[templateIndex].onair='false';
+        await playoutSTOP(dataOut);
+        if (templateIndex>-1 && RundownData.templates[templateIndex]) {
+          // Added check in 1.3.0
+          RundownData.templates[templateIndex].onair='false';
+        }
         break;
     
-
-      // == UPDATE ======================================================
+      // == UPDATE ===================================================
       case 'update':
         logger.verbose('Updating [' + dataOut.relpath + ']');
         // RundownData.templates[templateIndex].onair='true'; // yes. no?
@@ -1432,8 +1430,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         }
         break;
     
-
-      // == INVOKE ======================================================
+      // == INVOKE ===================================================
       case 'invoke':
         logger.verbose('Invoke [' + dataOut.invoke + ']');
         // Example of expected dataOut down stream from here:
@@ -1450,7 +1447,6 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         } // if web
         break;
 
-
       default:
         logger.warn('/gc/playout did not recognize command "' + playOutCommand + '".');
         break;
@@ -1461,7 +1457,12 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     global.rundownData = RundownData // memory only
     if (playOutCommand == 'play' || playOutCommand == 'stop') {
       // Added in 1.3.0
-      await spx.writeFile(RundownFile, RundownData);
+      if (!preventSave) {
+        logger.debug('Persisting rundown data to disk....');
+        await spx.writeFile(RundownFile, RundownData);
+      } else {
+        logger.debug('preventSave enabled, no need to persist to disk.');
+      }
     }
 
     // Added in 1.3.0 / Restore cache (after an API call)
@@ -1624,13 +1625,13 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
     var ConfigData = await GetJsonData(ConfigFile);
 
     let key = req.body.key || null;
-    let val = req.body.val || null;
+    let val = req.body.val; 
 
-    if (key==null || val==null) {
-      throw 'Key [' + key + '] or val [' + val + '] was missing from request, skipping config save.';
+    // Fixed in v1.3.0 (check truthiness)
+    if (key==null || val==null || val==undefined) {
+      throw 'Key [' + key + '] or a supported value [' + val + '] was missing from request, skipping config save.';
     }
   
-    // bug fixed in v1.3.0 (checked truthiness before so "false" or "0" would not be saved)
     ConfigData.general[key] = val;
     global.config = ConfigData; // update mem version also
     await spx.writeFile(ConfigFile,ConfigData);
@@ -1879,7 +1880,7 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
     // console.log('Saving rundown data to disc...', global.rundownData);
 
     if (!global.rundownData) {
-      console.log('No data in memory to save to disk.');
+      // console.log('No data in memory to save to disk.');
       return
     }; // no data to store
 
@@ -1957,10 +1958,11 @@ async function GetJsonData(fileref) {
 } // GetJsonData ended
 
 
-async function playoutSTOP(dataOut, templateIndex, RundownData) {
+async function playoutSTOP(dataOut) { //, templateIndex, RundownData
   // Refactored in 1.3.0 to handle stop commands
   logger.verbose('Stopping [' + dataOut.relpath + ']');
   // Send PlayoutCCG.functionCalls() if any ---------------------
+
   if (dataOut.playserver!='-'){
     dataOut.command="STOP";
     logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
@@ -1968,7 +1970,6 @@ async function playoutSTOP(dataOut, templateIndex, RundownData) {
   } else {
     logger.verbose('No CasparCG playout');
   }
-  
 
   // Send PlayoutWEB.functionCalls() if any ---------------------
   if (dataOut.webplayout!='-'){

@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated May 12 2024. 
+Readme updated May 27 2024. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.3.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
@@ -35,6 +35,7 @@ See the website ▶  **[spx.graphics](https://spx.graphics)**
 - [HTML templates](#templates) and [template definition](#templatedefinition)
 - [Custom controls](#projectextras) and [Plugins](#plugins)
 - [Using SPX with OBS (or vMix, Wirecast, XSplit...)](#streaming)
+- [SPX Server and https protocol ](#https)
 - [Control with external devices (Stream Deck etc)](#controlApi)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
@@ -361,7 +362,7 @@ An example `config.json` of the SPX server
  
 <a id="locales"></a>**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
 
-<img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
+<img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you are interested in translating SPX user interface to your local language please see [SPXLocaleEditor](https://github.com/TuomoKu/SPXLocaleEditor) repository for a browser based utility for modifying locale-files.
 
 Localization credits:
 | Language | Contributor | Bundled in version |
@@ -369,7 +370,8 @@ Localization credits:
 |  Dutch | Koen Willems, Netherlands | v1.0.12 |
 |  Chinese | Anosi Wang, China | v1.1.0 |
 |  Swedish | Christina F., Finland | v1.1.2 |
-|  Japanese | Masakazu Nakano, Japan | v1.2.3 |
+|  Portuguese | Joao M., Portugal | v1.1.2 |
+|  Japanese | Masakazu Nakano, Japan | v1.3.0 |
 
 <BR>
 
@@ -784,7 +786,13 @@ http://localhost:5656/renderer/?layers=[2,4,20]
 
 See [Youtube video](https://www.youtube.com/watch?v=YwXYWadiFoE) on using SPX with OBS.
 
+<br>
 
+----
+# SPX with https protocol <a id="https"></a>
+Originally SPX was designed for local, on-site installation and usage, but more and more production is done via the cloud where a secure data transfer and the use of https protocol is a must. SPX can work with https, but it will require a bit of setup.
+
+Please read our Knowledge Base [article about https with SPX Server](https://spxgc.tawk.help/article/https-protocol).
 
 ----
 # Control SPX with external devices such as Elgato Stream Deck... <a id="controlApi"></a>

@@ -14,12 +14,6 @@
 				background-color: transparent;
 			}
 
-			#random {
-				position: absolute;
-				width: 100px;
-				height: 100px;
-				background-color: rgba(255, 0, 0, 0.324);
-			}
 		</style>
 
 		<script>
@@ -33,21 +27,11 @@
 				// console.log('Empty layer received command "' + cmd + '", which is ignored');
 			}
 
-			// dosument on load
-			document.onload = function() {
-				let e = document.getElementById('random');
-				e.style.left = Math.floor(Math.random() * 101) + '%';
-				e.style.top = Math.floor(Math.random() * 101) + '%';
-			}
-
-
-
 		</script>
 
     </head>
     <body>
         <!-- nothing here -->
-		<div id="random"></div>
     </body>
 </html>
 

@@ -437,8 +437,7 @@ app.engine('handlebars', exphbs({
     },
 
     // populate out options for show config templates
-    generateOutOptions(currentOut)
-    {
+    generateOutOptions(currentOut) {
       logger.debug('Generating out options. This selection: ' + currentOut + '.');
       let html="";
       let AvailableOptions=[
@@ -1029,6 +1028,7 @@ function notifyMultipleControllers() {
     logger.debug('notifyMultipleControllers feature is disabled with a config flag.');
     return;
   }
+
 
   setTimeout(function(){ 
     let count = 0;

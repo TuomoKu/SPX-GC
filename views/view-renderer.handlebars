@@ -123,16 +123,6 @@
         let startTime = new Date().getTime();
         const inController = top.location.href.includes('renderer') ? false : true; 
 
-        // function frameLoaded(frame) {
-        //     // FIXME: This function should be removed?
-        //     framesLoaded.push(frame);
-        //     if (framesLoaded.length == 20) {
-        //         let duration = new Date().getTime() - startTime;
-        //         // console.log('Renderer loaded in ' + duration + ' ms.');
-        //         document.getElementById('root').style.opacity=1;
-        //     }
-        // }
-
         function allowLayerControl(LayerNro) {
             // Usage:
             // http://localhost:5656/renderer/?layers=[2,4,20]
@@ -526,9 +516,7 @@
                 case 'invokeFunction':
                     LayerNro = validateLayerNro(data.webplayout);
                     if (!LayerNro) { return }
-                    // FIXME: show again --> console.log('Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + '.');
                     try {
-
                         // Important change! --------------------------------------------------
                         // Starting from version 1.2.0 it is recommended to use
                         // "data.function" and "data.params" instead of "data.invoke"
@@ -539,10 +527,16 @@
                         // --------------------------------------------------------------------
 
                         if (data.function) {
-                            let myFunction = data.function;
-                            let myParamets = data.params;
-                            if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
-                                console.log('Executing "' + myFunction + '" on layer ' + LayerNro + '. First 30 chars of args: ' + myParamets.substring(0, 30));
+                            var myFunction = data.function;
+                            var myParamets = data.params || null;
+                            if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") {
+                                let paramPreview = '';
+                                if (myParamets && myParamets!="undefined") {
+                                    paramPreview = 'First 30 chars of args: ' + myParamets.substring(0, 30);
+                                } else {
+                                    paramPreview = 'No args.';
+                                }
+                                console.log('Executing "' + myFunction + '" on layer ' + LayerNro + '. ' + paramPreview)
                                 document.getElementById('layer' + LayerNro).contentWindow[myFunction](myParamets);
                             } else {
                                 console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');

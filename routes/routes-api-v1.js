@@ -8,9 +8,6 @@
 
   Home route is a list of available commands.
 
-  TODO: /saveCustomJSON
-  TODO: /getFilesFromFolder
-
 --------------------------------------------- */
 
 var express = require("express");
@@ -149,7 +146,7 @@ const apiHandler = require('../utils/api-handlers.js');
               {
                 "vers"    :     "v1.1.0",
                 "method"  :     "GET",
-                "param"   :     "controlRundownItemByID?file=MyProject/FirstRundown&item=1616702200909&command=play",
+                "param"   :     "controlRundownItemByID?file=MyProject/FirstRundown&item=1234567890&command=play",
                 "info"    :     "Play / stop an item from a known rundown. (Remember you can rename rundown items from SPX GUI)"
               }
             ]
@@ -188,7 +185,7 @@ const apiHandler = require('../utils/api-handlers.js');
               {
                 "vers"    :     "v1.1.1",
                 "method"  :     "GET",
-                "param"   :     "getrundowns?project=HelloWorld-project",
+                "param"   :     "getrundowns?project=MyProject",
                 "info"    :     "Returns rundown names of a given project as an array of strings."
               },
               {
@@ -206,7 +203,7 @@ const apiHandler = require('../utils/api-handlers.js');
               {
                 "vers"    :     "v1.3.0",
                 "method"  :     "GET",
-                "param"   :     "rundown/json?project=HelloWorld-project&rundown=My%20first%20rundown",
+                "param"   :     "rundown/json?project=MyProject&rundown=FirstRundown",
                 "info"    :     "Returns content of a specific rundown as json data."
               },
               {
@@ -231,7 +228,7 @@ const apiHandler = require('../utils/api-handlers.js');
               {
                 "vers"    :     "v1.1.3",
                 "method"  :     "GET",
-                "param"   :     "gettemplates?project=HelloWorld-project",
+                "param"   :     "gettemplates?project=MyProject",
                 "info"    :     "Returns templates and their settings from a given project."
               },
               {

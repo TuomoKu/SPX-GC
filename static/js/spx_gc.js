@@ -37,7 +37,7 @@ socket.on('SPXMessage2Extension', function (data) {
     //  window.functionName = functionName;
     //
     if (typeof window[data.function] === "function") { 
-        console.log('API invokeExtensionFunction called --> ' + data.function + '(' + data.params + ')');
+        // console.log('API invokeExtensionFunction called --> ' + data.function + '(' + data.params + ')');
         window[data.function](data.params);
     } else {
         console.error('Function not found in extension [' + data.function + ']. Is it exposed?');
@@ -69,10 +69,14 @@ socket.on('SPXMessage2Client', function (data) {
             break;
 
         case 'updateStatusText':
-            // document.getElementById('status').innerText = data.status;
-            clearTimeout(localStorage.getItem('SPX_CT_StatusTimer'));
-            statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
-            localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
+            if (document.getElementById('statusbar')) {
+                document.getElementById('statusbar').innerText = data.status;
+                clearTimeout(localStorage.getItem('SPX_CT_StatusTimer'));
+                statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
+                localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
+            } else {
+                console.log('statusbar (element) not found');
+            }
             break;
 
         case 'showMessageSlider':
@@ -82,6 +86,7 @@ socket.on('SPXMessage2Client', function (data) {
             // statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
             // localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
             break;
+
         case 'clientLostNotification':
             switch (data.clientName) {
                 case 'SPX_PROGRAM':
@@ -1529,9 +1534,7 @@ function moveFocus(nro) {
 
 function nextItem(itemrow='') {
     // Next / continue command.
-
-    console.log('nextItem()', itemrow);
-
+    
     if (!itemrow) {
         // itemrow not given, get focused row
         itemrow = getFocusedRow();
@@ -1560,11 +1563,11 @@ function nextItem(itemrow='') {
 
     // Check for function_onNext event (added in 1.1.4):
     let onNextField = itemrow.querySelector('[name="RundownItem[function_onNext]"]');
-    console.log('onNextField: ', data.command, onNextField);
+    // console.log('onNextField: ', data.command, onNextField);
     if (onNextField && onNextField.value!="") {
-        console.log('onNextField: ' + onNextField.value);
+        // console.log('onNextField: ' + onNextField.value);
         let onNextCommand = onNextField.value.split('|') || [];
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'NEXT event: ' + onNextCommand);
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'NEXT event: ' + onNextCommand);
         let FunctionName  = String(onNextCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onNextCommand[1] || 'NoArgs').trim();
         let ExecuteDelay  = String(onNextCommand[2] || '100').trim();
@@ -1573,7 +1576,7 @@ function nextItem(itemrow='') {
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
         if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            console.log('FunctionName:' + FunctionName);
+            // console.log('FunctionName:' + FunctionName);
             window[FunctionName]([FunctionArgs, conditionVal, data.epoch]);
         }, parseInt(ExecuteDelay));
         heartbeat(314); // identifier
@@ -1669,6 +1672,7 @@ function playItem(itemrow='', forcedCommand='') {
         //  3rd: execution delay in ms.
         //  4th: one of the f-fields (value can be used as a condition in the function)
 
+        
         let onPlayCommand = onPlayField.value.split('|') || [];
         let FunctionName  = String(onPlayCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onPlayCommand[1] || 'NoArgs').trim();
@@ -1677,20 +1681,31 @@ function playItem(itemrow='', forcedCommand='') {
         let conditionVal = null;
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
 
+        // Improved in 1.3.0 - now supports also SELECT and CHECKBOX fields
         if (eventCondtFF) {
-            if (eventCondtFF.tagName == 'SELECT') {
-                conditionVal = eventCondtFF.options[eventCondtFF.selectedIndex].value;
-            } else {
-                conditionVal = eventCondtFF.value;
+            switch (eventCondtFF.tagName) {
+                case 'SELECT':
+                    conditionVal = eventCondtFF.options[eventCondtFF.selectedIndex].value;
+                    break;
+
+                case 'INPUT':
+                    if (eventCondtFF.type == 'checkbox') {
+                        conditionVal = eventCondtFF.checked;
+                    } else {
+                        conditionVal = eventCondtFF.value;
+                    }
+                    break;
+
+                default:
+                    conditionVal = eventCondtFF.value;
             }
         }
 
-        // console.log('onPlayCommand:', conditionVal);
         setTimeout(function () {
             if (window[FunctionName]) {
                 window[FunctionName]([FunctionArgs, conditionVal, data.epoch]); // Added data.epoch in 1.1.4
             } else {
-                console.log('Function "' + FunctionName + '" not found in SPX custom function library. See project settings.');
+                showMessageSlider('Function "' + FunctionName + '" not found in current custom functions library file.', 'warn');
             }
         }, parseInt(ExecuteDelay));
         heartbeat(310); // identifier
@@ -1701,7 +1716,7 @@ function playItem(itemrow='', forcedCommand='') {
     if (data.command=="stop" && onStopField && onStopField.value!="") {
         // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
         let onStopCommand = onStopField.value.split('|') || [];
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'STOP event: ' + onStopCommand);
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'STOP event: ' + onStopCommand);
         let FunctionName  = String(onStopCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onStopCommand[1] || 'NoArgs').trim();
         let ExecuteDelay  = String(onStopCommand[2] || '100').trim();
@@ -1710,7 +1725,7 @@ function playItem(itemrow='', forcedCommand='') {
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
         if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            console.log('FunctionName:' + FunctionName);
+            // console.log('FunctionName:' + FunctionName);
             window[FunctionName]([FunctionArgs, conditionVal, data.epoch]);
         }, parseInt(ExecuteDelay));
         heartbeat(312); // identifier
@@ -1724,7 +1739,7 @@ function playItem(itemrow='', forcedCommand='') {
 
     if (!isNaN(TimeoutAsString)) {
         // value is numerical, so
-        console.log('TimeoutAsString is a number, so it is a timeout value.'); 
+        // console.log('TimeoutAsString is a number, so it is a timeout value.'); 
         if (data.command=="play" ) {
                 // Changed in 1.0.9, failed in 1.0.8.
                 // 1.0.12: Fixed looping issue found by Koen.
@@ -2366,6 +2381,7 @@ function spx_system(cmd,servername='') {
             break;
 
         case 'CHECKCONNECTIONS':
+            console.log('Checking connections to servers...', servername);
             data.command = 'CHECKCONNECTIONS';
             data.server = servername;
             break;
@@ -2380,6 +2396,8 @@ function spx_system(cmd,servername='') {
             console.log('Unknown spx_system identifer: ' + cmd);
             break;
     }
+
+    console.log('Sending system command: ', data);
     AJAXGET('/CCG/system/' + JSON.stringify(data));
     if (data.reloadPage) {
         document.getElementById('SmartPX_App').style.opacity = '0.4';
@@ -2526,6 +2544,20 @@ function tip(msg) {
     }
 } // tip mgsed
 
+function toggleAutoplay(slider, targ) {
+    let Cfgdata = {};
+    Cfgdata.key = 'autoplayLocalRenderer'
+    if (slider.checked) {
+        document.getElementById(targ).innerText = 'YES';
+        Cfgdata.val = true;
+    } else {
+        document.getElementById(targ).innerText = 'NO';
+        Cfgdata.val = false;
+    }
+    // console.log('Sending config change to server', Cfgdata);
+    ajaxpost('/gc/saveConfigChanges',Cfgdata);
+} // toggleAutoplay
+
 function toggleLRendererHandler(slider, targ) {
     let Cfgdata = {};
     Cfgdata.key = 'disableLocalRenderer'
@@ -2541,7 +2573,7 @@ function toggleLRendererHandler(slider, targ) {
         document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
         Cfgdata.val = false;
     }
-    console.log('Sending config change to server', Cfgdata);
+    // console.log('Sending config change to server', Cfgdata);
     ajaxpost('/gc/saveConfigChanges',Cfgdata);
 } // toggleLRendererHandler
 
@@ -2634,8 +2666,6 @@ function updateItem(itemrow) {
     // returns ..... ajax response message to GUI
     // Will send data object with an index and playlist filename
     // and playout handler will parse required data and so on. 
-
-    console.log('spxgc - updateItem()');
 
     if (!itemrow) {itemrow = getFocusedRow() }
 

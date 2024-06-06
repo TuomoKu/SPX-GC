@@ -77,7 +77,7 @@ module.exports = {
   
   CCGServersConfigured: function () {
     // helper function which will return true / false
-      if (config.casparCG && config.casparCG.servers && config.casparCG.servers.length > 0) {
+      if (config?.casparcg?.servers && config?.casparcg?.servers?.length > 0) {
         return true;
       } else {
       return false
@@ -94,10 +94,12 @@ module.exports = {
       logger.verbose('checkServerConnections -function excecuting...');
       data = { spxcmd: 'updateStatusText', status: 'Checking server connections...' };
       io.emit('SPXMessage2Client', data);
+
       config.casparcg.servers.forEach((element,i) => {
         let SrvName = element.name;
         let SocketIndex = PlayoutCCG.getSockIndex(SrvName);
         logger.verbose('Pinging ' +  SrvName + ': ' + CCGSockets[SocketIndex]);
+        // console.log('Pinging ' +  SrvName + ': ' + CCGSockets[SocketIndex]);
         data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + i, color: '#CC0000' };
         let status = {}
         status.server = i + ':' + SrvName;
@@ -119,7 +121,6 @@ module.exports = {
   }, // checkServerConnections
 
   duplicateFile: function (fileRefe, suffix) {
-    // TODO: Tämä on kesken!
     try {
       return new Promise(resolve => {
         let fldrname = path.dirname(fileRefe);
@@ -789,7 +790,7 @@ module.exports = {
       recentsArray.unshift(rundownRef);
       if (recentsArray.length > 5 ) {recentsArray.length = 5}; // limit to 5
       config.general.recents = recentsArray;
-      this.writeFile(configfileref,config); //TODO:
+      this.writeFile(configfileref,config);
     } catch (error) {
       logger.error('ERROR in spx.setRecents (fileref: ' + rundownRef + '): ' + error);  
     }
@@ -829,11 +830,16 @@ module.exports = {
           data.copyright = "(c) 2020- SPX Graphics (https://spx.graphics)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
+
+          if (!filepath) {
+            logger.warn('spx.writeFile // No filepath given, not saving anything.');
+            return
+          }
+
           fs.writeFile(filepath, filedata, 'utf8', function (err) {
             if (err){
-              logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + err);
+              console.error('spx.writeFile // Error saving: [' + filepath + ']: ' + err);
               return 
-              // throw error;
             }
             logger.verbose('spx.writeFile - File written OK: ' + filepath);
             resolve()
@@ -841,7 +847,7 @@ module.exports = {
           }
         )
     } catch (error) {
-      logger.error('spx.writeFile - Error while saving: ' + filepath + ': ' + error);    
+      logger.error(error);
       return 
     }
   }, // writeFile (.json)

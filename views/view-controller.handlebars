@@ -872,14 +872,6 @@
         </div>
 
 
-        <!-- TODO:
-          Add a fly-out menu to
-           * copy render address to streaming application
-           * detach the preview
-           * notify when used the first time 
-        -->
-
-
         <div class="right pM scroller">
 
           <!-- background: {{background}} -->
@@ -1008,6 +1000,30 @@
                 
                 <div style="padding:10px;">
                   <table style="width:100%;">
+                    <tr>
+                      <td width="60%" style="font-size: 0.7em;">{{lang 'config.autoplay'}}</td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input  id="toggleRendererAutoplay"
+                                  {{#ifValue autoplayLocalRenderer "true"}}
+                                    checked
+                                  {{/ifValue}}
+                                  type="checkbox"
+                                  class="vc-switch-input"
+                                  onClick="toggleAutoplay(this, 'toggleAutoplaySwitch');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggleAutoplaySwitch">
+                              {{#ifValue autoplayLocalRenderer true}}
+                                YES
+                              {{else}}
+                                NO
+                              {{/ifValue}}
+                          </span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
                     <tr>
                       <td width="60%" style="font-size: 0.7em;">Disable local renderer</td>
                       <td width="20%" ALIGN="center">
@@ -1213,7 +1229,7 @@
 
       if (DefaultX.includes('vw')) {
           // Responsive settings, use window size! Added in v1.3.0
-          console.log('Responsive settings, but forcing 16:9 in Controller');
+          // console.log('Responsive settings, but forcing 16:9 in Controller');
           DefaultX = '1920px';
           DefaultY = '1080px';
       }
