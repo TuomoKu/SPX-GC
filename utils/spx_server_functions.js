@@ -289,7 +289,7 @@ module.exports = {
       return JSON.parse(contents);
     }
     catch (error) {
-      logger.error('ERROR in spx.GetJsonData(): ' + error);
+      logger.error('ERROR in spx.GetJsonData() Invalid JSON Data?: ' + error);
       return (error);
     }
   }, // GetJsonData ended

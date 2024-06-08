@@ -42,7 +42,7 @@ module.exports = {
                 // check if config file exists
                 if (!fs.existsSync(CONFIG_FILE)) {
                     // config file not found, let's create the default one
-                    console.log('  Config file (' + CONFIG_FILE + ') not found, generating defaults.');
+                    console.log('  Config file not found, generating defaults.\n');
                     // console.log('Please note, starting from v.1.0.12 CasparCG servers are NOT in the config by default and must be added for CasparCG playout to work. Please see the README file for more information.');
                     let cfg                                     = {}
                     cfg.general                                 = {}

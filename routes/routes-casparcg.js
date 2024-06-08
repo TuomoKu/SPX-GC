@@ -64,7 +64,7 @@ router.get('/system/:data', (req, res) => {
   // NOTE: This endpoint is in the WRONG PLACE
   //       it should be moved to a more generic place
   //
-  console.log('System utilities / ' + req.params.data);
+  // console.log('System utilities / ' + req.params.data);
   data = JSON.parse(req.params.data);
   let directoryPath = "";
   logger.verbose('System utilities / ' + JSON.stringify(data));
@@ -91,7 +91,7 @@ router.get('/system/:data', (req, res) => {
       break;
 
     case 'CHECKCONNECTIONS':
-      console.log('CCG: Checking server connections...');
+      // console.log('CCG: Checking server connections...');
       spx.checkServerConnections();
       break;
 

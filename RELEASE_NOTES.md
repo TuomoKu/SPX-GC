@@ -4,20 +4,26 @@
 
 <BR>
 
-## WORK IN PROGRESS
+> **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
-> List updated May 13 2024
+<small>Updated Jun 07 2024</small>
 
-**⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
+## **1.3.0 Release Candidate**
+
+**Release description**
+
+Version 1.2.1 has been very stable and is used in production in many places and we have collected a lot of feedback from users and version 1.3.0 is a big step forward with a lot of power-user features for production professionals, including workflow and system integration improvements, bug fixes, API changes and a long list of bug fixes.
+
+Please read the following list to get an overview of changes and improvements.
 
 **Bugs**
 - Some API calls fail if user/password is set in config.json (discovered by Brad). Text information is shown in the console to explain this issue.
 - 
 
-
 **Completed items** (added, but not yet released):
 - Improved API, documentation and response messages
 - Enabling **CAPS LOCK** will display rundown item's layers and other useful info
+- Added a feature to automatically play rundown items that were played before. This helps in synchronizing local renderer to better match with external output renderers. There is a config setting `general.autoplayLocalRenderer = true` to enable this. Disabled by default. Users can set this in Options panel under the local renderer.
 - Added `/allrundowns` endpoint to the API that returns all projects and their run
 - Added `/feedproxy` POST endpoint for supporting custom headers for outgoing GET requests
 - Added `/executeScript?file=<myScript.bat>` API endpoint for running scripts from `ASSETS/scripts` -folder
@@ -31,6 +37,8 @@
 - Added `general.hideRendererCursor = true|false` setting to config.json 
 - Added new renderer size preset to App Config. Available options are now `HD, 4K, AUTO`. Autowide scales to full height and width of the output device. Please remember, this is just the renderer size. The templates loaded onto the renderer will need to support that size and/or aspect ratio as well. 
 - Improved UI scaling and main menu by making it scrollable
+- Improved Stop All -plugin reliability. (But it sh/could be re-written altogether)
+- Added project- and rundown name validations to user inputs (no special characters allowed)
 - Folders and files are sorted alphabetically (case insensitive) in template browser
 - Extra tabs added to template browser to SPX Store, Loopic and StreamShapers' Ferryman
 - Fixed a minor bug in detach/dock local renderer slider UI component
@@ -41,16 +49,16 @@
 - Added default dataformat from `XML` to `JSON` at import (if not given)
 - Changed default webplayout layer from `-`  to `20` at import (if not given)
 - Binary packager pkg@5.8.0 replaced with `npm install -g @yao-pkg/pkg`
-- also builder changed from ``
-
 
 <br>
+
 **Work-in-progress** (not completed, must be checked):
 - Add several (not all) templates to a rundown at once
 - spxpack import/export
 - ctrl+drag rundown items to make them children
 - OSC implementation is work in progress
 - Rundown Variables (does not remove prVar from profile if no users)
+
 <BR>
 
 ---
@@ -58,7 +66,7 @@
 <BR>
 
 Published releases:
-## **1.3.0** (May 04 2024)
+## **X.X.0** (mm dd yyyy)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 
 -  

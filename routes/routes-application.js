@@ -21,7 +21,7 @@ const cors = require('cors');
 const { timeStamp } = require("console");
 const { httpPost } = require("../utils/spx_server_functions.js");
 const http = require('http');
-const axios = require('axios')
+const axios = require('axios');
 // -----watchout!-----
 
 // const { config } = require("process");
@@ -1482,6 +1482,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try
   catch (error) {
+    console.error('ERROR in /gc/playout', error);
     logger.error('ERROR in /gc/playout. ' + error);
     res.status(500).send('Error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
   };
@@ -1952,13 +1953,25 @@ async function GetJsonData(fileref) {
     
   }
   catch (error) {
-    logger.error('GetJsonData Error: ' + error);
-    return ('GetJsonData: error',error);
+    let msg = 'GetJsonData error while reading ' + fileref + '. Invalid JSON format...? ' + error;
+    setTimeout(function() {
+      io.emit('SPXMessage2Controller',{
+        APIcmd: 'showMessageSlider',
+        msg:    '<center>Invalid rundown file.<br>Please validate JSON data.</center>',
+        type:   'warn',
+        persist: true
+      });
+    }, 1000);
+
+
+    logger.error(msg);
+    return (msg);
   }
 } // GetJsonData ended
 
 
 async function playoutSTOP(dataOut) { //, templateIndex, RundownData
+
   // Refactored in 1.3.0 to handle stop commands
   logger.verbose('Stopping [' + dataOut.relpath + ']');
   // Send PlayoutCCG.functionCalls() if any ---------------------

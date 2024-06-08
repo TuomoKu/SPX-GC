@@ -214,6 +214,11 @@ socket.on('SPXMessage2Controller', function (data) {
             }
             break;
 
+        // Utils
+        case 'showMessageSlider':
+            showMessageSlider(data.msg, data.type, data.persist)
+            break;
+
         default:
             console.log('Unknown SPXMessage2Controller command: ' + data.APIcmd, data);
     }
@@ -368,22 +373,57 @@ function aFunctionTest() {
     AJAXGET('/CCG/testfunction/');
 } //aFunctionTest
 
+// Filename validation for project/ruindown prompts
+// Added in 1.3.0
+var isValid=(function(){
+    var rg1=/^[^\\/:\*\?"<>\|]+$/; // forbidden characters \ / : * ? " < > |
+    var rg2=/^\./; // cannot start with dot (.)
+    var rg3=/^\_/; // cannot start with underscore (_)
+    var rg4=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
+    return function isValid(str){
+        return rg1.test(str)&&!rg2.test(str)&&!rg3.test(str)&&!rg3.test(str);
+    }
+})();
+
+
 function add() {
     // require ..... nothing
     // returns ..... posts a name of a file to server which redirects
-    var listname = prompt("Creating a new content list. Name?", "");
-    if (listname != null && listname != "") {
-        post('', { filebasename: listname }, 'post');
+    // Improved in 1.3.0 with validation
+
+    var rundownName
+    while(true){
+        rundownName = prompt("Creating a new rundown. Name?").trim();
+        if ( isValid(rundownName) ) {
+            break;
+        } else {
+            alert("Please enter a valid file name, no special characters.");
+        }
+    }
+    if (rundownName != null && rundownName != "") {
+        post('', { filebasename: rundownName }, 'post');
     }
 } //add
+
 
 function addshow() {
     // require ..... nothing
     // returns ..... posts a name of a folder to server which redirects
-    var foldername = prompt("Creating a new content folder. Name?", "");
-    if (foldername != null && foldername != "") {
-        post('', { foldername: foldername }, 'post');
+    // Improved in 1.3.0 with validation
+
+    var projectName
+    while(true){
+        projectName = prompt("Creating a new project. Name?").trim();
+        if ( isValid(projectName) ) {
+            break;
+        } else {
+            alert("Please enter a valid folder name, no special characters.");
+        }
     }
+    if (projectName != null && projectName != "") {
+        post('', { foldername: projectName }, 'post');
+    }
+
 } // addshow
 
 async function AJAXGET(URL) {
@@ -1498,6 +1538,7 @@ function help(section) {
         case "API":                 HELP_PAGE = "article/help-api"                  ; break;
         case "ITEM-DETAILS":        HELP_PAGE = "article/help-item-details"         ; break;
         case "SEVERAL":             HELP_PAGE = "article/help-several-controllers"  ; break;
+        case "LIGHTMODE":           HELP_PAGE = "article/light-mode"                ; break;
         default: break;
     }
 
@@ -1773,18 +1814,28 @@ function playItemLocal(itemID) {
 
 function renameRundown() {
     // Rename an existing rundown
+    // Improved in 1.3.0 with validation
     var filename = document.getElementById('lists').value;
     if (!filename) {return}
     var foldname = document.getElementById("hidden_folder").value;
-    var newname = prompt("Rename the rundown?", filename);
+
+    while(true){
+        newname = prompt("Rename rundown to?", filename).trim();
+        if ( isValid(newname) ) {
+            break;
+        } else {
+            alert("Please enter a valid file name, no special characters.");
+        }
+    }
     if (newname != null && newname != "") {
         data={};
         data.orgname = filename + '.json';
         data.newname = newname;
         data.foldnam = foldname;
         ajaxpost('/gc/renameRundown',data);
-        setTimeout(function(){ document.location = '/show/' + foldname; }, 500);
+        setTimeout(function(){ document.location = '/show/' + foldname; }, 300);
     }
+
 } // renameRundown ended
 
 function versInt(semver){
@@ -1839,58 +1890,56 @@ function setItemButtonStates(itemrow, forcedCommand=''){
         CommandToExecute = 'play';
     }
 
-    if ( CommandToExecute == 'stop' )
-        {
-            // Convert button to PLAY button and execute stop command
-            // console.log('was playing. so send STOP and make button PLAY');
-            itemrow.setAttribute('data-spx-onair','false');
-            itemrow.querySelector('[name="RundownItem[onair]"]').value='false';
-            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
-            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
-            itemrow.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
-            EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-playtext');
-            EXPANDEDPLAY.classList.remove('bg_red');
-            EXPANDEDPLAY.classList.add('bg_green');
-        }
+    if ( CommandToExecute == 'stop' ) {
+        // Convert button to PLAY button and execute stop command
+        // console.log('was playing. so send STOP and make button PLAY');
+        itemrow.setAttribute('data-spx-onair','false');
+        itemrow.querySelector('[name="RundownItem[onair]"]').value='false';
+        itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+        itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
+        itemrow.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+        EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-playtext');
+        EXPANDEDPLAY.classList.remove('bg_red');
+        EXPANDEDPLAY.classList.add('bg_green');
+    }
 
-    if ( CommandToExecute == 'play' )
-        {
-            // Convert button to STOP button and execute play command
-            // first we need to dim all other elements which are playing on same output channel / layer
-            // console.log('was stopped. so send PLAY and make button STOP');
-            let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
-            rows.forEach(function (item, index) {
-                let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
-                if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig )
-                    {
-                        // console.log('Dom item ' + index + ' is the same, so dim it');
-                        item.setAttribute('data-spx-onair','false');
-                        item.querySelector('[name="RundownItem[onair]"]').value='false';
-                        item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
-                        item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
-                        CancelOutTimerIfRunning(itemrow);
-                        curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
-                        curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
-                        curExpandedPlay.classList.remove('bg_red');
-                        curExpandedPlay.classList.add('bg_green');
-                    }
-                else
-                    {
-                        // console.log('Dom item ' + index + ' was (' + CurrentConfig + ') not the same, so let it be...');
-                    }
-            })
-            EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-stoptext');
-            EXPANDEDPLAY.classList.remove('bg_green');
-            EXPANDEDPLAY.classList.add('bg_red');
-            itemrow.setAttribute('data-spx-onair','true');
-            itemrow.querySelector('[name="RundownItem[onair]"]').value='true';
-            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playFalse');
-            itemrow.querySelector('[data-spx-name="icon"]').classList.add('playTrue');
-            // // reset update buttons
-            // itemrow.setAttribute('data-spx-changed','false');
-            // itemrow.querySelector('[data-spx-name="updatebutton"]').classList.add('disabled');
+    if ( CommandToExecute == 'play' ) {
+        // Convert button to STOP button and execute play command
+        // first we need to dim all other elements which are playing on same output channel / layer
+        // console.log('was stopped. so send PLAY and make button STOP');
+        let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
+        rows.forEach(function (item, index) {
+            let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
+            if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig )
+                {
+                    // console.log('Dom item ' + index + ' is the same, so dim it');
+                    item.setAttribute('data-spx-onair','false');
+                    item.querySelector('[name="RundownItem[onair]"]').value='false';
+                    item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+                    item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+                    CancelOutTimerIfRunning(itemrow);
+                    curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
+                    curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
+                    curExpandedPlay.classList.remove('bg_red');
+                    curExpandedPlay.classList.add('bg_green');
+                }
+            else
+                {
+                    // console.log('Dom item ' + index + ' was (' + CurrentConfig + ') not the same, so let it be...');
+                }
+        })
+        EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-stoptext');
+        EXPANDEDPLAY.classList.remove('bg_green');
+        EXPANDEDPLAY.classList.add('bg_red');
+        itemrow.setAttribute('data-spx-onair','true');
+        itemrow.querySelector('[name="RundownItem[onair]"]').value='true';
+        itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playFalse');
+        itemrow.querySelector('[data-spx-name="icon"]').classList.add('playTrue');
+        // // reset update buttons
+        // itemrow.setAttribute('data-spx-changed','false');
+        // itemrow.querySelector('[data-spx-name="updatebutton"]').classList.add('disabled');
 
-        }
+    }
     
     if ( ife('identifier').value=="controller" ) {
         // finally show or hide delete buttons on all items
@@ -1906,8 +1955,6 @@ function setItemButtonStates(itemrow, forcedCommand=''){
             }
         })
     }
-
-
     return CommandToExecute
 } // setItemButtonStates ended
 
@@ -2397,7 +2444,6 @@ function spx_system(cmd,servername='') {
             break;
     }
 
-    console.log('Sending system command: ', data);
     AJAXGET('/CCG/system/' + JSON.stringify(data));
     if (data.reloadPage) {
         document.getElementById('SmartPX_App').style.opacity = '0.4';
@@ -2487,10 +2533,11 @@ function stopAll(){
     // Function implemented in v1.0.8 from ExtraFunctions -library
     let ITEMS = document.querySelectorAll('.itemrow');
     ITEMS.forEach(function (templateItem, itemNro) {
-        // console.log('iterate row ' + itemNro);
         setTimeout(function(){ 
-            continueUpdateStop('stop', templateItem);
-            }, (itemNro * 20)); // 20, 40, 60, 80ms etc...
+            // continueUpdateStop('stop', templateItem); // slower
+            playItem(templateItem, 'stop'); 
+            // setItemButtonStates(templateItem, 'stop') // just the UI
+            }, (itemNro * 30)); // 20, 40, 60, 80ms etc...
         });
 } // stopAll
 

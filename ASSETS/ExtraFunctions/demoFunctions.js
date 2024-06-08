@@ -2,7 +2,7 @@
 
 function yleTL(opts="") {
    // Function to handle YLE logo in/out transitions.
-   const localStValue = opts[0]; // otsikko-in, otsikko-out, nimi-in, nimi-out...
+    const localStValue = opts[0]; // otsikko-in, otsikko-out, nimi-in, nimi-out...
     console.log('yleTL:', localStValue);
 
     switch (localStValue) {
@@ -85,7 +85,7 @@ function yleTL_logoContr(animID, forced = false) {
         fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
+            // console.log('Success:', data);
         })
         .catch((error) => {
             console.error('Error:', error);
