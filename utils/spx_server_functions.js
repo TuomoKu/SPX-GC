@@ -129,7 +129,7 @@ module.exports = {
         let copyfile =  path.normalize(path.join(fldrname, basename + suffix + extename));
         fs.copyFile(fileRefe, copyfile, (err) => {
             if (err) throw err;
-            logger.info('Rundown file ' + fileRefe + ' was copied to ' + copyfile + '.');
+            logger.verbose('Rundown file ' + fileRefe + ' was copied to ' + copyfile + '.');
             resolve()
             return true
           });

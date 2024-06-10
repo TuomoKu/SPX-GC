@@ -1027,8 +1027,8 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
 }
 
 .itemrow:hover {
-    background-color: rgba(153, 218, 255, 0.08);
-    border-width: 2px 2px 2px 15px;
+    background-color: rgba(153, 218, 255, 0.1);
+    /* border-width: 2px 2px 2px 15px; */
 }
 
 
@@ -1045,7 +1045,7 @@ table.footerTable, td.footerTable, tr.footerTable, span.statusbar div.footerTabl
     transition: background-color 0.2s, border-left 0.3s;
     background-color: rgba(0, 0, 0, 0.1);
     box-shadow: rgba(218, 112, 13, 0.657) 0px 0px 10px;
-    border-width: 2px 2px 2px 15px;
+    /* border-width: 2px 2px 2px 15px; */
 }
 
 #messageSlider {
