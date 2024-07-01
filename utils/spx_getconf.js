@@ -43,6 +43,7 @@ module.exports = {
                 if (!fs.existsSync(CONFIG_FILE)) {
                     // config file not found, let's create the default one
                     console.log('  Config file not found, generating defaults.\n');
+                    global.generatingDefaultConfig = true;
                     // console.log('Please note, starting from v.1.0.12 CasparCG servers are NOT in the config by default and must be added for CasparCG playout to work. Please see the README file for more information.');
                     let cfg                                     = {}
                     cfg.general                                 = {}
@@ -53,7 +54,8 @@ module.exports = {
                     cfg.general.greeting                        = ""
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
-                    cfg.general.launchchrome                    = false
+                    // cfg.general.launchchrome                 = false // deprecated
+                    cfg.general.launchBrowser                   = false 
                     cfg.general.apikey                          = ""
                     cfg.general.logfolder                       = path.join(CURRENT_FOLDER, 'LOG').replace(/\\/g, "/") + "/"
                     cfg.general.dataroot                        = path.join(CURRENT_FOLDER, 'DATAROOT').replace(/\\/g, "/") + "/"

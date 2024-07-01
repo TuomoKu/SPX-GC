@@ -592,15 +592,13 @@ app.engine('handlebars', exphbs({
     },
 
     // generate checkbox to appconfig
-    // "launchchromeatstartup":"false"
-    // Feature most likely only works on Windows...?
     OpenChromeCheck() {
-      let launchChrome = config.general.launchchromeatstartup || false;
-      if (launchChrome){
-        return '<input type="checkbox" checked name="general[launchchromeatstartup]">';
+      let launch = config.general.launchBrowser || false;
+      if (launch){
+        return '<input type="checkbox" checked name="general[launchBrowser]">';
       }
       else {
-        return '<input type="checkbox" name="general[launchchromeatstartup]">';
+        return '<input type="checkbox" name="general[launchBrowser]">';
       }
     },
 
@@ -947,14 +945,13 @@ var server = app.listen(port, (err) => {
   console.log('  ' + line3s);
   console.log('');
 
-  if ( config.general.launchchrome==true ) {
+  if ( config.general.launchBrowser || global.generatingDefaultConfig ) {
     try {
       (async () => {
-        // Opens the URL in a specified browser.
-        await open(`http://${ipad}:${port}/`, {app: 'chrome'});
+        await open(`http://${ipad}:${port}/`);
       })();
     } catch (error) {
-      console.warn('Could not open Chrome application')
+      console.warn('Could not open browser.')
     }
   }
 

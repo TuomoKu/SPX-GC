@@ -4,7 +4,7 @@
 
 <br>
 
-Readme updated May 27 2024. 
+Readme updated June 06 2024. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.3.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
 
@@ -23,7 +23,8 @@ See the website ▶  **[spx.graphics](https://spx.graphics)**
 
 
 ### Table of Contents
-- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive)
+
+- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive) 
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#builds) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -50,9 +51,9 @@ Software is based on a NodeJS server and can be run on Windows, Mac or Linux com
 
 Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX is done by adding _a template definition_ (javascript-snippet) to them.
 
-Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. The first version was released in September 2020. Thanks **Markus Nygård** for the challenge! 🤘
+Originally SPX was developed for [YLE](https://www.yle.fi), a public broadcaster in Finland. The first version was released in September 2020. Thanks **Markus Nygård** and **Martin Huldin** for the challenge! 🤘
 
-> If you need custom graphics or systems integration please [the website](https://spx.graphics/contact).
+> If you need custom graphics or workflows, please [contact us](https://spx.graphics/contact).
 
 ---
 
@@ -204,12 +205,14 @@ pm2 kill
 
 ---
 # First launch <a id="firstlaunch"></a>
-* Open web browser (such as Chrome) and load SPX gui from url shown in the console at the start-up:
+* When the app is started the very first time a default browser is launched with SPX user interface open
+* In the subsequent server starts use a web browser (such as Chrome) and load SPX gui from URL shown in the console at the start-up.
+* With `general.launchBrowser = true` flag the browser can be opened every time automatically. This is set to false by default.
 ```
---------------------------------
-  SPX url:
-  http://127.0.0.1:5656
---------------------------------
+  ╭───────────────────────────╮
+  │ Open SPX in a browser:    │
+  │ http://127.0.0.1:5656     │
+  ╰───────────────────────────╯
 ```
 > Port 5656 is the default value in config and can be changed.
 
@@ -286,7 +289,7 @@ An example `config.json` of the SPX server
     "preview": "selected",
     "renderer": "normal",
     "resolution": "HD",
-    "launchchrome": false,
+    "launchBrowser": false,
     "disableConfigUI": true,
     "apikey": "",
     "disableLocalRenderer": false,

@@ -355,7 +355,7 @@ if (config.casparcg) {
       data = { spxcmd: 'updateStatusText', status: 'Communication error with ' + CurName + '.' };
       io.emit('SPXMessage2Client', data);
 
-      logger.warn('SPX connection error with "' + CurName + '". Is CasparCG running at ' + CurCCG.spxhost + ':'  + CurCCG.spxport + '? (' + err +')');
+      logger.warn('Unable to connect CasparCG "' + CurName + '" (' + CurCCG.spxhost + ':'  + CurCCG.spxport + '). Is it running?');
       // console.log('Sockets: ', global.CCGSockets);
     });
 

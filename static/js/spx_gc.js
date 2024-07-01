@@ -2537,7 +2537,7 @@ function stopAll(){
             // continueUpdateStop('stop', templateItem); // slower
             playItem(templateItem, 'stop'); 
             // setItemButtonStates(templateItem, 'stop') // just the UI
-            }, (itemNro * 30)); // 20, 40, 60, 80ms etc...
+            }, (itemNro * 40)); // 20, 40, 60, 80ms etc...
         });
 } // stopAll
 

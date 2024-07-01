@@ -20,8 +20,10 @@ const { JSDOM } = jsdom;
 const cors = require('cors');
 const { timeStamp } = require("console");
 const { httpPost } = require("../utils/spx_server_functions.js");
+// const { convertGddtoSpx } = require("../utils/GDDtoSPXconverter.js");
 const http = require('http');
 const axios = require('axios');
+// const HTMLParser = require('node-html-parser');
 // -----watchout!-----
 
 // const { config } = require("process");
@@ -545,12 +547,18 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         templates.forEach((template,index) => {
           TemplatePath = path.join(curFolder, template).trim();
           profileData = addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex)
+          // if (profileData.error) {
+          //   res.redirect('/show/' + showFolder + '/config?ERR=templateDefinitionMissing')
+          // }
         });
         break;
 
       case 'addtemplate':
         // ADD (or RE-IMPORT) A TEMPLATE
         profileData = addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex)
+        if (profileData.error) {
+          res.redirect('/show/' + showFolder + '/config?ERR=templateDefinitionMissing')
+        }
         break;
 
       case 'addshowextra':
@@ -631,9 +639,11 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
     )
     .catch(function (error) {
       console.log('\nEnd of template import errors.', error)
+      // res.redirect('/show/' + showFolder + '/config')
     })
   } catch (error) {
-      logger.error('showconfig Error while saving file: ' + error);
+      logger.error('showconfig / ' + error);
+      // res.redirect('/show/' + showFolder + '/config')
   }; //file written
 
 }); // browseTemplates API post request end
@@ -1691,6 +1701,11 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
 
 function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex=null) {
 
+
+  let SPXGCTemplateDefinition = null;
+  let gddDefinition = null; // Graphics Data Definition
+  let spxDefinition = null; // SPX Template Definition
+
   // console.log('');
   // console.log('addTemplateToProfile ===================================');
   // console.log('ProfileData............................: ', profileData);
@@ -1714,36 +1729,64 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   let templateContents = fs.readFileSync(TemplatePath, "utf8")
   let templatehtml = templateContents.toString();
 
-    // FIXME: JSDOM loading via a promise
-
-    // JSDOM is used to parse html template for the SPXGCTemplateDefinition.
-    // Now it produces error messages for eventListeners in the template files
-    // and potentially crashes SPX server if there are onLoad function calls
-    // in template <body> tag.
-
-    // Refactoring JSDOM call into a promise might do the job. Read this:
-    // https://github.com/jsdom/jsdom/issues/2557
-
 
   let importMessage = '\n\n- SPX TEMPLATE IMPORT NOTIFICATION --------------------------------\n';
-     importMessage += ' Potential errors below this notification are from the template:\n';
-     importMessage += ' ' + TemplatePath + '\n\n';
-     importMessage += ' onLoad() or other root functions in the template MAY yield errors\n';
-     importMessage += ' or other messages during import and these can usually be ignored\n';
-     importMessage += ' safely. For more info search SPX KnowledgeBase for "Import errors".\n';
-     importMessage += '-------------------------------------------------------------------\n';
+  importMessage += ' Potential errors below this notification are from the template:\n';
+  importMessage += ' ' + TemplatePath + '\n\n';
+  importMessage += ' onLoad() or other root functions in the template MAY yield errors\n';
+  importMessage += ' or other messages during import and these can usually be ignored\n';
+  importMessage += ' safely. For more info search SPX KnowledgeBase for "Import errors".\n';
+  importMessage += '-------------------------------------------------------------------\n';
   console.log(importMessage)
 
-  const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
-  let SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition || 'notFound'; // there must be "window.SPXGCTemplateDefinition{}" -object in template file!
+  // GDD support started in v 1.3.1
+  // Using HTMLparser (npm node-html-parser)
+  // var root = HTMLParser.parse(templatehtml);
 
-  // console.log('\n\n----------------------- Import done ----------------------------\n\n');
+  // let gddString = null;
+  // gddString = root.querySelector('[name=graphics-data-definition]') || null;
+  // if (gddString) {
+  //   gddDefinition = JSON.parse(gddString.textContent);
+  //   console.log('GDD found in template!');
+  //   console.log('  Title .......... ' + gddDefinition.title);
+  //   console.log('  Description .... ' + gddDefinition.description);
+  //   console.log('  Fields ......... ' + Object.keys(gddDefinition.properties).length);
+  //   for (const [key, value] of Object.entries(gddDefinition.properties)) {
+  //     console.log(`   ${key}: ${value.label}`);
+  //   }
+  // }
+
+
+
+  // Original method using just JSDOM
+  const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
+  SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition; // Mandatory!
+
+  // HTMLparser & JSDOM used for SPX definition import.
+  // This will allow us limit the JSDOM script execution to only to a
+  // single <script> tag that contains the SPXGCTemplateDefinition. 
+
+  // let scriptTags = root.querySelectorAll('script');
+  // scriptTags.forEach((item, idx) => {
+  //     let code = item.outerHTML;
+  //     if (code.includes('SPXGCTemplateDefinition')) {
+  //         var dom = new JSDOM(code, { runScripts: "dangerously" }); // runScripts is needed to access object props
+  //         spxDefinition = dom.window.SPXGCTemplateDefinition;
+  //     }
+  // });
+
+  // SPX is the preferred method. If not found, we convert GDD to SPX.
+  // SPXGCTemplateDefinition = spxDefinition;
+  // if (gddDefinition && !spxDefinition) {
+  //   SPXGCTemplateDefinition = convertGddtoSpx(gddDefinition);
+  // }
+
+  // console.log('SPXGCTemplateDefinition', SPXGCTemplateDefinition);
   
-  if (SPXGCTemplateDefinition=="notFound"){
-    logger.warn('Cancel: Template ' + TemplatePath + ' did not had SPXGCTemplateFields[].' );
-    res.redirect('/show/' + showFolder + '/config?ERR=templateDefinitionMissing');
-    return
-  }
+  // if (!SPXGCTemplateDefinition && !gddDefinition) {
+  //   logger.warn('Cancel! File ' + TemplatePath + ' is missing definition. (SPXGCTemplateDefinition or graphics-data-definition)' );
+  //   return {error: 'templateDefinitionMissing'};
+  // }
 
   // set defaults if not defined in the template
   if (!SPXGCTemplateDefinition.description) {SPXGCTemplateDefinition.description = ""};
