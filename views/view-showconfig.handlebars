@@ -495,6 +495,23 @@
       heartbeat(206); // page identifier (was missing in 1.1.0)
       AppState("EDITING");
     }
+
+
+    function AddTemplatesTab(tabNro) {
+      let tabs = [1, 2, 3, 4]
+      tabs.forEach((tab) => {
+        let thisBtn = document.getElementById('tabBtn' + tab);
+        thisBtn.classList.remove('tabSelected')
+        let thisTab = document.getElementById('tab' + tab);
+        thisTab.style.display = "none";
+        if (thisBtn.id === 'tabBtn' + tabNro) {
+          document.getElementById('tabBtn' + tabNro).classList.add('tabSelected')
+          document.getElementById('tab' + tabNro).style.display = "flex";
+        }
+      });
+    }
+
+
   </script>
 </body>
 </html>

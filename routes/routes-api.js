@@ -221,6 +221,32 @@ router.post('/savefile/:filebasename', async (req, res) => {
   }; //file written
 }); // POST savefile API route ended
 
+router.post('/saverundownfile/:projectName/:rundownName', async (req, res) => {
+  // Added in 1.3.0
+  // Used by extensions that will modify rundowns and save them back to the server.
+  // This will also send a message to the UI to request a reload.
+  console.log('Saving rundown file ' + req.params.rundownName + ' in project ' + req.params.projectName + '...');
+  try {
+    if (!req.params.projectName || !req.params.rundownName) {
+      throw new Error("Project or filename missing from request, cannot save file.");
+    }
+    let datafile = path.join(directoryPath, req.params.projectName, 'data', req.params.rundownName) + '.json';
+    logger.debug('Saving rundown file ' + datafile + '...');
+    let data = req.body;
+    await spx.writeFile(datafile,data);
+    io.emit('SPXMessage2Client', {
+      spxcmd: "showMessageSlider",
+      msg:    "⛔ Rundown data was modified by API. Reload view!",
+      type:   "warn",
+      persist: true
+    });
+    res.status(200).send('OK, created file ' + datafile); // ok 200 AJAX RESPONSE
+  } catch (error) {
+    logger.error('Error in api/saverundownfile' + error);
+    res.status(500).send(error);
+  }; //file written
+}); // POST savefile API route ended
+
 
 router.post('/exportCSVfile', async (req, res) => {
   // console.log('Exporting CSV...');

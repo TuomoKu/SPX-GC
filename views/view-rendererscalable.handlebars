@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" type="text/css" href="/css/spx_renderpopups.css">
+
     <title>SPX - scalable renderer view</title>
     <script src="/js/anime.min.js"></script>
     <style>
@@ -30,16 +33,18 @@
         }
 
         .renderer  {
-            /* renderer size set by SPX to {{width}}x{{height}} */ 
-            width: {{width}}px;
-            height: {{height}}px;
-            background-image: url('/img/checker60.png'); /* bgimage for local preview */
-            background-size: 10vw;
-            transform-origin: top left;
+            /* rendererscalable hardcoded to 1920x1080 data received {{width}}x{{height}}*/ 
+            margin: 0;
+            padding: 0;
             border: 0px;
             outline: 0px;
-            padding: 0;
-            margin: 0;
+            width: {{width}};
+            height: {{height}};
+            ZZZwidth: 1920px;
+            ZZZheight: 1080px;
+            background-size: 10vw;
+            transform-origin: top left;
+            background-image: url('/img/checker60.png'); /* bgimage for local preview */
         }
 
         #message {
@@ -62,12 +67,63 @@
             color: #aaa;
         }
 
+        #previewBG {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 0px solid yellowgreen;
+        }
+
+        #previewIF {
+            transform-origin: top left;
+        }
+
     </style>
+    <script src="/js/socket.io.js"></script>
+    <script>
+        var socket = io();
+        let socData={};
+
+        socket.on('connect', function () {
+            {{#ifValue mode 'preview'}}
+                socData.name = 'SPX_PREVIEW';
+            {{/ifValue}}
+            {{#ifValue mode 'program'}}
+                socData.name = 'SPX_PROGRAM';
+            {{/ifValue}}
+            socData.spxcmd = 'identifyClient';
+            socket.emit('SPXMessage2Server', socData);
+        });
+
+        socket.on('SPXMessage2Client', function (data) {
+            if (data.spxcmd == 'closepreview' && socData.name == 'SPX_PREVIEW') {
+                window.close();
+            }
+            if (data.spxcmd == 'closeprogram' && socData.name == 'SPX_PROGRAM') {
+                window.close();
+            }
+        }); // end SPXMessage2Client
+
+    </script>
 </head>
 <body onresize="resizePreview();">
 
+    {{#ifValue mode 'preview'}}
+      <div class="watermark prev"></div>
+    {{/ifValue}}
+
+    {{#ifValue mode 'program'}}
+      <div class="watermark prog"></div>
+    {{/ifValue}}
+
+    
     <div id="previewBG" style="background-color: rgb(0, 0, 0); overflow: hidden;">
-        <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
+
+        {{#ifValue mode 'preview'}}
+            <iframe id="previewIF" src="/renderer?preview=true"  class="renderer"></iframe>
+        {{else}}
+            <iframe id="previewIF" src="/renderer"  class="renderer"></iframe>
+        {{/ifValue}}
     </div>
 
 
@@ -75,7 +131,6 @@
         THIS SCALABLE VIEW IS FOR SPX OPERATOR ONLY
         <br>
         <small class="pale">Use transparent <span style="color:#fff;">/renderer</span> for production.</small>
-
     </div>
 
 
@@ -90,16 +145,25 @@
         });
 
         function resizePreview() {
-            // renderer size set by SPX to {{width}}x{{height}}
-            let DefaultX = {{width}};
-            let DefaultY = {{height}};
+            // renderscalable
+            // Scalable renderer size set by SPX to {{width}}x{{height}}
+            let DefaultX = '{{width}}';  // Math always defaults to 16:9
+            let DefaultY = '{{height}}';
+            // console.log('Resizer ' + DefaultX + ' x ' + DefaultY + ' px');
 
             const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
             const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
 
+            if (DefaultX.includes('vw')) {
+                // Responsive settings, use window size! Added in v1.3.0
+                // console.log('Responsive settings, use window size! Added in v1.3.0');
+                DefaultX = vw;
+                DefaultY = vh;
+            }
+
             let Wpx = vw// document.getElementById('previewWidthRuler').offsetWidth;
-            let Sca = Wpx/DefaultX;
-            let Hpx = parseInt(DefaultY * Sca);
+            let Sca = Wpx/parseInt(DefaultX);
+            let Hpx = parseInt(parseInt(DefaultY) * Sca);
             document.getElementById('previewBG').style.width=Wpx+'px';
             document.getElementById('previewBG').style.height=Hpx+'px';
             document.getElementById('previewIF').style.transform="scale("+Sca+")";

@@ -1,7 +1,190 @@
 /*
   Copyright 2020 Softpix
-  CSS file for basic stuff. Must be loaded first.
 */
+
+/* TABS in import template dialog */
+/* Style the tab */
+
+:root {
+  --tabButtonBorderColor: #afb5ba;
+  --backgroundColor: #2d333b;
+}
+
+
+.promoBoxCols {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5em;
+}
+
+.promoLeft {
+  flex-basis: 60%;
+  position: relative;
+  font-family: 'UI-Light' !important;
+  font-size: 0.7em;
+}
+
+.promoBoxHead {
+  font-size: 1.5em;
+  margin-bottom: 0.7em;
+}
+
+.promoLeft p {
+  margin-top: 0.5em;
+  opacity: 0.7;
+}
+
+.promoLeft a {
+  color: orange;
+  text-decoration: none;
+}
+
+.promoLeft a:hover {
+  color: white;
+}
+
+
+
+.promoLeft h2 {
+  font-size: 1.4em;
+  margin-top: 2.0em;
+  margin-bottom: 0.5em;
+  text-transform: none;
+  color: white;
+  width: 100%;
+  font-weight: normal;
+  letter-spacing: normal;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.242);
+}
+
+.promoLeft li {
+  list-style: square;
+  color: inherit;
+  opacity: inherit;
+}
+
+.promoRight {
+  font-size: 0.8em;
+  flex-basis: 40%;
+  position: relative;
+}
+
+.promoRight img {
+  width: 80%;
+  height: auto;
+}
+
+
+.tabButtonRow {
+  width: 100%;
+  display: flex;
+  gap: 0.6em;
+  font-size: 0.8em;
+  padding: 1.5em 0.3em 0 0.3em;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--tabButtonBorderColor);
+}
+
+.tabButtonRow > div {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tabButtonRow button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0.4em 1.0em;
+  transition: 0.1s;
+  font-family: inherit;
+  border-radius: 0.3em 0.3em 0 0;
+  position: relative;
+  transform: translateY(1px);
+  z-index: 10;
+  margin-right: 0.4em;
+  color: rgba(255, 255, 255, 0.385);
+  border: 0px solid var(--tabButtonBorderColor);
+  border-width: 1px 1px 0px 1px;
+}
+
+/* Change background color of buttons on hover */
+.tabButtonRow button:hover {
+  background-color: rgba(194, 194, 194, 0.426);
+  color: black;
+}
+
+/* Create an active/current tablink class */
+.tabButtonRow button.active {
+  background-color: #ccc;
+}
+
+.tabSelected {
+  background-color: #b1b6bc !important;
+  color: rgb(32, 32, 32) !important;
+  border-radius: 0.3em 0.3em 0 0;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 0.5em;
+  border: 0px solid #ccc;
+  border-top: none;
+}
+
+#tab1,
+#tab2,
+#tab3,
+#tab4 {
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+  border: 0px solid blue;
+  height: 100%;
+  overflow: auto;
+  /* background-color: var(--backgroundColor); */
+}
+
+#tab2,
+#tab3,
+#tab4 {
+  padding: 1.5em;
+}
+
+
+
+
+.dialogHeaderBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  padding: 0.2em 0.5em;
+  font-size: 0.8em;
+  background-color: rgba(255,255,255,0.2);
+  color: white;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.dialogHeaderBarClose {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+.dialogCloseButton {
+  cursor: pointer;
+  font-size: 1.5em;
+}
+
+.dialogCloseButton:hover {
+  color: rgba(0, 0, 0, 0.5);
+}
 
 .addTemplateItem{
   background-color: rgba(255,255,255,0.05);
@@ -191,9 +374,10 @@ display: block;
 
 
 .modal_top{
+  flex-shrink: 0;
   border: 0px solid pink;
   border-bottom: 1px dashed rgba(51, 150, 216, 0.445);
-  }
+}
 
 .modal_top SPAN{
   transform: translateY(-50%);
@@ -201,29 +385,23 @@ display: block;
   margin-left: 1em;
   }
 
-.modal_content{
-  border: 0px solid pink;
-  padding: 0.7em;
-  margin-top: 10px;
-  background-color: rgba(0, 0, 0, 0.1);
-  }
-
 .modal_bottom{
   gap: 0.5em;
   width: 100%;
+  flex-grow: 0;
   display: flex;
   height: 2.5em;
-  position: relative;
+  flex-shrink: 0;
   padding-top: 0.3em;
   flex-direction: row;
   align-items: center;
-  border: 0px solid pink;
   justify-content: flex-start;
+  border: 0px solid pink;
 }
 
 .browserMessage {
   top: 0;
-  position: absolute;
+  position: relative;
   font-size: 0.6em;
   color:  rgba(255, 255, 255, 0.5);
   margin-left: 0.1em;

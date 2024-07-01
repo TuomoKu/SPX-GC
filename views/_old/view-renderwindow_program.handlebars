@@ -6,6 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPX - PROGRAM EMULATOR</title>
     <link rel="stylesheet" type="text/css" href="/css/spx_renderpopups.css">
+    <style>
+        .renderer  {
+            /* rendererscalable hardcoded to 1920x1080 */ 
+            margin: 0;
+            padding: 0;
+            border: 0px;
+            outline: 0px;
+            width: 1920px;
+            height: 1080px;
+            background-size: 10vw;
+            transform-origin: top left;
+            background-image: url('/img/checker60.png'); /* bgimage for local preview */
+        }
+
+    </style>
     <script src="/js/socket.io.js"></script>
     <script>
         var socket = io();
@@ -49,18 +64,26 @@
         <iframe id="previewIF"
             src="/renderer"
             class="renderer"
-            style="width: {{width}}px; height: {{height}}px;"></iframe>
+            ZZstyle="width: {{width}}; height: {{height}}; aspect-ratio: {{aspect}}; border: 1px solid purple;"
+        ></iframe>
     </div>
 
     <script>
 
         function resizePreview() {
-            // renderer size set by SPX to {{width}}x{{height}}
-            let DefaultX = {{width}};
-            let DefaultY = {{height}};
+            return
+            // Program renderer size set by SPX to {{width}}x{{height}}
+            let DefaultX = 1920;  // Math always defaults to 16:9
+            let DefaultY = 1080;
 
             const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
             const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+            if (DefaultX.includes('vw')) {
+                // Responsive settings, use window size! Added in v1.3.0
+                DefaultX = vw;
+                DefaultY = vy;
+            }
 
             let Wpx = vw// document.getElementById('previewWidthRuler').offsetWidth;
             let Sca = Wpx/DefaultX;

@@ -64,7 +64,7 @@ router.get('/system/:data', (req, res) => {
   // NOTE: This endpoint is in the WRONG PLACE
   //       it should be moved to a more generic place
   //
-  
+  // console.log('System utilities / ' + req.params.data);
   data = JSON.parse(req.params.data);
   let directoryPath = "";
   logger.verbose('System utilities / ' + JSON.stringify(data));
@@ -91,6 +91,7 @@ router.get('/system/:data', (req, res) => {
       break;
 
     case 'CHECKCONNECTIONS':
+      // console.log('CCG: Checking server connections...');
       spx.checkServerConnections();
       break;
 
@@ -167,7 +168,6 @@ router.get('/control/:data', (req, res) => {
         global.CCGSockets[spx.getSockIndex(spx.getChannel(data))].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' UPDATE 1 "' + DataStr + '"\r\n');
         break;
 
-
       case 'NEXT':
         global.CCGSockets[spx.getSockIndex(spx.getChannel(data))].write('CG ' + GFX_Chan + '-' + GFX_Laye + ' NEXT 0\r\n');
         break;
@@ -238,15 +238,6 @@ router.get('/controljson/:data', (req, res) => {
   }
 });
 
-router.get('/testfunction', (req, res) => {
-  // NOTE: Run a test function
-  logger.info("PING! - a testFunction");
-  res.sendStatus(200);
-
-  console.log('Nothing here now');
-
-});
-
 router.post('/disable', async (req, res) => {
   // Added in 1.1.0. Set "disabled" state of the given CasparCG server
   // This only affects playback commands. Initialization works normally.
@@ -276,39 +267,38 @@ router.post('/disable', async (req, res) => {
 
 // Create all required Socket Connections for CasparCG servers specified in config.json
 const net = require('net')
-let ServerData = [];
+let ServerDataForLogger = [];
 
 if (config.casparcg) {
   config.casparcg.servers.forEach((element,index) => {
     const CurName = element.name;
     const CurHost = element.host;
     const CurPort = element.port;
-    ServerData.push({ name: CurName, host: CurHost, port: CurPort });
+
+    ServerDataForLogger.push({ name: CurName, host: CurHost, port: CurPort });
 
     // next two lines creates a dynamic variable for this loop iteration
-    var CurCCG = CurName + "= undefined";
-    eval(CurCCG);
-    CurCCG = new net.Socket();
+    // Changed in 1.3.0, from:
+    // var CurCCG = CurName + "= undefined";
+    // eval(CurCCG);
+
+    // ..to:
+    var CurCCG = new net.Socket();
+    // end of change
+
     global.CCGSockets.push(CurCCG); // --> PUSH Socket object to a global array for later use
     CurCCG.spxname = CurName; // save each entry a name for later searching!
     CurCCG.spxhost = CurHost; // save each entry a host for later searching! (v.1.0.14)
     CurCCG.spxport = CurPort; // save each entry a port for later searching! (v.1.0.14)
-    // console.log('Connecting to ' + CurCCG.spxname + ' at ' + CurCCG.spxhost + ":" + CurCCG.spxport + '...');
-    // console.log('Still 1 ?', CurCCG.connecting)
 
     CurCCG.connect(CurPort, CurHost, function () {
-      // console.log('Connected to ' + CurName + ' at ' + CurHost + ":" + CurPort + '...');
-      ServerData.push({ name: CurName, host: CurHost, port: CurPort });
+      ServerDataForLogger.push({ name: CurName, host: CurHost, port: CurPort });
       data = { spxcmd: 'updateServerIndicator', indicator: 'indicator' + index, color: '#00CC00' };
       io.emit('SPXMessage2Client', data);
-
       data = { spxcmd: 'updateStatusText', status: 'Communication established with ' + CurName + '.' };
       io.emit('SPXMessage2Client', data);
-
       logger.verbose('SPX connected to CasparCG as \'' + CurName + '\' at ' + CurHost + ":" + CurPort + '.');
     });
-
-    // console.log('Still 2?', CurCCG.connecting)
 
     CurCCG.on('data', function (data) {
       logger.verbose('SPX received data from CasparCG ' + CurName + ': ' + data);
@@ -365,13 +355,13 @@ if (config.casparcg) {
       data = { spxcmd: 'updateStatusText', status: 'Communication error with ' + CurName + '.' };
       io.emit('SPXMessage2Client', data);
 
-      logger.warn('SPX connection error with "' + CurName + '". Is CasparCG running at ' + CurCCG.spxhost + ':'  + CurCCG.spxport + '? (' + err +')');
-      console.log('Sockets: ', global.CCGSockets);
+      logger.warn('Unable to connect CasparCG "' + CurName + '" (' + CurCCG.spxhost + ':'  + CurCCG.spxport + '). Is it running?');
+      // console.log('Sockets: ', global.CCGSockets);
     });
 
     // console.log('Still 3?', CurCCG.connecting)
   });
 }; // end if 
 
-logger.debug('ServerData during init: ' + JSON.stringify(ServerData));
+logger.debug('ServerDataForLogger during init: ' + JSON.stringify(ServerDataForLogger));
 module.exports = router;

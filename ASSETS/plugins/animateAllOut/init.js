@@ -22,12 +22,7 @@ function PluginInstance() {
     }
 
     this.stopAllLayers = () => {
-        let ITEMS = document.querySelectorAll('.itemrow');
-        ITEMS.forEach(function (templateItem, itemNro) {
-            setTimeout(function(){ 
-                continueUpdateStop('stop', templateItem);
-                }, (itemNro + 1)); // 50, 100, 150, 200ms etc...
-        });
+        stopAll(); // in spx_gc.js
     }
 }
 

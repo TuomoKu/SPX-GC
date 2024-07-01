@@ -5,109 +5,123 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
-  <!--      SPX GRAPHICS CONTROLLER      -->
-  <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
-  <!--         (c) 2020- Softpix         -->
-  <!--        http://spx.graphics        -->
-  <!--                                   -->
-  <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
-
-  <!--
-    Scripts, no frameworks.
-    "Some extract of vanilla, enough to feed Godzilla."
-  -->
+    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+    <!--      SPX GRAPHICS CONTROLLER      -->
+    <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
+    <!--      (c) 2020- SPX Graphics       -->
+    <!--        http://spx.graphics        -->
+    <!--                                   -->
+    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+    
+    <!--
+      Scripts, no frameworks.
+      "Some extract of vanilla, enough to feed Godzilla."
+    -->
 
     <script src="./js/socket.io.js"></script>
+    <script src="/js/lib/dotlottie-player.js"></script>
+    <title>SPX Renderer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            overflow: hidden;
+            margin: 0;
+            padding: 0px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0px;
+            background-color: transparent;
+            background-color: rgba(0,0,0,0);
+            color: black;
+            font-size: 3em;
+        }
+
+        #root {
+            padding: 0px;
+            /* MAIN RENDERER size set by SPX to {{width}}x{{height}} */ 
+            width: {{width}};
+            height: {{height}};
+            position: relative;
+            border: 0px dashed red;
+            background-size: 100% 100%;
+            background-color: rgba(0,0,0,0);
+        }
+        
+        #overlays {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            position: absolute;
+            border: 0px solid red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .frame {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            position: absolute;
+            border: 0px solid red;
+        }
+
+        .debugMessage{
+            top: 5%;
+            left: 10%;
+            opacity: 0.0;
+            z-index: 500;
+            font-size: 2em;
+            font-weight: bold;
+            position: absolute;
+            padding: 0.1em 0.5em;
+            display: inline-block;
+            color: rgb(3, 42, 3);
+            transform: rotate(1deg);
+            border: 1px solid green;
+            background-color: rgba(205, 255, 218, 0.85);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #cursorHider {
+            z-index: 200;
+            background-color: rgba(0,0,0,0.0);
+            cursor: none;
+        }
+
+        #wm {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            position: absolute;
+            border: 0px dashed red;
+            background-color: rgba(0,0,0,0);
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
 
-  <title>SPX Renderer</title>
-        <style>
-            * {
-                box-sizing: border-box;
-                overflow: hidden;
-                margin: 0;
-                padding: 0px;
-            }
-
-            body, html {
-                margin: 0;
-                padding: 0px;
-                background-color: transparent;
-                background-color: rgba(0,0,0,0);
-            }
-
-            #root {
-                padding: 0px;
-                /* renderer size set by SPX to {{width}}x{{height}} */ 
-                width: {{width}}px;
-                height: {{height}}px;
-                position: relative;
-                border: 0px dashed red;
-                background-size: 100% 100%;
-                background-color: rgba(0,0,0,0);
-            }
-
-            .frame {
-                margin: 0;
-                width: 100%;
-                height: 100%;
-                padding: 0px;
-                position: absolute;
-                border: 0px solid red;
-            }
-
-            .debugMessage{
-                top: 5%;
-                left: 10%;
-                opacity: 0.0;
-                z-index: 500;
-                font-size: 2em;
-                font-weight: bold;
-                position: absolute;
-                padding: 0.1em 0.5em;
-                display: inline-block;
-                color: rgb(3, 42, 3);
-                transform: rotate(1deg);
-                border: 1px solid green;
-                background-color: rgba(205, 255, 218, 0.85);
-                font-family: 'Courier New', Courier, monospace;
-            }
-
-        </style>
-</head>
-
- <body>
-    <div id="root">
-        <iframe class="frame f01" allow="autoplay" id="layer1"  style="z-index: 101;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f02" allow="autoplay" id="layer2"  style="z-index: 102;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f03" allow="autoplay" id="layer3"  style="z-index: 103;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f04" allow="autoplay" id="layer4"  style="z-index: 104;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f05" allow="autoplay" id="layer5"  style="z-index: 105;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f06" allow="autoplay" id="layer6"  style="z-index: 106;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f07" allow="autoplay" id="layer7"  style="z-index: 107;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f08" allow="autoplay" id="layer8"  style="z-index: 108;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f09" allow="autoplay" id="layer9"  style="z-index: 109;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f10" allow="autoplay" id="layer10" style="z-index: 110;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f11" allow="autoplay" id="layer11" style="z-index: 111;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f12" allow="autoplay" id="layer12" style="z-index: 112;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f13" allow="autoplay" id="layer13" style="z-index: 113;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f14" allow="autoplay" id="layer14" style="z-index: 114;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f15" allow="autoplay" id="layer15" style="z-index: 115;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f16" allow="autoplay" id="layer16" style="z-index: 116;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f17" allow="autoplay" id="layer17" style="z-index: 117;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f18" allow="autoplay" id="layer18" style="z-index: 118;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f19" allow="autoplay" id="layer19" style="z-index: 119;" src="/templates/empty.html"></iframe>
-        <iframe class="frame f20" allow="autoplay" id="layer20" style="z-index: 120;" src="/templates/empty.html"></iframe>
-    </div>
-    <div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
+    </style>
 
     <script>
 
         let incomingData; // a placeholder for templateData
+        let WMtimer = null;
+        let startTime = new Date().getTime();
+        const inController = top.location.href.includes('renderer') ? false : true; 
 
         function allowLayerControl(LayerNro) {
             // Usage:
@@ -179,6 +193,16 @@
             }
         }
 
+        function isLocalRenderer() {
+            if (top.location.href.includes('renderer')) {
+                // console.log('Nope, this is a remote renderer.');
+                return false
+            } else {
+                // console.log('Yes, this is a local renderer.');
+                return true
+            }
+        }
+
         function clearLayer(LayerNro){
             let ValidatedLayerNro = validateLayerNro(LayerNro);
 
@@ -194,6 +218,90 @@
             document.getElementById('debugMessage').innerText=msg;
         }
         
+        function spxWM(mode=0,ref=0, minMins=15, maxMins=30) {
+            // Added in 1.3.0
+            // Watermark player. PANIC will kill this also.
+            // Can be controlled from any template:
+            // INIT and loop using defaults ---> parent.spxWM?.();
+            // HIDE AND PREVENT FUTURE PLAYS --> parent.spxWM?.(3);
+            // Forcefully play once -----------> parent.spxWM?.(4);
+
+            clearTimeout(WMtimer);
+            WMtimer = null;
+
+            let MODES = ['init','wait', 'play','stop', 'force'];
+            const player = document.getElementById('wm');
+            let file = '/img/json/wm-' + ref + '.json';
+            let fadeOutAfter = 8000; // Anim duration
+
+            switch (MODES[mode]) {
+                case 'init':
+                    console.log('0: spxWM init');
+                    player.style.opacity=0;
+                    player.load(file);
+                    spxWM(1,ref, minMins, maxMins);
+                    return;
+                    break;
+
+                case 'wait':
+                    // DEBUG #######
+                    // minMins = 0.2
+                    // maxMins = 0.5
+                    // #############
+                    let minMS = (parseFloat(minMins) * 60 * 1000); // default 15 min
+                    let maxMS = (parseFloat(maxMins) * 60 * 1000); // default 30 min
+                    minMS = Math.max(minMS, fadeOutAfter+500)
+                    let rnd = Math.floor(Math.random() * maxMS) + minMS;
+                    console.log('1: spxWM delay sec', (rnd/1000));
+                    WMtimer = setTimeout(function () {
+                        spxWM(2,ref, minMins, maxMins);
+                    }, rnd);
+                    return;
+                    break;
+
+                case 'play':
+                    console.log('2: spxWM play');
+                    player.style.opacity=1;
+                    player.seek(0);
+                    player.play();
+                    spxWM(1,ref, minMins, maxMins);
+                    setTimeout(function () {
+                        player.style.opacity=0;
+                    }, fadeOutAfter);
+                    break;
+
+                case 'stop':
+                    console.log('3: spxWM stop');
+                    clearTimeout(WMtimer);
+                    WMtimer = null; 
+                    player.stop();
+                    player.style.opacity=0;
+                    break;
+
+                case 'force':
+                    console.log('4: force play wm');
+                    player.load(file);
+                    setTimeout(function () {
+                        player.seek(0);
+                        player.style.opacity=1;
+                        player.play();
+                    }, 200);
+                    setTimeout(function () {
+                        player.style.opacity=0;
+                        if (WMtimer) {
+                            // Was running, continue with new
+                            clearTimeout(WMtimer);
+                            spxWM(1,ref);
+                        } else {
+                            // Not running, purge just in case
+                            clearTimeout(WMtimer);
+                            WMtimer = null; 
+                        }
+                    }, fadeOutAfter*1000);
+                    break;
+            }
+        }
+
         function protocolCheck() {
             // check if we are http or file.
             let protocol = location.protocol;
@@ -201,8 +309,13 @@
                 alert('Please use this via server! Functions and CORS may not work when used as a file. (Current protocol: ' + protocol + ')');
             }
 
+            // Show spinner when in Controller
+            // if (inController) {
+            //     document.getElementById('loader').style.opacity=1;
+            // }
 
             // If FPS given in the url param store it. Added in 1.1.3.
+            // Please note, none of default templates support this.
             const queryString   = window.location.search;
             const urlParams     = new URLSearchParams(queryString);
             const fps           = urlParams.get('fps');
@@ -225,7 +338,7 @@
             // console.log('Resizing window to ' + w + ' x ' + h + ' px.')
             window.resizeTo(w, h);
 
-        }
+       }
             
         function remoteFunction(LayerNro, functionName, arg) {
             // console.log('remoteFunction ' + LayerNro);
@@ -251,8 +364,16 @@
             } else {
                 templa = TemplateRoot + 'empty.html';
             }
+
+            // Pass custom URL params to template url. Added in 1.2.2.
+            let urlParams = new URLSearchParams(window.location.search);
+            let customParams = '';
+            for(let param of urlParams) {
+                customParams += '&' + param[0] + '=' + param[1];
+            }
             let ranNro = (new Date()).getTime() + Math.floor(Math.random() * 1000000);
-            document.getElementById(iframe).src=templa + "?random=" + ranNro;
+            document.getElementById(iframe).src=templa + "?random=" + ranNro + customParams;
+            // console.log("\n\n ====> Loaded " + document.getElementById(iframe).src + ".\n\n")
         }
 
         function playLayer(LayerNro,fieldData) {
@@ -303,14 +424,10 @@
         let TemplateRoot;
         var GCserver = url.searchParams.get("gc") || undefined;
         if (GCserver==undefined) {
-            // The 'templates' is a subfolder in MEDIA, which is 
-            // routed as static! At least during dev.
             TemplateRoot = "/templates/";
-            // console.log('Local comms using [' + TemplateRoot + '].');
             var socket = io();
         } else {
             TemplateRoot = "templates/";
-            // console.log('Remote comms ' + GCserver + ' using [' + TemplateRoot + '].');
             var socket = io(GCserver);
         }
 
@@ -322,7 +439,7 @@
         });
 
         socket.on('SPXMessage2Client', function (data) {
-            // Handles messages coming from server to this client.
+            // Handles messages coming from server to this renderer client.
             // All comms using 'SPXMessage2Client' as a conduit with data object and
             // data.spxcmd as function identifier. Additional object values are payload.
             // console.log('SPXMessage2Client ', data);
@@ -333,6 +450,7 @@
             switch (data.spxcmd) {
                 case 'clearAllLayers':
                     // first we hide root, then clear all layers and show root again
+                    spxWM(3);
                     document.getElementById('root').style.opacity=0;
                     document.querySelectorAll('.frame').forEach(function(frame,index) {
                         LayerNro = (index+1);
@@ -350,12 +468,30 @@
                     populateLayer(data.webplayout,data.relpath);
                     break;
 
+                case 'forceWM':
+                    // console.log('view-renderer forceWM()...')
+                    spxWM(4); // forcefully play watermark and optionally continue
+                    break;
+
                 case 'playTemplate':
                     // set callback function to the iframe and then load src to it.
-                    // Note, for preview the layer number will be set downstream in the renderer is 'preview=true'
+                    // Note, for PREVIEW the layer number will be set downstream in
+                    // the renderer if 'preview=true'
+
+                    if (data.modify && data.modify==='autoPlayLocal' ) {
+                        if (isLocalRenderer()) {
+                            // console.log('AutoPlayLocal render coming right up...', data.relpath);
+                        } else {
+                            // console.log('AutoPlayLocal is not for remote renderers.', data.relpath);
+                            return;
+                        }
+                    }
+
                     LayerNro = validateLayerNro(data.webplayout);
                     if (!LayerNro) { return }
-                    document.getElementById('layer' + LayerNro).onload = function() { playLayer(LayerNro,data.fields); };
+                    document.getElementById('layer' + LayerNro).onload = function() {
+                        playLayer(LayerNro,data.fields);
+                    };
                     populateLayer(data.webplayout,data.relpath);
                     break;
 
@@ -380,9 +516,7 @@
                 case 'invokeFunction':
                     LayerNro = validateLayerNro(data.webplayout);
                     if (!LayerNro) { return }
-                    // FIXME: show again --> console.log('Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + '.');
                     try {
-
                         // Important change! --------------------------------------------------
                         // Starting from version 1.2.0 it is recommended to use
                         // "data.function" and "data.params" instead of "data.invoke"
@@ -393,15 +527,19 @@
                         // --------------------------------------------------------------------
 
                         if (data.function) {
-                            let myFunction = data.function;
-                            let myParamets = data.params;
-                            let type = typeof(document.getElementById('layer' + LayerNro).contentWindow.myFunction);
-                            console.log('Type is ' + type);
-                            if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
-                                console.log('Executing ' + myFunction + '() on layer ' + LayerNro + ' with params', myParamets);
+                            var myFunction = data.function;
+                            var myParamets = data.params || null;
+                            if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") {
+                                let paramPreview = '';
+                                if (myParamets && myParamets!="undefined") {
+                                    paramPreview = 'First 30 chars of args: ' + myParamets.substring(0, 30);
+                                } else {
+                                    paramPreview = 'No args.';
+                                }
+                                console.log('Executing "' + myFunction + '" on layer ' + LayerNro + '. ' + paramPreview)
                                 document.getElementById('layer' + LayerNro).contentWindow[myFunction](myParamets);
                             } else {
-                                console.log('Renderer / invokeFunction [' + myFunction + '] on layer ' + LayerNro + ' is NOT a function.');
+                                console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
                             }
                         } else {
                             if  (data.invoke) {
@@ -417,12 +555,12 @@
                                     eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
                                     // TODO: This should be removed in the future.
                                 } else {
-                                    console.log('Renderer / invokeFunction "' + myFunction + '" on layer ' + LayerNro + ' is NOT a function.');
+                                    console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
                                 }
                             }
                         }
                     } catch(err) {
-                        console.log('ERROR Renderer / invokeFunction ' + data.invoke + ' on layer ' + LayerNro + ' failed.', err);
+                        console.log('Error invoking "' + myFunction + '" on layer ' + LayerNro + '. Verify function and loaded template.');
                     }
                     break;
 
@@ -453,6 +591,39 @@
 
         window.addEventListener('load',protocolCheck,false);
 
+
   </script>
+
+</head>
+
+ <body>
+    <div id="root">
+        <dotlottie-player id="wm"></dotlottie-player><!-- see private wm notes -->
+        {{#ifValue hideCursor "true"}}
+            <div id="cursorHider"></div>
+        {{/ifValue}}
+        {{!-- <iframe class="frame" onload="frameLoaded(this)" allow="autoplay" id="layer1"  style="z-index: 101;" src="about:blank"></iframe> --}}
+        <iframe class="frame" allow="autoplay" id="layer1"  style="z-index: 101;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer2"  style="z-index: 102;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer3"  style="z-index: 103;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer4"  style="z-index: 104;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer5"  style="z-index: 105;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer6"  style="z-index: 106;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer7"  style="z-index: 107;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer8"  style="z-index: 108;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer9"  style="z-index: 109;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer10" style="z-index: 110;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer11" style="z-index: 111;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer12" style="z-index: 112;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer13" style="z-index: 113;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer14" style="z-index: 114;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer15" style="z-index: 115;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer16" style="z-index: 116;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer17" style="z-index: 117;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer18" style="z-index: 118;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer19" style="z-index: 119;" src="about:blank"></iframe>
+        <iframe class="frame" allow="autoplay" id="layer20" style="z-index: 120;" src="about:blank"></iframe>
+    </div><div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
+
 </body>
 </html>

@@ -1,130 +1,145 @@
         
         <div id="messageSlider" style="opacity:0;"></div>
         
-        <table style="width: 100%; border: 0px solid cornsilk; padding:5px; border-spacing:0;">
-            <tr>
-                {{!-- <td width="1" style="vertical-align: middle;">
-                  <img src="/img/spx.svg" class="logo">
-                </td> --}}
-                <td class="breadtd">
-                  <div class="dropdown">
-                    <!-- <i class="fas fa-home home-icon" style="cursor: pointer;"></i> -->
+        <div class="headerRow">
+          <div id="logoZone" class="dropdown">
+            <img src="/img/spx_offline.png" style="position: absolute; display:none;" id="logo_off">
+            <img src="/img/spx_online.png"  style="position: absolute; display:none;" id="logo_on">
+            <img src="/img/spx_online.png" id="logo" style="cursor: pointer;">
+            <div class="scrollingMenuArea scroller">
+              <div class="dropdown-content">
+                <A HREF="/"><i class="fas fa-home"></i>&nbsp; {{lang 'pagetitle.home'}}</A><br>
+                <A HREF="/shows/"><i class="fas fa-folder"></i>&nbsp; {{lang 'pagetitle.shows'}}...</A><BR>
+                <div style="font-size: 0.8em; padding-left: 1.0em; border-left: 10px solid rgba(0, 0, 0, 0.205);">
+                {{#each recents}}
+                    <div id="recent{{@index}}"><i class="fas fa-file-alt"></i><A id="recent{{@index}}link" HREF="/gc/{{this}}">&nbsp; {{this}}</A></div>
+                {{/each}}
+                </div>
 
-                    <!-- green and red icon caching -->
-                    <img src="/img/spx_offline.png" style="position: absolute; display:none;" id="logo_off">
-                    <img src="/img/spx_online.png"  style="position: absolute; display:none;" id="logo_on">
-
-                    <img src="/img/spx_online.png" id="logo" style="cursor: pointer;">
-                    <div class="dropdown-content" style="white-space: nowrap; left:0; padding:1em; line-height:2.2em;">
-                      {{!-- <div style="width: 100%; text-align: center; padding: 1em; background-color: rgba(0,0,0,0.5);">
-                        <img src="/img/spx.svg" class="logo">
-                      </div> --}}
-                      <A HREF="/"><i class="fas fa-home"></i>&nbsp; {{lang 'pagetitle.home'}}</A><br>
-
-                      <A HREF="/shows/"><i class="fas fa-folder"></i>&nbsp; {{lang 'pagetitle.shows'}}...</A><BR>
-
-                      <!-- recent files added in 1.1.0 -->
-                      <div style="font-size: 0.8em; padding-left: 1.0em; border-left: 10px solid rgba(0, 0, 0, 0.205);">
-                       {{#each recents}}
-                          <div id="recent{{@index}}"><i class="fas fa-file-alt"></i><A id="recent{{@index}}link" HREF="/gc/{{this}}">&nbsp; {{this}}</A></div>
-                       {{/each}}
-                      </div>
-
-                      {{#ifValue disableConfigUI true}}
-                        <!-- disableConfigUI:true -->
-                      {{else}}
-                        <HR class="menuDivider">
-                        <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A><BR>
-                        <A HREF="/api/v1"><i class="fas fa-file-code"></i>&nbsp; API {{lang 'button.docs'}}...</A><BR>
-                      {{/ifValue}}
-
-                      {{#ifValue page "controller"}}
-                      <A HREF="" onClick="ModalOn('overlayHelp');return false;"><i class="far fa-keyboard"></i>&nbsp; {{lang 'button.shortcuts'}}...</A>
-                      {{/ifValue}}
-
-                      <HR class="menuDivider">
-                      <A HREF="" onClick="spx_system('openWebRenderer');return false;"><i class="far fa-window-maximize"></i>&nbsp; {{lang 'button.showwebrenderer'}}</A><BR>
-                      <A HREF="" onClick="spx_system('OPENWEBRENDERER_SCALABLE');return false;"><i class="far fa-window-maximize"></i>&nbsp; {{lang 'button.showwebrenderer'}} (scalable)</A>
-                      {{{GenerateOpenFolderCommands}}}
-
-
-                      {{#ifValue user "default"}}
-                        <!--default user -->
-                      {{else}}
-                      <HR class="menuDivider">
-                        <A HREF="/logout">Logout {{{user}}}...</A>
-                      {{/ifValue}}
-
-                      <HR class="menuDivider">
-                      <A HREF="" onClick="spx_system('restartServer');return false;"><i class="fas fa-power-off"></i>&nbsp; Kill (restart SPX-server)</A>
-
-                      <HR class="menuDivider">
-                      <A HREF="https://spx.graphics/store" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; spx.graphics/store</A><BR>
-                      <A HREF="https://bit.ly/joinspx" target="_new"><i class="fab fa-discord"></i>&nbsp; Join SPX Discord</A>
-                      <A id="newVersionMenuItem" class="newVersionBubble" HREF="https://spxgc.tawk.help/article/latest-changes" target="_new"><i class="fas fa-bullhorn"></i>&nbsp; New version available!</A>
-
-                      <!-- add a link to register -->
-                      {{#if config.registration.updated }}
-                        <!-- Reg ok -->
-                      {{else}}
-                        <A style="display: block;" class="newVersionBubble" HREF="/register"><i class="fas fa-crown"></i>&nbsp; Register for free...</A>
-                        {{!-- <div class="registrationDiv">
-                          <A HREF="/register/"><i class="fas fa-crown"></i>&nbsp; Register for free...</A><BR>
-                        </div> --}}
-                        
-                      {{/if}}
-                      
-                    </div>
-                  </div>
-
-                  {{#ifValue page "appconfig"}}
-                    <span class="caret-icon">&#9654;</span>
-                    <span  class="breadcrumbs">{{lang 'pagetitle.configapp'}}</span>
-                  {{/ifValue}}
-
-                  {{#ifValue page "shows"}}
-                    <span class="caret-icon">&#9654;</span>
-                    <span class="breadcrumbs">{{lang 'pagetitle.shows'}}</span>
-                  {{/ifValue}}
-
-                  {{#ifValue page "showconfig"}}
-                    <span class="caret-icon">&#9654;</span>
-                    <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
-                    <span class="caret-icon">&#9654;</span>
-                    <span  class="breadcrumbs"><a href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
-                    <span class="caret-icon">&#9654;</span>
-                    <span  class="breadcrumbs">{{lang 'pagetitle.configshow'}}</span>
-                  {{/ifValue}}
-
-                  {{#ifValue page "episodes"}}
-                    <span class="caret-icon">&#9654;</span>
-                    <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
-                    <span class="caret-icon">&#9654;</span>
-                    <span  class="breadcrumbs">{{folder}}</span>
-
-                    <div class="breadIcon">
-                      <span onClick="projectSettings();" class="breadcrumbGear" title="Project settings"><i class="fas fa-cog"></i></span>
-                    </div>
-                  {{/ifValue}}
-
-                  {{#ifValue page "controller"}}
-                    <span class="caret-icon">&#9654;</span>
-                    <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
-                    <span class="caret-icon">&#9654;</span>
-                    <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
-                    <span class="caret-icon">&#9654;</span>
-                    <span  class="breadcrumbs">{{filebasename}}</span>
-                    <!--  Rundown options and project variables are disabled for now
-                    <div class="breadIcon">
-                      <a class="breadcrumbGear" href="#" onClick="toggleRundownSettings();" title="Rundown options"><i class="fa fa-wrench"></i></a>
-                    </div>
-                    -->
-                  {{/ifValue}}
-              </td>
-              <td class="aright breadcrumbs">
-                {{#ifValue page "controller"}}
-                    {{{ServerStatus}}}
+                {{#ifValue disableConfigUI true}}
+                  <!-- disableConfigUI:true -->
+                {{else}}
+                  <HR class="menuDivider">
+                  <A HREF="/config"><i class="fas fa-wrench"></i>&nbsp; {{lang 'pagetitle.configapp'}}...</A><BR>
+                  <A HREF="/api/v1" target="apiWin"><i class="fas fa-file-code"></i>&nbsp; API {{lang 'button.docs'}}...</A><BR>
                 {{/ifValue}}
-              </td>
-            </tr>
-        </table>
+
+                {{#ifValue page "controller"}}
+                <A HREF="" onClick="ModalOn('overlayHelp');return false;"><i class="far fa-keyboard"></i>&nbsp; {{lang 'button.shortcuts'}}...</A>
+                {{/ifValue}}
+
+                <HR class="menuDivider">
+                <A HREF="" onClick="spx_system('openWebRenderer');return false;"><i class="far fa-window-maximize"></i>&nbsp; {{lang 'button.showwebrenderer'}}</A><BR>
+                <A HREF="" onClick="spx_system('OPENWEBRENDERER_SCALABLE');return false;"><i class="far fa-window-maximize"></i>&nbsp; {{lang 'button.showwebrenderer'}} (scalable)</A>
+                {{{GenerateOpenFolderCommands}}}
+
+                {{#ifValue user "default"}}
+                  <!--default user -->
+                {{else}}
+                <HR class="menuDivider">
+                  <A HREF="/logout">Logout {{{user}}}...</A>
+                {{/ifValue}}
+
+                <HR class="menuDivider">
+                <A HREF="" onClick="spx_system('restartServer');return false;"><i class="fas fa-power-off"></i>&nbsp; Kill (restart SPX-server)</A>
+
+                <HR class="menuDivider">
+                <A HREF="https://spx.graphics/store" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; spx.graphics/store</A><BR>
+                <A HREF="https://bit.ly/joinspx" target="_new"><i class="fab fa-discord"></i>&nbsp; Join SPX Discord</A>
+                <A id="newVersionMenuItem" class="newVersionBubble" HREF="https://spxgc.tawk.help/article/latest-changes" target="_new"><i class="fas fa-bullhorn"></i>&nbsp; New version available!</A>
+
+                <!-- add a link to register -->
+                {{#if config.registration.updated }}
+                  <!-- Reg ok -->
+                {{else}}
+                  <A style="display: block;" class="newVersionBubble" HREF="/register"><i class="fas fa-crown"></i>&nbsp; Register for free...</A>
+                  {{!-- <div class="registrationDiv">
+                    <A HREF="/register/"><i class="fas fa-crown"></i>&nbsp; Register for free...</A><BR>
+                  </div> --}}
+                  
+                {{/if}}
+              </div>
+            </div>
+
+          </div>
+          <div id="breadCrumsZone">
+            {{#ifValue page "appconfig"}}
+              <span class="caret-icon">&#9654;</span>
+              <span  class="breadcrumbs">{{lang 'pagetitle.configapp'}}</span>
+            {{/ifValue}}
+
+            {{#ifValue page "shows"}}
+              <span class="caret-icon">&#9654;</span>
+              <span class="breadcrumbs">{{lang 'pagetitle.shows'}}</span>
+            {{/ifValue}}
+
+            {{#ifValue page "showconfig"}}
+              <span class="caret-icon">&#9654;</span>
+              <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
+              <span class="caret-icon">&#9654;</span>
+              <span  class="breadcrumbs"><a href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+              <span class="caret-icon">&#9654;</span>
+              <span  class="breadcrumbs">{{lang 'pagetitle.configshow'}}</span>
+            {{/ifValue}}
+
+            {{#ifValue page "episodes"}}
+              <span class="caret-icon">&#9654;</span>
+              <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
+              <span class="caret-icon">&#9654;</span>
+              <span  class="breadcrumbs">{{folder}}</span>
+
+              <div class="breadIcon">
+                <span onClick="projectSettings();" class="breadcrumbGear" title="Project settings"><i class="fas fa-cog"></i></span>
+              </div>
+            {{/ifValue}}
+
+            {{#ifValue page "controller"}}
+              <span class="caret-icon">&#9654;</span>
+              <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
+              <span class="caret-icon">&#9654;</span>
+              <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+              <span class="caret-icon">&#9654;</span>
+              <span  class="breadcrumbs">{{filebasename}}</span>
+              <div class="breadIcon">
+                <a class="breadcrumbGear" href="#" onClick="toggleRundownSettings(); return false;" title="Rundown options"><i class="fa fa-wrench"></i></a>
+              </div>
+            {{/ifValue}}
+
+            {{{DetectCustomContentPackages}}}
+            
+            <!-- What is DetectCustomContentPackages?
+
+              You probably don't need to worry about this, but:
+
+              For development purposes we can have custom "content repositories"
+              that are not part of the standard SPX installation. These repositories
+              consists of complete ASSETS and DATAROOT subfolders and both of them
+              will need to have a file "spx-content-repo.txt" in the root of the
+              folders. This file will contain the name of the repository.
+
+              The spx-content-repo.txt textfile in the "normal" content repository
+              should contain "CONTENT_FULL". This is used to distinguish the standard
+              SPX content repository from custom ones.
+
+              There is a utility batch file "SWITCH_CONTENT.BAT" that can be used
+              to switch between the standard SPX content repository and a custom one
+              while developing. When using this utility the custom content repositories
+              are kept in a folder called "CONTENT_REPOSITORIES" in the root of SPX
+              installation. Each custom repository is kept in a subfolder of this
+              folder and the name of the subfolder is the name of the repository and
+              it should also be the content of the spx-content-repo.txt text files.
+
+              When a custom content repository is detected the name of the repository
+              is shown in the header of the SPX UI.
+
+              Fun eh?
+
+            -->
+
+          </div>
+          <div id="CasparZone" class="serverButtons">
+            {{#ifValue page "controller"}}
+                {{{ServerStatus}}}
+            {{/ifValue}}
+          </div>
+        </div>

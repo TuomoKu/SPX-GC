@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="/js/axios.min.js"></script>
+  <script src="/js/fontawesome.all.min.js"></script>
+  <!-- <script src="/js/Sortable.min.js"></script> Not in LIGHT -->
+  <script src="/js/socket.io.js"></script>
+  <script src="/js/vanilla-js-tooltip.js"></script>
+  <!-- <script src="/js/spx_controllerImportFunctions.js"></script> -->
+  <script src="/js/spx_gc.js"></script>
+  <script src="/js/anime.min.js"></script>
+  <script src="/js/lib/vanilla-picker.csp.min.js"></script> <!-- added in 1.1.1 -->
+  <script>
+    var socket = io();
+
+    function toggle(btn) {
+      btn.classList.toggle("toggled");
+
+      if (btn.id == "btnPrv") {
+        if ( btn.classList.contains("toggled")) {
+          document.getElementById("previewBG").style.display = "block";
+          document.getElementById("previewIF").src = "/renderer?preview=true";
+        } else {
+          document.getElementById("previewBG").style.display = "none";
+          document.getElementById("previewIF").src = "/templates/empty.html";
+        }
+      }
+
+      if (btn.id == "btnRun") {
+        if ( btn.classList.contains("toggled")) {
+          document.getElementById("rundownElements").style.display = "block";
+        } else {
+          document.getElementById("rundownElements").style.display = "none";
+        }
+      }
+
+      if (btn.id == "btnPlu") {
+        if ( btn.classList.contains("toggled")) {
+          document.getElementById("controllerPluginButtons").style.display = "block";
+        } else {
+          document.getElementById("controllerPluginButtons").style.display = "none";
+        }
+      }
+    }
+
+    function loadRundown(element) {
+      let rundown = element.value;
+      let url = "/gc/" + rundown + "/light";
+      window.location.href = url;
+    }
+
+  </script>
+
+  <title>SPX Light | {{lang 'pagetitle.controller'}}</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_layout-mini.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_accents.css">
+  <link rel="stylesheet" type="text/css" href="/css/vanilla-js-tooltip.css" />
+  <link rel="stylesheet" type="text/css" href="/css/vanilla-picker.csp.css" >
+  <link rel="stylesheet" type="text/css" href="/css/toggle2.css">
+  <link rel="stylesheet" type="text/css" href="/css/toggle.css">
+
+  <style>
+
+    .headlineRow {
+      display: flex;
+      font-size: 1.1em;
+      padding: 0.4em;
+      gap: 0.3em;
+      font-family: 'UI-Regular';
+      align-items: center;
+      justify-content: center;
+    }
+
+    .headlineRow > * {
+      height:90%;
+    }
+
+    #logo {
+      border: 0px solid yellow;
+    }
+
+    .headlineRow > button {
+      font-size: 0.6em;
+      padding: 0.1em 0.7em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.479);
+      font-family: 'UI-Light';
+      border: 0;
+      opacity: 0.8;
+      border-radius: 0.3em;
+      background-color: rgba(0, 0, 0, 0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .headlineRow > button:hover {
+      cursor: pointer;
+      opacity: 1.0;
+    }
+
+
+    .toggled {
+      border: 0 !important; 
+      color: #fff !important;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+      background-color: rgba(22, 150, 22, 0.2)!important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+      margin-top: 1px;
+    }
+
+    #previewWidthRuler {
+      border: 0;
+      opacity: 0 !important;
+      margin: 0;
+    }
+
+
+
+    #footer > button {
+      flex-basis: 50%;
+      margin: 0.2em;
+    }
+
+
+    #rundownSelector {
+      flex-grow: 1;
+      margin: 0.1em;
+      padding: 0.1em;
+      font-size: 0.9em;
+      background-color: #0008;
+      color: white;
+      font-family: 'UI-Regular';
+      border: 0;
+    }
+
+    #controllerPluginButtons {
+      display: none;
+      padding: 1em;
+    }
+
+    select option:disabled {
+      color:rgb(246, 246, 243);
+      font-weight:bold;
+      opacity: 1;
+    }
+
+    option.optionProject {
+      
+      font-family: 'UI-Bold';
+      color: white;
+    }
+
+    option.optionRundown {
+      color: #fff !important;
+      margin-left: 1em !important;
+    }
+
+    option.optionEmpty  {
+      {{!-- user-select: none;
+      color: #00f !important; --}}
+    }
+
+
+
+
+
+  </style>
+</head>
+
+<body onresize="resizePreview();" class="bg_body">
+
+  <input type="hidden" id="foldername" value="{{folder}}">            <!-- just the foldername "showname" -->
+  <input type="hidden" id="filebasename" value="{{filebasename}}">    <!-- just the filename "listname" -->
+  <input type="hidden" id="datafile" value="{{datafile}}">            <!-- full file path "C:/dataroot/showname/listname.json" -->
+  <input type="hidden" id="profiledata" value="{{profiledata}}">      <!-- full contents of the "gc_list.json" profilefile as stringified json -->
+  <input type="hidden" id="background" value="{{background}}">        <!-- background.png -->
+  <input type="hidden" id="csvlist" value="{{csvFileList}}">          <!-- tree data from ASSETS/csv -->
+  <input type="hidden" id="previewMode" value="{{previewMode}}">      <!-- previewMode (next/selected) -->
+  <input type="hidden" id="assetsroot" value="{{assetsFolder}}">      <!-- used by file browser -->
+  <input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
+
+  <div id="messageSlider" style="opacity:0;"></div>
+
+  <div class="wrapper" onmouseover="tip('');">
+
+    <div class="headlineRow">
+
+      <img src="/img/spx_offline.png" style="position: absolute; display:none;" id="logo_off">
+      <img src="/img/spx_online.png"  style="position: absolute; display:none;" id="logo_on">
+
+      <a href="" onClick="loadController">
+        <img src="/img/spx_online.png" id="logo">
+      </a>
+
+      <select id="rundownSelector" onChange="loadRundown(this)">
+      </select>
+      <button id="btnPrv"onclick="toggle(this);" class="toggled">Preview</button>
+      <button id="btnRun"onclick="toggle(this);" class="toggled">Rundown</button>
+      <button id="btnPlu"onclick="toggle(this);" class="">Plugins</button>
+    </div>
+
+    <div class="viewer">
+      <HR id="previewWidthRuler"> <!-- ===========================================================  -->
+      <div id="previewBG"
+        style="background-color: rgb(0, 0, 0);
+              width:100%;
+              height:27%;
+              overflow: hidden;
+              display: block;
+              opacity:1.0;">
+        <iframe
+          width="{{{localPreviewSize width}}}" 
+          height="{{{localPreviewSize height}}}"
+          id="previewIF"
+          src="/renderer?preview=true"
+          class="rendererMini"
+        ></iframe>
+      </div>
+    </div><!-- viewer -->
+
+    <div id="itemList" class="minicontent scroller">
+      <div id="rundownElements">
+
+      {{#if filedata.templates}}
+        <!-- // -->
+      {{else}}
+        <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
+          <h2>Empty rundown</h2><BR>
+        </div> 
+      {{/if}}
+
+
+      <!-- RUNDOWN ITEMS aka TEMPLATES -->
+      {{#each filedata.templates}}
+
+        {{#if DataFields}}
+
+          <div id="playlistitem{{@index}}"
+            class              = "itemrow row_accent{{uicolor}}"
+            data-spx-epoch     = {{itemID}}
+            data-spx-index     = {{@index}}
+            data-spx-changed   = "false"
+            data-spx-onair     = "{{onair}}"
+            data-spx-timerid   = ""
+            data-spx-stepsleft = "{{steps}}"
+            onClick            = "focusRow(this);"
+            ondblclick         = "ToggleExpand(this);"
+            old-ondblclick     = "ToggleExpand({{@index}});"
+            onmouseover        = "tip('{{lang 'hover.item'}}');">
+
+          <form name="templates[{{@index}}]" id="form{{@index}}" method="post" action="/gc/saveItemChanges">
+          <input type="hidden" name="foldername"  value="{{../folder}}">
+          <input type="hidden" name="listname"    value="{{../filebasename}}">
+          <input type="hidden" name="rundownfile" value="{{../datafile}}">
+          <input type="hidden" name="TemplIndex"  value="{{@index}}">
+
+          <div class="handle wide" id="item{{@index}}" style="padding: 6px; margin-bottom:5px; padding-left:12px; padding-bottom:12px;">
+
+            <!-- COLLAPSED to small line-->
+            <div id="Collapsed" style="position:relative;">
+              <div style="position:absolute; right:10px; z-index:50; font-size:1.5em; top:0.6em;">
+
+                <i id="playIcon{{@index}}" data-spx-name="icon" class="fas fa-play {{{playIconClass onair}}}"></i>
+                <!-- Normal play="fas fa-play", Auto play="far fa-play-circle" -->
+              </div>
+              <table class="wide" style="border-spacing: 2px; margin-top: 2px;">
+                <TR>
+                  <TD class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
+                    <span><!--item {{@index}} &nbsp;&middot;&nbsp;-->{{{ nameFromTemplatePath relpath }}}
+                      {{#if description}}
+                      <span class="delim"></span> <span style="opacity:0.5;">{{description}}</span>
+                      {{/if}}
+                      </span>
+                  </TD>
+                  <TD class="vtop aright spxTableHeadsmall">
+                    &nbsp;
+                    <!-- hide delete in LIGHT MODE
+                    <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
+                    -->
+                  </TD>
+                </TR>
+              </table>
+              <div style="width:100%; " class="truncate">
+
+                {{{ generateCollapsedHeadline DataFields }}}
+
+              </div>
+            </div>
+
+            <!-- EXPANDED to an editor -->
+            <div id="Expanded" style="display: none;">
+              <table class="wide" style="border-spacing: 2px; margin-top:2px;">
+                <TR>
+                  <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
+                    <span>{{{nameFromTemplatePath relpath}}}</span>&nbsp;&nbsp;
+                    <i class="l-icon fas fa-edit" onClick="openRelpathFolder(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'button.edit'}}');"></i>
+                  </TD>
+                </TR>
+                <TR>
+                  <TD width="65%" class="vtop">
+
+                    {{#each DataFields}}
+
+                      <!-- COMMON FIELD DATA -->
+                      <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">field</td>       <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][field]" value="{{field}}" ></td></tr>
+                            <tr><td class="aright">title</td>       <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][title]" value="{{title}}" ></td></tr>
+                          </table>
+                      </div>
+
+                      {{#ifValue ftype "spacer"}}
+                        <br><br>
+                      {{/ifValue}}
+
+                      {{#ifValue ftype "number"}}
+                        <!-- "NUMBER" TYPE OF TEMPLATE FIELD (added in 1.0.7) --> 
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="number"></td></tr>
+                          </table>
+                        </div>
+                        <input type="number"  data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "instruction"}}
+                        <!-- "INSTRUCTION" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="instruction"></td></tr>
+                          </table>
+                        </div>
+                        <div class="instruction">{{value}}</div>
+                        <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "caption"}}
+                        <!-- "CAPTION" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="caption"></td></tr>
+                          </table>
+                        </div>
+                        <span class="caption">{{value}}</span><BR>
+                        <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "hidden"}}
+                        <!-- "HIDDEN" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="hidden"></td></tr>
+                          </table>
+                        </div>
+                        <span class="caption">{{title}}<BR><BR>{{field}} value:<BR>{{value}}</span><BR>
+                        <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "textfield"}}
+                        <!-- "TEXTFIELD" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"   class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
+                          </table>
+                        </div>
+                        <input type="text" data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "checkbox"}}
+                        <!-- "CHECKBOX" TYPE OF TEMPLATE FIELD (added in 1.0.10) --> 
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="checkbox"></td></tr>
+                          </table>
+                        </div>
+                        <div class="gccheckboxdiv" style="white-space: nowrap;">
+
+                          
+
+                          <label class="gccheckcontainer">{{title}}
+                            <BR>
+                            {{#ifValue value "1"}}
+                              <input type="checkbox" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" class="gccheckbox" checked>
+                            {{else}}
+                              <input type="checkbox" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" class="gccheckbox">
+                            {{/ifValue}}
+                            <span class="gccheckmark"></span>
+                          </label>
+                        </div>
+                        <!--<div style="white-space: nowrap;">
+                          <label for="checkbox{{@index}}">{{title}}</label><br>
+                        </div> -->
+
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "button"}}
+                        <!-- "BUTTON" TYPE OF TEMPLATE FIELD (added in 1.0.11) --> 
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="button"></td></tr>
+                            <tr><td class="aright">fcall</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][fcall]" value="{{fcall}}"></td></tr>
+                            <tr><td class="aright">title</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][title]" value="{{title}}"></td></tr>
+                            <tr><td class="aright">descr</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][descr]" value="{{descr}}"></td></tr>
+                          </table>
+                        </div>
+                        <div class="gcpluginbuttondiv" style="white-space: nowrap;">
+                            <button type="button"
+                              onClick="{{fcall}}" 
+                              class="btnsmall ripple bg_grey15"
+                              >{{title}}</button>&nbsp; &nbsp;<span class="gcplugindescription">{{descr}}</span>
+                        </div>
+                      {{/ifValue}}
+
+                      {{#ifValue ftype "filebrowser"}}
+                        <!-- "FILEBROWSER" TYPE OF TEMPLATE FIELD (added in 1.1.1) --> 
+                        <div class="wide HIDE" >
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="filebrowser"></td></tr>
+                            <tr><td class="aright">title</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][title]" value="{{title}}"></td></tr>
+                            <tr><td class="aright">assetfolder</td>  <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][assetfolder]" value="{{assetfolder}}"></td></tr>
+                            <tr><td class="aright">extension</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][extension]" value="{{extension}}"></td></tr>
+                          </table>
+                        </div>
+                        <div class="gcpluginbuttondiv" style="white-space: nowrap;">
+                            {{title}}&nbsp;
+                            <input type="text" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
+                            <button type="button"
+                              onClick="alert('{{assetfolder}} {{extension}} {{value}}')"; 
+                              class="btnsmall ripple bg_grey15"
+                              >Browse</button>&nbsp; &nbsp;
+                        </div>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "textarea"}}
+                        <!-- "TEXTAREA" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textarea"></td></tr>
+                          </table>
+                        </div>
+                        <textarea rows="8" data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" class="gcinput">{{injectNewlines value}}</textarea><BR>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "dropdown"}}
+                        <!-- "DROPDOWN" TYPE OF TEMPLATE FIELD -->
+                        <!-- first, hidden fields -->
+                        <table class="HIDE wide brd spxTableHeadsmall">
+                          <tr><td class="aright">fType</td>  <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="dropdown"><BR><BR></td></tr>
+                        </table>
+                        <!-- then visible DOM elements -->
+                          <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="DropdownValues[{{field}}]" data-tooltip="{{title}}" data-position="right center">
+                            <option disabled>{{title}}:</option>
+                            {{#each items}}
+                              {{#ifValue value ../value}}
+                                  <option selected value="{{value}}">{{text}}</option>
+                              {{else}}
+                                  <option value="{{value}}">{{text}}</option>
+                              {{/ifValue}}
+                            {{/each}}
+                          </select>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "filelist"}}
+                        <!-- "FILELIST" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="textfield"></td></tr>
+                            <tr><td class="aright">assetfolder</td>  <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][assetfolder]" value="{{assetfolder}}"></td></tr>
+                            <tr><td class="aright">extension</td>    <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][extension]" value="{{extension}}"></td></tr>
+                          </table>
+                        </div>
+                        <!-- then render visible DOM elements with a helper-->
+                        <!-- value set as fField value {{value}} -->
+                        <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="FilelistValues[{{field}}]" data-tooltip="{{title}} {{lang 'general.fromFolder'}}: {{assetfolder}}" data-position="right center">
+                          <option disabled>{{title}} {{lang 'general.fromFolder'}}:</option>
+                          <option disabled>{{assetfolder}}</option>
+                          <option disabled></option>
+                          <option value="none">-</option>
+                            {{{ PopulateFilelistOptions assetfolder extension value ../relpath }}}
+                        </select>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "divider"}}
+                        <!-- "DIVIDER" TYPE OF TEMPLATE FIELD -->
+                        <div class="wide HIDE">
+                          <table class="wide spxTableHeadsmall">
+                            <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="divider"></td></tr>
+                          </table>
+                        </div>
+                        <div class="divider">{{title}}</div>
+                      {{/ifValue}}
+
+
+                      {{#ifValue ftype "color"}}
+                        <!-- "COLOR PICKER" TYPE OF TEMPLATE FIELD -->
+                        <div class="colorRoot">
+                          <div class="wide HIDE">
+                            <table class="wide spxTableHeadsmall">
+                              <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="color"></td></tr>
+                              <tr><td class="aright">value</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][value]" id="colorvalue" value="{{value}}" data-role="userEditable" data-update="{{field}}"></td></tr>
+                            </table>
+                          </div>
+                          <div class="gcpluginbuttondiv wide" style="white-space: nowrap; position:relative;">
+                            &nbsp; <span class="gcplugindescription">{{title}}</span>
+                            <!--see handler at the bottom of file -->
+                            <button type="button"
+                              onClick="colorPicker(this,'{{value}}')"; 
+                              class="colorbtnsmall ripple"
+                              style="background-color: {{value}}; right:0;">{{value}}</button>
+                          </div>
+                        </div>
+                      {{/ifValue}}
+                    {{/each}} <!-- ftype check ended -->
+
+
+
+
+                  </TD>
+
+
+
+                  <TD class="vtop">
+                      <table class="wide" style="border-spacing: 5px; margin-top:0px;">
+                        <tr>
+                          <td colspan="2" class="vtop">
+                            <!-- SAVE CHANGES BUTTON -->
+                            <!-- onClick="saveTemplateItemChanges({{@index}});" -->
+
+                            <button type="button"
+                              onClick="saveTemplateItemChangesByElement(this.closest('.itemrow'));"
+                              class="wide spxFlexItem btnsmall bg_grey15 ripple"
+                              onmouseover="tip('{{lang 'hover.submitthis'}}');"
+                              >{{lang 'button.save'}} </button><!-- FORM SUBMIT MODEL -->
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <!-- PLAY BUTTON -->
+                            <button type="button"
+                              style="display: none;"
+                              onClick="playItem(this.closest('.itemrow'));" 
+                              id="tplay{{@index}}"
+                              class="wide spxFlexItem btnsmall ripple {{{playButtonClass onair}}}"
+                              data-spx-stoptext="{{lang 'button.stop'}}"
+                              data-spx-playtext="{{lang 'button.play'}}"
+                              data-spx-name="playbutton"
+                              onmouseover="tip('{{lang 'hover.playthis'}}');"
+                              >{{{playButtonText onair}}}</button>
+                          </td>
+                          <td>
+                            <!-- UPDATE BUTTON  -->
+                            <button type="button"
+                              onClick="updateItem(this.closest('.itemrow'));"
+                              class="wide spxFlexItem btnsmall bg_blue ripple disabled"
+                              data-spx-name="updatebutton"
+                              onmouseover="tip('{{lang 'hover.updatethis'}}');"
+                              >{{lang 'button.update'}}</button>
+                          </td>
+                        </tr>
+                      </table>
+                  </TD>
+                  <!-- Not in LIGHT MODE
+                  <TD class="vtop center">
+                      <i id="deleteLarge{{@index}}" class="l-icon far fa-trash-alt" data-spx-name="deletelarge" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.deletethis'}}');"></i><BR>
+                      <i id="duplicLarge{{@index}}" class="l-icon far fa-clone"     onClick="duplicateRundownItem(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.duplicateitem'}}');"></i><BR>
+                      <i id="exportCSV{{@index}}" class="l-icon fas fa-file-export" onClick="exportItemAsCSV(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'hover.exportitem'}}');"></i><BR>
+                      <i id="importCSV{{@index}}" class="l-icon fas fa-file-import" onClick="appendItemsFromCSV();"  onmouseover="tip('{{lang 'hover.importitems'}}');"></i>
+                  </TD>
+                    -->
+                </TR>
+                <TR>
+                  <TD colspan="2" class="aright spxTableHeadsmall">
+                    {{{GeneratePlayoutInfo playserver playchannel playlayer webplayout out itemID}}}
+                  </TD>
+                  <TD>
+                    &nbsp;
+                  </TD>
+                </TR>
+              </table>
+              <div class="wide HIDE">
+                  <table class="wide spxTableHeadsmall">
+                    <tr><td class="aright">relpath</td>     <td><input style="width: 100%;" type="text" id="relpath{{@index}}"     name="RundownItem[relpath]"         value="{{relpath}}"></td></tr>
+                    <tr><td class="aright">description</td> <td><input style="width: 100%;" type="text" id="description{{@index}}" name="RundownItem[description]"     value="{{description}}"></td></tr>
+                    <tr><td class="aright">playserver</td>  <td><input style="width: 100%;" type="text" id="playserver{{@index}}"  name="RundownItem[playserver]"      value="{{playserver}}"></td></tr>
+                    <tr><td class="aright">playchannel</td> <td><input style="width: 100%;" type="text" id="playchannel{{@index}}" name="RundownItem[playchannel]"     value="{{playchannel}}"></td></tr>
+                    <tr><td class="aright">playlayer</td>   <td><input style="width: 100%;" type="text" id="playlayer{{@index}}"   name="RundownItem[playlayer]"       value="{{playlayer}}"></td></tr>
+                    <tr><td class="aright">dataformat</td>  <td><input style="width: 100%;" type="text" id="dataformat{{@index}}"  name="RundownItem[dataformat]"      value="{{dataformat}}"></td></tr>
+                    <tr><td class="aright">webplayout</td>  <td><input style="width: 100%;" type="text" id="webplayout{{@index}}"  name="RundownItem[webplayout]"      value="{{webplayout}}"></td></tr>
+                    <tr><td class="aright">onair</td>       <td><input style="width: 100%;" type="text" id="onair{{@index}}"       name="RundownItem[onair]"           value="{{onair}}"></td></tr>
+                    <tr><td class="aright">out</td>         <td><input style="width: 100%;" type="text" id="out{{@index}}"         name="RundownItem[out]"             value="{{out}}"></td></tr>
+                    <tr><td class="aright">uicolor</td>     <td><input style="width: 100%;" type="text" id="uicolor{{@index}}"     name="RundownItem[uicolor]"         value="{{uicolor}}"></td></tr>
+                    <tr><td class="aright">steps</td>       <td><input style="width: 100%;" type="text" id="steps{{@index}}"       name="RundownItem[steps]"           value="{{steps}}"></td></tr>
+                    <tr><td class="aright">imported</td>    <td><input style="width: 100%;" type="text" id="imported{{@index}}"    name="RundownItem[imported]"        value="{{imported}}"></td></tr>
+
+                    <!-- special event triggers -->
+                    <tr><td class="aright">onPlay</td>     <td><input style="width: 100%;" type="text" id="onPlay{{@index}}"      name="RundownItem[function_onPlay]"  value="{{function_onPlay}}"></td></tr>
+                    <tr><td class="aright">onNext</td>     <td><input style="width: 100%;" type="text" id="onNext{{@index}}"      name="RundownItem[function_onNext]"  value="{{function_onNext}}"></td></tr>
+                    <tr><td class="aright">onStop</td>     <td><input style="width: 100%;" type="text" id="onStop{{@index}}"      name="RundownItem[function_onStop]"  value="{{function_onStop}}"></td></tr>
+
+                  </table> 
+              </div>
+            </div>
+
+          </div>
+          </form>
+          </div>
+          {{else}}
+          <!-- object had no DataFields, so it as skipped. NULL item? -->
+          {{/if}}
+        {{/each}}
+        <!-- GC ITEMS ENDED -->
+
+
+      <!-- No ADD button in LIGHT mode
+              <div class="wide" style="text-align: center; padding: 0.5em 1.0em;">
+                <button type="button"
+                        data-tooltip="{{lang 'hover.addrundownitem'}}"
+                        data-position="right center"
+                        class="addbtn bg_blue ripple"
+                        onClick="ModalOn('overlayTemplatePicker');"
+                        style="padding: 0.05em 0.75em; border-radius: 0.2em;"
+                        onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button>
+              </div>
+      -->
+
+      </div>
+
+      <div id="controllerPluginButtons">
+
+        {{{ hookLoadControllerPlugins }}}
+
+      </div>
+
+    </div><!-- itemList end -->
+
+    <div class="footerAndInfo">
+      <div id="footer">
+          <button
+            id="MasterTOGGLE"
+            class="btn bg_green ripple disabled"
+            data-spx-graphic="name_left"
+            data-spx-playtext="{{lang 'button.playmaster'}}"
+            data-spx-stoptext="{{lang 'button.stopmaster'}}"
+            onClick="playItem();"
+            onmouseover="tip('{{lang 'hover.masterplay'}}');"
+            >{{lang 'button.playmaster'}}</button>
+
+          <button
+            id="MasterCONTINUE"
+            class="btn bg_green ripple disabled"
+            onClick="nextItem();"
+              onmouseover="tip('{{lang 'hover.mastercontinue'}}');"
+            >{{lang 'button.continue'}}</button>
+      </div><!-- footer end -->
+      <div class="experimentalInfo">
+        Light mode is an experimental feature. Please report any issues.
+      </div>
+    </div>
+
+</div><!-- wrapper end -->
+  
+
+  <script>
+    // See spx_gc.js
+
+    // console.log('Init tooltip');
+    var tooltip = new Tooltip();
+
+    function colorPicker(sourceButton, initialColor) {
+      // Color picker
+      // alert('Picker to ' + initialColor)
+      sourceButton.textContent = '...';
+      var picker = new Picker({
+        color: initialColor,
+        parent: sourceButton,
+        popup: 'bottom',
+        editorFormat: 'rgb'
+      });
+      picker.onChange = function(color) {
+        sourceButton.style.backgroundColor = color.rgbaString;
+        sourceButton.closest('.colorRoot').querySelector('#colorvalue').value=String(color.rgbaString);
+      }
+
+      picker.onDone = function(color) {
+        sourceButton.textContent = color.rgbaString;
+        sourceButton.style.backgroundColor = color.rgbaString;
+        sourceButton.closest('.colorRoot').querySelector('#colorvalue').value=String(color.rgbaString);
+      };
+    }
+
+    function pageInit() {
+
+     // COLLAPSIPLE HANDLERS
+      var coll = document.getElementsByClassName("collapsibleZone");
+      var i;
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("activeZone");
+          var content = this.nextElementSibling;
+          if (content.style.maxHeight){
+            content.style.maxHeight = null;
+          } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+          } 
+        });
+      }
+
+      // Check msg from URL
+      var url = new URL(window.location.href);
+      var msg = url.searchParams.get("msg");
+      if (msg) {
+        showMessageSlider(msg) // msg, info|warn|error
+      }
+
+      // POPULATE RUNDOWN LIST
+      let projects = fetch('/api/v1/allrundowns')
+        .then(response => response.json())
+        .then(projects => {
+          document.getElementById('rundownSelector').innerHTML = '';
+          projects.forEach(function(project, index) {
+            let option = document.createElement('option');
+            option.value = project.project;
+            option.innerHTML = project.project;
+            option.disabled = true;
+            option.classList.add("optionProject");
+            document.getElementById('rundownSelector').appendChild(option);
+            project.rundowns.forEach(function(rundown, index) {
+              let rd = document.createElement('option');
+
+              let CurrentRD = '{{folder}}/{{filebasename}}';
+              if (CurrentRD == project.project + '/' + rundown) {
+                rd.selected = true;
+              }
+              rd.value = project.project + '/' + rundown;
+              rd.innerHTML = "&nbsp; " + rundown;
+              rd.classList.add("optionRundown");
+              document.getElementById('rundownSelector').appendChild(rd);
+            });
+            let empty = document.createElement('option');
+            empty.value = "none";
+            empty.innerHTML = '';
+            empty.disabled = true;
+            empty.classList.add("optionEmpty");
+            document.getElementById('rundownSelector').appendChild(empty);
+          });
+
+          // Get URL params
+          // let url = new URL(window.location.href);
+          // let utlText = url.pathname;
+          // let pathItems = utlText.split('/');
+          // let rundownRef = pathItems[2] + '/' + pathItems[3];
+          // alert(rundownRef);
+          // document.getElementById('rundownSelector').value = rundownRef;
+
+        });
+      
+      resizePreview();
+      heartbeat(212); // page identifier
+      spxInit('');
+
+    }
+
+    function resizePreview() {
+      // let DefaultX = 1920 // LightMode HD by default;
+      // let DefaultY = 1080 // 
+      // let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
+      // let Sca = Wpx/DefaultX;
+      // let Hpx = parseInt(DefaultY * Sca);
+      // document.getElementById('previewBG').style.width=Wpx+'px';
+      // document.getElementById('previewBG').style.height=Hpx+'px';
+      // document.getElementById('previewIF').style.transform="scale("+Sca+")";
+      // Controller preview resize
+
+      let DefaultX = '{{width}}'; // 1920 by default;
+      let DefaultY = '{{height}}'; // 1080 by default;
+
+      if (DefaultX.includes('vw')) {
+          // Responsive settings, use window size! Added in v1.3.0
+          // console.log('Responsive settings, but forcing 16:9 in Controller');
+          DefaultX = '1920px';
+          DefaultY = '1080px';
+      }
+
+      let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
+      let Sca = Wpx/parseInt(DefaultX);
+      let Hpx = parseInt(parseInt(DefaultY) * Sca);
+      document.getElementById('previewBG').style.width=Wpx+'px';
+      document.getElementById('previewBG').style.height=Hpx+'px';
+      document.getElementById('previewIF').style.transform="scale("+Sca+")";
+      document.getElementById('previewBG').style.opacity=1;
+      document.getElementById('controllerFunctionsZone').style.opacity=1;
+      // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      pageInit();
+    })
+
+    socket.on('connect', function () {
+        data={};
+        data.spxcmd = 'identifyClient';
+        data.name   = 'SPX_CONTROLLER_MINI'; // <---- Name of this socket connection
+        socket.emit('SPXMessage2Server', data);
+    });
+
+
+
+  </script>
+</body>
+
+</html>

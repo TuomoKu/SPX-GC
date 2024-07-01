@@ -1,6 +1,6 @@
 
 // --------------------------------------------
-// Handle Express server routes for the webapp (at "/")
+// server routes (at "/")
 // --------------------------------------------
 var express = require("express");
 const router = express.Router();
@@ -15,13 +15,15 @@ const cfg = require('../utils/spx_getconf.js');
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 const PlayoutWEB = require('../utils/playout_webplayer.js');
 const spxAuth = require('../utils/spx_auth.js');
-const jsdom = require("jsdom"); // for scanning js within templates
+const jsdom = require("jsdom"); 
 const { JSDOM } = jsdom;
 const cors = require('cors');
 const { timeStamp } = require("console");
 const { httpPost } = require("../utils/spx_server_functions.js");
+// const { convertGddtoSpx } = require("../utils/GDDtoSPXconverter.js");
 const http = require('http');
-const axios = require('axios')
+const axios = require('axios');
+// const HTMLParser = require('node-html-parser');
 // -----watchout!-----
 
 // const { config } = require("process");
@@ -29,11 +31,8 @@ const axios = require('axios')
 // const { config } = require("winston"); // <!-- this is auto-generated here by the IDE and will screw things up! Beware >:-[
 // global.rundownData is introduced in server.js 
 
-// May need to add custom header capabilities from config.json
-
-
-
 // ROOT ROUTES ----------------------------------------------------------------------------------------------
+
 router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, async function (req, res) {
   await SaveRundownDataToDisc(); // Added in 1.0.15
   let currVer = vers;
@@ -53,87 +52,78 @@ router.get('/', spxAuth.CheckLogin, cors(), spx.getNotificationsMiddleware, asyn
       showMessage:      req.session.showMessage
     });
     req.session.showMessage = null;
-});
+}); // get / end
 
 router.get('/admin', spxAuth.CheckLogin, function (req, res) {
   res.render('view-admin', { layout: false });
-});
+}); // get /admin end
 
 router.get('/fileBrowser', spxAuth.CheckLogin, function (req, res) {
   // added in 1.1.1
   res.render('view-fileBrowser', { layout: false } );
-});
+}); // get /fileBrowser end
 
 router.get('/templates/empty.html', function (req, res) {
-  // let emptyhtml = path.join(__dirname + '/../static/empty.html');
-  // console.log('Haetaan empty: ' + emptyhtml);
-  // res.sendFile(emptyhtml);
   res.render('view-empty', { layout: false });
-});
+}); // get /templates/empty.html end
 
 router.get(['/renderer/index.html','/renderer'], function (req, res) {
-  // Added in 1.1.0. Default resolution is HD.
-  let width   = '1920';
-  let height  = '1080';
-  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
-    width   = '3840';
-    height  = '2160';
+  let hideCursor = false;
+
+  // Added in 1.3.0
+  if ( global.config.general.hideRendererCursor && global.config.general.hideRendererCursor==true) {
+    hideCursor = true;
   }
 
-  // Added in 1.1.1: "/renderer?width=1000&height=500&preview=true"
-  if (req.query.width ) { width  = req.query.width  }
-  if (req.query.height) { height = req.query.height }
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
   
-  res.render('view-renderer', { layout: false, width:width, height:height} );
-});
+  res.render('view-renderer', { 
+    layout: false,
+    width:outputSize.width,
+    height:outputSize.height,
+    hideCursor:hideCursor
+  } );
+}); // get /renderer end
 
 router.get('/renderer/scalable', function (req, res) {
-  // Added in 1.1.0. Default resolution is HD.
-  let width   = '1920';
-  let height  = '1080';
-  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
-    width   = '3840';
-    height  = '2160';
-  }
-  // Added in 1.1.1: "/renderer?width=1000&height=500&preview=true"
-  if (req.query.width ) { width  = req.query.width  }
-  if (req.query.height) { height = req.query.height }
-
-  res.render('view-rendererscalable', { layout: false, width:width, height:height} );
-});
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
+  res.render('view-rendererscalable', {
+    layout: false,
+    width:outputSize.width,
+    height:outputSize.height
+  });
+}); // get /renderer/scalable end
 
 router.get('/renderwindow/:type', function (req, res) {
-  // Added in 1.1.0. 
-  let width   = '1920';
-  let height  = '1080';
-  if ( global.config.general.resolution && global.config.general.resolution=='4K') {
-    width   = '3840';
-    height  = '2160';
-  }
-
-  // Added in 1.1.1: "/renderer?width=1000&height=500&preview=true"
-  if (req.query.width ) { width  = req.query.width  }
-  if (req.query.height) { height = req.query.height }
-
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
   let viewFile = '';
-  if (req.params.type === 'preview') { viewFile = 'view-renderwindow_preview'} ;
-  if (req.params.type === 'program') { viewFile = 'view-renderwindow_program'} ;
+  // if (req.params.type === 'preview') { viewFile = 'view-renderwindow_preview'} ;
+  // if (req.params.type === 'program') { viewFile = 'view-renderwindow_program'} ;
+  viewFile = 'view-rendererscalable';
 
   if (viewFile == '') {
     res.send('Invalid URL');
   } else {
-    res.render(viewFile, { layout: false, width:width, height:height} );
+    res.render(viewFile, {
+      layout: false,
+      width:outputSize.width,
+      height:outputSize.height,
+      mode: req.params.type
+    });
   }
-});
+}); // get /renderwindow/:type end
 
 router.get('/logout', spxAuth.Logout, function (req, res) {
   res.redirect('/');
-});
+}); // get /logout end
 
 router.post('/', spxAuth.CheckLogin, function (req, res) {
   //logger.info('User "' + req.session.user + '" logged in');
   res.redirect('/');
-});
+}); // post / end
 
 router.post('/saveauthpolicy', function (req, res) {
   // save settings to config and move on
@@ -175,7 +165,7 @@ router.post('/saveauthpolicy', function (req, res) {
       logger.error('saveAndReadConfig() Error while saving file: ', error);
       res.redirect('/');
     };
-});
+}); // post /saveauthpolicy end
 
 router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
@@ -189,7 +179,7 @@ router.get('/config', cors(), spxAuth.CheckLogin, async (req, res) => {
     configfile: configfileref, 
     recents: recents,
     disableConfigUI: disableConfigUI});
-});
+}); // get /config end
 
 router.post('/config', spxAuth.CheckLogin, async (req, res) => {
   // save incoming json form data to config.json and reload the page
@@ -261,7 +251,7 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
 }; //file written
 
 
-});
+}); // post /config end
 
 router.get('/register', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show application config (send global.config as "config" data to the view, see options object below)
@@ -274,7 +264,7 @@ router.get('/register', cors(), spxAuth.CheckLogin, async (req, res) => {
     user: req.session.user, 
     configfile: configfileref, 
   });
-});
+}); // get /register end
 
 router.post('/register', async (req, res) => {
   // Handles modification changes of registratiom.
@@ -317,7 +307,7 @@ router.post('/register', async (req, res) => {
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };
-});
+}); // post /register end
 
 router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
   // show list of shows (folders)
@@ -333,7 +323,7 @@ router.get('/shows', cors(), spxAuth.CheckLogin, async (req, res) => {
     recents: recents,
     config: config,
     disableConfigUI: disableConfigUI});
-});
+}); // get /shows end
 
 router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => {
   // Show episodes (files in folder 'data')
@@ -350,7 +340,7 @@ router.get('/show/:foldername', cors(), spxAuth.CheckLogin, async (req, res) => 
     recents: recents,
     config: config,
     disableConfigUI: disableConfigUI});
-});
+}); // get /show/:foldername end
 
 router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, res) => {
   //  Show Configuration
@@ -382,7 +372,7 @@ router.get('/show/:foldername/config', cors(), spxAuth.CheckLogin, async (req, r
     config: config,
     disableConfigUI: disableConfigUI
   });
-});
+}); // get /show/:foldername/config end
 
 router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async (req, res) => {
   //  Remove template index (0 based)
@@ -411,7 +401,7 @@ router.post('/show/:foldername/config/removeTemplate', spxAuth.CheckLogin, async
       logger.error('removeTemplate Error while saving file: ' + error);
       // console.log('removeTemplate Error while saving file: ', error);
   }; //file written
-});
+}); // removeTemplate end
 
 router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (req, res) => {
   //  Remove extra index (0 based)
@@ -428,7 +418,7 @@ router.post('/show/:foldername/config/removeExtra', spxAuth.CheckLogin, async (r
   } catch (error) {
       logger.error('removeExtra Error while saving file: ' + error);
   }; //file written
-});
+}); // removeExtra end
 
 router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req, res) => {
   //  Save extra index (0 based)
@@ -475,7 +465,7 @@ router.post('/show/:foldername/config/saveExtra', spxAuth.CheckLogin, async (req
   } catch (error) {
       logger.error('saveExtra Error while saving file: ' + error);
   }; //file written
-});
+}); // saveExtra end
 
 router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (req, res) => {
   // Save template index (0 based)
@@ -497,7 +487,7 @@ router.post('/show/:foldername/config/saveTemplate', spxAuth.CheckLogin, async (
   } catch (error) {
       logger.error('saveTemplate Error while saving file: ' + error);
   }; //file written
-});
+}); // saveTemplate end
 
 router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, async (req, res) => {
   // Added in 1.0.15
@@ -522,7 +512,7 @@ router.post('/show/:foldername/config/saveGeneralSettings', spxAuth.CheckLogin, 
   } catch (error) {
       logger.error('saveGeneralSettings Error while saving file: ' + error);
   }; //file written
-});
+}); // saveGeneralSettings end
 
 router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => {
   // a POST handler for adding content to the <show>/profile.json.
@@ -557,16 +547,22 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         templates.forEach((template,index) => {
           TemplatePath = path.join(curFolder, template).trim();
           profileData = addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex)
+          // if (profileData.error) {
+          //   res.redirect('/show/' + showFolder + '/config?ERR=templateDefinitionMissing')
+          // }
         });
         break;
 
       case 'addtemplate':
         // ADD (or RE-IMPORT) A TEMPLATE
         profileData = addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex)
+        if (profileData.error) {
+          res.redirect('/show/' + showFolder + '/config?ERR=templateDefinitionMissing')
+        }
         break;
 
       case 'addshowextra':
-        // ------------------------------------------------------------------- ADDING EXTRA -----------------
+        // ------------------------------------- ADDING EXTRA -----------------
         newExtra = {};
         switch (ftype) {
           case 'button':
@@ -621,7 +617,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         break;
 
       case 'addshowextrascript':
-        // ------------------------------------------------------------------- ADDING SHOW EXTRA SCRIPT -----------------
+        // ------------------------------- ADDING SHOW EXTRA SCRIPT -----------------
         if (!profileData.showExtras){
           // lets add a showExtras section to profile
           profileData.showExtras = {};
@@ -631,7 +627,7 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
         break;
 
       default:
-        // ------------------------------------------------------------------- UNKNOWN COMMAND -----------------
+        // --------------------------- UNKNOWN COMMAND -----------------
         logger.warn('Warning: Command ' + command + ' is unknown. Adding nothing to the profile-file.' );
         break;
     }
@@ -643,9 +639,11 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
     )
     .catch(function (error) {
       console.log('\nEnd of template import errors.', error)
+      // res.redirect('/show/' + showFolder + '/config')
     })
   } catch (error) {
-      logger.error('showconfig Error while saving file: ' + error);
+      logger.error('showconfig / ' + error);
+      // res.redirect('/show/' + showFolder + '/config')
   }; //file written
 
 }); // browseTemplates API post request end
@@ -666,7 +664,7 @@ router.post('/shows/', spxAuth.CheckLogin, async (req, res) => {
       fs.mkdirSync(targetDataFo);
       res.redirect('/show/' + req.body.foldername + '/config');
   }
-});
+}); // post /shows/ end
 
 
 router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
@@ -692,7 +690,7 @@ router.post('/show/:foldername', spxAuth.CheckLogin, async (req, res) => {
       logger.error('Error while creating file: ' + error);
     }; //file written
   }
-});
+}); // post /show/:foldername end
 
 
 router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
@@ -710,7 +708,7 @@ router.delete('/show/:folder/:file', spxAuth.CheckLogin, async (req, res) => {
       // client will reload in 500ms
     }
   });
-});
+}); // delete /show/:folder/:file end
 
 
 router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
@@ -749,21 +747,21 @@ router.delete('/shows/:foldername', spxAuth.CheckLogin, async (req, res) => {
   const folderListAsJSON = await spx.GetSubfolders(config.general.dataroot);
   res.render('view-shows', { layout: false, folders: folderListAsJSON, errorMsg: '', user: req.session.user });
 
-});
+}); // delete /shows/:foldername end
 
 
-router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, res) => { 
+router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async (req, res) => { 
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
   let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
   
-  const fileDataAsJSON = await GetJsonData(datafile);
-  global.rundownData = fileDataAsJSON; // added in 1.0.15 populate rundown data to memory
-  // global.rundownData.filepath = datafile; // TODO: Removed in 1.2.0. Is this needed?!
+  const fileDataAsJSON = await spx.RemoveFilepathKey(GetJsonData(datafile));
+  // fileDataAsJSON = spx.RemoveFilepathKey(fileDataAsJSON); // Added in 1.3.0
+  global.rundownData = fileDataAsJSON;
 
   let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
   const profileDataJSONobj = await GetJsonData(showprofile);
   let profileData = JSON.stringify(profileDataJSONobj);
-  let projectBackground = ''; // added in 1.0.15  
+  let projectBackground = '';
 
   if ( profileDataJSONobj && profileDataJSONobj.general && profileDataJSONobj.general.background )  {
     projectBackground = profileDataJSONobj.general.background;
@@ -774,13 +772,8 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let csvFileList = '';
   csvFileList = JSON.stringify(spx.GetFilesAndFolders( path.resolve(spx.getStartUpFolder(),'ASSETS', 'csv'), 'csv' ));
 
-  // Added in 1.1.0
-  let width   = 1920;
-  let height  = 1080;
-  if (config.general.resolution && config.general.resolution=='4K') {
-    width   = 3840;
-    height  = 2160;
-  }
+  // Added in 1.3.0
+  let outputSize = getResolutionFromConfig(global.config, req.query);
 
   let recents       = config.general.recents  || [] // added in 1.1.0
   let preview       = config.general.preview  || 'none' // added in 1.1.0
@@ -789,7 +782,17 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
   let disableConfigUI = config.general.disableConfigUI || false // added in 1.1.1
   let disableLRenderer = config.general.disableLocalRenderer || false // added in 1.2.0
 
-  res.render('view-controller', {
+  function getPageTemplate() {
+    // Added in 1.3.0
+    if ( req.params.mode && req.params.mode.toLowerCase() === 'light' ) {
+      return 'view-controllermini';
+    } else {
+      return 'view-controller';
+    }
+  }
+
+
+  res.render(getPageTemplate(), {
     layout:         false,
     globalExtras:   config.globalExtras,
     filedata:       fileDataAsJSON,
@@ -801,15 +804,15 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     user:           req.session.user,
     background:     projectBackground,
     csvFileList:    csvFileList,
-    width:          width,
-    height:         height,
+    width:          outputSize.width,
+    height:         outputSize.height,
     previewMode:    preview,
     recents:        recents,
     renderer:       rnrtype,
     assetsFolder:   assetsFolder,
     disableConfigUI: disableConfigUI,
-    config:         config,
-    disableLRender: disableLRenderer
+    disableLRender: disableLRenderer,
+    autoplayLocalRenderer: config.general.autoplayLocalRenderer
   });
 
   let bgImage = ''
@@ -824,7 +827,7 @@ router.get('/gc/:foldername/:filename', cors(), spxAuth.CheckLogin, async (req, 
     });
     }, 500);
     spx.setRecents(req.params.foldername + '/' + req.params.filename) // Added in 1.1.0
-});
+}); // get /gc/:foldername/:filename end
 
 
 router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) => { 
@@ -1089,6 +1092,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       // REMOVE TEMPLATE ITEM FROM RUNDOWN (without reloading page) ///////////////////////////////////////////////////////////////////////////
       logger.verbose('Removing template epoch [' + data.epoch + '] from rundown ' + data.listname );
       rundownDataJSONobj = await GetJsonData(data.datafile);
+      rundownDataJSONobj = spx.RemoveFilepathKey(rundownDataJSONobj); // Added in 1.3.0
       let templateIndex = -1;
       rundownDataJSONobj.templates.forEach((template,index) => {
         if ( template.itemID == data.epoch) {
@@ -1160,21 +1164,29 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       logger.warn('Warning: unknown gc-post command: ' + data.command);
       break;
   }
-});
+}); // gc post end
 
 router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
-
   // Request: data object (command, datafile, templateIndex)
   // Returns: AJAX response
+  //
   // Handles playout commands of the rundown items in the controller.
   // This function will collect data from datafile and will send out "stupid" playout commands
   // to all needed renderer interfaces.
+  //
   // This will also persist the onair state to rundown file.
   // 
   // 1.0.15 Performance improvements added by prioritizing memory usage over
   //        disk I/O. Problem was with concurrent events. Now this is done
   //        in memory and data is written to disk only when we SHOW folders
   //        after being in the rundown view (so memory has been populated).
+  //
+  // 1.3.0  MAJOR BUG FIXED! If rundown was populated to memory it was used
+  //        when controlRundownItemByID API call was made. This caused the
+  //        rundown to be read from memory data and not actual rundown file
+  //        that was requested. Now a new forceFileRead parameter is added.
+  //
+  // console.log('Playout command received.', req.body);
 
   let templateIndex = -1; // was 0 
   try {
@@ -1183,6 +1195,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     let RundownFile = ""  // file reference
     let RundownData = ""  // file JSON
     let preventSave = false;
+    let forceDiskRead    = req.body.forceFileReadOnce ? true : false; // Added in 1.3.0. Read Release Notes!
+    let cacheRundownData = null; // Added in 1.3.0
+    let autoOutTimerID = null; // Added in 1.3.0
 
     if (req.body.prepopulated && req.body.prepopulated=="true") {
       // data in pre-generated coming in. So we can just pass that along.
@@ -1199,33 +1214,39 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       RundownFile = path.normalize(req.body.datafile);
       
       // Refactored in 1.0.15 to prioritize memory over disk I/O
+      // 1.3.0 added forceDiskRead parameter to use when API call is made.
       let notifyDataSource = ''
-      if ( Object.keys(global.rundownData).length === 0 ) {
+      if ( Object.keys(global.rundownData).length === 0 || forceDiskRead ) {
+        if ( Object.keys(global.rundownData).length > 0 ) {
+          cacheRundownData = global.rundownData; // cache it
+        }
         notifyDataSource = 'from file:'
         RundownData = await GetJsonData(RundownFile);
       } else {
         notifyDataSource = 'from memory:'
         RundownData = global.rundownData; // use memory only 
       }
+
       RundownData.templates.forEach((template,index) => {
+        logger.debug('Matching ' + index + ': [' + template.itemID + '] (' + template.description + ') and [' + req.body.epoch + ']');
         if (template.itemID == req.body.epoch) {
             templateIndex=index;
           }
       });
 
-      if (templateIndex<0) {
-        throw 'Requested item ' + req.body.epoch + ' not found on current rundown! Aborting ' + req.body.command + ' command.'; 
+      if (templateIndex==-1) {
+        throw 'Requested itemID [' + req.body.epoch + '] not found on the rundown [' + RundownFile + ']! Aborting ' + req.body.command + ' command.'; 
       }
 
       let ItemData = RundownData.templates[templateIndex];
-      // console.log('gc/playout handler. Current items data:',ItemData);
       dataOut.relpath   = ItemData.relpath;
       dataOut.relpathCCG = ItemData.relpath.split('.htm')[0]; // casparCG needs template path without htm/html -extension. 
       dataOut.playserver = ItemData.playserver;
       dataOut.playchannel= ItemData.playchannel;
       dataOut.playlayer  = ItemData.playlayer;
       dataOut.webplayout = ItemData.webplayout;
-      dataOut.dataformat = ItemData.dataformat || 'xml'; // TODO: Move this to all template's definition objet. Values 'xml' or 'json', defaulting to 'xml'
+      dataOut.out        = ItemData.out; // 1.3.0 only used with direct API calls
+      dataOut.dataformat = ItemData.dataformat || 'json'; // Changed to JSON in 1.3.0
       ItemData.DataFields.forEach(item => {
         // We pass data as custom JSON format and the format is changed
         // downstream in the playout controller as per renderer's needs.
@@ -1253,9 +1274,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             dataOut.fields.push(FieldItem);
           }
         });
-        // 1.0.12 eventID for "calling home"
-        // 1.1.15 moved out from the forEach loop
-        dataOut.fields.push({'field':'epochID', 'value':req.body.epoch}); 
+      dataOut.fields.push({'field':'epochID', 'value':req.body.epoch}); 
     } // else
     
     let playOutCommand = "";
@@ -1267,10 +1286,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       playOutCommand = req.body.command;
     }
 
-
     switch (playOutCommand) {
 
-      // == PREVIEW ======================================================
+      // == PREVIEW ===================================================
       case 'preview':
 
         // Send PlayoutWEB.functionCalls() if any ---------------------
@@ -1285,30 +1303,41 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         }
         break;
 
-      // == PLAY ======================================================
+      // == AUTOPLAY ==================================================
+      case 'autoPlayLocal':
+        // Update local renderer when a rundown is reloaded
+        logger.verbose('Webplayout autoPlayLocal: ' + dataOut.webplayout);
+        dataOut.spxcmd = 'playTemplate';
+        dataOut.modify = 'autoPlayLocal';
+        PlayoutWEB.webPlayoutController(dataOut);
+        break;
+
+      // == PLAY =====================================================
       case 'play':
+        let playingSomewhere = false; // Added in 1.3.0
 
         // Send PlayoutCCG.functionCalls() if any ---------------------
         if ( dataOut.playserver && dataOut.playserver!='-' && spx.CCGServersConfigured ) { // 1.1.3 added dataOut.playserver
           dataOut.command="ADD";
           logger.verbose('CasparCG play: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
+          playingSomewhere = true;
           PlayoutCCG.playoutController(dataOut);
         } else {
           logger.verbose('No CasparCG playout');
         }
         
-        if (!preventSave) {RundownData.templates[templateIndex].onair='true';} // moved from inside of CCG
-
         // Send PlayoutWEB.functionCalls() if any ---------------------
         if (dataOut.webplayout && dataOut.webplayout!='-') {
           logger.verbose('Webplayout PLAY: ' + dataOut.webplayout);
           dataOut.spxcmd = 'playTemplate';
-          PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
+          playingSomewhere = true;
+          PlayoutWEB.webPlayoutController(dataOut);
         } else {
           logger.warn('No Webplayout playout layer given');
         }
 
-        // iterate all templates and allow only the latest update (for same playout) to be on-air at once
+        // iterate all templates and allow only the latest update
+        // (for same playout) to be on-air at once
         if (RundownData.templates){
           // prepopulated does not necessarily have "templates"
           RundownData.templates.forEach((item,index) => {
@@ -1329,83 +1358,74 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
             if (index!=templateIndex && thisOutput==dataOutput){
               RundownData.templates[index].onair='false';
             }
+
+            if (index==templateIndex && playingSomewhere){
+              RundownData.templates[index].onair='true';
+            }
           });
+        }
+
+        // API Call executed. Should we set an autostop?
+        if (forceDiskRead || req.body.referrer == 'directplayout') {
+          let numeric = parseInt(dataOut.out);
+          if (isNaN(numeric)) {
+            logger.verbose('API call: out was not a number, skipping autostop.');
+          } else {
+            logger.verbose('API call: autostop item in ' + numeric + ' ms.');
+            autoOutTimerID = setTimeout(function() {
+              playoutSTOP(dataOut, templateIndex, RundownData);
+            }, numeric);
+         }
         }
         break;
 
-      // == NEXT / aka CONTINUE  ========================================
+      // == NEXT / aka CONTINUE  =====================================
       case 'next':
-        
+
+        if (dataOut.playserver!='-' || dataOut.webplayout!='-') {
+          RundownData.templates[templateIndex].onair='true';
+        }
+      
         // Send PlayoutCCG.functionCalls() if any ---------------------
         if (dataOut.playserver!='-'){
           dataOut.command="NEXT";
           logger.verbose('CasparCG next: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
           PlayoutCCG.playoutController(dataOut);
-          if (!preventSave) {RundownData.templates[templateIndex].onair='true';}
-        }
-        else
-        {
+        } else {
           logger.verbose('No CasparCG playout');
         }
         
-
         // Send PlayoutWEB.functionCalls() if any ---------------------
         if (dataOut.webplayout!='-'){
           logger.verbose('Webplayout NEXT: ' + dataOut.webplayout);
           dataOut.spxcmd = 'nextTemplate';
           PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
           // io.emit('SPXMessage2Client', dataOut);
-        } // if web
-        else
-        {
+        } else {
           logger.verbose('No Webplayout playout');
-        } // else web 
+        } 
+        break;
+
+        // == STOP ===================================================
+      case 'stop':
+        await playoutSTOP(dataOut);
+        if (templateIndex>-1 && RundownData.templates[templateIndex]) {
+          // Added check in 1.3.0
+          RundownData.templates[templateIndex].onair='false';
+        }
         break;
     
-
-      // == STOP ======================================================
-      case 'stop': 
-        logger.verbose('Stopping [' + dataOut.relpath + ']');
-        if (!preventSave) {RundownData.templates[templateIndex].onair='false';}
-        // Send PlayoutCCG.functionCalls() if any ---------------------
-        if (dataOut.playserver!='-'){
-          dataOut.command="STOP";
-          logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
-          PlayoutCCG.playoutController(dataOut);
-        }
-        else
-        {
-          logger.verbose('No CasparCG playout');
-        }
-        
-
-        // Send PlayoutWEB.functionCalls() if any ---------------------
-        if (dataOut.webplayout!='-'){
-          logger.verbose('Webplayout STOP: ' + dataOut.webplayout);
-          dataOut.spxcmd = 'stopTemplate';
-          PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
-          // io.emit('SPXMessage2Client', dataOut);
-        } // if web
-        else
-        {
-          logger.verbose('No Webplayout playout');
-        } // else web 
-        break;
-    
-
-      // == UPDATE ======================================================
+      // == UPDATE ===================================================
       case 'update':
         logger.verbose('Updating [' + dataOut.relpath + ']');
-        if (!preventSave) {RundownData.templates[templateIndex].onair='true';}        
+        // RundownData.templates[templateIndex].onair='true'; // yes. no?
 
         if (dataOut.playserver!='-'){
           // TODO: Update functions not deeply properly tested.
           dataOut.command="UPDATE";
           logger.verbose('CasparCG update: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer + ', dataOut: ', dataOut);
           PlayoutCCG.playoutController(dataOut);
-        }
-        else
-        {
+        } else {
           logger.verbose('No CasparCG playout');
         }
 
@@ -1414,16 +1434,13 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
           logger.verbose('Webplayout UPDATE: ' + dataOut.webplayout);
           dataOut.spxcmd = 'updateTemplate';
           dataOut.fields = req.body.fields;
-          // io.emit('SPXMessage2Client', dataOut);
-          PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
-        } // if web
-        else
-        {
+          PlayoutWEB.webPlayoutController(dataOut);
+        } else {
           logger.verbose('No Webplayout playout');
-        } // else web 
+        }
         break;
     
-      // == INVOKE ======================================================
+      // == INVOKE ===================================================
       case 'invoke':
         logger.verbose('Invoke [' + dataOut.invoke + ']');
         // Example of expected dataOut down stream from here:
@@ -1440,19 +1457,29 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         } // if web
         break;
 
-
       default:
         logger.warn('/gc/playout did not recognize command "' + playOutCommand + '".');
         break;
     }
 
-    // persist to file.
-    if (!preventSave) {
-      RundownData.updated = new Date().toISOString();
-      // await spx.writeFile(RundownFile,RundownData);
-      global.rundownData = RundownData // memory only
+    // persist to memory and to disk
+    RundownData.updated = new Date().toISOString();
+    global.rundownData = RundownData // memory only
+    if (playOutCommand == 'play' || playOutCommand == 'stop') {
+      // Added in 1.3.0
+      if (!preventSave) {
+        logger.debug('Persisting rundown data to disk....');
+        await spx.writeFile(RundownFile, RundownData);
+      } else {
+        logger.debug('preventSave enabled, no need to persist to disk.');
       }
-    // res.status(200).send('Playout commands processed.'); // ok 200 AJAX RESPONSE
+    }
+
+    // Added in 1.3.0 / Restore cache (after an API call)
+    if (cacheRundownData) {
+      logger.verbose('Restoring rundown data to memory after an API call.');
+      global.rundownData = cacheRundownData; // restore it
+    }
 
     // Check if file exists. Function improved in 1.1.3
     if (dataOut.relpath) {
@@ -1461,13 +1488,15 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         throw(playOutCommand + ' warning! Template not found: ' + dataOut.relpath);
       }
     }
+
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try
   catch (error) {
+    console.error('ERROR in /gc/playout', error);
     logger.error('ERROR in /gc/playout. ' + error);
     res.status(500).send('Error in /gc/playout: ' + error)  // error 500 AJAX RESPONSE
   };
-});
+}); // playout ended
 
 
 router.post('/gc/playaudio', spxAuth.CheckLogin, (req, res) => {
@@ -1526,30 +1555,7 @@ router.post('/gc/clearPlayouts', spxAuth.CheckLogin, async (req, res) => {
       res.status(500).send('SPX error in gc/clearPlayouts [' + error + '].')  // error 500 AJAX RESPONSE
     };
 
-});
-
-
-// Will be removed during 1.0.15
-// router.post('/gc/saveOnairState', spxAuth.CheckLogin, async (req, res) => {
-//   // FIXME: This is NOT in use, see --> playout()
-//   // Stores onair=true/false state of a rundown item
-//   // Request: data 
-//   // Returns: AJAX response
-//   logger.verbose('Save onair = ' + req.body.onair + ' of template[' + req.body.item + '] in file ' + req.body.rundownfile + '.');
-//   try {
-//       let RundownFile = path.normalize(req.body.rundownfile);
-//       let RundownData = await GetJsonData(RundownFile);
-//       RundownData.templates[req.body.item].onair = req.body.onair;
-//       RundownData.updated = new Date().toISOString();
-//       await spx.writeFile(RundownFile,RundownData);
-//       res.status(200).send('Onair state saved.'); // ok 200 AJAX RESPONSE
-//     }
-//   catch (error)
-//     {
-//       logger.error('Error in /gc/saveOnairState. [' + error + '].');
-//       res.status(500).send('Server error in  /gc/saveOnairState [' + error + '].')  // error 500 AJAX RESPONSE
-//     };
-// });
+}); // clearPlayouts ended
 
 
 router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
@@ -1581,7 +1587,7 @@ router.post('/gc/sortTemplates', spxAuth.CheckLogin, async (req, res) => {
       logger.error('Error in /gc/sortTemplates while sorting data. [' + error + '].');
       res.status(500).send('Server error in /gc/sortTemplates [' + error + '].')  // error 500 AJAX RESPONSE
     };
-});
+}); // sortTemplates ended
 
 
 router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
@@ -1598,7 +1604,7 @@ router.post('/gc/duplicateRundown', spxAuth.CheckLogin, async (req, res) => {
     logger.error(errmsg);
     res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
   }
-});
+}); // duplicateRundown ended
 
 
 router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
@@ -1616,7 +1622,7 @@ router.post('/gc/renameRundown', spxAuth.CheckLogin, async (req, res) => {
     logger.error(errmsg);
     res.status(500).send(errmsg)  // error 500 AJAX RESPONSE   
   }
-});
+}); // renameRundown ended
 
 
 router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
@@ -1628,12 +1634,15 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
   try {
     var ConfigFile = global.configfileref;
     var ConfigData = await GetJsonData(ConfigFile);
-    let key = req.body.key;
-    let val = req.body.val;
-    if (!key && !val) {
-      throw 'Key [' + key + '] or val [' + val + '] was missing, skipping save.';
+
+    let key = req.body.key || null;
+    let val = req.body.val; 
+
+    // Fixed in v1.3.0 (check truthiness)
+    if (key==null || val==null || val==undefined) {
+      throw 'Key [' + key + '] or a supported value [' + val + '] was missing from request, skipping config save.';
     }
-    
+  
     ConfigData.general[key] = val;
     global.config = ConfigData; // update mem version also
     await spx.writeFile(ConfigFile,ConfigData);
@@ -1645,7 +1654,7 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };
-});
+}); // saveConfigChanges ended
 
 
 router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
@@ -1657,6 +1666,7 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
     // spx.talk('Saving template changes from rundown.');
     var RundownFile = path.normalize(req.body.rundownfile);
     var RundownData = await GetJsonData(RundownFile);
+    RundownData = spx.RemoveFilepathKey(RundownData); // Added in 1.3.0
     var DataFieldsForCollapsePreview;
     RundownData.templates.forEach((template,TemplateIdx) => {
         if (template.itemID == req.body.epoch){
@@ -1681,16 +1691,7 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
       logger.error(errmsg);
       res.status(500).send(errmsg)  // error 500 AJAX RESPONSE
   };
-});
-
-
-
-
-
-
-
-
-
+}); // saveItemChanges ended
 
 
 
@@ -1699,6 +1700,11 @@ router.post('/gc/saveItemChanges', spxAuth.CheckLogin, async (req, res) => {
 
 
 function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, replaceIndex=null) {
+
+
+  let SPXGCTemplateDefinition = null;
+  let gddDefinition = null; // Graphics Data Definition
+  let spxDefinition = null; // SPX Template Definition
 
   // console.log('');
   // console.log('addTemplateToProfile ===================================');
@@ -1723,46 +1729,74 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   let templateContents = fs.readFileSync(TemplatePath, "utf8")
   let templatehtml = templateContents.toString();
 
-    // FIXME: JSDOM loading via a promise
-
-    // JSDOM is used to parse html template for the SPXGCTemplateDefinition.
-    // Now it produces error messages for eventListeners in the template files
-    // and potentially crashes SPX server if there are onLoad function calls
-    // in template <body> tag.
-
-    // Refactoring JSDOM call into a promise might do the job. Read this:
-    // https://github.com/jsdom/jsdom/issues/2557
-
 
   let importMessage = '\n\n- SPX TEMPLATE IMPORT NOTIFICATION --------------------------------\n';
-     importMessage += ' Potential errors below this notification are from the template:\n';
-     importMessage += ' ' + TemplatePath + '\n\n';
-     importMessage += ' onLoad() or other root functions in the template MAY yield errors\n';
-     importMessage += ' or other messages during import and these can usually be ignored\n';
-     importMessage += ' safely. For more info search SPX KnowledgeBase for "Import errors".\n';
-     importMessage += '-------------------------------------------------------------------\n';
+  importMessage += ' Potential errors below this notification are from the template:\n';
+  importMessage += ' ' + TemplatePath + '\n\n';
+  importMessage += ' onLoad() or other root functions in the template MAY yield errors\n';
+  importMessage += ' or other messages during import and these can usually be ignored\n';
+  importMessage += ' safely. For more info search SPX KnowledgeBase for "Import errors".\n';
+  importMessage += '-------------------------------------------------------------------\n';
   console.log(importMessage)
 
-  const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
-  let SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition || 'notFound'; // there must be "window.SPXGCTemplateDefinition{}" -object in template file!
+  // GDD support started in v 1.3.1
+  // Using HTMLparser (npm node-html-parser)
+  // var root = HTMLParser.parse(templatehtml);
 
-  // console.log('\n\n----------------------- Import done ----------------------------\n\n');
+  // let gddString = null;
+  // gddString = root.querySelector('[name=graphics-data-definition]') || null;
+  // if (gddString) {
+  //   gddDefinition = JSON.parse(gddString.textContent);
+  //   console.log('GDD found in template!');
+  //   console.log('  Title .......... ' + gddDefinition.title);
+  //   console.log('  Description .... ' + gddDefinition.description);
+  //   console.log('  Fields ......... ' + Object.keys(gddDefinition.properties).length);
+  //   for (const [key, value] of Object.entries(gddDefinition.properties)) {
+  //     console.log(`   ${key}: ${value.label}`);
+  //   }
+  // }
+
+
+
+  // Original method using just JSDOM
+  const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
+  SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition; // Mandatory!
+
+  // HTMLparser & JSDOM used for SPX definition import.
+  // This will allow us limit the JSDOM script execution to only to a
+  // single <script> tag that contains the SPXGCTemplateDefinition. 
+
+  // let scriptTags = root.querySelectorAll('script');
+  // scriptTags.forEach((item, idx) => {
+  //     let code = item.outerHTML;
+  //     if (code.includes('SPXGCTemplateDefinition')) {
+  //         var dom = new JSDOM(code, { runScripts: "dangerously" }); // runScripts is needed to access object props
+  //         spxDefinition = dom.window.SPXGCTemplateDefinition;
+  //     }
+  // });
+
+  // SPX is the preferred method. If not found, we convert GDD to SPX.
+  // SPXGCTemplateDefinition = spxDefinition;
+  // if (gddDefinition && !spxDefinition) {
+  //   SPXGCTemplateDefinition = convertGddtoSpx(gddDefinition);
+  // }
+
+  // console.log('SPXGCTemplateDefinition', SPXGCTemplateDefinition);
   
-  if (SPXGCTemplateDefinition=="notFound"){
-    logger.warn('Cancel: Template ' + TemplatePath + ' did not had SPXGCTemplateFields[].' );
-    res.redirect('/show/' + showFolder + '/config?ERR=templateDefinitionMissing');
-    return
-  }
+  // if (!SPXGCTemplateDefinition && !gddDefinition) {
+  //   logger.warn('Cancel! File ' + TemplatePath + ' is missing definition. (SPXGCTemplateDefinition or graphics-data-definition)' );
+  //   return {error: 'templateDefinitionMissing'};
+  // }
 
   // set defaults if not defined in the template
   if (!SPXGCTemplateDefinition.description) {SPXGCTemplateDefinition.description = ""};
   if (!SPXGCTemplateDefinition.playserver)  {SPXGCTemplateDefinition.playserver  = "-"};
   if (!SPXGCTemplateDefinition.playchannel) {SPXGCTemplateDefinition.playchannel = "1"};
   if (!SPXGCTemplateDefinition.playlayer)   {SPXGCTemplateDefinition.playlayer   = "20"};
-  if (!SPXGCTemplateDefinition.webplayout)  {SPXGCTemplateDefinition.webplayout  = "-"};
+  if (!SPXGCTemplateDefinition.webplayout)  {SPXGCTemplateDefinition.webplayout  = "20"}; // added in 1.2.2
   if (!SPXGCTemplateDefinition.onair)       {SPXGCTemplateDefinition.onair       = "false"};
   if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
-  if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "xml"};
+  if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "json"}; // changed XML to JSON in 1.2.2
   if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
 
   // v.1.0.15 add imported timestamp
@@ -1839,7 +1873,6 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
 } // addTemplateToProfile ended
 
 
-
 async function orgGetDataFiles(FOLDERstr) {
   // return a list of all json files in the dataroot folder
   logger.debug("Getting json files from " + FOLDERstr + "...");
@@ -1904,14 +1937,13 @@ async function SaveRundownDataToDisc(filepathFromCSVimport=false) {
 
       if (filepathFromCSVimport) {
         targetRundownFile = filepathFromCSVimport;
-      } else {
-        targetRundownFile = RundownData.filepath || ''
-        // console.log('-----> targetRundownFile', targetRundownFile);
+      // } else {
+      //   targetRundownFile = RundownData.filepath || ''
       }
 
       if (targetRundownFile) {
-        // delete RundownData.filepath;
         RundownData.updated = new Date().toISOString();
+        RundownData = await spx.RemoveFilepathKey(RundownData); // Added in 1.3.0
         await spx.writeFile(targetRundownFile,RundownData); // 1.1.0
       } else {
         logger.verbose('No targetRundownFile known, cannot save.');
@@ -1964,10 +1996,85 @@ async function GetJsonData(fileref) {
     
   }
   catch (error) {
-    logger.error('GetJsonData Error: ' + error);
-    return ('GetJsonData: error',error);
+    let msg = 'GetJsonData error while reading ' + fileref + '. Invalid JSON format...? ' + error;
+    setTimeout(function() {
+      io.emit('SPXMessage2Controller',{
+        APIcmd: 'showMessageSlider',
+        msg:    '<center>Invalid rundown file.<br>Please validate JSON data.</center>',
+        type:   'warn',
+        persist: true
+      });
+    }, 1000);
+
+
+    logger.error(msg);
+    return (msg);
   }
 } // GetJsonData ended
+
+
+async function playoutSTOP(dataOut) { //, templateIndex, RundownData
+
+  // Refactored in 1.3.0 to handle stop commands
+  logger.verbose('Stopping [' + dataOut.relpath + ']');
+  // Send PlayoutCCG.functionCalls() if any ---------------------
+
+  if (dataOut.playserver!='-'){
+    dataOut.command="STOP";
+    logger.verbose('CasparCG stop: [' + dataOut.relpathCCG + '] ' + dataOut.playserver + '/' + dataOut.playchannel + '-' + dataOut.playlayer);
+    PlayoutCCG.playoutController(dataOut);
+  } else {
+    logger.verbose('No CasparCG playout');
+  }
+
+  // Send PlayoutWEB.functionCalls() if any ---------------------
+  if (dataOut.webplayout!='-'){
+    logger.verbose('Webplayout STOP: ' + dataOut.webplayout);
+    dataOut.spxcmd = 'stopTemplate';
+    PlayoutWEB.webPlayoutController(dataOut); // refactored 20.08.2020 (note, this function handles all play, stop, next, update commands)
+    // io.emit('SPXMessage2Client', dataOut);
+  } else {
+    logger.verbose('No Webplayout playout');
+  }
+}  // playoutSTOP ended
+
+function getResolutionFromConfig(cfg, postRequest) {
+  // Added in 1.3.0 to get resolution
+  // returns CSS values: {width: x, height: y}
+
+  let sizeID = cfg.general.resolution || 'HD';
+  let width  = '1920px';
+  let height = '1080px';
+
+  if (postRequest.width ) { width  = postRequest.width  }
+  if (postRequest.height) { height = postRequest.height }
+
+  switch(sizeID) {
+    case '4K':
+        width  = '3840px'
+        height = '2160px'
+        break;	
+
+    case 'AUTO':
+        width  = '100vw'
+        height = '100vh'
+        break;
+
+    default:
+      // HD is the default
+      width  = '1920px'
+      height = '1080px'
+      break;
+
+    };
+
+  return {
+    width: width,
+    height: height,
+  };
+} // getResolutionFromConfig ended
+
+
 
 
 // this is the last line

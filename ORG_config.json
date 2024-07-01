@@ -1,0 +1,40 @@
+{
+  "general": {
+    "username": "",
+    "password": "",
+    "hostname": "",
+    "greeting": "",
+    "showusercommapass": "",
+    "langfile": "english.json",
+    "loglevel": "info",
+    "logfolder": "X:/GC/LOG/",
+    "port": "5656",
+    "dataroot": "X:/GC/DATAROOT/",
+    "preview": "selected",
+    "autoplayLocalRenderer": false,
+    "resolution": "AUTO",
+    "recents": [
+      "CLIENT-YLE-2024/RC5-2",
+      "CLIENT-YLE-2024/RC5",
+      "yle/test",
+      "TemplatePack130/DEV",
+      "timeline/test"
+    ]
+  },
+  "casparcg": {
+    "servers": [
+      {
+        "name": "OVERLAY",
+        "host": "localhost",
+        "port": "5250",
+        "disabled": false
+      }
+    ]
+  },
+  "globalExtras": {
+    "customscript": "/ExtraFunctions/demoFunctions.js"
+  },
+  "warning": "Modifications done in the SPX will overwrite this file.",
+  "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
+  "updated": "2024-06-06T19:21:00.725Z"
+}

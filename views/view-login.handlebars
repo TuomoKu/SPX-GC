@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+
+
+
 {{>copyright }}
 
 <html lang="en">
@@ -73,7 +76,7 @@
                         {{!-- <button class="spxformtext btn spxFlexItem bg_blue ripple" onclick="github()">Github</button> --}}
                       </div>
                       <span style="font-size: 0.55em; opacity:0.9; color:#000000;">
-                        v.{{{ShowVersion}}} | <a class="l" href="https://spx.graphics/contact">&copy; 2020- Softpix</a></span>
+                        v.{{{ShowVersion}}} | <a class="l" href="https://spx.graphics/contact">&copy; 2020- SPX Graphics</a></span>
                     </td>
                   </tr>
                 </table>
@@ -84,5 +87,21 @@
     </div><!-- content ended -->
   </div><!-- MAINwrapper ended -->
   </form>
-</body>
-</html>
+  <!--
+
+  BUG! BUG! BUG!
+  
+  If you are seeing this text in SPX terminal / console, you 
+  are facing a bug in action. This is not a normal behavior.
+  The reason is mosty likely that SPX has been configured to
+  only work when a user is logged in. If you are seeing this
+  text, it means that SPX is trying to show you the login page
+  but in an incorrect way.
+
+  This will be fixed in a future release. In the meantime,
+  disable logging (remove config) and restart the server.
+
+  ###  SORRY! YOU ARE WITNESSING A BUG!!  ###
+  ###  Please read the text above here..  ### 
+-->
+</body></html>

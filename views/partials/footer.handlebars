@@ -29,10 +29,23 @@
               <i class="fas fa-bullhorn"></i>&nbsp;<span id="upgradeVersion">v.X.X.X</span>&nbsp;<span id="upg"></span></a></span>
             {{!-- </span> --}}
             <span class="footerTable statusbar" style="opacity:0.53;">
-              SPX v.<span id="footerVerDisplay">{{{ShowVersion}}}
-                {{#ifValue width 3840}}
+              SPX v.<span id="footerVerDisplay">
+                <span ondblclick="forceWM()">{{{ShowVersion}}}</span>
+                {{#ifValue width '3840px'}}
                 &nbsp;<span style="color: #f80;"><B> 4K </B></span>&nbsp;
                 {{/ifValue}}
+
+                {{#ifValue width '100vw'}}
+                &nbsp;<span style="color: #f80;"><B> AUTO </B></span>&nbsp;
+                {{/ifValue}}
+
+                <!-- add a link to register -->
+                {{#if config.registration.updated }}
+                  <!-- Reg ok -->
+                {{else}}
+                  <A class="footerRegister" HREF="/register"><i class="fas fa-crown"></i>&nbsp; Register</A>
+                {{/if}}
+
 
               </span>
               &nbsp;<A href="http://spx.graphics" target="_spxgccom">spx.graphics</A></span>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+{{>copyright }}
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPX - OSC interface</title>
+  <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+
+  <style>
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: rgb(223, 223, 223);
+      padding: 1em;
+    }
+
+    
+    .apiLink {
+      font-family: monospace;
+      text-decoration: none;
+      font-size: 1.4em;
+      font-weight: bold;
+      padding: 0.2em 0.2em;
+      background-color: rgba(255,255,255,0.4);
+    }
+
+    .apiLink:hover {
+      background-color: rgb(255, 248, 189);
+    }
+
+    h3 {
+      margin-bottom: 0;
+      font-size: 1.5em;
+    }
+
+    p {
+      margin-top: 0.2em;
+    }
+
+
+    .auto-resizable-iframe {
+      max-width: 100%;
+      margin: 0px auto;
+    }
+
+    .POST {
+      background-color: rgb(242, 180, 180);
+      width: 5em;
+      text-align: center;
+      font-size: 0.7em;
+    }
+
+    .GET {
+      background-color: rgb(165, 165, 165);
+      width: 5em;
+      text-align: center;
+      font-size: 0.7em;
+    }
+
+    .info {
+      background-color: rgba(255,255,255,0.4);
+    }
+
+    .vers {
+      background-color: rgba(255,255,255,0.4);
+      font-size: 0.7em;
+      text-align: center;
+    }
+
+    td {
+      padding: 0.3em;
+    }
+
+    .api {
+      width: 100%;
+    }
+
+    code {
+      font-family: monospace;
+      font-size: 1.1em;
+      background-color: rgba(0,0,0,0.1);
+      padding: 0.1em 0.5em;
+      border-radius: 0.1em;
+    }
+  </style>
+
+
+  <script>
+    // let ipAddess = {{{getServerAddress}}};
+    function localhostToggle() {
+      console.log("toggle", document.getElementById("useLocalhost").checked);
+      if (document.getElementById("useLocalhost").checked) {
+        ipAddess = "localhost:5656";
+      } else {
+        ipAddess = document.getElementById("currServerAddress").value;
+      }
+      document.querySelectorAll('.apiLink').forEach(function (el) {
+        el.innerHTML = el.innerHTML.replace(/http:\/\/[^\/]+/, "http://" + ipAddess);
+        let link = el.firstChild;
+        link.textContent = link.textContent.replace(/http:\/\/[^\/]+/, "http://" + ipAddess);
+      });
+    }
+
+  </script>
+
+</head>
+
+
+<body class="bg_body">
+  <input type=""hidden id="currServerAddress" value="{{{getServerAddress}}}">
+  <H1>SPX Graphics / OSC interface</H1>
+  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); text-transform: uppercase;">SPX Host-ID: <B>{{{getHostID}}}</B></small>
+  <BR>
+  <BR>
+  Supported <B>osc</B> commands for external systems to trigger SPX over OSC port (configured in config.json)<br>
+  Since graphics can have a lot of properties, the use of <a href="/api/v1">REST API</a> is highly recommended.
+  <BR><BR>
+  <span style="color:red;"><B>Note!</B> OSC is not implemented yet. Please keep <code>osc.enable:false</code> in config!</span> <BR>
+  <BR><BR>
+  
+  {{#each functionList.sections}}
+    <BR>
+    <h3>{{section}}</h3>
+    <p>{{info}}</p>
+    <table class="api">
+      {{#each commands}}
+        <tr>
+          <td class="apiLink" colspan="3">{{../endpoint}}{{param}}</td>
+        </tr>
+        <tr>
+          <td class="vers">{{vers}}</td>
+          <td class="info">{{info}}</td>
+        </tr>
+        {{#if code}}
+          <tr>
+            <td colspan="2" class="info">
+              <pre class="prettyprint lang-js">{{myStringify code}}</pre>
+            </td>
+          </tr>
+        {{/if}}
+        <tr>
+          <td colspan="2">&nbsp;</td>
+        </tr>
+        
+      {{/each}}
+    </table>
+  {{/each}}
+
+  <br>
+  <BR>
+  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); ">If you have needs for additional integrations or graphics, please <A href="https://spx.graphics/contact" target="website">contact us</A>.</B></small>
+
+</body>
+</html>

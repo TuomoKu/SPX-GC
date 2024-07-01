@@ -68,6 +68,8 @@
     cursor: pointer;
     padding: 0.4em 0; 
     margin-bottom: 0.1em;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .btn:hover {

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-{{>copyright }}
-
+<!-- empty -->
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -8,42 +7,30 @@
         <title>Empty</title>
         <style>
 			html, body {
-				margin: 0px;
-				height: 100%;
-				overflow: hidden;
-				box-sizing: border-box;
-				font-family: sans-serif;
-				background-color: rgba(255,255,255,0.0);
-			}
-
-			*, *:before, *:after {
 				margin: 0;
 				padding: 0;
-				box-sizing: inherit;
-				}
+				height: 100%;
+				overflow: hidden;
+				background-color: transparent;
+			}
+
 		</style>
 
 		<script>
-			function echo(msg) {
-				document.getElementById('debug').innerText=msg;
-			}
-
 			function play()  	{ emptyMessage('play') }
 			function stop()   	{ emptyMessage('stop') }
 			function invoke() 	{ emptyMessage('invoke') }
 			function update() 	{ emptyMessage('update') }
 			function data()   	{ emptyMessage('data') }
 			function preview() 	{ emptyMessage('preview') }
-
 			function emptyMessage(cmd) {
-					// console.log('**** INFO: empty received command "' + cmd + '", which is ignored ****');
-				}
+				// console.log('Empty layer received command "' + cmd + '", which is ignored');
+			}
 
 		</script>
 
     </head>
     <body>
-		<span id="debug"></span>
         <!-- nothing here -->
     </body>
 </html>

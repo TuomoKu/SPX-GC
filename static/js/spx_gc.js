@@ -1,8 +1,7 @@
 // ***************************************
 // Client javascript for SPX
-// Functions mostly in alphabetical order
 // ***************************************
-// (c) 2020-2023 Softpix
+// (c) 2020-2024 SPX Graphics
 // ***************************************
 
 var socket = io();
@@ -10,10 +9,8 @@ var socket = io();
 // Global App State
 let APPSTATE = "INIT";  // see AppState()
 let sortable = "";      // a global sortable object so can be disabled at will, see spxinit()
-
 let messageSliderOutTimer // a global var for message slider timeout
 document.onkeydown = checkKey;
-
 
 socket.on('connect', function () {
     // Added in 1.1.0:
@@ -23,6 +20,30 @@ socket.on('connect', function () {
         hideMessageSlider();
     }
 }); // end connect
+
+socket.on('SPXMessage2Extension', function (data) {
+    // Handles messages coming from server to an extension.
+    // All SPX extensions must have 3 tags in their HTML:
+    //
+    //  <script src="/js/socket.io.js"></script>
+    //  <script>var socket = io();</script>
+    //  <script src="/js/spx_gc.js"></script>
+    //
+    // Also if the extension JS code is a module the
+    // functions will need to be exposed to the window scope.
+    // This is done by adding the following line to the end
+    // of the module:
+    //
+    //  window.functionName = functionName;
+    //
+    if (typeof window[data.function] === "function") { 
+        // console.log('API invokeExtensionFunction called --> ' + data.function + '(' + data.params + ')');
+        window[data.function](data.params);
+    } else {
+        console.error('Function not found in extension [' + data.function + ']. Is it exposed?');
+    }
+
+}); // end SPXMessage2Extension
 
 socket.on('SPXMessage2Client', function (data) {
     // Handles messages coming from server to this client.
@@ -48,24 +69,43 @@ socket.on('SPXMessage2Client', function (data) {
             break;
 
         case 'updateStatusText':
-            // document.getElementById('status').innerText = data.status;
-            clearTimeout(localStorage.getItem('SPX_CT_StatusTimer'));
-            statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
-            localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
+            if (document.getElementById('statusbar')) {
+                document.getElementById('statusbar').innerText = data.status;
+                clearTimeout(localStorage.getItem('SPX_CT_StatusTimer'));
+                statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
+                localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
+            } else {
+                console.log('statusbar (element) not found');
+            }
+            break;
+
+        case 'showMessageSlider':
+            // Shows a message in the message slider, an extension may initiate this.
+            showMessageSlider(data.msg, data.type, data.persist);
+            // clearTimeout(localStorage.getItem('SPX_CT_StatusTimer'));
+            // statusTimer = setTimeout(function () { document.getElementById('statusbar').innerText = ''; }, 3000);
+            // localStorage.setItem('SPX_CT_StatusTimer', statusTimer);
             break;
 
         case 'clientLostNotification':
             switch (data.clientName) {
                 case 'SPX_PROGRAM':
                     if (document.getElementById('toggleRendererWindowProgram')) {
+                        console.log('SPX_PROGRAM client lost, toggling off');
                         document.getElementById('toggleRendererWindowProgram').checked = false;
+                    } else {
+                        console.log('SPX_PROGRAM client lost, no toggle found');
                     }
                     toggleNormalRenderer('normal');
                     break;
 
                 case 'SPX_PREVIEW':
-                    if ( document.getElementById('toggleRendererWindowPreview') )
+                    if ( document.getElementById('toggleRendererWindowPreview') ) {
+                        console.log('SPX_PREVIEW client lost, toggling off');
                         document.getElementById('toggleRendererWindowPreview').checked = false;
+                    } else {
+                        console.log('SPX_PREVIEW client lost, no toggle found');
+                    }
                     break;
             
                 default:
@@ -139,7 +179,6 @@ socket.on('SPXMessage2Controller', function (data) {
             break;
 
         case 'ItemPlayID':
-            console.log('ItemPlayID stopping here! ', data.itemID)
             el = getElementByEpoch(data.itemID);
             if (el) {
                 // console.log('ItemPlayID: Element found', data.itemID, el);
@@ -175,6 +214,11 @@ socket.on('SPXMessage2Controller', function (data) {
             }
             break;
 
+        // Utils
+        case 'showMessageSlider':
+            showMessageSlider(data.msg, data.type, data.persist)
+            break;
+
         default:
             console.log('Unknown SPXMessage2Controller command: ' + data.APIcmd, data);
     }
@@ -187,10 +231,18 @@ socket.on('disconnect', function () {
         showMessageSlider('Disconnected from SPX server', type='error', true)
         document.body.style="pointer-events: none;"  // disable clickability
     }
-}); // end disconnect 
+}); // end disconnect
 
 // see also spxInit()
 // ##########################################################################################################
+
+
+function rundownPopup(mode) {
+    // get current url
+    let url = window.location.href;
+    url = url + '/light'
+    window.open(url);
+}
 
 
 
@@ -246,9 +298,6 @@ function tip(msg) {
 
 
 
-
-
-
 function addSelectedTemplate(idx) {
   // alert('Selected index ' + idx);
   data={};
@@ -258,7 +307,7 @@ function addSelectedTemplate(idx) {
   data.datafile      = document.getElementById('datafile').value;
   data.templateindex = idx;
   post('', data, 'post');
-}
+} // addSelectedTemplate
 
 function addAllTemplatesToRundown() {
   // Added in 1.2.0
@@ -268,10 +317,7 @@ function addAllTemplatesToRundown() {
   data.listname      = document.getElementById('filebasename').value;
   data.datafile      = document.getElementById('datafile').value;
   post('', data, 'post');
-}
-
-
-
+} // addAllTemplatesToRundown
 
 function ajaxpost(urlPath, data, prepopulated='false'){
     // This is a utility function using Axios to POST
@@ -315,19 +361,10 @@ function ajaxpost(urlPath, data, prepopulated='false'){
         }
         console.log(error.config);
       });
-}
-
-
-
-
+} // ajaxpost ended
 
 function ajaxpostform(urlPath, FormNro){
-}
-
-
- 
-
-
+} // ajaxpostform ended
 
 function aFunctionTest() {
     // execute a test function on the server
@@ -336,14 +373,35 @@ function aFunctionTest() {
     AJAXGET('/CCG/testfunction/');
 } //aFunctionTest
 
- 
+// Filename validation for project/ruindown prompts
+// Added in 1.3.0
+var isValid=(function(){
+    var rg1=/^[^\\/:\*\?"<>\|]+$/; // forbidden characters \ / : * ? " < > |
+    var rg2=/^\./; // cannot start with dot (.)
+    var rg3=/^\_/; // cannot start with underscore (_)
+    var rg4=/^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; // forbidden file names
+    return function isValid(str){
+        return rg1.test(str)&&!rg2.test(str)&&!rg3.test(str)&&!rg3.test(str);
+    }
+})();
+
 
 function add() {
     // require ..... nothing
     // returns ..... posts a name of a file to server which redirects
-    var listname = prompt("Creating a new content list. Name?", "");
-    if (listname != null && listname != "") {
-        post('', { filebasename: listname }, 'post');
+    // Improved in 1.3.0 with validation
+
+    var rundownName
+    while(true){
+        rundownName = prompt("Creating a new rundown. Name?").trim();
+        if ( isValid(rundownName) ) {
+            break;
+        } else {
+            alert("Please enter a valid file name, no special characters.");
+        }
+    }
+    if (rundownName != null && rundownName != "") {
+        post('', { filebasename: rundownName }, 'post');
     }
 } //add
 
@@ -351,13 +409,22 @@ function add() {
 function addshow() {
     // require ..... nothing
     // returns ..... posts a name of a folder to server which redirects
-    var foldername = prompt("Creating a new content folder. Name?", "");
-    if (foldername != null && foldername != "") {
-        post('', { foldername: foldername }, 'post');
+    // Improved in 1.3.0 with validation
+
+    var projectName
+    while(true){
+        projectName = prompt("Creating a new project. Name?").trim();
+        if ( isValid(projectName) ) {
+            break;
+        } else {
+            alert("Please enter a valid folder name, no special characters.");
+        }
     }
+    if (projectName != null && projectName != "") {
+        post('', { foldername: projectName }, 'post');
+    }
+
 } // addshow
-
-
 
 async function AJAXGET(URL) {
     // Sends a GET request to server.
@@ -383,8 +450,6 @@ async function AJAXGET(URL) {
     xmlhttp.send();
 } // AJAXGET ended
 
-
-
 function applyTextEditChanges(event, e) {
     // end editing a TG field
     setMasterButtonStates(e.closest('.itemrow'));
@@ -395,8 +460,6 @@ function applyTextEditChanges(event, e) {
         ToggleExpand();
     }
 } // applyTextEditChanges
-
-
 
 function AppState(NewState) {
     // **********************************************************************
@@ -414,18 +477,19 @@ function AppState(NewState) {
     // console.log('Old state: ' + APPSTATE, 'New state: ' + NewState);
 
     // disable sorting while editing:
-    if (NewState == 'EDITING')
-        {
-            sortable.option("disabled", true);
+    if (NewState == 'EDITING') {
+        if ( ife('identifier').value=="controller" ) {
+            sortable.option("disabled", true);  
         }
-    else{
+    } else {
+        if ( ife('identifier').value=="controller" ) {
             sortable.option("disabled", false);
+        }
     }
     APPSTATE = NewState;
     //
     // **********************************************************************
 } // AppState
-
 
 function CancelOutTimerIfRunning(CURITEM){
     // if item has a running timeout attribute, then stop and clear it
@@ -437,9 +501,7 @@ function CancelOutTimerIfRunning(CURITEM){
         document.getElementById('deleteSmall' + CURITEM.getAttribute('data-spx-index')).style.display="inline-block";
         document.getElementById('deleteLarge' + CURITEM.getAttribute('data-spx-index')).style.display="block";
     }
-}
-
-
+} // CancelOutTimerIfRunning
 
 function cas() {
     // Opens the selected (or current) file in controller.
@@ -462,14 +524,12 @@ function cas() {
     document.location = '/gc/' + folder + "/" + filename;
 } // cas ended
 
-
 function cfg() {
     // Show settings
     // Called from Settings button in episodes page.
     let foldname = document.getElementById("hidden_folder").value;
     document.location = '/show/' + foldname + "/config";
 } // del ended
-
 
 function checkAllConnections() {
     // require ..... nothing
@@ -479,7 +539,6 @@ function checkAllConnections() {
         AJAXGET('/CCG/testfunction/');
     }
 } //checkAllConnections
-
 
 function checkKey(e) {
     // require ..... keyboard event
@@ -523,7 +582,6 @@ function checkKey(e) {
             return;
             break;
     }
-
 
 
     // THEN APPSTATE dependent keycodes
@@ -594,6 +652,13 @@ function checkKey(e) {
                     updateItem();
                     e.preventDefault(); // do not refresh browser
                     break;
+                case 20: // CapsLock
+                    if (e.getModifierState("CapsLock")) {
+                        showItemIDs(true);
+                    } else {
+                        showItemIDs(false);
+                    }
+                    break;
             }
             break;
     }
@@ -603,10 +668,6 @@ function checkKey(e) {
 
     return;
 } //checkKey
-
-
-
-
 
 function clearAttributes(attName, attValue) {
     // This is called from TGbuttonAction when TG Play button is
@@ -624,24 +685,52 @@ function clearAttributes(attName, attValue) {
     })
 } // clearAttributes ended
 
+function copyItemID(itemID, api='') {
+    let currentHost = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+    let str = itemID;
+    let inf = 'itemID';
+    switch (api.toUpperCase()) {
+        case 'PLAY':
+            str = currentHost + '/api/v1/item/play/' + itemID;
+            inf = 'API play command'
+            break;
 
-function toggleLRendererHandler(slider, targ) {
-    let Cfgdata = {};
-    Cfgdata.key = 'disableLocalRenderer'
-    if (slider.checked) {
-        document.getElementById(targ).innerText = 'YES';
-        document.getElementById('previewIF').src = '/templates/empty.html';
-        document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
-        Cfgdata.val = true;
-        
-    } else {
-        document.getElementById('previewIF').src = '/renderer';
-        document.getElementById(targ).innerText = 'NO';
-        document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
-        Cfgdata.val = false;
+        case 'STOP':
+            str = currentHost + '/api/v1/item/stop/' + itemID;
+            inf = 'API stop command'
+            break;
+
+        case 'CONTINUE':
+            str = currentHost + '/api/v1/item/continue/' + itemID;
+            inf = 'API continue command'
+            break;
+
+        default:
+            break;
+
     }
-    ajaxpost('/gc/saveConfigChanges',Cfgdata);
-}
+    copyText(str);
+    showMessageSlider('Copied ' + inf + ' to clipboard', 'happy');
+    showItemIDs(false)
+} // copyItemID
+
+// function toggleLRendererHandler(slider, targ) {
+//     let Cfgdata = {};
+//     Cfgdata.key = 'disableLocalRenderer'
+//     if (slider.checked) {
+//         document.getElementById(targ).innerText = 'YES';
+//         document.getElementById('previewIF').src = '/templates/empty.html';
+//         document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
+//         Cfgdata.val = true;
+        
+//     } else {
+//         document.getElementById('previewIF').src = '/renderer';
+//         document.getElementById(targ).innerText = 'NO';
+//         document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
+//         Cfgdata.val = false;
+//     }
+//     ajaxpost('/gc/saveConfigChanges',Cfgdata);
+// }
 
 
 function toggleSwitchHandler(slider, targ, type) {
@@ -736,8 +825,6 @@ function CollectJSONFromDOM() {
     return JSONdata;
 } // CollectJSONFromDOM ended
 
-
-
 function continueUpdateStop(command, itemrow='') {
     // request ..... command, itemrow (optional)
     // returns ..... ajax response
@@ -763,7 +850,6 @@ function continueUpdateStop(command, itemrow='') {
     }
 } // ContinueUpdateStop() ended
 
-
 async function revealItemID(button) {
     let item = button.closest('.itemrow')
     let ID = item.getAttribute('data-spx-epoch');
@@ -778,7 +864,7 @@ async function revealItemID(button) {
 
         axios.get(URL)
         .then(function (response) {
-            showMessageSlider('Item renamed to ' + newID)
+            showMessageSlider('Item renamed to ' + newID + '. Reload recommended.')
             item.setAttribute('data-spx-epoch', newID);
             item.querySelector('.copyid').setAttribute('onmouseover', `tip('Copy ID ${newID}')`);
         })
@@ -838,7 +924,6 @@ async function revealItemLayer(button) {
     }
 } // revealItemLayer
 
-
 function copyRendererUrl(preview=false) {
 
     let page = '/renderer/';
@@ -848,7 +933,7 @@ function copyRendererUrl(preview=false) {
     var RendererUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '') + page;
     copyText(RendererUrl);
     showMessageSlider('Copied URL to clipboard', 'happy');
-}
+} // copyRendererUrl ended
 
 function copyText(txt) {
     const temp = document.createElement('input');
@@ -863,10 +948,10 @@ function copyText(txt) {
         // console.log('Oops, unable to copy');
     }
     temp.parentNode.removeChild(temp);
-}
+} // copyText ended
 
 function heartbeat(dd, getOnly = false) { // 36 24 36 hey
-    // see notes TDT=00d86114
+    // see notes TDT=00d86114 (/..es2/heartbeat)
     let nw, st, key, val, dif; 
     let fD = '|';
     let vD = ':';
@@ -911,7 +996,6 @@ function heartbeat(dd, getOnly = false) { // 36 24 36 hey
     localStorage.setItem(ls, st)
 } // dirty deeds done. 
 
-
 function del() {
     // Episodes -view
     // Delete a datafile from disk.
@@ -926,8 +1010,6 @@ function del() {
     }
 } // del ended
 
-
-
 function delshow() {
     // Shows -view
     // Delete a folder from disk.
@@ -941,9 +1023,6 @@ function delshow() {
         }
 } // delshow ended
 
-
-
-
 function delRow(e) {
     // console.log('Would delete', e);
     if (!e){return};
@@ -951,8 +1030,6 @@ function delRow(e) {
     // save data 
     SaveNewSortOrder();
 } // delRow ended
-
-
 
 function duplicateRundown() {
     // Duplicate a rundown
@@ -965,11 +1042,57 @@ function duplicateRundown() {
     setTimeout(function(){ document.location = '/show/' + data.foldname; }, 500);
 } // duplicateRundown ended
 
+function duplicateRundownItem(rowitem) {
+    if (!rowitem){
+        rowitem = getFocusedRow();
+    }
 
+    // Collect data for the server to duplicating the item
+    data={};
+    data.command       = "duplicateRundownItem";
+    data.sourceEpoch   = rowitem.getAttribute('data-spx-epoch');
+    data.cloneEpoch    = String(Date.now()); // create epoch and give this to server also
+    data.foldername    = document.getElementById('foldername').value;
+    data.listname      = document.getElementById('filebasename').value;
+    data.datafile      = document.getElementById('datafile').value;
+    
+    var newItem = rowitem.cloneNode(true);
+    newItem.style.opacity=0;
 
+    // update table id's for sorting to keep up. A bug found right after 1.0.12 was released.
+    updateFormIndexes()
+    rowitem.after(newItem);
 
+    let list = [
+        newItem.setAttribute('data-spx-epoch', data.cloneEpoch),
+        newItem.setAttribute('data-spx-onair', "false"),
+        newItem.querySelector('.copyid').setAttribute('onmouseover', 'tip("Duplicated item ' + data.cloneEpoch + '")'),
+        newItem.querySelector('.utilityOverlay').innerHTML="Reload page to update this duplicated item.",																										 
+        newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'),
+        newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'),
+        newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'),
+        newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'),
+        newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'),
+        rowitem.classList.remove('inFocus'),
+        newItem.classList.add('inFocus'),
+        newItem.style.opacity=1
+    ]
 
+    applyCommands(list);
+    working('Sending ' + data.command + ' request.');
+    ajaxpost('',data);
 
+    function applyCommands(list) {
+        // delay commands utility
+        let totalDelay = 0;
+        let stepDelay = 10;
+        list.forEach((item,index) => {
+            totalDelay += stepDelay;
+            setTimeout(function () { (item) }, totalDelay);
+        });
+    }
+
+} // duplicateRundownItem ended
 
 function edi() {
     // Edit a datafile on disk.
@@ -982,8 +1105,13 @@ function openRelpathFolder(itemrow) {
     // added in 1.1.1 - Open a file for editing.
     let fileRef = itemrow.querySelector("[id^='relpath']").value;
     AJAXGET('/api/openFileFolder?file=' + fileRef);
-}
+} // openRelpathFolder ended
 
+function openLightModePanel() {
+    // Open a light mode panel (in Controller only)
+    let newUrl = window.location.href + '/light';
+    window.open(newUrl, 'SPX-LITE', '_blank, width=680, height=850, scrollbars=yes, location=yes,status=yes');
+}
 
 function eps() {
     // Opens the selected (or current) file in controller.
@@ -1004,7 +1132,6 @@ function eps() {
     if (foldername==""){return};
     document.location = '/show/' + foldername;
 } // cas ended
-
 
 function exportItemAsCSV(rowItem) {
     // export an item as a CSV file, which then can be
@@ -1033,7 +1160,7 @@ function ModalOn(modalID) {
     }
 
     document.getElementById(modalID).style.display = "block";
-  } //FileBrowserOn
+} //FileBrowserOn
 
 function ModalOff(modalID) {
     document.getElementById(modalID).style.display = "none";
@@ -1043,7 +1170,7 @@ function openImportDialog() {
     ModalOff('overlayTemplatePicker')
     ModalOn('filebrowserModal')
     // console.log('Opening File browser dialog');
-}
+} // openImportDialog
 
 function filterProjects() {
     // Added in 1.1.0 - will hide/show items in the allProjects list
@@ -1067,8 +1194,7 @@ function filterProjects() {
         lists.appendChild(opt);
       }
     }
-  }
-
+} // filterProjects ended
 
 function focusRow(rowitemOrIndex) {
     // will make TG item focused and will set masterbutton states.
@@ -1119,11 +1245,6 @@ function focusRow(rowitemOrIndex) {
      setMasterButtonStates(TargetElement, 'from focusRow');
 } // focusRow ended
 
-
-
-
-
-
 function org_focusRow(index, useID=false) {
     // FIXME: This is archived version of this function.
     // Delete at some point -----------------------------
@@ -1163,8 +1284,6 @@ function org_focusRow(index, useID=false) {
      setMasterButtonStates(index, 'from focusRow');
 } // focusRow ended
 
-
-
 function getElementIdOfFocusedItem() {
     // FIXME: Is this in use? From old logic?
     // a utility to iterate DOM items, return element ID of focused
@@ -1174,7 +1293,7 @@ function getElementIdOfFocusedItem() {
                 return getElementIdByDomIndex(nro)
             };
     }
-}
+} // getElementIdOfFocusedItem ended
 
 function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
@@ -1187,7 +1306,7 @@ function getFocusedRow() {
     //         return document.querySelectorAll('.itemrow')[nro];
     //     };
     // }
-}
+} // getFocusedRow ended
 
 function getElementByEpoch(itemID) {
     // get element by epoch id (added in 1.0.8)
@@ -1200,7 +1319,7 @@ function getElementByEpoch(itemID) {
         };
     }
     return false; // added in 1.2.0
-}
+} // getElementByEpoch ended
 
 
 function getIndexOfRowItem(rowitem) {
@@ -1210,8 +1329,7 @@ function getIndexOfRowItem(rowitem) {
             return i;
         }
     })
-}
-
+} // getIndexOfRowItem ended
 
 function getElementIdByDomIndex(domIndex)
 {
@@ -1223,8 +1341,7 @@ function getElementIdByDomIndex(domIndex)
     let ElementFullID = document.querySelectorAll('.itemrow')[domIndex].id;
     let JustElementID = ElementFullID.replace('playlistitem','');
     return JustElementID
-}
-
+} // getElementIdByDomIndex ended
 
 function getDomIndexByElementId(ElementId)
 {
@@ -1241,10 +1358,7 @@ function getDomIndexByElementId(ElementId)
                 return DomNro
             };
     }
-}
-
-
-
+} // getDomIndexByElementId ended
 
 function getLayerFromProfile(buttonName) {
     // Make JSON from profiledata string from a hidden field and search it...
@@ -1348,7 +1462,7 @@ function getMessages(curVerInfo) {
     .catch((error) => {
         console.error('SPX error in getMessages().',error)
     });
-  }
+} // getMessages ended
 
 function getMessages2(or) {
     // This is called from heartbeat after a day change and will
@@ -1357,9 +1471,40 @@ function getMessages2(or) {
     // This function is in early stage in v 1.1.0 and will be
     // fully implemented in future versions.
     ajaxpost('/api/heartbeat', {data:or});
-}
+} // getMessages2 ended
 
+function handleRendererPopups(data) {
+    // open / close renderer popups 
+    // data: {type:preview}
+    // Save to config.json general.renderer as "normal" (embedded inline renderer) or "popup" (floating window)
+    
+    let URL;
+    let socketData = {};
+    var w = 1280;
+    var h = 720;
+    var left = (screen.width/2)-(w/2);
+    var top = (screen.height/2)-(h/2);
+    var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
 
+    if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
+    if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
+
+    if (data.command == 'open')  {
+        // open the popup
+        window.open(URL, winRef, OPT);
+    } 
+    
+    if (data.command == 'close')  {
+        // send message request to close the popup
+        // send message to close the window without prompts (closeprogram closepreview)
+        socketData.spxcmd = 'close' + data.type;
+        socket.emit('SPXWebRendererMessage', socketData);
+    }
+
+    if (data.type == 'program') {
+        toggleNormalRenderer(data.command)
+    }
+} // handleRendererPopups ended
 
 function help(section) {
     // Help is massively a WORK-IN-PROGRESS thing!
@@ -1393,6 +1538,7 @@ function help(section) {
         case "API":                 HELP_PAGE = "article/help-api"                  ; break;
         case "ITEM-DETAILS":        HELP_PAGE = "article/help-item-details"         ; break;
         case "SEVERAL":             HELP_PAGE = "article/help-several-controllers"  ; break;
+        case "LIGHTMODE":           HELP_PAGE = "article/light-mode"                ; break;
         default: break;
     }
 
@@ -1400,11 +1546,6 @@ function help(section) {
     window.open(FULL_URL, 'GCHELP', '_blank,width=980,height=800,scrollbars=yes,location=yes,status=yes');
 } // help ended
  
-
-
-
-
-
 function moveFocus(nro) {
     // Move highlighted row up/down with keyboard commands
     // Request .... nro = negative (-1) or positive (1)
@@ -1432,13 +1573,9 @@ function moveFocus(nro) {
     }
 } // moveFocus ended
 
-
-
 function nextItem(itemrow='') {
     // Next / continue command.
-
-    console.log('nextItem()', itemrow);
-
+    
     if (!itemrow) {
         // itemrow not given, get focused row
         itemrow = getFocusedRow();
@@ -1467,11 +1604,11 @@ function nextItem(itemrow='') {
 
     // Check for function_onNext event (added in 1.1.4):
     let onNextField = itemrow.querySelector('[name="RundownItem[function_onNext]"]');
-    console.log('onNextField: ', data.command, onNextField);
+    // console.log('onNextField: ', data.command, onNextField);
     if (onNextField && onNextField.value!="") {
-        console.log('onNextField: ' + onNextField.value);
+        // console.log('onNextField: ' + onNextField.value);
         let onNextCommand = onNextField.value.split('|') || [];
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'NEXT event: ' + onNextCommand);
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'NEXT event: ' + onNextCommand);
         let FunctionName  = String(onNextCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onNextCommand[1] || 'NoArgs').trim();
         let ExecuteDelay  = String(onNextCommand[2] || '100').trim();
@@ -1480,15 +1617,14 @@ function nextItem(itemrow='') {
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
         if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            console.log('FunctionName:' + FunctionName);
+            // console.log('FunctionName:' + FunctionName);
             window[FunctionName]([FunctionArgs, conditionVal, data.epoch]);
         }, parseInt(ExecuteDelay));
         heartbeat(314); // identifier
     }
 
 
-  } // nextItem
-
+} // nextItem
 
 function previewItem(itemrow='') {
     // Added in 1.1.0
@@ -1505,13 +1641,12 @@ function previewItem(itemrow='') {
     heartbeat(308); // identifier
 
 
-}
+} // previewItem
 
 function projectSettings() {
     // Open project settings page from rundown list page
     document.location.href += '/config' ;
 } // projectSettings
-
 
 function playItem(itemrow='', forcedCommand='') {
     // Play item toggle.
@@ -1526,12 +1661,7 @@ function playItem(itemrow='', forcedCommand='') {
     // FIXME: Bug found 2023-11-07 Step counter in DOM needs to be reset on Play
 
     if (!itemrow) { itemrow = getFocusedRow();  }
-    // console.log('playItem with forcedcommand "' + forcedCommand + '"', itemrow);
-
-    if (!itemrow) {
-        // console.log('No active rows, skip command.');
-        return;
-    }
+    if (!itemrow) { return; }
 
     data = {};
     data.datafile      = document.getElementById('datafile').value;
@@ -1583,6 +1713,7 @@ function playItem(itemrow='', forcedCommand='') {
         //  3rd: execution delay in ms.
         //  4th: one of the f-fields (value can be used as a condition in the function)
 
+        
         let onPlayCommand = onPlayField.value.split('|') || [];
         let FunctionName  = String(onPlayCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onPlayCommand[1] || 'NoArgs').trim();
@@ -1590,12 +1721,32 @@ function playItem(itemrow='', forcedCommand='') {
         let ConditFField  = String(onPlayCommand[3] || 'XXX').trim();
         let conditionVal = null;
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
-        if (eventCondtFF) { conditionVal = eventCondtFF.value; }
+
+        // Improved in 1.3.0 - now supports also SELECT and CHECKBOX fields
+        if (eventCondtFF) {
+            switch (eventCondtFF.tagName) {
+                case 'SELECT':
+                    conditionVal = eventCondtFF.options[eventCondtFF.selectedIndex].value;
+                    break;
+
+                case 'INPUT':
+                    if (eventCondtFF.type == 'checkbox') {
+                        conditionVal = eventCondtFF.checked;
+                    } else {
+                        conditionVal = eventCondtFF.value;
+                    }
+                    break;
+
+                default:
+                    conditionVal = eventCondtFF.value;
+            }
+        }
+
         setTimeout(function () {
             if (window[FunctionName]) {
                 window[FunctionName]([FunctionArgs, conditionVal, data.epoch]); // Added data.epoch in 1.1.4
             } else {
-                console.log('Function "' + FunctionName + '" not found in SPX custom function library. See project settings.');
+                showMessageSlider('Function "' + FunctionName + '" not found in current custom functions library file.', 'warn');
             }
         }, parseInt(ExecuteDelay));
         heartbeat(310); // identifier
@@ -1606,7 +1757,7 @@ function playItem(itemrow='', forcedCommand='') {
     if (data.command=="stop" && onStopField && onStopField.value!="") {
         // Changed in v1.1.4 (no other server changes, just "spx_gc.js")
         let onStopCommand = onStopField.value.split('|') || [];
-        console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'STOP event: ' + onStopCommand);
+        // console.log('[' + String(new Date().toLocaleTimeString()) + '] ' + 'STOP event: ' + onStopCommand);
         let FunctionName  = String(onStopCommand[0] || 'noFunctionName').trim();
         let FunctionArgs  = String(onStopCommand[1] || 'NoArgs').trim();
         let ExecuteDelay  = String(onStopCommand[2] || '100').trim();
@@ -1615,7 +1766,7 @@ function playItem(itemrow='', forcedCommand='') {
         let eventCondtFF = itemrow.querySelector('[data-update=' + ConditFField + ']');
         if (eventCondtFF) { conditionVal = eventCondtFF.value; }
         setTimeout(function () {
-            console.log('FunctionName:' + FunctionName);
+            // console.log('FunctionName:' + FunctionName);
             window[FunctionName]([FunctionArgs, conditionVal, data.epoch]);
         }, parseInt(ExecuteDelay));
         heartbeat(312); // identifier
@@ -1623,13 +1774,13 @@ function playItem(itemrow='', forcedCommand='') {
 
     // Remember, onNext is handled in nextItem();
 
-
     // auto-out trigger UI update (FIXME: verify auto-out works over direct API commands?!)
     let TimeoutAsString = itemrow.querySelector('[name="RundownItem[out]"]').value;
     // console.log('TimeoutAsString: ', TimeoutAsString);
 
-    if (!isNaN(TimeoutAsString))
-        // value is numerical, so 
+    if (!isNaN(TimeoutAsString)) {
+        // value is numerical, so
+        // console.log('TimeoutAsString is a number, so it is a timeout value.'); 
         if (data.command=="play" ) {
                 // Changed in 1.0.9, failed in 1.0.8.
                 // 1.0.12: Fixed looping issue found by Koen.
@@ -1646,25 +1797,46 @@ function playItem(itemrow='', forcedCommand='') {
         } else {
             CancelOutTimerIfRunning(itemrow);
         }
+    }
 
 } // playItem
 
+function playItemLocal(itemID) {
+    // Just play an item to the local Controller preview
+    // console.log('Sending playItemLocal request (spx-gc) ' + itemID + ' in 5 secs...');
+    data = {};
+    data.datafile = document.getElementById('datafile').value;
+    data.epoch    = itemID || 0;
+    data.command  = 'autoPlayLocal';
+    ajaxpost('/gc/playout',data);
+    heartbeat(308)
+} // playItemLocal
+
 function renameRundown() {
     // Rename an existing rundown
+    // Improved in 1.3.0 with validation
     var filename = document.getElementById('lists').value;
     if (!filename) {return}
     var foldname = document.getElementById("hidden_folder").value;
-    var newname = prompt("Rename the rundown?", filename);
+
+    while(true){
+        newname = prompt("Rename rundown to?", filename).trim();
+        if ( isValid(newname) ) {
+            break;
+        } else {
+            alert("Please enter a valid file name, no special characters.");
+        }
+    }
     if (newname != null && newname != "") {
         data={};
         data.orgname = filename + '.json';
         data.newname = newname;
         data.foldnam = foldname;
         ajaxpost('/gc/renameRundown',data);
-        setTimeout(function(){ document.location = '/show/' + foldname; }, 500);
+        setTimeout(function(){ document.location = '/show/' + foldname; }, 300);
     }
-} // renameRundown ended
 
+} // renameRundown ended
 
 function versInt(semver){
     // Returns a numeric value representing "1.0.0" formatted semantic version string.
@@ -1678,7 +1850,6 @@ function versInt(semver){
     // console.log('Semver ' + semver + ' = versInt ' + versInt);
     return versInt
   }
-
 
 function setItemButtonStates(itemrow, forcedCommand=''){
     // Utility function which will toggle play indicators in
@@ -1719,80 +1890,73 @@ function setItemButtonStates(itemrow, forcedCommand=''){
         CommandToExecute = 'play';
     }
 
-    if ( CommandToExecute == 'stop' )
-        {
-            // Convert button to PLAY button and execute stop command
-            // console.log('was playing. so send STOP and make button PLAY');
-            itemrow.setAttribute('data-spx-onair','false');
-            itemrow.querySelector('[name="RundownItem[onair]"]').value='false';
-            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
-            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
-            itemrow.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
-            EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-playtext');
-            EXPANDEDPLAY.classList.remove('bg_red');
-            EXPANDEDPLAY.classList.add('bg_green');
-        }
+    if ( CommandToExecute == 'stop' ) {
+        // Convert button to PLAY button and execute stop command
+        // console.log('was playing. so send STOP and make button PLAY');
+        itemrow.setAttribute('data-spx-onair','false');
+        itemrow.querySelector('[name="RundownItem[onair]"]').value='false';
+        itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+        itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
+        itemrow.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+        EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-playtext');
+        EXPANDEDPLAY.classList.remove('bg_red');
+        EXPANDEDPLAY.classList.add('bg_green');
+    }
 
-    if ( CommandToExecute == 'play' )
-        {
-            // Convert button to STOP button and execute play command
-            // first we need to dim all other elements which are playing on same output channel / layer
-            // console.log('was stopped. so send PLAY and make button STOP');
-            let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
-            rows.forEach(function (item, index) {
-                let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
-                if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig )
-                    {
-                        // console.log('Dom item ' + index + ' is the same, so dim it');
-                        item.setAttribute('data-spx-onair','false');
-                        item.querySelector('[name="RundownItem[onair]"]').value='false';
-                        item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
-                        item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
-                        CancelOutTimerIfRunning(itemrow);
-                        curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
-                        curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
-                        curExpandedPlay.classList.remove('bg_red');
-                        curExpandedPlay.classList.add('bg_green');
-                    }
-                else
-                    {
-                        // console.log('Dom item ' + index + ' was (' + CurrentConfig + ') not the same, so let it be...');
-                    }
-            })
-            EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-stoptext');
-            EXPANDEDPLAY.classList.remove('bg_green');
-            EXPANDEDPLAY.classList.add('bg_red');
-            itemrow.setAttribute('data-spx-onair','true');
-            itemrow.querySelector('[name="RundownItem[onair]"]').value='true';
-            itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playFalse');
-            itemrow.querySelector('[data-spx-name="icon"]').classList.add('playTrue');
-            // // reset update buttons
-            // itemrow.setAttribute('data-spx-changed','false');
-            // itemrow.querySelector('[data-spx-name="updatebutton"]').classList.add('disabled');
+    if ( CommandToExecute == 'play' ) {
+        // Convert button to STOP button and execute play command
+        // first we need to dim all other elements which are playing on same output channel / layer
+        // console.log('was stopped. so send PLAY and make button STOP');
+        let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
+        rows.forEach(function (item, index) {
+            let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
+            if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig )
+                {
+                    // console.log('Dom item ' + index + ' is the same, so dim it');
+                    item.setAttribute('data-spx-onair','false');
+                    item.querySelector('[name="RundownItem[onair]"]').value='false';
+                    item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+                    item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+                    CancelOutTimerIfRunning(itemrow);
+                    curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
+                    curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
+                    curExpandedPlay.classList.remove('bg_red');
+                    curExpandedPlay.classList.add('bg_green');
+                }
+            else
+                {
+                    // console.log('Dom item ' + index + ' was (' + CurrentConfig + ') not the same, so let it be...');
+                }
+        })
+        EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-stoptext');
+        EXPANDEDPLAY.classList.remove('bg_green');
+        EXPANDEDPLAY.classList.add('bg_red');
+        itemrow.setAttribute('data-spx-onair','true');
+        itemrow.querySelector('[name="RundownItem[onair]"]').value='true';
+        itemrow.querySelector('[data-spx-name="icon"]').classList.remove('playFalse');
+        itemrow.querySelector('[data-spx-name="icon"]').classList.add('playTrue');
+        // // reset update buttons
+        // itemrow.setAttribute('data-spx-changed','false');
+        // itemrow.querySelector('[data-spx-name="updatebutton"]').classList.add('disabled');
 
-        }
+    }
     
-    // finally show or hide delete buttons on all items
-    rows.forEach(function (item, index) {
-        if (item.getAttribute('data-spx-onair')=="true" )
-            {
-                //console.log('Hide delete buttons of ' + item.id);
-                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="hidden";
-                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="hidden";
-            }
-        else
-            {
+    if ( ife('identifier').value=="controller" ) {
+        // finally show or hide delete buttons on all items
+        rows.forEach(function (item, index) {
+            if (item.getAttribute('data-spx-onair')=="true" ) {
+                // console.log('Hide delete buttons of ' + item.id);
+                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="hidden" || (console.log('a'));
+                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="hidden" || (console.log('b'));
+            } else {
                 // console.log('Show delete buttons of ' + item.id);
-                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="visible";
-                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="visible";
+                item.querySelector('[data-spx-name="deletesmall"]').style.visibility="visible" || (console.log('c'));
+                item.querySelector('[data-spx-name="deletelarge"]').style.visibility="visible" || (console.log('d'));
             }
-    })
+        })
+    }
     return CommandToExecute
-}
-
-
-
-
+} // setItemButtonStates ended
 
 function post(path, params, method) {
     // Creates a hidden form in DOM, populates it and posts it to server.
@@ -1815,66 +1979,83 @@ function post(path, params, method) {
     form.submit();
 } // post ended
 
-
-
 function resizeInput() {
     // changes headline1 width
     this.style.width = (this.value.length + 1.2) + "ch";
 } // resizeInput ended
 
+async function revealItemID(button) {
+    let item = button.closest('.itemrow')
+    let ID = item.getAttribute('data-spx-epoch');
+    copyText(ID)
+    // alert("Item ID " + ID + " was copied to clipboard.");
+    var newID = prompt("Item ID " + ID + " was copied to clipboard.\nYou can change the ID here:", ID);
+    if (newID != null && newID != ID) {
+        // alert("New ID " + newID)
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemID?rundownfile=${file}&ID=${ID}&newID=${newID}`
+        let IDchanged
 
-function duplicateRundownItem(rowitem) {
-    if (!rowitem){
-        rowitem = getFocusedRow();
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item renamed to ' + newID + '. Reload recommended.')
+            item.setAttribute('data-spx-epoch', newID);
+            item.querySelector('.copyid').setAttribute('onmouseover', `tip('Copy ID ${newID}')`);
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to rename. Use unique ID and try again.', 'error')
+        });
+
+
+        // if (IDchanged) {
+        //     // success
+        //     item.setAttribute('data-spx-epoch', newID);
+        // } else {
+        //     alert("Unable to change ID to " + newID + " (" + IDchanged + ").\nMake sure the ID is unique and try again.");
+        // }
+    } else {
+        // alert("Same ID " + newID)
     }
+} // revealItemID
 
-    // Collect data for the server to duplicating the item
-    data={};
-    data.command       = "duplicateRundownItem";
-    data.sourceEpoch   = rowitem.getAttribute('data-spx-epoch');
-    data.cloneEpoch    = String(Date.now()); // create epoch and give this to server also
-    data.foldername    = document.getElementById('foldername').value;
-    data.listname      = document.getElementById('filebasename').value;
-    data.datafile      = document.getElementById('datafile').value;
-    
-    var newItem = rowitem.cloneNode(true);
-    newItem.style.opacity=0;
-
-    // update table id's for sorting to keep up. A bug found right after 1.0.12 was released.
-    updateFormIndexes()
-    rowitem.after(newItem);
-
-    let list = [
-        newItem.setAttribute('data-spx-epoch', data.cloneEpoch),
-        newItem.setAttribute('data-spx-onair', "false"),
-        newItem.querySelector('.copyid').setAttribute('onmouseover', 'tip("Duplicated item ' + data.cloneEpoch + '")'),
-        newItem.querySelector('[data-spx-name="icon"]').classList.add('playFalse'),
-        newItem.querySelector('[data-spx-name="playbutton"]').classList.add('bg_green'),
-        newItem.querySelector('[data-spx-name="icon"]').classList.remove('playTrue'),
-        newItem.querySelector('[data-spx-name="playbutton"]').classList.remove('bg_red'),
-        newItem.querySelector('[data-spx-name="playbutton"]').textContent = newItem.querySelector('[data-spx-name="playbutton"]').getAttribute('data-spx-playtext'),
-        rowitem.classList.remove('inFocus'),
-        newItem.classList.add('inFocus'),
-        newItem.style.opacity=1
-    ]
-
-    applyCommands(list);
-    working('Sending ' + data.command + ' request.');
-    ajaxpost('',data);
-
-    function applyCommands(list) {
-        // delay commands utility
-        let totalDelay = 0;
-        let stepDelay = 10;
-        list.forEach((item,index) => {
-            totalDelay += stepDelay;
-            setTimeout(function () { (item) }, totalDelay);
+async function revealItemTiming(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change timing here. Use 'manual', 'none' or millisecond values (1000=1s):", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=out&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item out mode changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=out]')[0].value = newValue;
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
         });
     }
+} // revealItemTiming
 
-} // duplicateRundownItem ended
-
-
+async function revealItemLayer(button) {
+    let curValue = button.textContent;
+    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
+    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 20:", curValue);
+    if (newValue != null && newValue != curValue) {
+        let file = document.getElementById('datafile').value;
+        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
+        axios.get(URL)
+        .then(function (response) {
+            showMessageSlider('Item webplay layer changed to ' + newValue)
+            button.textContent = newValue;
+            button.closest('.itemrow').querySelectorAll('input[id^=webplayout]')[0].value = newValue;
+            // document.querySelectorAll('.itemrow')[0].querySelectorAll('input[id^=out]')[0];
+        })
+        .catch(function (error) {
+            showMessageSlider('Unable to change value, please try again.', 'error')
+        });
+    }
+} // revealItemLayer
 
 function removeItemFromRundown(itemrow)
 {
@@ -1899,7 +2080,6 @@ function removeItemFromRundown(itemrow)
 
 } // removeItemFromRundown ended
 
-
 function updateFormIndexes() {
     // This needs to run whenever items are sorted or removed.
     // Sorting routine needs the IndexList for saving sorting to a file.
@@ -1914,9 +2094,14 @@ function updateFormIndexes() {
     });
     // console.log('New form list sort order before saving to file', IndexList);
     return IndexList
-}
+} // updateFormIndexes ended
 
-
+function rundownPopup(mode) {
+    // get current url
+    let url = window.location.href;
+    url = url + '/light'
+    window.open(url);
+} // rundownPopup ended
 
 function SaveNewSortOrder() {
     // This will save the rundown opened in SPX, for instance when
@@ -1929,8 +2114,6 @@ function SaveNewSortOrder() {
     ajaxpost('/gc/sortTemplates',data);
    
 } // SaveNewSortOrder ended
-
-
 
 function saveTemplateItemChanges(elementID) {
     // This is a utility function using Axios to POST
@@ -1996,8 +2179,6 @@ function saveTemplateItemChanges(elementID) {
       });
 } // saveTemplateItemChanges
 
-
-
 function saveTemplateItemChangesByElement(itemrow) {
     working('Saving changed data to server...');
     data={};
@@ -2051,9 +2232,21 @@ function saveTemplateItemChangesByElement(itemrow) {
       });
 } // saveTemplateItemChanges
 
-
-
-
+function showItemIDs(show=true) {
+    // Show item ID's in GUI
+    let rows = document.querySelectorAll('.itemrow');
+    rows.forEach((item,index) => {
+        if (show==true) {
+            item.querySelector('.utilityOverlay').classList.remove('hidden');
+            // document.getElementById('rundownInfoMessage').style='display:flex;';
+        } else if (show==false) {
+            item.querySelector('.utilityOverlay').classList.add('hidden');
+            // document.getElementById('rundownInfoMessage').style='display:none;';
+        } else {
+            item.querySelector('.utilityOverlay').classList.toggle('hidden');
+        }
+    });
+} // showItemIDs ended
 
 function setMasterButtonStates(itemrow, debugMessage='') {
     // this triggers when row focuses or when Play or Stop pressed or item changed.
@@ -2066,9 +2259,9 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 
     if (document.querySelectorAll('.itemrow').length<1){
         // no items on page, so disable buttons and bale out
-        TOGGLEBUTTON.classList.add('disabled'); 
-        UPDATEBUTTON.classList.add('disabled'); 
-        CONTINBUTTON.classList.add('disabled'); 
+        if (TOGGLEBUTTON) {TOGGLEBUTTON.classList.add('disabled')}; 
+        if (UPDATEBUTTON) {UPDATEBUTTON.classList.add('disabled')}; 
+        if (CONTINBUTTON) {CONTINBUTTON.classList.add('disabled')}; 
         return
     }
 
@@ -2098,14 +2291,15 @@ function setMasterButtonStates(itemrow, debugMessage='') {
 
 
     // UPDATE
-    UPDATEBUTTON.classList.add('disabled');            
-    if (chngd && onair)
-        {
-            setTimeout(function () {
-                UPDATEBUTTON.classList.remove('disabled');
-                itemrow.querySelector('[data-spx-name="updatebutton"]').classList.remove('disabled');
-            }, 2);
-        }
+    // Lines disabled in Pro 1.2.2 ==> 
+    // UPDATEBUTTON.classList.add('disabled');            
+    // if (chngd && onair)
+    //     {
+    //         setTimeout(function () {
+    //             UPDATEBUTTON.classList.remove('disabled');
+    //             itemrow.querySelector('[data-spx-name="updatebutton"]').classList.remove('disabled');
+    //         }, 2);
+    //     }
 
     // CONTINUE
     CONTINBUTTON.classList.add('disabled');
@@ -2133,7 +2327,6 @@ function setMasterButtonStates(itemrow, debugMessage='') {
         }
 } // setTGButtonStates ended 
 
-
 function hideMessageSlider() {
     if (!document.getElementById('messageSlider')) { return }
     anime({
@@ -2144,13 +2337,31 @@ function hideMessageSlider() {
         duration:       300,
         easing:         'easeInCubic'
     });
-}
+} // hideMessageSlider
 
 function showMessageSlider(msg, type='info', persist=false) {
     // show a sliding message at the top of the page
+    // type: happy, info, warn, error
+    // persist: if true, do not auto-hide
+    // Example usage in templates (or extensions, remember to
+    // add dom element:)
+    /*
+        <div id="messageSlider" style="opacity:0;"></div>
+    */
+    /*
+        top?.showMessageSlider?.('Hello graphics operator!', 'happy');
+    */
+
 
     let txt = msg;
     let typ = type; // happy, info, warn, error (classes happyMsg, infoMsg, warnMsg, errorMsg...)
+    let domElement
+    if (document.getElementById('messageSlider')) {
+            domElement = document.getElementById('messageSlider');
+    } else {
+        console.warn('SPX message: ' + msg);
+        return;
+    }
 
     switch (msg) {
         case 'invalidCSV':
@@ -2158,10 +2369,10 @@ function showMessageSlider(msg, type='info', persist=false) {
           typ = 'error'
       }
 
-    document.getElementById('messageSlider').innerHTML = txt;
-    document.getElementById('messageSlider').classList =  typ + 'Msg';
-    document.getElementById('messageSlider').style.transform = 'translateX(-50%)'; // init pos
-    document.getElementById('messageSlider').style.opacity = 0;
+    domElement.innerHTML = txt;
+    domElement.classList =  typ + 'Msg';
+    domElement.style.transform = 'translateX(-50%)'; // init pos
+    domElement.style.opacity = 0;
     anime({
         targets:        '#messageSlider',
         opacity:        [0,1],
@@ -2188,8 +2399,7 @@ function showMessageSlider(msg, type='info', persist=false) {
             easing:         'easeInCubic'
         });
     }, 2000);
-
-}
+} // showMessageSlider
 
 function spx_system(cmd,servername='') {
     // system command handler
@@ -2218,6 +2428,7 @@ function spx_system(cmd,servername='') {
             break;
 
         case 'CHECKCONNECTIONS':
+            console.log('Checking connections to servers...', servername);
             data.command = 'CHECKCONNECTIONS';
             data.server = servername;
             break;
@@ -2232,6 +2443,7 @@ function spx_system(cmd,servername='') {
             console.log('Unknown spx_system identifer: ' + cmd);
             break;
     }
+
     AJAXGET('/CCG/system/' + JSON.stringify(data));
     if (data.reloadPage) {
         document.getElementById('SmartPX_App').style.opacity = '0.4';
@@ -2239,31 +2451,46 @@ function spx_system(cmd,servername='') {
     }
 } // end spx_system
 
+function e(ID) {
+    return document.getElementById(ID);
+} // e
+
+function ife(ID) {
+    if (document.getElementById(ID)) {
+        // console.log('IFE Element found: ' + ID);
+        return document.getElementById(ID);
+    } else {
+        // console.log('IFE Element NOT found: ' + ID);
+        return false;
+    }
+} // ife
 
 function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2020-2023 Softpix Ltd  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
+    console.log('%c  SPX Graphics Controller (c) 2020- SPX Graphics  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
 
 
     // Init sortable and saveData onEnd
-    sortable = Sortable.create(itemList, {
-        handle: '.handle',
-        animation: 150,
-        disabled: false,
-        // sortable.option("disabled", true); // TAI false
-        onEnd: function (evt) {
-            SaveNewSortOrder();
-        },
-    });
+    if ( ife('identifier').value=="controller" ) {
+        sortable = Sortable.create(itemList, {
+            handle: '.handle',
+            animation: 150,
+            disabled: false,
+            // sortable.option("disabled", true); // TAI false
+            onEnd: function (evt) {
+                SaveNewSortOrder();
+            },
+        });
+    }
 
     focusRow(0);
     AppState("DEFAULT");
     spx_system('CHECKCONNECTIONS');
     document.getElementById('itemList').style.opacity=1;
-} // end spxInit
 
+} // end spxInit
 
 function setProfile(profileName) {
     // FIXME: remove?
@@ -2276,8 +2503,6 @@ function setProfile(profileName) {
     localStorage.SPX_CT_ProfileName = profileName;
 } // setProfile ended
 
-
-
 function statusbar(sMsg, sLevel="x") {
     /* Usage
         - statusbar('This is a normal message')
@@ -2285,6 +2510,7 @@ function statusbar(sMsg, sLevel="x") {
         - statusbar('Red alert', "error")
     */
 
+	if (!document.getElementById('statusbar')) { return } // not in controller				
    let msglevel = sLevel.toUpperCase();
    // console.log('statusbar level: [' + msglevel +'], msg: [' + sMsg + '].');
    document.getElementById('statusbar').classList="statusbar";
@@ -2297,10 +2523,8 @@ function statusbar(sMsg, sLevel="x") {
             break;
         }
     document.getElementById('statusbar').innerText=sMsg;
-  } // statusbar
+} // statusbar
 
-
- 
 function stopAll(){
     // Will send STOP commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
@@ -2309,15 +2533,13 @@ function stopAll(){
     // Function implemented in v1.0.8 from ExtraFunctions -library
     let ITEMS = document.querySelectorAll('.itemrow');
     ITEMS.forEach(function (templateItem, itemNro) {
-        // console.log('iterate row ' + itemNro);
         setTimeout(function(){ 
-            continueUpdateStop('stop', templateItem);
-            }, (itemNro * 20)); // 20, 40, 60, 80ms etc...
+            // continueUpdateStop('stop', templateItem); // slower
+            playItem(templateItem, 'stop'); 
+            // setItemButtonStates(templateItem, 'stop') // just the UI
+            }, (itemNro * 40)); // 20, 40, 60, 80ms etc...
         });
-    }
-
-
-
+} // stopAll
 
 function swap2HTMLntities(str){
     // This fixes issue #5 re special characters
@@ -2327,7 +2549,134 @@ function swap2HTMLntities(str){
     return str;
 } // end swap2HTMLntities
 
+function Test(routine) {
+    // execute a test function on the server
+    // this gets triggered by menu > ping
+    let data = {};
+    switch (routine) {
+        case 'A':
+            data.spxcmd     = 'loadTemplate';
+            data.layer      = '10';
+            data.template   = 'spxtestgrid.html';
+            socket.emit('SPXWebRendererMessage', data);
+            break;
 
+        case 'B':
+            data.spxcmd     = 'playTemplate';
+            data.layer      = '10';
+            socket.emit('SPXWebRendererMessage', data);
+            break;
+
+        case 'C':
+            data.spxcmd     = 'stopTemplate';
+            data.layer      = '10';
+            socket.emit('SPXWebRendererMessage', data);
+            break;
+
+
+        default:
+            console.log('Uknown Test', routine);
+        }
+} // Test ended
+
+function tip(msg) {
+    // request ..... 
+    // returns ..... 
+    // Describe the function here 
+    e = document.getElementById('statusbar') || null;
+    if (e) {
+        document.getElementById('statusbar').innerText=msg;
+        event.stopPropagation();
+        // playServerAudio('beep', 'We are in TIP function');
+    }
+} // tip mgsed
+
+function toggleAutoplay(slider, targ) {
+    let Cfgdata = {};
+    Cfgdata.key = 'autoplayLocalRenderer'
+    if (slider.checked) {
+        document.getElementById(targ).innerText = 'YES';
+        Cfgdata.val = true;
+    } else {
+        document.getElementById(targ).innerText = 'NO';
+        Cfgdata.val = false;
+    }
+    // console.log('Sending config change to server', Cfgdata);
+    ajaxpost('/gc/saveConfigChanges',Cfgdata);
+} // toggleAutoplay
+
+function toggleLRendererHandler(slider, targ) {
+    let Cfgdata = {};
+    Cfgdata.key = 'disableLocalRenderer'
+    if (slider.checked) {
+        document.getElementById(targ).innerText = 'YES';
+        document.getElementById('previewIF').src = '/templates/empty.html';
+        document.getElementById('LocalRendererDisabledNotification').style.opacity = 1;
+        Cfgdata.val = true;
+        
+    } else {
+        document.getElementById('previewIF').src = '/renderer';
+        document.getElementById(targ).innerText = 'NO';
+        document.getElementById('LocalRendererDisabledNotification').style.opacity = 0;
+        Cfgdata.val = false;
+    }
+    // console.log('Sending config change to server', Cfgdata);
+    ajaxpost('/gc/saveConfigChanges',Cfgdata);
+} // toggleLRendererHandler
+
+function toggleSwitchHandler(slider, targ, type) {
+    // When program/preview toggle buttons are clicked.
+    // console.log('toggleSwitchHandler', slider, targ);
+    let data    = {}
+    data.type   =  type;
+    let handle = slider.querySelector('.vc-handle');
+    if (slider.checked) {
+        data.command = 'open';
+        document.getElementById(targ).innerText = 'ON';
+    } else {
+        data.command = 'close';
+        document.getElementById(targ).innerText = 'OFF';
+    }
+    handleRendererPopups(data)
+} // toggleSwitchHandler
+
+function toggleRundownSettings() {
+    // Toggle the rundown settings panel
+    let optionsZone = document.getElementById('rdOptionsCollapsible');
+    if (optionsZone.style.maxHeight){
+        optionsZone.style.maxHeight = null;
+        setTimeout(function(){optionsZone.style.display = 'none';}, 300);
+      } else {
+        optionsZone.style.display = 'block';
+        optionsZone.style.maxHeight = optionsZone.scrollHeight + "px";
+      } 
+} // toggleRundownSettings
+
+function toggleTip(targetField, source, attr) {
+    document.getElementById(targetField).innerText = source.getAttribute(attr);
+} // toggleTip
+
+function toggleActive(ServerName='') {
+    // Will enable / disable commands to the server
+    // CCG/disable {server:'OVERLAY, disable:false}
+    let e = document.getElementById('server'+ ServerName);
+    let targetState = false;
+    if (e && e.classList.contains('disabledServer')) {
+        // Enable
+        e.classList.remove('disabledServer')
+        targetState = false
+    } else {
+        // Disable
+        e.classList.add('disabledServer')
+        targetState = true
+    }
+
+    let data = {};
+    data.server       = ServerName;
+    data.disabled     = targetState;
+    working('Changing server connection state to [' + targetState + ']...');
+    ajaxpost('/CCG/disable',data);
+} // toggleActive
 
 function ToggleExpand(rowelement='') {
     if (!rowelement){
@@ -2359,15 +2708,11 @@ function ToggleExpand(rowelement='') {
     }
 } // ToggleExpand
 
-
-
 function updateItem(itemrow) {
     // request ..... rundown template index
     // returns ..... ajax response message to GUI
     // Will send data object with an index and playlist filename
     // and playout handler will parse required data and so on. 
-
-    console.log('spxgc - updateItem()');
 
     if (!itemrow) {itemrow = getFocusedRow() }
 
@@ -2405,67 +2750,28 @@ function updateItem(itemrow) {
     ajaxpost('/gc/playout',data, 'true');
   } // updateItem
      
-
-
 function playServerAudio(sfx,message=''){
     console.log('%cPlaying sound (' + sfx + ') on server. Log: ' + message + '.', 'background: #622; color: #fff');
     data = {};
     data.sound = sfx;
     data.info  = message;
     ajaxpost('/gc/playaudio/', data)
-}
+} // playServerAudio
 
 
 
 function working(StatusMsg){
-    // console.log("[ " + StatusMsg + " ]");
+	if ( !document.getElementById('working') ) return ; // not in controller
     if (StatusMsg==""){
       document.getElementById('working').innerText="";
       document.getElementById('working').style.display="none";
-    }
-    else
-    {
+    } else {
       document.getElementById('working').innerText=StatusMsg;
       document.getElementById('working').style.display="inline-block";
     }
-  } //working
+} //working
 
-
-  function handleRendererPopups(data) {
-    // open / close renderer popups 
-    // data: {type:preview}
-    // Save to config.json general.renderer as "normal" (embedded inline renderer) or "popup" (floating window)
-    
-    let URL;
-    let socketData = {};
-    var w = 1280;
-    var h = 720;
-    var left = (screen.width/2)-(w/2);
-    var top = (screen.height/2)-(h/2);
-    var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
-
-    if (data.type==='preview') { URL = '/renderwindow/preview'; winRef = 'SPXpreviewWindow'} 
-    if (data.type==='program') { URL = '/renderwindow/program'; winRef = 'SPXprogramWindow'} 
-
-    if (data.command == 'open')  {
-        // open the popup
-        window.open(URL, winRef, OPT);
-    } 
-    
-    if (data.command == 'close')  {
-        // send message request to close the popup
-        // send message to close the window without prompts (closeprogram closepreview)
-        socketData.spxcmd = 'close' + data.type;
-        socket.emit('SPXWebRendererMessage', socketData);
-    }
-
-    if (data.type == 'program') {
-        toggleNormalRenderer(data.command)
-    }
-  }
-
-
-  function toggleNormalRenderer(cmd) {
+function toggleNormalRenderer(cmd) {
     // Added in 1.1.0
     // This [closing of popup] can happen in any SPX view,
     // not necessarily in the controller view...
@@ -2489,4 +2795,4 @@ function working(StatusMsg){
         document.getElementById('previewBG').style.display='block';
         document.getElementById('previewIF').src='/renderer';
     }
-  }
+} // toggleNormalRenderer

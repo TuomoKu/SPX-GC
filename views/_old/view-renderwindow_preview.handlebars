@@ -63,12 +63,18 @@
 
 
     function resizePreview() {
-        // renderer size set by SPX to {{width}}x{{height}}
-        let DefaultX = {{width}};
-        let DefaultY = {{height}};
+        // Preview renderer size set by SPX to {{width}}x{{height}}
+        let DefaultX = 1920; // Math always defaults to 16:9
+        let DefaultY = 1080;
 
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
         const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+        if (DefaultX.includes('vw')) {
+            // Responsive settings, use window size! Added in v1.3.0
+            DefaultX = vw;
+            DefaultY = vy;
+        }
 
         let Wpx = vw// document.getElementById('previewWidthRuler').offsetWidth;
         let Sca = Wpx/DefaultX;
