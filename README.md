@@ -4,9 +4,11 @@
 
 <br>
 
-Readme updated June 06 2024. 
+Readme updated July 01 2024. 
 
 >  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.3.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
+
+(2024-07-01: Please note, v.1.3.0 binaries have not been linked yet)
 
 <br>
 
