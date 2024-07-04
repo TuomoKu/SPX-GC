@@ -67,11 +67,9 @@ Please read the following list to get an overview of changes and improvements.
 - Some API calls fail if user/password is set in config.json (discovered by Brad). Text information is shown in the console to explain this issue.
 - In some situations rundown files may get corrupted, and there might be extra characters at the end of the JSON files. The user facing symptom is that rundown loads empty! This is easy to fix manually by editing the rundown file, but is very cumbersome and we are looking for a fix to this issue!
 
-- Binary packages v1.3.0:
-    [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.3/SPX_1_3_0_win64.zip),
-    [  Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.3/SPX_1_3_0_linux64.zip),
-        [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.3/SPX_1_3_0_macos64.zip)
 
+- For latest builds visit ▶ [spx.graphics/pricing](https://spx.graphics/download)
+    
 
 ## **1.2.1** (Sep 20 2023)
 - This patch fixes a bug in the example rundown file `HelloWorld/MyFirstRundown` that caused SPX server to hang when navigating off that rundown view. The bug does not effect any other created rundown files, but was annoying for first time users. 

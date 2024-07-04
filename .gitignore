@@ -30,6 +30,13 @@ desktop.ini
 config*.json
 static/*.json
 
+## Temp files or drafts
+zzz*.*
+ORG*.*
+
+## But do these
+!CONTRIBUTING.md
+
 
 ############################
 # UNWANTED GENERAL FOLDERS #
