@@ -56,7 +56,6 @@ module.exports = {
 
 
   playoutController: function (data){
-
     // We get data object which has
     // - data.command (ADD | STOP | UPDATE)
 

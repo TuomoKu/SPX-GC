@@ -1,15 +1,32 @@
   <div id="rdOptionsCollapsible">
     <div style="padding: 1.0rem; font-size: 0.9rem;">
 
-      <table style="width: 100%;" cellspacing="5" border="0">
+      <table style="width: 100%;" cellspacing="12" border="0">
         <tr>
-          <td width="30%">
+          <td width="20%" style="vertical-align: top;">
             <span class="spxConfigHead">Comment</span>
           </td>
           <td>
-            <input type="text" class="wide bg_grey15 RDoptionsText" value="{{comment}}" />
+            <input type="text" class="wide bg_grey15 RDoptionsText" value="{{comment}}" placeholder="Experimental feature" />
           </td>
         </tr>
+        <tr>
+          <td width="20%" style="vertical-align: top;">
+            <span class="spxConfigHead inlineHelp"
+                  onClick="help('lightmode');"
+                  onmouseover="tip('{{lang 'hover.help'}}');"
+                  >Light mode <i class="far fa-question-circle"></i></span>
+          </td>
+          <td class="spxConfigBody">
+            Light mode is an experimental, simplified version of the rundown, with less features
+            and it can be used for example on mobile devices or as a custom dock in OBS.<br>
+            <button class="btn ripple bg_blue"
+              style="margin-top: 0.5em; padding: 0.2em 1em;"
+              onClick="openLightModePanel();"
+            >Open panel</button>
+          </td>
+        </tr>
+        <!--
         <tr>
           <td width="30%">
             <span class="spxConfigHead">Lock rundown from</span>
@@ -26,6 +43,7 @@
              Dropdown [V]
           </td>
         </tr>
+        -->
       </table>
 
     </div>

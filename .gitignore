@@ -1,173 +1,88 @@
-############################
-# SmartPX's unwanted files #
-############################
-.vscode/
-.VSCodeCounter/
-node_modules/
-pkg-builds/
-zip_builds/
-ZIP_TEMP/
-Distro/
-bin/
-viz/
+##################
+# UNWANTED FILES #
+##################
+._*
+*.gz
+*.md
+*.7z
 *.mov
 *.mp4
 *.mp3
-SmartPX_log*.txt
-.env
-env.txt
-.log
-devnotes.txt
-DATAROOT_*
-
-# DATAROOT - Add just the DATAROOT/HelloWorld-project
-DATAROOT/*
-!DATAROOT/HelloWorld-project/
-
-# DEV FOLDERS and FILES
-DEV_*/**
-DEF_*/**
-config_*.json
-__env.json
-
-
-# ASSETS
-!ASSETS/
-ASSETS/*
-!ASSETS/excel/ticker/
-!ASSETS/templates/softpix/Template_Pack_1.1/*
-!ASSETS/csv/
-ASSETS/csv/*.csv
-# ASSETS/media/video/
-# ASSETS/media/e-urheilu/
-# ASSETS/media/images/hd/
-# ASSETS/media/images/bg/
-# ASSETS/media/images/demo/
-# ASSETS/media/images/logo/
-# ASSETS/media/images/hd_org/
-# ASSETS/media/images/bg_old/
-# ASSETS/media/images/logo_org/
-# ASSETS/media/images/smartpx_internal/
-# ASSETS/media/images/_*
-# ASSETS/template_stash/
-# ASSETS/templates_dev/
-# ASSETS/hot_or_not
-# ASSETS/xml/demo.xml
-# ASSETS/excel/tellyo/
-
-ASSETS_DEF/
-
-static/*.json
-
-
-
-
-
-#######################################
-# extensions and plugins are not public
-#######################################
-ASSETS/plugins/_*
-ASSETS/plugins/*kopio*
-#ASSETS/plugins/spxSocial
-#ASSETS/plugins/scoreboard
-#ASSETS/plugins/spxAnalytics
-#ASSETS/plugins/spxImagelist
-#ASSETS/plugins/spxLeaderboard
-#ASSETS/plugins/spxResultsboard
-#ASSETS/plugins/spxProjectLogger
-#ASSETS/plugins/spxResultsboard_4x
-#ASSETS/plugins/spxCasparCGMediaplayer
-
-
-#######################################
-# non-public templates
-#######################################
-# ASSETS/templates
-# ASSETS/templates/smartpx
-# ASSETS/templates/codetive
-# ASSETS/templates/smartpx_demo
-# ASSETS/templates/smartpx_internal
-# ASSETS/templates/smartpx/scoreboard
-# ASSETS/templates/softpix/*_old
-# ASSETS/templates/softpix/spxSocial/
-# ASSETS/templates/softpix/HIFK_Jumbo/
-# ASSETS/templates/softpix/techmahindra/
-# ASSETS/templates/softpix/SPX_GoogleMaps
-# ASSETS/templates/softpix/picturall_core_templates
-# ASSETS/templates/softpix/SPX_Speaker_Countdown/
-# ASSETS/templates/softpix/SPX_Speaker_Countdown_Lang/
-# ASSETS/templates/Tellyo/
-# ASSETS/templates/analogway/
-# ASSETS/templates/TechMahindra/
-# ASSETS/templates/community-creations/
-# ASSETS/templates/yle/
-# ASSETS/templates/Veikkaus/
-
-
-
-#######################################
-# extra functions
-#######################################
-ASSETS/ExtraFunctions/modules
-ASSETS/ExtraFunctions/smartpx_internal
-ASSETS/ExtraFunctions/spx_internal_demo_functions.js
-
-
-#######################################
-# misc stuff
-#######################################
-notes/
-notes2/
-cg20.*
-START_GC_IN_BACKGROUND.bat
-BUILD_PACKAGE*.BAT
-BUILD_A_ZIP_PACK.BAT
-SPX_STARTER_MENU.bat
-RUN_DEV_DEMOROOT.BAT
-config*.json
-README.pdf
-RELEASE_NOTES.pdf
-MILESTONES.txt
-ROADMAP_PRIVATE.md
-ROADMAP.md
-START_SPX.bat
-
-
-######################
-# OS generated files #
-######################
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-
-############
-# Packages #
-############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
+*.txt
 *.dmg
-*.gz
 *.iso
 *.jar
 *.rar
 *.tar
 *.zip
-RUN_DEV.lnk
-RUN_DEV.BAT
-api-tester.rest
-config_ORGjson
-TESTAUS_CHECKLIST.txt
-TODO.md
-
+*.log
+*.env
+*.bat
+*.lnk
+cg20.*
+*.rest
 env.json
-_env.json
+thumbs.db
+Thumbs.db
+*env.json
 .gitignore
+desktop.ini
+config*.json
+static/*.json
 
-ASSETS/default_assets.txt
+## Temp files or drafts
+zzz*.*
+ORG*.*
+
+## But do these
+!CONTRIBUTING.md
+
+
+############################
+# UNWANTED GENERAL FOLDERS #
+############################
+viz/
+bin/
+notes/
+notes2/
+Distro/
+DEV_*/**
+DEF_*/**
+.Trashes
+.vscode/
+ZIP_TEMP/
+DATAROOT*
+.DS_Store
+pkg-builds/
+zip_builds/
+kubernetes/
+node_modules/
+.VSCodeCounter/
+.Spotlight-V100
+CONTENT_REPOSITORIES*/**
+
+
+# IGNORE SPX DATAROOT
+# ...but allow specific files and folders for GitHub
+DATAROOT/*
+!DATAROOT/HelloWorld-project/
+
+
+# IGNORE SPX ASSETS
+# ...allow specific files and folders for GitHub
+ASSETS/
+!ASSETS/csv/csv-folder.md
+!ASSETS/excel/ticker/ticker_data_example.xlsx
+!ASSETS/templates/softpix/Template_Pack_1.1/*
+
+# ...allow some PLUGIN files for GitHub
+!ASSETS/plugins/lib
+!ASSETS/plugins/spxLinks
+!ASSETS/plugins/panicButton
+!ASSETS/plugins/animateAllOut
+
+# ..and include some PLUGIN files for GitHub
+!ASSETS/ExtraFunctions/modules
+!ASSETS/ExtraFunctions/spx_internal_demo_functions.js
+
+

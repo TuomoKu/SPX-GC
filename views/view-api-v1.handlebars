@@ -9,6 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPX API v1</title>
   <link rel="icon" type="image/png" href="/img/spx-gc.ico">
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
 
   <style>
 
@@ -55,7 +56,7 @@
     }
 
     .GET {
-      background-color: rgb(165, 165, 165);
+      background-color: rgb(148, 184, 198);
       width: 5em;
       text-align: center;
       font-size: 0.7em;
@@ -86,16 +87,46 @@
       padding: 0.1em 0.5em;
       border-radius: 0.1em;
     }
+
+    .info pre {
+      background-color: rgba(0,0,0,0.05);
+      margin: 0.2em;
+      padding: 1.0em;
+      border-radius: 0.5em;
+      border: none;
+      font-size: 1.1em;
+    }
   </style>
+
+
+  <script>
+    // let ipAddess = {{{getServerAddress}}};
+    function localhostToggle() {
+      // console.log("toggle", document.getElementById("useLocalhost").checked);
+      if (document.getElementById("useLocalhost").checked) {
+        ipAddess = "localhost:5656";
+      } else {
+        ipAddess = document.getElementById("currServerAddress").value;
+      }
+      document.querySelectorAll('.apiLink').forEach(function (el) {
+        el.innerHTML = el.innerHTML.replace(/http:\/\/[^\/]+/, "http://" + ipAddess);
+        let link = el.firstChild;
+        link.textContent = link.textContent.replace(/http:\/\/[^\/]+/, "http://" + ipAddess);
+      });
+    }
+
+  </script>
+
 </head>
 
 
 <body class="bg_body">
+  <input type=""hidden id="currServerAddress" value="{{{getServerAddress}}}">
   <H1>SPX Graphics / API v1</H1>
   <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); text-transform: uppercase;">SPX Host-ID: <B>{{{getHostID}}}</B></small>
   <BR>
   <BR>
-  <B>http/get</B> commands available for external systems to trigger SPX events.
+  <B>http/get</B> commands available for external systems to trigger SPX events. See also <a href="/osc">osc</a>.
   <BR>
   SPX will need to be open in a browser (in the same network as the server) for most of these to work.
   <br><br>
@@ -103,6 +134,8 @@
   <BR><BR>
   <small>Remember, SPX is primarily targeted to live, manually operated
   workflows and API allows only limited modifications of template data or other advanced procedures.</small>
+  <BR><BR>
+  <input  type="checkbox" id="useLocalhost" onchange="localhostToggle()"> Use "localhost" addresses in examples
   <BR><BR>
   
   {{#each functionList.sections}}
@@ -112,13 +145,24 @@
     <table class="api">
       {{#each commands}}
         <tr>
-          <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+          {{#ifValue method "POST"}}
+            <td class="apiLink" colspan="3">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</td>
+          {{else}}
+            <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+          {{/ifValue}}
         </tr>
         <tr>
           <td class="{{method}}">{{method}}</td>
           <td class="vers">{{vers}}</td>
-          <td class="info">{{info}}</td>
+          <td class="info">{{{info}}}</td>
         </tr>
+        {{#if code}}
+          <tr>
+            <td colspan="3" class="info">
+              <pre class="prettyprint lang-js">{{myStringify code}}</pre>
+            </td>
+          </tr>
+        {{/if}}
         <tr>
           <td colspan="3">&nbsp;</td>
         </tr>

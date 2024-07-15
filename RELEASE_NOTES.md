@@ -1,34 +1,77 @@
 
 # SPX Release Notes
-> Most recent updates are at the top.
+> Updated 2024-06-10<br>
+<small>Most recent updates are at the top.</small>
 
 <BR>
-
-## WORK IN PROGRESS
-
-> List updated Sept 05 2023
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
-**Completed items**:
-These items have been added to the source code but not yet released publicly.
-- (no changes after binary release)
+#### In the works...
+
+- Add several (not all) templates to a rundown at once
+- spxpack import/export
+- ctrl+drag rundown items to make them children
+- OSC implementation
+- Rundown Variables (does not remove prVar from profile if no users)
+
+<BR>
+<br>
+
+# Published releases
+
+
+## **1.3.0** (Jun 10 2024)
+ >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+
+ **Release description:**
+
+Version 1.2.1 has been very stable and is used in production in many places and we have collected a lot of feedback from users and version 1.3.0 is a big step forward with a lot of power-user features for production professionals, including workflow and system integration improvements, bug fixes, API changes and a long list of bug fixes.
+
+Please read the following list to get an overview of changes and improvements.
+
+
+**Changes**:
+- Improved API, documentation and response messages
+- Enabling **CAPS LOCK** will display rundown item's layers and other useful info
+- Added a feature to automatically play rundown items that were played before. This helps in synchronizing local renderer to better match with external output renderers. There is a config setting `general.autoplayLocalRenderer = true` to enable this. Disabled by default. Users can set this in Options panel under the local renderer.
+- Added `/allrundowns` endpoint to the API that returns all projects and their run
+- Added `/feedproxy` POST endpoint for supporting custom headers for outgoing GET requests
+- Added `/executeScript?file=<myScript.bat>` API endpoint for running scripts from `ASSETS/scripts` -folder
+- Added `rundown/json?project=<projectName>&rundown=<rundownName>` API endpoint that returns data from a given rundown
+- Added `rundown/json` POST API endpoint for saving (externally generated) rundown to a project
+- Added `invokeExtensionFunction?function=<function>&params=<args>` API endpoint for executing functions within extensions.
+- Added `getFileList?assetsfolder=<folder>` API endpoint for getting a list of files in `ASSETS/<folder>`
+- Added `saveCustomJSON` POST API endpoint for saving arbitrary JSON data to `ASSETS/json/<folder>/<file>`
+- Fixed a major bug in rundown caching mechanism when using `/controlRundownItemByID` API call. Cached rundown was conflicting with the API call. Manually triggering rundown items AND API calls could get cache to a broken state. Now these calls are identified better and the caching works more reliably. Enable `verbose` log level to observe the internal runtime logic.
+- Added support for timed "out" modes when using `controlRundownItemByID` or `directplayout` API endpoints.
+- Added `general.hideRendererCursor = true|false` setting to config.json 
+- Added new renderer size preset to App Config. Available options are now `HD, 4K, AUTO`. Autowide scales to full height and width of the output device. Please remember, this is just the renderer size. The templates loaded onto the renderer will need to support that size and/or aspect ratio as well. 
+- Improved UI scaling and main menu by making it scrollable
+- Improved Stop All -plugin reliability. (But it sh/could be re-written altogether)
+- Added project- and rundown name validations to user inputs (no special characters allowed)
+- Folders and files are sorted alphabetically (case insensitive) in template browser
+- Extra tabs added to template browser to SPX Store, Loopic and StreamShapers' Ferryman
+- Fixed a minor bug in detach/dock local renderer slider UI component
+- Ignore projects (folder names) that start with dot (.) or underscore (_)
+- Renderer url params are passed to individual layers for custom work
+- Added "custom content repository" detection to header (see source code for details)
+- Added `light` rundown mode (add `/light` to the end of rundown URL's). This is still an **experimental feature** and may have bugs.
+- Added default dataformat from `XML` to `JSON` at import (if not given)
+- Changed default webplayout layer from `-`  to `20` at import (if not given)
+- Binary packager pkg@5.8.0 replaced with `npm install -g @yao-pkg/pkg`
 
 <br>
 
-**Waiting**:
-- Rundown Variables (does not remove prVar from profile if no users)
-- Add all project templates to the rundown at once
-<BR>
+**Known Issues** (a.k.a bugs)
+- Some API calls fail if user/password is set in config.json (discovered by Brad). Text information is shown in the console to explain this issue.
+- In some situations rundown files may get corrupted, and there might be extra characters at the end of the JSON files. The user facing symptom is that rundown loads empty! This is easy to fix manually by editing the rundown file, but is very cumbersome and we are looking for a fix to this issue!
 
----
 
-<BR>
-
-Published releases:
+- For latest builds visit ▶ [spx.graphics/pricing](https://spx.graphics/download)
+    
 
 ## **1.2.1** (Sep 20 2023)
- >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - This patch fixes a bug in the example rundown file `HelloWorld/MyFirstRundown` that caused SPX server to hang when navigating off that rundown view. The bug does not effect any other created rundown files, but was annoying for first time users. 
 - Binary packages v1.2.1:
     [Windows](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_win64.zip),
@@ -38,7 +81,6 @@ Published releases:
 <br>
 
 ## **1.2.0** (Sep 05 2023)
- >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
 - Added "Several SPX Controllers are connected" warning to the user interface and a corresponding config entry `general.disableSeveralControllersWarning` 
 - Added "Disable Local Renderer" toggle to the UI and corresponding config entry `general.disableLocalRenderer`. This can come in handy when computer resources are limited.
 - Added support for API key in the config.json to allow external triggers only with matching `apikey` url parameter

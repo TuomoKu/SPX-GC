@@ -35,6 +35,15 @@
   <link rel="stylesheet" type="text/css" href="/css/toggle.css">
 
   <style>
+
+    #previewIF {
+      border: 0px solid yellow;
+    }
+
+    #previewBG {
+      border: 0px dashed orange;
+    }
+
     #colorPopup {
       position: absolute;
       top: 0;
@@ -97,6 +106,137 @@
       box-shadow: ;
     }
 
+  #rundownInfoMessage {
+    display: none; /* flex / controlled by JS logic */
+    width: 100%;
+    padding: 0.2em;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    background-color: rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.2em;
+  }
+
+  .utilityOverlay {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: flex-start;
+    backdrop-filter: blur(4px);
+    color: rgba(225, 225, 225, 0.752);
+    text-shadow: 1px 1px 1px rgb(0, 0, 0);
+    {{!-- background-color: rgba(52, 60, 68, 0.841); --}}
+    background-color: inherit;
+  }
+
+  .utilityOverlay:hover {
+    cursor: pointer;
+    background-color: rgba(0,0,0,0.5);
+  }
+
+  .utilitySection {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em 0.8em;
+    border-radius: 0.5em;
+  }
+  .utilitySection:nth-child(2) {
+    min-width: 12em;
+  }
+
+  .hoverable:hover {
+    transition: all 0.2s ease-in-out;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .utilityTitle {
+    font-size: 0.7em;
+  }
+
+  .utiliteValue {
+    font-size: 0.9em;
+    font-family: 'UI-Regular';
+  }
+
+  .utiliteValueBold {
+    font-size: 0.9em;
+    font-family: 'UI-Bold';
+  }
+
+  .utiliteValueLarge {
+    font-size: 1.5em;
+    font-family: 'UI-Light';
+    padding-right: 0.8em;
+    border-right: rgb(207, 207, 207) 1px solid;
+  }
+
+  .deleteItem {
+    top: 0.4em;
+    right: 0.4em;
+    opacity: 0.5;
+    z-index: 200;
+    {{!-- font-size: 0.5rem; --}}
+    position: absolute;
+    padding: 0.1rem;
+    border-radius: 0.2em;
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    border: 1px solid transparent;
+    transition: background-color opacity 0.2s ease-in-out;
+  }
+
+  .deleteItem:hover {
+    opacity: 1;
+    cursor: pointer;
+    background-color: black;
+    border: 1px solid transparent;
+    transition: background-color opacity 0.2s ease-in-out;
+  }
+
+  #loaderHolder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    z-index: 1000;
+    position: absolute;
+    align-items: flex-end;
+    justify-content: flex-start;
+    background-color: transparent;
+    border: 0px dotted white;
+  }
+
+  #loader {
+    width: 50%;
+    height: 1.0%;
+    left: -100%;
+    position: absolute;
+    background-color: rgba(40, 146, 19, 0.8);
+    animation: moveAcross 1s infinite linear;
+  }
+  @keyframes moveAcross {
+    0% {
+      transform: translateX(0vw);
+    }
+
+    100% {
+      transform: translateX(100vw);
+    }
+  }
+
+  .optionsButton {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  .optionsButton:active,
+  .optionsButton:hover {
+    color: white;
+  }
 
   </style>
 
@@ -119,6 +259,7 @@
   <input type="hidden" id="previewMode" value="{{previewMode}}">      <!-- previewMode (next/selected) -->
   <input type="hidden" id="assetsroot" value="{{assetsFolder}}">      <!-- used by file browser -->
   <input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
+  <input type="hidden" id="identifier" value="controller">            <!-- used by JS logic to identify view -->
 
   <div class="overlay" id="overlayTemplatePicker">
     <!-- This is the file browser modal overlay -->
@@ -136,7 +277,7 @@
         </table>
       </div>
 
-      <div class="modal_content content scroller">
+      <div class="content scroller">
           <div id="treeview" class="filebrowser" style="padding: 2em;">
 
 
@@ -198,6 +339,7 @@
             <TR><td>Shift + Space</td><td>Continue animation to next step.<BR><small>Support for next -command must be implemented in the template.</small></td></TR>
             <TR><td>F5</td>           <td>Send an instant update to the template (to fix typos, for instance).<BR><small>Support for update command must be implemented in the template.</small></td></TR>
             <TR><td>Esc</td>          <td>Stop all layers used by current rundown.</td></TR>
+            <TR><td>CapsLock</td>     <td>Show item overlays for quick info and for copying API commands quickly.</td></TR>
         </table>
       </div>
     </div>
@@ -231,20 +373,21 @@
               {{>rundownOptions comment=filedata.comment }}
             </div>
 
-            <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2;">
-
-
-
+            <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2; border-radius: 0.4em;">
 
               {{#if filedata.templates}}
                 <!-- // -->
               {{else}}
                 <div style="margin: 3%; padding: 2%; font-size: 0.7em; background-color: rgba(0,0,0,0.2); border-radius: 1em; text-align: center; opacity: 0.5;" >
                   <h2>Empty rundown</h2><BR>
-                  <P> Press 'F1' to open a list of useful keyboard shortcuts.<BR>Add templates to this rundown from + button below.</P>
+                  <P>
+                    Add templates to this rundown from + button below.<br>
+                    <small style="opacity: 0.3;">Press 'F1' to open a list of useful keyboard shortcuts.</small>
+                  </P>
                 </div> 
               {{/if}}
 
+              <!-- <div id="rundownInfoMessage" style="display:none;">CapsLock is on - showing item overlays.</div> -->
 
               <!-- RUNDOWN ITEMS aka TEMPLATES -->
               {{#each filedata.templates}}
@@ -270,27 +413,72 @@
                   <input type="hidden" name="rundownfile" value="{{../datafile}}">
                   <input type="hidden" name="TemplIndex"  value="{{@index}}">
 
-                  <div class="handle wide" id="item{{@index}}" style="padding: 6px; margin-bottom:5px; padding-left:12px; padding-bottom:12px;">
-
+                  <div class="handle wide" id="item{{@index}}" style="padding: 0px; margin-bottom:0px; padding-left:0px; padding-bottom:0px;">
                     <!-- COLLAPSED to small line-->
-                    <div id="Collapsed" style="position:relative;">
-                      <div style="position:absolute; right:10px; z-index:50; font-size:1.5em; top:0.6em;">
+                    <div id="Collapsed" style="position:relative; padding: 10px;">
+            
+                      <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="deleteItem fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
+
+                      <!-- UTILITY OVERLAY -->
+                      <div class="utilityOverlay hidden">
+
+                        <div  class="utilitySection "
+                              onClick="copyItemID('{{itemID}}');"
+                              onmouseover="tip('Copy play API command for ItemID: {{itemID}}');">
+                          <span class="utiliteValueLarge">{{webplayout}}</span>
+                        </div>
+
+                        <div  class="utilitySection hoverable"
+                              onClick="copyItemID('{{itemID}}', '');"
+                              onmouseover="tip('Copy ItemID [{{itemID}}]');">
+                          <span class="utilityTitle">ItemID</span>
+                          <span class="utiliteValueBold">{{itemID}}</span>
+                        </div>
+
+                        <div  class="utilitySection hoverable"
+                              onClick="copyItemID('{{itemID}}', 'play');"
+                              onmouseover="tip('Copy API command [item/play/{{itemID}}]');">
+                          <span class="utilityTitle">&nbsp;</span>
+                          <span class="utiliteValue">PLAY</span>
+                        </div>
+
+                        <div  class="utilitySection hoverable"
+                              onClick="copyItemID('{{itemID}}', 'stop');"
+                              onmouseover="tip('Copy API command [item/stop/{{itemID}}]');">
+                          <span class="utilityTitle">&nbsp;</span>
+                          <span class="utiliteValue">STOP</span>
+                        </div>
+
+                        {{#ifGreater steps 1}}
+                          <div  class="utilitySection hoverable"
+                                onClick="copyItemID('{{itemID}}', 'continue');"
+                                onmouseover="tip('Copy API command [item/continue/{{itemID}}]');">
+                            <span class="utilityTitle">&nbsp;</span>
+                            <span class="utiliteValue">CONTINUE</span>
+                          </div>
+                        {{/ifGreater}}
+
+                      </div>
+
+                      <div style="position:absolute;right:10px; z-index:50; font-size:1.5em; top:0.6em;">
 
                         <i id="playIcon{{@index}}" data-spx-name="icon" class="fas fa-play {{{playIconClass onair}}}"></i>
                         <!-- Normal play="fas fa-play", Auto play="far fa-play-circle" -->
                       </div>
                       <table class="wide" style="border-spacing: 2px; margin-top: 2px;">
                         <TR>
-                          <TD class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
+                          <TD colspan="2" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
                             <span><!--item {{@index}} &nbsp;&middot;&nbsp;-->{{{ nameFromTemplatePath relpath }}}
                               {{#if description}}
                               <span class="delim"></span> <span style="opacity:0.5;">{{description}}</span>
                               {{/if}}
                               </span>
                           </TD>
+                          <!--
                           <TD class="vtop aright spxTableHeadsmall">
                             <i id="deleteSmall{{@index}}" data-spx-name="deletesmall" class="fas fa-times" onClick="removeItemFromRundown(this.closest('.itemrow'));" onmouseover="tip('{{lang 'hover.delete'}}');"></i>
                           </TD>
+                          -->
                         </TR>
                       </table>
                       <div style="width:100%; " class="truncate">
@@ -301,7 +489,7 @@
                     </div>
 
                     <!-- EXPANDED to an editor -->
-                    <div id="Expanded" style="display: none;">
+                    <div id="Expanded" style="display: none; padding: 0px 8px 2px 8px;">
                       <table class="wide" style="border-spacing: 2px; margin-top:2px;">
                         <TR>
                           <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
@@ -639,8 +827,14 @@
                 <!-- GC ITEMS ENDED -->
 
 
-                <div class="wide" style="text-align: center; padding:0.5rem;">
-                  <button type="button" data-tooltip="{{lang 'hover.addrundownitem'}}" data-position="right center" class="addbtn bg_blue ripple" onClick="ModalOn('overlayTemplatePicker');" onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
+                <div class="wide" style="text-align: center; padding: 0.5em 1.0em;">
+                  <button type="button"
+                          data-tooltip="{{lang 'hover.addrundownitem'}}"
+                          data-position="right center"
+                          class="addbtn bg_blue ripple"
+                          onClick="ModalOn('overlayTemplatePicker');"
+                          style="padding: 0.05em 0.75em; border-radius: 0.2em;"
+                          onmouseover="tip('{{lang 'hover.addrundownitem'}}');">+</button> <!-- + Add Template To Rundown -->
                 </div>
             </div>
 
@@ -681,14 +875,6 @@
         </div>
 
 
-        <!-- TODO:
-          Add a fly-out menu to
-           * copy render address to streaming application
-           * detach the preview
-           * notify when used the first time 
-        -->
-
-
         <div class="right pM scroller">
 
           <!-- background: {{background}} -->
@@ -722,10 +908,17 @@
                   align-items:center;
                   background: transparent;
                   color: rgb(54, 54, 54);">Local SPX Renderer<br>DISABLED</div>
+
+            <div id="loaderHolder">
+              <div id="loader"></div>
+            </div>
+
             <iframe
-              width={{width}}
-              height={{height}} 
+              width="{{{localPreviewSize width}}}" 
+              height="{{{localPreviewSize height}}}"
               id="previewIF"
+              data-comment: "Here we had width: {{width}} and height {{height}}"
+
               {{#ifValue disableLRender "true"}}
                 src="/templates/empty.html"
               {{else}}
@@ -733,9 +926,10 @@
               {{/ifValue}}
               class="renderer"
               {{#if background}}
-              style="background-image: url('/{{background}}'); background-size: 100% 100%; position: absolute; top: 0; left: 0;"
+                style="background-image: url('/{{background}}'); background-size: 100% 100%; position: absolute; top: 0; left: 0;"
               {{/if}}
-              ></iframe>
+              onLoad="localRendererLoaded();"
+            ></iframe>
             
           </div>
 
@@ -754,7 +948,10 @@
               -->
               
 
-              <button id="localRendererCollapsiple" class="collapsibleZone {{{ GenerateLocalRendererOptions 'class' }}}" type="button">OPTIONS</button>
+              <button id="localRendererCollapsiple"
+                      class="collapsibleZone optionsButton {{{ GenerateLocalRendererOptions 'class' }}}"
+                      type="button"
+                      >OPTIONS</button>
 
               <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2); padding:0;">
 
@@ -805,105 +1002,119 @@
                 -->
                 
                 <div style="padding:10px;">
-                
-
-                <table style="width:100%;">
-                  <tr>
-                    <td width="60%" style="font-size: 0.7em;">Disable local renderer</td>
-                    <td width="20%" ALIGN="center">
-                      <div class="toggle-container">
-                        <label class="vc-switch">
-                        <input  id="toggleRendererWindowProgram"
-                                {{#ifValue disableLRender "true"}}
-                                  checked
-                                {{/ifValue}}
-                                type="checkbox"
-                                class="vc-switch-input"
-                                onClick="toggleLRendererHandler(this, 'toggleLRender');"/>
-                        <span id="recSlider" class="vc-switch-label"></span>
-                        <span class="vc-handle" id="toggleLRender">
-                            {{#ifValue disableLRender "true"}}
-                              YES
-                            {{else}}
-                              NO
-                            {{/ifValue}}
-                        </span>
-                        </label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr> 
-                    <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
-                      Popup renderer
-                    </td>
-                    <td width="20%" ALIGN="center">
-                      <div class="toggle-container">
-                        <label class="vc-switch">
-                        <input  id="toggleRendererWindowProgram"
-                                {{#ifValue renderer "popup"}}
-                                  checked
-                                {{/ifValue}}
-                                type="checkbox"
-                                class="vc-switch-input"
-                                onClick="toggleSwitchHandler(this, 'toggle1', 'program');"/>
-                        <span id="recSlider" class="vc-switch-label"></span>
-                        <span class="vc-handle" id="toggle1">
-                            {{#ifValue renderer "popup"}}
-                              ON
-                            {{else}}
-                              OFF
-                            {{/ifValue}}
-                        </span>
-                        </label>
-                      </div>
-                    </td>
-                    <td width="20%"  ALIGN="center" style="padding:0;">
-                      <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0; height: 1.7em;"
-                              class="btn bg_grey ripple"
-                              data-defaultTip = 'Program in a viewer'
-                              data-toggleText = 'Copy program output url'
-                              onmouseover="toggleTip('toggleInfo1', this, 'data-toggleText')"
-                              onmouseout ="toggleTip('toggleInfo1', this, 'data-defaultTip')"
-                              onclick = "copyRendererUrl()"
-                              ><i class="fas fa-clipboard"></i> URL</button>
-                    </td>
-                  </tr>
-                </table>
-
-                <table style="width:100%;">
-                  <tr> 
-                    <td width="60%" id="toggleInfo2" style="font-size: 0.7em;">
-                      Show preview viewer
-                    </td>
-                    <td width="20%" ALIGN="center">
-                      <div class="toggle-container">
-                        <label class="vc-switch">
-                        <input id="toggleRendererWindowPreview" type="checkbox" data-on="LOOP" data-off="OFF" class="vc-switch-input"  onClick="toggleSwitchHandler(this, 'toggle2', 'preview');"/>
-                        <span id="recSlider" class="vc-switch-label"></span>
-                        <span class="vc-handle" id="toggle2">OFF</span>
-                        </label>
-                      </div>
-                    </td>
-                    <td width="20%"  ALIGN="center" style="padding:0;">
+                  <table style="width:100%;">
+                    <tr>
+                      <td width="60%" style="font-size: 0.7em;">{{lang 'config.autoplay'}}</td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input  id="toggleRendererAutoplay"
+                                  {{#ifValue autoplayLocalRenderer "true"}}
+                                    checked
+                                  {{/ifValue}}
+                                  type="checkbox"
+                                  class="vc-switch-input"
+                                  onClick="toggleAutoplay(this, 'toggleAutoplaySwitch');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggleAutoplaySwitch">
+                              {{#ifValue autoplayLocalRenderer true}}
+                                YES
+                              {{else}}
+                                NO
+                              {{/ifValue}}
+                          </span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td width="60%" style="font-size: 0.7em;">Disable local renderer</td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input  id="toggleRendererWindowProgramMain"
+                                  {{#ifValue disableLRender "true"}}
+                                    checked
+                                  {{/ifValue}}
+                                  type="checkbox"
+                                  class="vc-switch-input"
+                                  onClick="toggleLRendererHandler(this, 'toggleLRender');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggleLRender">
+                              {{#ifValue disableLRender "true"}}
+                                YES
+                              {{else}}
+                                NO
+                              {{/ifValue}}
+                          </span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
+                        Popup renderer
+                      </td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input  id="toggleRendererWindowProgram"
+                                  {{#ifValue renderer "popup"}}
+                                    checked
+                                  {{/ifValue}}
+                                  type="checkbox"
+                                  class="vc-switch-input"
+                                  onClick="toggleSwitchHandler(this, 'toggle1', 'program');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggle1">
+                              {{#ifValue renderer "popup"}}
+                                ON
+                              {{else}}
+                                OFF
+                              {{/ifValue}}
+                          </span>
+                          </label>
+                        </div>
+                      </td>
+                      <td width="20%"  ALIGN="center" style="padding:0;">
                         <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0; height: 1.7em;"
-                              class="btn bg_grey ripple"
-                              data-defaultTip = 'Show preview viewer'
-                              data-toggleText = 'Copy preview output url'
-                              onmouseover="toggleTip('toggleInfo2', this, 'data-toggleText')"
-                              onmouseout ="toggleTip('toggleInfo2', this, 'data-defaultTip')"
-                              onclick = "copyRendererUrl(true)"
-                              ><i class="fas fa-clipboard"></i> URL</button>
-                    </td>
-                  </tr>
-                </table>
+                                class="btn bg_grey ripple"
+                                data-defaultTip = 'Program in a viewer'
+                                data-toggleText = 'Copy program output url'
+                                onmouseover="toggleTip('toggleInfo1', this, 'data-toggleText')"
+                                onmouseout ="toggleTip('toggleInfo1', this, 'data-defaultTip')"
+                                onclick = "copyRendererUrl()"
+                                ><i class="fas fa-clipboard"></i> URL</button>
+                      </td>
+                    </tr>
+                  </table>
 
-                <!--<table cellspacing="4" style="width: 100%; margin-top: 1em;">
-                  <tr>
-                    <td style="text-align: right; font-size: 0.7em; padding: 0.2em; background: rgba(0,0,0,0.1);">
-                      <span class="spxTableHeadsmall">Visit <a target="_spx" href="https://spx.graphics">SPX Store</a> for more.</span>
-                    </td>
-                  </tr>
-                </table>-->
+                  <table style="width:100%;">
+                    <tr> 
+                      <td width="60%" id="toggleInfo2" style="font-size: 0.7em;">
+                        Show preview viewer
+                      </td>
+                      <td width="20%" ALIGN="center">
+                        <div class="toggle-container">
+                          <label class="vc-switch">
+                          <input id="toggleRendererWindowPreview" type="checkbox" data-on="LOOP" data-off="OFF" class="vc-switch-input"  onClick="toggleSwitchHandler(this, 'toggle2', 'preview');"/>
+                          <span id="recSlider" class="vc-switch-label"></span>
+                          <span class="vc-handle" id="toggle2">OFF</span>
+                          </label>
+                        </div>
+                      </td>
+                      <td width="20%"  ALIGN="center" style="padding:0;">
+                          <button style="font-size: 0.7em; width:90%; font-family:UI-Regular; padding: 0.15em 0; height: 1.7em;"
+                                class="btn bg_grey ripple"
+                                data-defaultTip = 'Show preview viewer'
+                                data-toggleText = 'Copy preview output url'
+                                onmouseover="toggleTip('toggleInfo2', this, 'data-toggleText')"
+                                onmouseout ="toggleTip('toggleInfo2', this, 'data-defaultTip')"
+                                onclick = "copyRendererUrl(true)"
+                                ><i class="fas fa-clipboard"></i> URL</button>
+                      </td>
+                    </tr>
+                  </table>
 
                 </div>
               </div>
@@ -913,7 +1124,7 @@
           <HR id="previewWidthRuler"> <!-- ===========================================================  -->
 
           <div id="controllerPluginButtons" style="border:0px dashed yellow">
-            <!-- plugins zone -->
+            <!-- plugins zone, see hookLoadControllerPlugins -->
           </div>
 
           <!-- showExtras generated here. In future releases this may move to plugins -->
@@ -926,7 +1137,6 @@
     </div><!-- content end -->
 
 
-
     {{>footer}}
 </div><!-- wrapper end -->
   
@@ -936,6 +1146,23 @@
 
     // console.log('Init tooltip');
     var tooltip = new Tooltip();
+
+    function localRendererLoaded() {
+      // console.log('Local renderer loaded!');
+      document.getElementById('loaderHolder').style.display='none';
+      let AutoPlayEnabled = {{{autoplayLocalRenderer}}} || false;
+      if (AutoPlayEnabled) {
+        var items = document.querySelectorAll('[data-spx-onair]');
+        items.forEach((item, index) => {
+          if (item.getAttribute('data-spx-onair') == 'true') {
+            let itemID = item.getAttribute('data-spx-epoch');
+            playItemLocal(itemID);
+          }
+        });
+      } else {
+        // console.log('Autoplay disabled');
+      }
+    }
 
     function colorPicker(sourceButton, initialColor) {
       // Color picker
@@ -961,8 +1188,7 @@
 
     function pageInit() {
 
-
-     // COLLAPSIPLE HANDLERS
+      // COLLAPSIPLE HANDLERS
       var coll = document.getElementsByClassName("collapsibleZone");
       var i;
       for (i = 0; i < coll.length; i++) {
@@ -977,7 +1203,6 @@
         });
       }
 
-
       // Check msg from URL
       var url = new URL(window.location.href);
       var msg = url.searchParams.get("msg");
@@ -990,18 +1215,34 @@
       heartbeat(210); // page identifier
       spxInit('');
 
+    } // pageInit
+
+    function forceWM() {
+      // Force watermark when version is double clicked
+      var data = {};
+      data.spxcmd = 'forceWM';
+      socket.emit('SPXWebRendererMessage', data);
     }
 
     function resizePreview() {
-      let DefaultX = {{width}}  // 1920 by default;
-      let DefaultY = {{height}} // 1080 by default;
+      // Controller preview resize
+
+      let DefaultX = '{{width}}'; // 1920 by default;
+      let DefaultY = '{{height}}'; // 1080 by default;
+
+      if (DefaultX.includes('vw')) {
+          // Responsive settings, use window size! Added in v1.3.0
+          // console.log('Responsive settings, but forcing 16:9 in Controller');
+          DefaultX = '1920px';
+          DefaultY = '1080px';
+      }
+
       let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
-      let Sca = Wpx/DefaultX;
-      let Hpx = parseInt(DefaultY * Sca);
+      let Sca = Wpx/parseInt(DefaultX);
+      let Hpx = parseInt(parseInt(DefaultY) * Sca);
       document.getElementById('previewBG').style.width=Wpx+'px';
       document.getElementById('previewBG').style.height=Hpx+'px';
       document.getElementById('previewIF').style.transform="scale("+Sca+")";
-      //document.getElementById('previewBG').style.display='block';
       document.getElementById('previewBG').style.opacity=1;
       document.getElementById('controllerFunctionsZone').style.opacity=1;
       // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
@@ -1010,7 +1251,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       // added in 1.1.1 - UX is greatly improve with this change
       //                  compared to previously used onload event
-      // console.log('DOMContentLoaded')
       pageInit();
     })
 
@@ -1020,6 +1260,7 @@
         data.name   = 'SPX_CONTROLLER'; // <---- Name of this socket connection
         socket.emit('SPXMessage2Server', data);
     });
+    
 
 
 

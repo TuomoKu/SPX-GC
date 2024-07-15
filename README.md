@@ -4,9 +4,11 @@
 
 <br>
 
-Readme updated Sept 20 2023. 
+Readme updated July 01 2024. 
 
->  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.2.1** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
+>  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.3.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
+
+(2024-07-01: Please note, v.1.3.0 binaries have not been linked yet)
 
 <br>
 
@@ -23,7 +25,8 @@ See the website ▶  **[spx.graphics](https://spx.graphics)**
 
 
 ### Table of Contents
-- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive)
+
+- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive) 
 - [Screenshots](#screenshots)
 - Install [pre-built packages](#builds) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
 - [Run multiple instances](#multipleinstances)
@@ -35,6 +38,7 @@ See the website ▶  **[spx.graphics](https://spx.graphics)**
 - [HTML templates](#templates) and [template definition](#templatedefinition)
 - [Custom controls](#projectextras) and [Plugins](#plugins)
 - [Using SPX with OBS (or vMix, Wirecast, XSplit...)](#streaming)
+- [SPX Server and https protocol ](#https)
 - [Control with external devices (Stream Deck etc)](#controlApi)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
@@ -49,9 +53,9 @@ Software is based on a NodeJS server and can be run on Windows, Mac or Linux com
 
 Graphic templates are typical HTML templates used with CasparCG and other HTML compatible renderers. Integrating existing templates with SPX is done by adding _a template definition_ (javascript-snippet) to them.
 
-Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://www.yle.fi), a public broadcaster in Finland. The first version was released in September 2020. Thanks **Markus Nygård** for the challenge! 🤘
+Originally SPX was developed for [YLE](https://www.yle.fi), a public broadcaster in Finland. The first version was released in September 2020. Thanks **Markus Nygård** and **Martin Huldin** for the challenge! 🤘
 
-> If you need custom graphics or systems integration please [the website](https://spx.graphics/contact).
+> If you need custom graphics or workflows, please [contact us](https://spx.graphics/contact).
 
 ---
 
@@ -59,7 +63,9 @@ Originally SPX was developed by [SmartPX](https://smartpx.fi) for [YLE](https://
 
 <a id="demo"></a>
 ## Live demo 🔥
-Live SPX demo in the cloud: **http://demo.spx.graphics:5000**
+~~Live SPX demo in the cloud: **http://demo.spx.graphics:5000**~~
+
+🔴 _Live demo is OFFLINE at the moment._
 
 > Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
 
@@ -201,12 +207,14 @@ pm2 kill
 
 ---
 # First launch <a id="firstlaunch"></a>
-* Open web browser (such as Chrome) and load SPX gui from url shown in the console at the start-up:
+* When the app is started the very first time a default browser is launched with SPX user interface open
+* In the subsequent server starts use a web browser (such as Chrome) and load SPX gui from URL shown in the console at the start-up.
+* With `general.launchBrowser = true` flag the browser can be opened every time automatically. This is set to false by default.
 ```
---------------------------------
-  SPX url:
-  http://127.0.0.1:5656
---------------------------------
+  ╭───────────────────────────╮
+  │ Open SPX in a browser:    │
+  │ http://127.0.0.1:5656     │
+  ╰───────────────────────────╯
 ```
 > Port 5656 is the default value in config and can be changed.
 
@@ -276,14 +284,14 @@ An example `config.json` of the SPX server
     "hostname": "My main machine",
     "langfile": "english.json",
     "loglevel": "info",
-    "logfolder": "X:/GC-DEV/LOG/",
+    "logfolder": "X:/SPX/LOG/",
     "port": "5656",
-    "dataroot": "X:/DATAROOT/",
+    "dataroot": "X:/SPX/DATAROOT/",
     "templatesource": "spx-ip-address",
     "preview": "selected",
     "renderer": "normal",
     "resolution": "HD",
-    "launchchrome": false,
+    "launchBrowser": false,
     "disableConfigUI": true,
     "apikey": "",
     "disableLocalRenderer": false,
@@ -351,9 +359,15 @@ An example `config.json` of the SPX server
 * `normal` an inline renderer view
 * `popup` renderer in a floating window "popup" (notice, it is possible that popup blocker prevent this from working as expected)
 
+**`general.resolution`** Version 1.3.0 introduced a new option for affecting output from SPX. Please note this is the renderer viewport size, templates will *also* need to support set size and aspect ratio. Most templates are implemented, or optimized, for 16:9 aspect ratio and 1920x1080 output size.
+
+* `HD` = 1920 x 1080 pixels (16:9)
+* `4K` = 3840 x 2160 pixels (16:9)
+* `AUTO` = Full output height and width of the browser viewport rendering the template. Please note most SPX templates are prepared for 16:9 HD output and if using other sizes, this may require changes in the template sizing and layout properties. Typically used term for these kind of HTML layouts is "responsive design".
+ 
 <a id="locales"></a>**`general.langfile`** is a file reference in `locales`-folder for a JSON file containing UI strings in that language. Folder is scanned at server start and files are shown in the configuration as language options. There are some hardcoded strings in the UI still which are gradually improved. Some texts are "user settings" (plugin and extension UI texts, template instructions) and cannot be added to the locale strings.
 
-<img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you want to add your own language you have to options: You can copy an existing file to another name and modify it's contents or better yet: make a copy of a [Google Sheet language document](https://docs.google.com/spreadsheets/d/1I5sJW1vTCpBe2WyqxUxl42Lyc6tsYf0-VbiDFIgsnvA/edit#gid=1071261648) of locale strings and use that to create the locale file. You can also **contribute** to the project by submitting your language back to the project. See the Google Sheet for instructions.
+<img src="https://static.thenounproject.com/png/1713999-200.png" align="right" width="50" style="vertical-align:middle;margin-right:10px; margin-top:10px">If you are interested in translating SPX user interface to your local language please see [SPXLocaleEditor](https://github.com/TuomoKu/SPXLocaleEditor) repository for a browser based utility for modifying locale-files.
 
 Localization credits:
 | Language | Contributor | Bundled in version |
@@ -361,6 +375,8 @@ Localization credits:
 |  Dutch | Koen Willems, Netherlands | v1.0.12 |
 |  Chinese | Anosi Wang, China | v1.1.0 |
 |  Swedish | Christina F., Finland | v1.1.2 |
+|  Portuguese | Joao M., Portugal | v1.1.2 |
+|  Japanese | Masakazu Nakano, Japan | v1.3.0 |
 
 <BR>
 
@@ -403,20 +419,22 @@ Template requests CasparCG server [SERVERNAME] but a server by that name was not
 # Renderer parameters <a id="renderer"></a>
 SPX renderer is at `/renderer` URL and it supports additional parameters for specialized workflows. In a typical use (such as 16:9 single renderer production) these can be safely ignored.
 
-| Parameter | Datatype | Example |
-|  ------ | ----- | ----- |
+| Parameter | Datatype | Example | Remark
+|  ------ | ----- | ----- | ---- |
 |  `layers` | Array of numbers | `[1,2,3,4,20]` |
 |  `preview` | Boolean | `true` |
-|  `width` | integer | `1920` |
-|  `height` | integer | `1080` |
-|  `fps` | number | `50` or `29.97` |
+|  ~~`width`~~ | ~~integer~~ | ~~`1920`~~ | Removed in 1.3.0
+|  ~~`height`~~ | ~~integer~~ | ~~`1080`~~ | Removed in 1.3.0
+|  `fps` | number | `50` or `29.97` | Value is passed to templates but none of the official templates uses this property at all.
 
 An example renderer URL for _"a vertical HD-Ready screen, showing only layers 2 and 3 and at 15 fps refresh rate"_.
 
 ```
-renderer/?width=768&height=1366&layers=[2,3]&preview=false&fps=15
+renderer/?width=768&height=1366&layers=[2,3]
 ```
-**PLEASE NOTE:** `fps` parameter value is stored to `window.top.spxRenderer.fps` -global variable of the renderer and it's utilization requires support from the templates themselves. See the _Google Sheet Ticker_ -template for an example of this.
+**PLEASE NOTE:** `fps` parameter value is stored to `window.top.spxRenderer.fps` -global variable of the renderer and it's utilization requires support from the templates themselves. This value IS NOT USED by any templates at the moment developed by SPX Graphics. 
+
+**PLEASE NOTE:** `width` and `height` parameters were removed in v.1.3.0 as Application Configuration now supports `AUTO` sizing mode that will adjust renderer size to match dimensions of the holding viewport, such as `browser size` settings in OBS or similar software.
 
 <br>
 
@@ -613,7 +631,7 @@ Another approach is to copy the templates to **both locations** but this can bec
 
 TemplateDefinition configures how a template is supposed to work within SPX; what kinds of controls are shown to the operator and how the graphic should playout, on which server and layer for instance. These values are template's `defaults` and can be changed in the Project Settings view after the template is added to the project.
 
-
+Theoretically all properties are optional, but it's recommended most properties, especially playout layers, are carefully given to prevent clashes during playout.
 
 > See details about supported values below the snippet.
 
@@ -729,9 +747,9 @@ TemplateDefinition configures how a template is supposed to work within SPX; wha
   * `none` play only. Suitable for wipes / bumpers
   * `[numeric]` milliseconds until STOP is executed
 * **steps**: how many phases in animation? For normal in-out templates this is 1. For templates with 2 or more steps the _Continue_ button gets enabled.
-* **dataformat**: how template is expecting data
-    - `xml` the default
-    - `json` used in some special templates
+* **dataformat**: how template logic is expecting data
+    - `json` the default value (from 1.2.2)
+    - `xml` for compatibility with older CasparCG templates
 * **ftypes**
     -  _ftypes_ (for field types) define template's GUI controls in SPX controller
     - the values of first two fileds are used as content preview in the rundown, so the order of fields should be considered for the ease of use
@@ -770,6 +788,16 @@ If you have several inputs (for instance for multiple presenters) you can limit 
 ```
 http://localhost:5656/renderer/?layers=[2,4,20]
 ```
+
+See [Youtube video](https://www.youtube.com/watch?v=YwXYWadiFoE) on using SPX with OBS.
+
+<br>
+
+----
+# SPX with https protocol <a id="https"></a>
+Originally SPX was designed for local, on-site installation and usage, but more and more production is done via the cloud where a secure data transfer and the use of https protocol is a must. SPX can work with https, but it will require a bit of setup.
+
+Please read our Knowledge Base [article about https with SPX Server](https://spxgc.tawk.help/article/https-protocol).
 
 ----
 # Control SPX with external devices such as Elgato Stream Deck... <a id="controlApi"></a>
@@ -833,7 +861,7 @@ Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.
 ----
 
 # MIT License <a id="license"></a>
-Copyright 2020-2023 Tuomo Kulomaa <tuomo@softpix.io> & [Softpix Ltd](http://softpix.io) 
+Copyright 2020-2023 Tuomo Kulomaa <tuomo@softpix.io> & [SPX Graphics](http://spx.graphics) 
 
 This project is licensed under the terms of the MIT license.
 See [LICENSE.txt](LICENSE.txt)

@@ -172,6 +172,7 @@
                 <input type="text" class="wide bg_grey15 cfg" placeholder="port" name="general[port]" value="{{config.general.port}}">
               </td>
             </tr>
+
             <tr onmouseover="tip('{{lang 'hover.dataroot'}}');">
               <td>
                 <span class="spxConfigHead">{{lang 'config.dataroot'}} *</span>
@@ -180,6 +181,7 @@
                 <input type="text" class="wide bg_grey15 cfg" placeholder="Dataroot folder" name="general[dataroot]" value="{{config.general.dataroot}}">
               </td>
             </tr>
+
             <tr onmouseover="tip('{{lang 'hover.preview'}}');">
               <td class="vtop">
                 <span class="spxConfigHead">{{lang 'config.preview'}}</span>
@@ -194,36 +196,35 @@
                 </P>
               </td>
             </tr>
+            
+            <tr onmouseover="tip('Should local renderer play items to match the rundown state?');">
+              <td class="vtop">
+                <span class="spxConfigHead">Local renderer autoplay</span>
+              </td>
+              <td>
+                <select class="wide drop bg_grey15" name="general[autoplayLocalRenderer]">
+                  <option value="true" {{#ifValue config.general.autoplayLocalRenderer "true"}}selected{{/ifValue}}>Play (if saved state is playing)</option>
+                  <option value="false" {{#ifValue config.general.autoplayLocalRenderer "false"}}selected{{/ifValue}}>Do nothing</option>
+                </select>
+                </P>
+              </td>
+            </tr>
+
             <tr onmouseover="tip('{{lang 'hover.resolution'}}');">
               <td class="vtop">
                 <span class="spxConfigHead">{{lang 'config.resolution'}}</span>
               </td>
               <td>
                 <select class="wide drop bg_grey15" name="general[resolution]">
-                  <!-- error, warn, info, verbose, debug -->
-                  <option value="HD" {{#ifValue config.general.resolution "HD"}}selected{{/ifValue}}>HD (1080p)</option> <!-- this is the default -->
-                  <option value="4K" {{#ifValue config.general.resolution "4K"}}selected{{/ifValue}}>4K (2160p)</option>
+                  {{{generateResolutionOptions config.general.resolution}}}
                 </select>
-                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;"><small>
-                  {{lang 'config.resolutioninfo'}}
+                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;">
+                  <small>
+                    {{lang 'config.resolutioninfo'}}
                   </small>
                 </P>
               </td>
             </tr>
-            <!-- Removed in 1.1.2
-            <tr onmouseover="tip('{{lang 'hover.htmlfolder'}}');">
-              <td width="40%" class="vtop">
-                <span class="spxConfigHead">{{lang 'config.templateroot'}} *</span>
-              </td>
-              <td>
-                <input type="text" class="wide bg_grey15 cfg" placeholder="Template folder for browsing" name="general[templatefolder]" value="{{config.general.templatefolder}}">
-                <P class="spxConfigHead" style="white-space: normal; line-height: 100%; opacity:0.5; margin-top: 0.2em; margin-bottom: 0.6em;"><small>
-                 {{lang 'config.templatepathinfo'}}
-                  </small>
-                </P>
-              </td>
-            </tr>
-            -->
 
 
             <!-- external audio player is disabled:

@@ -1,53 +1,180 @@
 <!-- This is the file browser modal overlay (used by view-showconfig) -->
-<div class="overlay" id="fileoverlay" id="filebrowserModal">
+<div class="overlay" id="fileoverlay" idzzz="filebrowserModal">
+
    <div class="modal wrapper">
-    <div class="modal_top height4">
-      <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
-        <tr style="background-color: rgba(255,255,255,0.2);">
-          <td valign="middle" style="font-size: 0.8em;">
-            &nbsp;{{lang 'pagetitle.selectemplate'}}
-          </td>
-          <td valign="middle" class="aright">
-            <i style="font-size: 1.5em; cursor: pointer;" class="fas fa-window-close" onClick="ModalOff('fileoverlay')"></i>&nbsp;
-          </td>
-        </tr>
-      </table>
-      <div class="curfolder" id="curfolder"></div>
+
+    <div class="dialogHeaderBar" >
+      <div>{{lang 'pagetitle.selectemplate'}}</div> 
+      <div class="dialogHeaderBarClose">
+        <i class="fas fa-window-close dialogCloseButton" onClick="ModalOff('fileoverlay')"></i>
+      </div>
     </div>
 
-    <div class="modal_content content scroller">
-        <div id="treeview" class="filebrowser">
-            <UL>
-              <LI style="user-select: none;" id="homefolder" class="filebrowser_up" onDblClick="goHome();"><SPAN class="icon home"></i>{{lang 'general.home'}}</SPAN></LI>
-              <LI style="user-select: none;" id="prefolder" class="filebrowser_up" onDblClick="goUp();"><SPAN class="icon back">{{lang 'general.up'}}</SPAN></LI>
-            </UL>
-            <UL id="folderList">
-            </UL>
-            <UL id="fileList">
-            </UL>
+    <div class="tabButtonRow" id="AddTemplatesTabBar">
+      <button onclick="AddTemplatesTab(1)" id="tabBtn1" class="tablinks tabSelected" >Installed templates</button>
+      <div>
+        <button onclick="AddTemplatesTab(2)" id="tabBtn2" class="tablinks">SPX Store</button>
+        <button onclick="AddTemplatesTab(3)" id="tabBtn3" class="tablinks">Loopic</button>
+        <button onclick="AddTemplatesTab(4)" id="tabBtn4" class="tablinks">Ferryman</button>
+      </div>
+    </div>
+
+    <div id="tab1">
+      <div class="modal_top">
+        <div class="curfolder" id="curfolder"></div>
+      </div>
+
+      <div class="scroller filebrowser">
+        <UL>
+          <LI style="user-select: none;" id="homefolder" class="filebrowser_up" onDblClick="goHome();"><SPAN class="icon home"></i>{{lang 'general.home'}}</SPAN></LI>
+          <LI style="user-select: none;" id="prefolder" class="filebrowser_up" onDblClick="goUp();"><SPAN class="icon back">{{lang 'general.up'}}</SPAN></LI>
+        </UL>
+        <UL id="folderList">
+        </UL>
+        <UL id="fileList">
+        </UL>
+      </div>
+
+      <div class="modal_bottom">
+        <div class="storeIcon"
+          onmouseover="showMessage('Visit SPX Store for more templates')"
+          onclick="window.open('https://spx.graphics/store', '_blank');"
+          ></div>
+        <div style="flex-grow: 1;" >
+          <span id="browserMessage" class="browserMessage"></span>
         </div>
+        <div>
+          <button class="btn bg_grey15 ripple"  onClick="ModalOff('fileoverlay')">{{lang 'button.cancel'}}</button>
+          <button style="opacity:0.2;" id="btnChooseTemplate" class="btn bg_blue ripple"  onClick="openSelectedFiles();">{{lang 'button.selectemplate'}}</button>
+          <button class="spxformtext btn bg_blue ripple"
+                  onClick="toggleAll();"
+                  id="allToggle"
+                  data-all-label={{lang 'general.all'}}
+                  data-none-label={{lang 'general.none'}}
+                  >{{lang 'general.all'}}</button>
+        </div>
+      </div>
     </div>
 
-    <div class="modal_bottom">
-          <div class="storeIcon"
-            onmouseover="showMessage('Visit SPX Store for more templates')"
-            onclick="window.open('https://spx.graphics/store', '_blank');"
-            ></div>
-          <div style="flex-grow: 1;">
-            <span id="browserMessage" class="browserMessage"></span>
+
+    <div style="display: none;" id="tab2">
+      <div class="promoBox">
+        <div class="promoBoxCols">
+          <div class="promoLeft">
+            <div class="promoBoxHead">More graphics and plugins</div>
+            <p>
+              SPX Store is SPX Graphics' official Store for free and premium SPX
+              templates and application extensions.</p>
+            <br>
+            ▶ <a href="https://spx.graphics/store" target="store">spx.graphics/store</a>
+            <br>
+            <h2>Creative Services</h2>
+            <p>
+              SPX Graphics offers creative services for businesses.
+              Our team of designers and developers
+              can help you with your next project. 
+            </p>
+            <br>
+            <ul>
+              <li>Custom templates and Extensions</li>
+              <li>Workflow development</li>
+              <li>System integrations</li>
+              <li>SLA and Support</li>
+            </ul>
+            <br>
+            ▶ <a href="https://spx.graphics/contact" target="_blank">Get in touch</a>
+
+
           </div>
-          <div>
-            <button class="btn bg_grey15 ripple"  onClick="ModalOff('fileoverlay')">{{lang 'button.cancel'}}</button>
-            <button style="opacity:0.2;" id="btnChooseTemplate" class="btn bg_blue ripple"  onClick="openSelectedFiles();">{{lang 'button.selectemplate'}}</button>
-            <button class="spxformtext btn bg_blue ripple"
-                    onClick="toggleAll();"
-                    id="allToggle"
-                    data-all-label={{lang 'general.all'}}
-                    data-none-label={{lang 'general.none'}}
-                    >{{lang 'general.all'}}</button>
+          <div class="promoRight">
+            <img src="/img/SPXstore600_2023_240px.png" alt="SPX Store" title="SPX Store">
+            <a href="/img/promo-store.png" target="_blank">
+              <img src="/img/promo-store.png"
+                  alt="SPX Store screenshot"
+                  border=0>
+            </a>
           </div>
-        </tr>
-      </table>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <div style="display: none;" id="tab3">
+            <div class="promoBox">
+        <div class="promoBoxCols">
+          <div class="promoLeft">
+            <div class="promoBoxHead">HTML animation tool</div>
+            <p>
+              Create SPX templates with a browser based animation tool.
+            </p>
+            <p>
+              Loopic supports SPX template definition and generated templates
+              are stored straight into SPX template folder, so you can go
+              on-air instantly.
+            </p>
+            <br>
+            ▶ <a href="https://app.loopic.io" target="loopic">Start Loopic</a>
+            <br>
+            <br>
+            <p>
+              Resources:<br>
+              ▶ <a href="https://docs.loopic.io/user-guide" target="ldocs">User Guide</a><br>
+              ▶ <a href="https://spxgc.tawk.help/article/templates-from-loopic" target="ldocs">SPX templates using Loopic</a>
+            </p>
+
+          </div>
+          <div class="promoRight">
+            
+            <img src="/img/LoopicLogov2White.svg" alt="Loopic logo">
+            <br><br>
+            <a href="/img/LoopicSPXScreenshot.png" target="_blank">
+              <img src="/img/LoopicSPXScreenshot.png"
+                  alt="Loopic screenshot"
+                  border=0>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: none;" id="tab4">
+            <div class="promoBox">
+        <div class="promoBoxCols">
+          <div class="promoLeft">
+            <div class="promoBoxHead">SPX templates from After Effects</div>
+            <p>
+            StreamShapers' Ferryman enables graphic designers to transform their creative
+            ideas from animated Lottie files from Adobe After Effects into dynamic HTML templates
+            without any need for HTML, CSS, or JavaScript development.
+            </p>
+            <p>
+            Ferryman supports SPX template definition, allowing the generated templates to be
+            seamlessly integrated into SPX for instant playback!</p>
+            <br>
+            ▶ <a href="https://www.ferryman.streamshapers.com/" target="ferryman">ferryman.streamshapers.com</a>
+            <br>
+            <br>
+            <p>
+              Resources<br>
+              ▶ <a href="https://www.streamshapers.com/docs/streamshapers-converter/tutorial" target="fdocs">Ferryman tutorial</a><br>
+              ▶ <a href="https://spxgc.tawk.help/article/templates-from-ferryman" target="fdocs">SPX templates using Ferryman</a>
+            </p>
+            <br>
+
+          </div>
+          <div class="promoRight">
+            <img src="/img/promo-converter-logo.png" alt="StreamShapers logo">
+            <br><br>
+            <a href="/img/snap-ferryman.png" target="_blank">
+              <img src="/img/snap-ferryman.png"
+                  alt="Ferryman screenshot"
+                  border=0
+              >
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   </div>
+  
 </div><!-- overlay ended-->
