@@ -1,13 +1,13 @@
 
 # SPX Release Notes
-> Updated 2024-06-10<br>
+> Updated 2024-07-20<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
-#### In the works...
+## In the works...
 
 - Add several (not all) templates to a rundown at once
 - spxpack import/export
@@ -16,10 +16,20 @@
 - Rundown Variables (does not remove prVar from profile if no users)
 
 <BR>
-<br>
+<BR>
+
+# Pre-release changes
+
+These changes have been done to the code base and will be part of the next release.
+
+* Fixed broken API/feedproxy post handler `executePOSTRequest()`
+
+
+
+<BR>
+<BR>
 
 # Published releases
-
 
 ## **1.3.0** (Jun 10 2024)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.

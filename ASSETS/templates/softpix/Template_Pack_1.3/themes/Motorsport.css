@@ -1,0 +1,227 @@
+:root {
+  --theme-lite-color: black;
+  --theme-dark-color: white;
+  --theme-brandColor: rgb(198, 0, 0);
+  --theme-tickerBack: white;
+
+  --theme-accent-width: 1vw;
+  --theme-ticker-height: 4vh;
+
+  --theme-viewport-padding-top: 4vw;
+  --theme-viewport-padding-sides: 3vw;
+  --theme-viewport-padding-bottom: 2vw;
+
+  --theme-skew: -10deg;
+
+}
+
+@font-face { font-family: "LITE"; src: url("../fonts/Teko-Light.ttf");    }
+@font-face { font-family: "REGU"; src: url("../fonts/Teko-Regular.ttf");  }
+@font-face { font-family: "BOLD"; src: url("../fonts/Teko-SemiBold.ttf"); }
+@font-face { font-family: "BLAC"; src: url("../fonts/Teko-Bold.ttf");     }
+
+#gfx {
+  transform: skewX(var(--theme-skew));
+}
+
+#rightInfo,
+#leftInfo,
+#box1 {
+  background-image:
+    linear-gradient(
+      rgb(47, 47, 47) 18%,
+      rgb(74, 76, 77) 42%,
+      rgb(14, 14, 14) 60%,
+      rgb(23, 12, 12) 94%,
+      rgb(41, 39, 39) 100%
+    );
+  font-size: 1.4em;
+  text-transform: uppercase;
+}
+
+#title2,
+#box3,
+#box4 {
+  background-color: rgb(40, 42, 42);
+  text-transform: uppercase;
+  text-shadow: 0 4px 4px rgb(0, 0, 0);
+  border-bottom: 2px solid red;
+  background-image: linear-gradient(
+    180deg,
+    rgb(14, 14, 14) 25%,
+    rgb(47, 47, 47) 60%);
+}
+
+
+
+
+#title1,
+#text1 {
+  padding-right: 1em;
+  background-image: linear-gradient(0deg, rgba(172,172,172,1) 45%, rgba(255,255,255,1) 55%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  filter: drop-shadow( 0.07em 0.07em 0.04em black );
+}
+
+#text2 {
+  color: rgb(255, 255, 255);
+  font-family: 'BOLD';
+}
+
+#text2:after {
+  content: '‣';
+  color: rgb(198, 0, 0);
+  font-family: 'BLAC';
+  font-size: 1.4em;
+  margin-left: 0.5em;
+  line-height: 1em;
+  text-shadow: 0 0 0.2em rgb(0, 0, 0);
+}
+  
+#text3 {
+  color: rgb(255, 0, 0);
+}
+
+#box4 {
+  border-radius: 0 0 0.6em 0;
+}
+
+.right #gfx {
+  right: 2vw; /* move gfx to the left */
+}
+
+.right #details {
+  justify-content: flex-end;
+}
+
+.right #box3 {
+  border-radius: 0 0 0 0.6em;
+}
+.right #box4 {
+  border-radius: 0;
+}
+
+.right #text1 {
+  padding-right: 0;
+  padding-left: 1em;
+}
+
+
+#title1 {
+  font-size: 2.0em;
+  font-family: 'BOLD';
+  text-transform: uppercase;
+  padding: 0.01em 1em !important;
+}
+
+#fxLine {
+  position: absolute;
+  opacity: 0;
+  bottom: 0;
+  width: 70%;
+  height: 0.1em;
+  background-color: rgba(255,255,255,0.5);
+  background-size: 300%;
+  background-repeat: no-repeat;
+  background-image: 
+    linear-gradient(
+      90deg,
+      red 40%,
+      white 50%,
+      red 60%
+    );
+  animation: AnimationKitt 3s ease-in-out infinite;
+}
+
+
+@keyframes AnimationKitt {
+    0% {
+        background-position: 100% 0%
+    }
+
+    100% {
+        background-position: 0% -100%
+    }
+}
+
+#title2 {
+  color: white;
+  font-size: 1.2em;
+  letter-spacing: 0.1em;
+  padding: 0.5em 1em 0.25em 1em !important;
+  font-family: 'REGU';
+  text-shadow: 0 0 0.2em rgba(0, 0, 0, 0.8);
+}
+
+
+#leftInfo,
+#rightInfo {
+  transform: skewX(var(--theme-skew));
+  font-family: 'REGU';
+  font-size: 5vh;
+  color: white;
+  padding: 0 1.0em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+}
+
+#leftInfo {
+  margin-left: 1vw;
+  border-left: var(--theme-accent-width)
+               solid 
+               var(--theme-brandColor);
+}
+
+#rightInfo {
+  margin-right: 1vw;
+  border-right: var(--theme-accent-width)
+               solid 
+               var(--theme-brandColor);
+}
+
+#icon {
+  margin: 0 1.5em;
+}
+
+#leftText,
+#rightText {
+  margin-top: 0.7vh; /* magic number */
+  padding: 0 0.2em;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-image: linear-gradient(0deg, rgba(172,172,172,1) 45%, rgba(255,255,255,1) 55%);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  filter: drop-shadow( 0.07em 0.07em 0.04em black ); */
+}
+
+#tickerZone {
+  margin-left: 5vw;
+  background-color: rgb(40, 42, 42);
+  text-transform: uppercase;
+  clip-path: inset(1px 1px 1px 1px);
+  border-bottom: 0;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(
+    180deg,
+    rgb(14, 14, 14) 25%,
+    rgb(47, 47, 47) 60%);
+}
+
+#headline {
+  color: white !important;
+  background-size: 100% 100%;
+  background-image: linear-gradient(
+    180deg,
+    var(--theme-brandColor) 25%,
+    rgb(111, 1, 1) 60%
+  );
+}
+#tickerText{
+  color: white !important;
+}
