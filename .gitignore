@@ -73,7 +73,7 @@ DATAROOT/*
 ASSETS/
 
 !ASSETS/csv/csv-folder.md
-!ASSETS/excel/ticker/ticker_data_example.xlsx
+!ASSETS/excel/ticker-demo/basic-news-ticker.xlsx
 !ASSETS/templates/softpix/Template_Pack_1.3
 
 # ...allow some PLUGIN files for GitHub
