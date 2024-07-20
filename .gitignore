@@ -27,7 +27,7 @@ Thumbs.db
 *env.json
 .gitignore
 desktop.ini
-config*.json
+*config*.json
 static/*.json
 
 ## Temp files or drafts
