@@ -498,8 +498,6 @@ const apiHandler = require('../utils/api-handlers.js');
       // Also, added a check if there is a body.body then it is 
       // considered a POST request to the external API.
 
-      let responseData = {};
-
       try {
         if (!req.body.url) {
           let errMsg = "url missing from feedproxy request. Make sure to have the correct JSON in your request.";
@@ -508,10 +506,10 @@ const apiHandler = require('../utils/api-handlers.js');
 
         if (req.body.postBody) {
           // console.log('Doing feedproxy request using POST method.');
-          responseData = executePOSTRequest(req, res);
+          executePOSTRequest(req, res);
         } else {
-          // console.log('Doing feedproxy request using GET method.');
-          responseData = executeGETRequest(req, res);
+          console.log('Doing feedproxy request using GET method.');
+          executeGETRequest(req, res);
         }
         
       } catch (error) {
@@ -549,12 +547,13 @@ const apiHandler = require('../utils/api-handlers.js');
     } // end executePOSTRequest
 
     function executeGETRequest(req, res) {
-        // console.log('Using GET method', req.body);
+        console.log('Using GET method', req.body);
         axios.get(req.body.url, {
           headers: req.body.headers
         })
         .then(function (response) {
             res.header('Access-Control-Allow-Origin', '*')
+            console.log('Response from external service', response.status, response.data);
             res.send(response.data)
           })
           .catch(function (error) {

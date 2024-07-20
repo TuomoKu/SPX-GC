@@ -1,20 +1,43 @@
+
 # SPX Graphics Controller
 
-## Manage and control graphics for CasparCG and streaming applications.
+### Manage and control HTML graphics in live production.
 
 <br>
 
-Readme updated July 01 2024. 
+<img src="./static/img/spx_online.png" WIDTH="60" align="left" style="margin:0 1em 0 0">
 
->  See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes and items currently in development. Latest binary release **v.1.3.0** Download from [spx.graphics/download](https://spx.graphics/download) or see the [builds](#builds) here.
-
-(2024-07-01: Please note, v.1.3.0 binaries have not been linked yet)
+**SPX** runs locally on your computer (or in the cloud) and works with
+[OBS](https://obsproject.com/?ref=spx.graphics),
+[vMIX](https://www.vmix.com/?ref=spx.graphics),
+[CasparCG](https://github.com/CasparCG),
+[Wirecast](https://www.wirecast.io/en/?ref=spx.graphics),
+[XSplit](https://www.xsplit.com/?ref=spx.graphics), 
+[MimoLive](https://mimolive.com/?ref=spx.graphics),
+[TopDirector](https://www.topdirector.com/?ref=spx.graphics),
+[Tricaster](https://www.vizrt.com/products/tricaster/?ref=spx.graphics),
+[LiveOS](https://www.neton.live/products/liveos-production-suites/?ref=spx.graphics),
+[Tellyo](https://www.tellyo.com/?ref=spx.graphics),
+[Sienna](https://www.sienna-tv.com/newsite/?ref=spx.graphics),
+[AWS Elemental](https://aws.amazon.com/media-services/elemental/?ref=spx.graphics)...
+or <i>any</i> video pipeline which supports HTML overlays.
 
 <br>
 
-**SPX** is professional graphics controller for live television productions and web streaming. Browser based GUI can control HTML graphics templates on  [CasparCG](https://github.com/CasparCG/) server(s) and/or live stream applications such as [OBS](https://obsproject.com/), [vMix](https://www.vmix.com/) or [Wirecast](https://www.telestream.net/wirecast/).
+<small>Resources:</small><BR>
+🟩 [**spx.graphics**/_controller_](https://spx.graphics/controller)<br>
+🎬 [Showreel on Youtube ](https://www.youtube.com/watch?v=rdIkuza3MQI)<br>
+📘 [Knowledge Base](https://spxgc.tawk.help)<br>
+💬 [Discord server](https://bit.ly/joinspx)<br>
 
-See the website ▶  **[spx.graphics](https://spx.graphics)**
+<hr>
+
+<br>
+
+
+>  Readme updated **July 01 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
+
+
 
 <br>
 
