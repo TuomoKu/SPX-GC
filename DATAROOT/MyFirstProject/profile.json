@@ -1,0 +1,435 @@
+{
+  "templates": [
+    {
+      "description": "Bumper or stinger example",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "18",
+      "webplayout": "18",
+      "out": "none",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This design was created entirely in After Effects, exported as a lottie-file and converted to SPX template using StreamShapers Ferryman. Also, as this graphic is 'fire-and-forget' type of element, its 'out' property is 'none'."
+        },
+        {
+          "field": "_COLORVALUE",
+          "ftype": "dropdown",
+          "title": "Color palette",
+          "value": "3",
+          "items": [
+            {
+              "text": "Red",
+              "value": "1"
+            },
+            {
+              "text": "Blue",
+              "value": "2"
+            },
+            {
+              "text": "Green",
+              "value": "3"
+            },
+            {
+              "text": "Orange",
+              "value": "4"
+            },
+            {
+              "text": "Grey",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "field": "_BUMPERTEXT",
+          "ftype": "textfield",
+          "title": "_BUMPERTEXT",
+          "value": "Swoosh!"
+        },
+        {
+          "field": "Image",
+          "ftype": "filelist",
+          "title": "Flare image",
+          "assetfolder": "./img/flares/",
+          "extension": "png",
+          "value": "./img/flares/whitey.png"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487663",
+      "relpath": "/softpix/Template_Pack_1.3/BUMPER.html"
+    },
+    {
+      "description": "Top left with icon",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "7",
+      "webplayout": "7",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template demonstrates the use of dropdowns to choose a file. Animated vector icons are in the lottie-subfolder."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Info text",
+          "value": "Headquarters"
+        },
+        {
+          "field": "f1",
+          "ftype": "filelist",
+          "title": "Icon",
+          "assetfolder": "./lottie/",
+          "extension": "json",
+          "value": "./lottie/live-default.json"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487702",
+      "relpath": "/softpix/Template_Pack_1.3/INFO_LEFT.html"
+    },
+    {
+      "description": "Top right with icon",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "8",
+      "webplayout": "8",
+      "out": "3000",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template goes out in 3000 milliseconds by default. Try using emoji in the graphics also."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Info text",
+          "value": "😃 #hashtag"
+        },
+        {
+          "field": "f1",
+          "ftype": "filelist",
+          "title": "Icon",
+          "assetfolder": "./lottie/",
+          "extension": "json",
+          "value": "none"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487759",
+      "relpath": "/softpix/Template_Pack_1.3/INFO_RIGHT.html"
+    },
+    {
+      "description": "Namestrap left",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "5",
+      "webplayout": "5",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Fullname",
+          "value": "Palmer Joss"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Title",
+          "value": "Advisor"
+        },
+        {
+          "field": "f2",
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": "White House"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487779",
+      "relpath": "/softpix/Template_Pack_1.3/NAME_LEFT.html"
+    },
+    {
+      "description": "Namestrap right",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "6",
+      "webplayout": "6",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Fullname",
+          "value": "S. R. Hadden"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Title",
+          "value": "Billionaire"
+        },
+        {
+          "field": "f2",
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": "Hadden Industries"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487822",
+      "relpath": "/softpix/Template_Pack_1.3/NAME_RIGHT.html"
+    },
+    {
+      "description": "News Ticker from Excel data",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "3",
+      "webplayout": "3",
+      "steps": "1",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template uses SPX's Excel reader. See ASSETS/excel folder for example files. Also remember SPX can utilize Google Sheets, RSS files, databases etc."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Headline",
+          "value": "Local news"
+        },
+        {
+          "field": "f1",
+          "ftype": "filelist",
+          "title": "Choose Excel file",
+          "assetfolder": "/excel/ticker-demo/",
+          "extension": "xlsx",
+          "value": "/excel/ticker-demo/basic-news-ticker.xlsx"
+        },
+        {
+          "field": "f2",
+          "ftype": "number",
+          "title": "How many items to show (default '10', all '-1')",
+          "value": "10"
+        },
+        {
+          "field": "f2",
+          "ftype": "number",
+          "title": "Flipping interval in seconds (default '4')",
+          "value": "4"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487859",
+      "relpath": "/softpix/Template_Pack_1.3/TICKER_EXCEL.html"
+    },
+    {
+      "description": "RSS News Ticker",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "3",
+      "webplayout": "3",
+      "steps": "1",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "Template uses SPX's feedproxy API endpoint to download data from external sources. Also remember SPX can utilize Google Sheets, files, databases etc."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Headline",
+          "value": "News Feed"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "RSS Feed URL",
+          "value": "http://feeds.bbci.co.uk/news/rss.xml"
+        },
+        {
+          "field": "f2",
+          "ftype": "number",
+          "title": "How many items to show (default '10', all '-1')",
+          "value": "10"
+        },
+        {
+          "field": "f2",
+          "ftype": "number",
+          "title": "Flipping interval in seconds (default '5')",
+          "value": "5"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487888",
+      "relpath": "/softpix/Template_Pack_1.3/TICKER_RSS.html"
+    },
+    {
+      "description": "Title or a headline",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "10",
+      "webplayout": "10",
+      "out": "manual",
+      "dataformat": "json",
+      "steps": 2,
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template has two steps. Click 'Play' and then 'Continue'..."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Main title",
+          "value": "Now click continue"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Subtitle",
+          "value": "Step two completed!"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1718013487917",
+      "relpath": "/softpix/Template_Pack_1.3/TITLE_2_STEPS.html"
+    }
+  ],
+  "warning": "Modifications done in the SPX will overwrite this file.",
+  "smartpx": "(c) 2020-2021 SmartPX",
+  "updated": "2024-06-10T09:58:07.917Z",
+  "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)"
+}

@@ -64,8 +64,8 @@ CONTENT_REPOSITORIES*/**
 
 # IGNORE SPX DATAROOT
 # ...but allow specific files and folders for GitHub
-DATAROOT/*
-!DATAROOT/HelloWorld-project/
+DATAROOT/
+!DATAROOT/MyFirstProject/
 
 
 # IGNORE SPX ASSETS
