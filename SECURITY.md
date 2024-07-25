@@ -12,4 +12,4 @@ If you find a vulnerability, please email [info@softpix.io](mailto:info@softpix.
 * showcase how it can be used
 * let us know if you would like to be credited in the README file and with what name?
 
-We will reply to your email within 72 hours. 
+We will try reply to your email within 72 hours. If the issue is confirmed, we will release a patch as soon as possible depending on complexity but typically within a few days, in the next binary release at the latest.
