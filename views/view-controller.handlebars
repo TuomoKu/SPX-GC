@@ -494,7 +494,9 @@
                         <TR>
                           <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
                             <span>{{{nameFromTemplatePath relpath}}}</span>&nbsp;&nbsp;
-                            <i class="l-icon fas fa-edit" onClick="openRelpathFolder(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'button.edit'}}');"></i>
+
+                            <!-- disabled by default, enable with config -->
+                            <i class="l-icon fas fa-edit {{{allowOpeningFolder}}}" onClick="openRelpathFolder(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'button.edit'}}');"></i>
                           </TD>
                         </TR>
                         <TR>
@@ -917,6 +919,7 @@
               width="{{{localPreviewSize width}}}" 
               height="{{{localPreviewSize height}}}"
               id="previewIF"
+              name="LOCAL"
               data-comment: "Here we had width: {{width}} and height {{height}}"
 
               {{#ifValue disableLRender "true"}}

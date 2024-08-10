@@ -2,9 +2,9 @@
 
     /* COLORS */
     --theme-lite-color: #2a3641;
-    --theme-dark-color: #000000;
-    --theme-brandColor: #267617;
-    --theme-tickerBack: #ffffff;
+    --theme-dark-color: black;
+    --theme-brandColor: rgb(38, 118, 23);
+    --theme-tickerBack: white;
 
     --theme-accent-width: 0.5vw;
     --theme-ticker-height: 4.7vh;

@@ -21,9 +21,6 @@ if (!config.general) {
 }
 
 const port = config.general.port || 5656;
-// let Connected=true; // used we messaging service // FIXME: Remove?
-
-// Use crypto instead of bcrypt:
 let crypto;
 try {
   crypto = require('crypto');
@@ -339,7 +336,7 @@ module.exports = {
       TemplateServer = "";
       logger.verbose('Using filesystem and caspar.config for template-path.');
     } else if ( !TemplateSource || TemplateSource == 'spx-ip-address') {
-      TemplateServer = 'http://' + ip.address(); // TODO: https one day? 
+      TemplateServer = 'http://' + ip.address(); // For https see https://spxgc.tawk.help/article/https-protocol
       logger.verbose('Using ip.address() for TemplateServer IP address: ' + TemplateServer);
     } else {
       if (TemplateSource.substring(0, 4)!='http') {TemplateSource = 'http://' + TemplateSource}
@@ -407,6 +404,17 @@ module.exports = {
     }
   }, // getStartUpFolder
 
+  getDatarootFolder: function () {
+    // Added in 1.3.1
+    let datapath = config.general.dataroot || this.getStartUpFolder() + '/' + 'DATAROOT';
+    if (fs.existsSync(datapath)) {
+      return path.normalize(datapath);
+    } else {
+      logger.error('Data root folder "' + datapath + '" not found! Verify config!');
+      return null;
+    }
+  }, // getDatarootFolder
+
 
   GetSubfolders: async function (strFOLDER) {
     // return a list of all subfolders in a given folder
@@ -444,7 +452,6 @@ module.exports = {
 
     let jsonData = [];
     try {
-      // console.log('reading',FOLDER);
       
       fs.readdirSync(FOLDER).forEach(file => {
         let bname = path.basename(file, '.json');
@@ -466,9 +473,8 @@ module.exports = {
   GetTemplatesFromProfileFile: async function (FOLDERstr) {
     // Return templates of the given project. Added in 1.1.4.
     try {
-      // console.log('reading',FOLDER);
       let showFolder   = path.normalize(FOLDERstr);
-      let dataJSONfile = path.join(this.getStartUpFolder(), 'ASSETS', '..', 'DATAROOT', showFolder, 'profile.json');
+      let dataJSONfile = path.join(this.getDatarootFolder(), showFolder, 'profile.json'); // Changed in v1.3.1.
       if (fs.existsSync(dataJSONfile)) {
         logger.debug("Getting templates from " + dataJSONfile + "...");
         let profileData  = await this.GetJsonData(dataJSONfile);
@@ -808,6 +814,19 @@ module.exports = {
       logger.error('ERROR in spx.shortifyName (fullString: ' + fullString + '): ' + error);  
     }
   }, // shortifyName
+
+
+  strip: async function (html) {
+    // Strip HTML tags from a string to sanitize it
+    try {
+      let noHtml = html.replace(/<\/?[^>]+(>|$)/g, "").replace(/\s+/g,' ');  // remove <TAGS> and double spaces
+      return noHtml;
+    } catch (error) {
+      logger.error('ERROR in spx.strip (html: ' + html + '): ' + error);
+      return ""
+    }
+ }, // strip
+
 
   versInt: function (semver){
     // Returns a numeric value representing "1.0.0" formatted semantic version string.

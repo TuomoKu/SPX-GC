@@ -63,6 +63,7 @@ module.exports = {
                     cfg.general.port                            = 5656
                     cfg.general.disableConfigUI                 = false
                     cfg.general.disableLocalRenderer            = false
+                    cfg.general.disableOpenFolderCommand        = true
                     cfg.general.disableSeveralControllersWarning = false
                     cfg.general.hideRendererCursor               = false
                     cfg.general.resolution                      = "HD"

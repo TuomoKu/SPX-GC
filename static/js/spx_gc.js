@@ -498,8 +498,12 @@ function CancelOutTimerIfRunning(CURITEM){
         CURITEM.setAttribute('data-spx-timerid','');
         clearTimeout(TimerID);
         CURITEM.querySelector('[data-spx-name="icon"]').classList.remove('playAuto');
-        document.getElementById('deleteSmall' + CURITEM.getAttribute('data-spx-index')).style.display="inline-block";
-        document.getElementById('deleteLarge' + CURITEM.getAttribute('data-spx-index')).style.display="block";
+
+        // Improved in v1.3.1
+        let smallIcon = document.getElementById('deleteSmall' + CURITEM.getAttribute('data-spx-index'));
+        let largeIcon = document.getElementById('deleteLarge' + CURITEM.getAttribute('data-spx-index'));
+        if (smallIcon) { smallIcon.style.display="inline-block" }
+        if (largeIcon) { largeIcon.style.display="block" }
     }
 } // CancelOutTimerIfRunning
 
@@ -1395,7 +1399,7 @@ function getMessages(curVerInfo) {
 
     
     let versionStr = curVerInfo.split('v=')[1].split('&')[0].trim();
-    // console.log('getMessages [' + versionStr + ']', curVerInfo);
+    // console.log('---------- getMessages [' + versionStr + ']', curVerInfo);
 
     localStorage.removeItem('SPX-GC-NewVersion');
     document.getElementById('upgradeinfo').style.display="none";
@@ -2525,7 +2529,7 @@ function statusbar(sMsg, sLevel="x") {
     document.getElementById('statusbar').innerText=sMsg;
 } // statusbar
 
-function stopAll(){
+function stopAll() {
     // Will send STOP commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
     // TODO: Far from elegant but kind of works. A better approach would be to 

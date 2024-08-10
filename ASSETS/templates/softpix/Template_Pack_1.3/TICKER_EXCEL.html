@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+    
+    <!--
+
+    Changes to this file:
+
+    2024-08-09 Delay mapping fixed from f2 to f3.
+
+    -->
+
     <head>
 		<title>SPX Template | spx.graphics</title>
 		<meta charset="UTF-8">
@@ -145,7 +154,7 @@
 
             function showBulletItem(nro) {
                 // console.log('showBulletItem', nro);
-                let repeatDelay =  parseInt(e('f2').innerText.trim())*1000;
+                let repeatDelay =  parseInt(e('f3').innerText.trim())*1000;
                 nro = nro + 1;
                 if ( nro < 0 || nro > newsItems.length-1 ) {
                     nro = 0 // 1st array item
@@ -269,7 +278,7 @@
                         "value" : "10"
                     },
                     {
-                        "field" : "f2",
+                        "field" : "f3",
                         "ftype" : "number",
                         "title" : "Flipping interval in seconds (default '4')",
                         "value" : "4"
