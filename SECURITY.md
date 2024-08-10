@@ -6,7 +6,13 @@ Most SPX installations run locally on-prem, but more and more SPX instances are 
 
 ## Reporting a Vulnerability
 
-If you find a vulnerability, please email [info@softpix.io](mailto:info@softpix.io) and 
+If you find a vulnerability you have two options:
+
+* Use the Security Advisory feature (preferred), or
+* Email [info@softpix.io](mailto:info@softpix.io)
+
+
+In your report, 
 
 * describe the issue
 * showcase how it can be used
