@@ -709,7 +709,6 @@
     }
 
     function pageInit() {
-
      // COLLAPSIPLE HANDLERS
       var coll = document.getElementsByClassName("collapsibleZone");
       var i;
@@ -763,15 +762,6 @@
             empty.classList.add("optionEmpty");
             document.getElementById('rundownSelector').appendChild(empty);
           });
-
-          // Get URL params
-          // let url = new URL(window.location.href);
-          // let utlText = url.pathname;
-          // let pathItems = utlText.split('/');
-          // let rundownRef = pathItems[2] + '/' + pathItems[3];
-          // alert(rundownRef);
-          // document.getElementById('rundownSelector').value = rundownRef;
-
         });
       
       resizePreview();
@@ -781,6 +771,7 @@
     }
 
     function resizePreview() {
+      
       // let DefaultX = 1920 // LightMode HD by default;
       // let DefaultY = 1080 // 
       // let Wpx = document.getElementById('previewWidthRuler').offsetWidth;
@@ -808,7 +799,7 @@
       document.getElementById('previewBG').style.height=Hpx+'px';
       document.getElementById('previewIF').style.transform="scale("+Sca+")";
       document.getElementById('previewBG').style.opacity=1;
-      document.getElementById('controllerFunctionsZone').style.opacity=1;
+      // document.getElementById('controllerFunctionsZone').style.opacity=1;
       // console.log('Resized to ' + Wpx + ' x ' + Hpx + ' px, scale multiplier: ' + Sca);
     }
 

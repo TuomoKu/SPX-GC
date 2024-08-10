@@ -20,7 +20,7 @@
 [Tellyo](https://www.tellyo.com/?ref=spx.graphics),
 [Sienna](https://www.sienna-tv.com/newsite/?ref=spx.graphics),
 [AWS Elemental](https://aws.amazon.com/media-services/elemental/?ref=spx.graphics)...
-or <i>any</i> video pipeline which supports HTML overlays.
+or <i>any</i> video pipeline that supports HTML overlays.
 
 <br>
 
@@ -35,7 +35,7 @@ or <i>any</i> video pipeline which supports HTML overlays.
 <br>
 
 
->  Readme updated **July 01 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
+>  Readme updated **August 10 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
 
 
 
@@ -65,6 +65,7 @@ or <i>any</i> video pipeline which supports HTML overlays.
 - [Control with external devices (Stream Deck etc)](#controlApi)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
+- [Security and Vulnerabilities](#security)
 - [MIT License](#license)
 
 
@@ -846,6 +847,7 @@ Each plugin has a subfolder with at least an init.js file and optionally other f
 
 `plugins/lib` -folder contains common SPX user interface elements used by plugins. More functionality and UI controls will be added here in future releases. These can be checkboxes, dropdown selectors etc.
 
+<br>
 
 # Issues and Feedback <a id="feedback"></a>
 
@@ -862,7 +864,19 @@ Each plugin has a subfolder with at least an init.js file and optionally other f
 - Undocumented features do exist. (templateEvents, TTS, pm2, cfg:hostname/usercommapass/greeting...)
 - This list shouldn't be. At least not here.
 
-----
+<br>
+
+# Security <a id="security"></a>
+As more and more SPX instances are being deployed in the cloud as opposed to running on-prem, more emphasis will need to go into security. 
+
+Thanks to security researchers who have already helped making SPX more resilient:
+
+* 2024-06 **Merbin Russel**
+* 2024-07 **Mohsin Khan**
+
+If you come across a possible vulnerability, please use the Security Advisories feature on Github to report these.
+
+<br>
 
 # Roadmap <a id="roadmap"></a>
 New releases will try address found issues and bugs in older versions and they will also introduce new features and functionality. See table for some planned features and use [feedback](#feedback) to submit suggestions.
@@ -874,7 +888,7 @@ New releases will try address found issues and bugs in older versions and they w
 
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
-| 1.1  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, simple rundown view for mobile / tablet browsers, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. ~~Export/import CSV~~| TBD |
+| 1.X  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, ~~simple rundown view for mobile / tablet browsers~~, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. ~~Export/import CSV~~| TBD |
 | X.X  | Under consideration: OSC support, Built-in NDI support, mediafile picker, video playback control templates, ~~graphics preview~~, ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template store~~,  community marketplace. ~~Video tutorials.~~ ~~Knowledgebase~~. Forum. ~~Discord support channel.~~ Free lunches. | TBD |
 
 Strikethrough items are already done.<BR>
@@ -884,7 +898,7 @@ Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.
 ----
 
 # MIT License <a id="license"></a>
-Copyright 2020-2023 Tuomo Kulomaa <tuomo@softpix.io> & [SPX Graphics](http://spx.graphics) 
+Copyright 2020-2024 Tuomo Kulomaa <tuomo@softpix.io> & [SPX Graphics](http://spx.graphics) 
 
 This project is licensed under the terms of the MIT license.
 See [LICENSE.txt](LICENSE.txt)

@@ -375,7 +375,21 @@ const apiHandler = require('../utils/api-handlers.js');
 
 // RUNDOWN COMMANDS -----------------------------------------------------------------------------
     router.get('/rundown/load/', spxAuth.CheckAPIKey, async (req, res) => {
-      let file = req.query.file;
+
+      // Improved in 1.3.1 to sanitize input (XSS)
+      let file = await spx.strip(req.query.file);
+      console.log('Loading rundown: ' + file);
+
+      // Added in 1.3.1 check if it exists
+      let project = file.split('/')[0];
+      let rundown = file.split('/')[1];
+      let fullPath = path.resolve(spx.getDatarootFolder(), project, 'data', rundown + '.json');
+      if (!fs.existsSync(fullPath)) {
+        let errMsg = 'Rundown [' + file + '] not found, cannot load it.';
+        logger.error(errMsg);
+        return res.status(404).json({ status: 404, message: errMsg });
+      }1
+      
       let dataOut = {};
       dataOut.info    = ack2
       dataOut.APIcmd  = 'RundownLoad';
@@ -473,7 +487,14 @@ const apiHandler = require('../utils/api-handlers.js');
         return res.status(500).json({ type: 'error', message: 'URL missing from parameters' })
       }
 
-      axios.get(req.query.url)
+      // Improved in 1.3.1
+      let URL = req.query.url
+      URL = URL.replace(/meta-data/g, '');
+      URL = URL.replace(/&path=/g, '###');
+      // logger.info('Feedproxy URL:' + req.query.url + ' cleaned to --> ' + URL);
+      /* other possible clean-up? */
+
+      axios.get(URL)
       .then(function (response) {
         res.header('Access-Control-Allow-Origin', '*')
         switch (req.query.format) {
@@ -984,7 +1005,7 @@ const apiHandler = require('../utils/api-handlers.js');
       let projectFolder = req.body.project || '';
       let fileName = req.body.file || '';
       let content = req.body.content || null;
-      let absFolder = path.join(spx.getStartUpFolder(), 'DATAROOT', projectFolder);
+      let absFolder = path.join(spx.getDatarootFolder(), projectFolder); // Changed in 1.3.1
 
       let jsonFileName = null;
       if (fileName.indexOf('.json') < 0) {

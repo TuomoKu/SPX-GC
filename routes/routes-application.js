@@ -1025,9 +1025,8 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 
         // saving new items to disk
         global.rundownData = rundownDataJSONobj;
-        filepath = path.join(spx.getStartUpFolder(), 'ASSETS', '..', 'DATAROOT', t_project, 'data', t_rundown + '.json');
+        filepath = path.join(spx.getDatarootFolder(), t_project, 'data', t_rundown + '.json'); // Changed in 1.3.1
         await SaveRundownDataToDisc(filepath) // importCSVdata
-  
         if (fieldsFound) {
           res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=Added ' + fieldIndex + ' templates.'); 
           break;

@@ -29,10 +29,21 @@ router.get('/files', async (req, res) => {
 
 
 router.get('/openFileFolder/', async (req, res) => {
-  // 
+  
+  // Added in 1.3.1
+  if (config.general.disableOpenFolderCommand != false) {
+    return res.status(403).send('Command disabled in config.');
+  }
+
   let relpath = req.query.file
   let filepath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', relpath);
   let folder = path.dirname(filepath);
+
+  // Added in 1.3.1 for security: if not found nothing is done.
+  if (!fs.existsSync) {
+    logger.error('Folder ' + folder + ' does not exist.');
+    return res.status(404).send('Folder ' + folder + ' does not exist.');
+  }
 
   // open folder in each operating system
   if (process.platform === 'darwin') {
@@ -44,8 +55,6 @@ router.get('/openFileFolder/', async (req, res) => {
   } else {
     logger.error('Unknown operating system: ' + process.platform);
   }
-
-  
   res.sendStatus(200)
 }); // openFileFolder of a template for editing
 
@@ -253,7 +262,7 @@ router.post('/exportCSVfile', async (req, res) => {
   try {
     let showFolder  = req.body.foldername || "";
     let datafile    = req.body.datafile || "";
-    let dataJSONfile= path.join(spx.getStartUpFolder(), 'ASSETS', '..', 'DATAROOT', showFolder, 'data', datafile + '.json');
+    let dataJSONfile= path.join(spx.getDatarootFolder(), showFolder, 'data', datafile + '.json'); // Changed in 1.3.1
     let rundownData = await spx.GetJsonData(dataJSONfile);
     let CSVdata = ''
 

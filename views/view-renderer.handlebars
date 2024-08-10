@@ -121,7 +121,7 @@
         let incomingData; // a placeholder for templateData
         let WMtimer = null;
         let startTime = new Date().getTime();
-        const inController = top.location.href.includes('renderer') ? false : true; 
+        // const inController = top.location.href.includes('renderer') ? false : true; 
 
         function allowLayerControl(LayerNro) {
             // Usage:
@@ -194,12 +194,11 @@
         }
 
         function isLocalRenderer() {
-            if (top.location.href.includes('renderer')) {
-                // console.log('Nope, this is a remote renderer.');
-                return false
-            } else {
-                // console.log('Yes, this is a local renderer.');
+            // Changed in 1.3.1
+            if (this.name == 'LOCAL') {
                 return true
+            } else {
+                return false
             }
         }
 
@@ -314,29 +313,29 @@
             //     document.getElementById('loader').style.opacity=1;
             // }
 
+            // FPS removed in v 1.3.1 ::
             // If FPS given in the url param store it. Added in 1.1.3.
             // Please note, none of default templates support this.
-            const queryString   = window.location.search;
-            const urlParams     = new URLSearchParams(queryString);
-            const fps           = urlParams.get('fps');
+            // const queryString   = window.location.search;
+            // const urlParams     = new URLSearchParams(queryString);
+            // const fps           = urlParams.get('fps');
+            // if (!window.top.spxRenderer) { window.top.spxRenderer = {} }
+            // if (fps) {
+            //    console.log('Framerate specified: ' + fps + ' FPS.');
+            //    window.top.spxRenderer.fps = fps;
+            // } else {
+            //    // console.log('Framerate not specified.');
+            //    window.top.spxRenderer.fps = null;
+            //}
 
-            if (!window.top.spxRenderer) { window.top.spxRenderer = {} }
-
-            if (fps) {
-                console.log('Framerate specified: ' + fps + ' FPS.');
-                window.top.spxRenderer.fps = fps;
-            } else {
-                // console.log('Framerate not specified.');
-                window.top.spxRenderer.fps = null;
-            }
-
+            // FIXME: v.1.3.1 Disabled: This is not needed anymore? ::
             // Resize window according to resolution
-            const root = document.getElementById('root');
-            const style = getComputedStyle(root)
-            const w = style.width.replace('px','');
-            const h = style.height.replace('px','');
+            // const root = document.getElementById('root');
+            // const style = getComputedStyle(root)
+            // const w = style.width.replace('px','');
+            // const h = style.height.replace('px','');
             // console.log('Resizing window to ' + w + ' x ' + h + ' px.')
-            window.resizeTo(w, h);
+            // window.resizeTo(w, h);
 
        }
             
@@ -479,10 +478,9 @@
                     // the renderer if 'preview=true'
 
                     if (data.modify && data.modify==='autoPlayLocal' ) {
-                        if (isLocalRenderer()) {
-                            // console.log('AutoPlayLocal render coming right up...', data.relpath);
-                        } else {
-                            // console.log('AutoPlayLocal is not for remote renderers.', data.relpath);
+                        if (!isLocalRenderer()) {
+                            // Current renderer is NOT the SPX-GC controller
+                            // so we don't do autoplay in this, so return out!
                             return;
                         }
                     }
@@ -589,6 +587,7 @@
             // console.log('SPXWebRendererMessage received (but doing nothing to it)', data)
         }); // socketMessage handler ended
 
+        // Why do we have this?
         window.addEventListener('load',protocolCheck,false);
 
 

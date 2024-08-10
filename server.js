@@ -586,6 +586,18 @@ app.engine('handlebars', exphbs({
     },
 
 
+    // Check config and return value
+    allowOpeningFolder() {
+      let disableButton = config.general.disableOpenFolderCommand || false;
+      // console.log('allowOpeningFolder: ' + disableButton);
+      if (disableButton==true || disableButton=="true") {
+        return 'disabled';
+      } else {
+        return '';
+      }
+    },
+
+
     // Make long strings nicer to look at
     shortifyUIstrings(str) {
         return spx.shortifyName(str);

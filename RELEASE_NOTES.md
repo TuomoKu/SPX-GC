@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2024-07-20<br>
+> Updated 2024-08-10<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -22,6 +22,11 @@
 
 These changes have been done to the code base and will be part of the next release.
 
+* Drag and drop an image to the local renderer to set the static backgriound
+- using "setRendererBackgroundImage" -handler
+- 
+
+
 * Fixed broken API/feedproxy post handler `executePOSTRequest()`
 
 
@@ -31,8 +36,27 @@ These changes have been done to the code base and will be part of the next relea
 
 # Published releases
 
-## **1.3.0** (Jun 10 2024)
+## **1.3.1** (Aug 10 2024)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
+ **Release description:**
+
+Version 1.3.1 is a patch release with a some security iprovements and bug fixes for API and Light Mode functionalities.
+
+**Changes**:
+
+- When non-default `config.general.dataroot` folder path value was used for Projects and Rundowns, some API functions were assuming default values and failed to store or return data correctly. Four separate features were effected and are now fixed.
+- "Light Mode" had a bug which prevented correct functionality when used in an iFrame.
+- Removed optional `fps` url attribute support from the renderer. This has not been used and can be misleadling, as implementation needs to be handled in the template level and this setting does not have any effect on the renderer anyway.
+- A new config property `config.general.disableOpenFolderCommand = true` added. This disables the "Open Folder" -utility button in the Controller / Item editor view and the underlying private API endpoint. When SPX is used in a local environment, this can be enabled to speed up work, but for security reasons is disabled by default.
+- Some security measures added to the `feedproxy` and `load` API endpoints.
+
+Thanks **Merbin Russel** and **Mohsin Khan** for discovering and reporting potential SSRF, Blind RCE and XSS vulnerabilities that have now been patched.
+
+- Fixed a timing setting related bug in the Ticker RSS and Ticker Manual -templates.
+
+<br>
+
+## **1.3.0** (Jun 10 2024)
 
  **Release description:**
 
