@@ -7,7 +7,7 @@
 
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
-## In the works...
+## Coming up later...
 
 - Add several (not all) templates to a rundown at once
 - spxpack import/export
@@ -18,21 +18,16 @@
 <BR>
 <BR>
 
-# Pre-release changes
+# Current dev notes
 
-These changes have been done to the code base and will be part of the next release.
+These are in a broken, work-in-progress, state:
 
-* Drag and drop an image to the local renderer to set the static backgriound
-- using "setRendererBackgroundImage" -handler
-- 
-
-
-* Fixed broken API/feedproxy post handler `executePOSTRequest()`
-
-
+* API/feedproxy post handler `executePOSTRequest()`
+* Drag and drop an image to the local renderer to set the static background using "setRendererBackgroundImage" -handler
 
 <BR>
 <BR>
+
 
 # Published releases
 
