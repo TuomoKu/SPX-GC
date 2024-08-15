@@ -297,8 +297,11 @@ const apiHandler = require('../utils/api-handlers.js');
         dataOut.invoke       = req.query.function + '(\"' + encodeURIComponent(params) + '\")'; // encode added in v1.1.0
       }
       logger.verbose('invokeTemplateFunction: [' + dataOut.function + '] with params: [' + dataOut.params + '].');
-      res.status(200).json(dataOut);
+      
+      // Order changed in v.1.3.2
       spx.httpPost(dataOut,'/gc/playout')
+      res.status(200).json(dataOut);
+      // 
     } catch (error) {
       res.status(error.status || 500).json({
           status: error.status || 500,
@@ -356,8 +359,11 @@ const apiHandler = require('../utils/api-handlers.js');
       dataOut.dataformat   = req.body.dataformat || 'json'; // changed to json in 1.3.0
       dataOut.fields       = req.body.DataFields || '{field: f0, value: "Default field data. Something wrong with your API call?"}';
       dataOut.referrer     = 'directplayout';
-      res.status(200).json(dataOut);
+
+      // Order changed in v.1.3.2
       spx.httpPost(dataOut,'/gc/playout')
+      res.status(200).json(dataOut);
+      // 
     } catch (error) {
       res.status(error.status || 500).json({
           status: error.status || 500,
