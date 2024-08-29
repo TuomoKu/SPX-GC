@@ -30,6 +30,22 @@ try {
 
 module.exports = {
 
+  appendProjectFile: async function (rundownData, fullpath, referrer='') {
+    // Added in 1.3.2
+    // Append project and rundown info to the rundownData object
+    // Yeah, this could be fancier.
+    if (referrer) {
+      console.log('DEV - appendProjectFile project/filename ' + fullpath);
+    }
+    let fldrname = path.dirname(fullpath);
+    let rundname = path.basename(fullpath).replace('.json', '');
+    let pathItems = fldrname.split('\\');  // Works on all platforms?
+    let project = pathItems[pathItems.length-2];
+    rundownData.project = project
+    rundownData.rundown = rundname
+    return rundownData
+  },
+
 
   httpGet: function (url) {
     // A generic http/get sender utility

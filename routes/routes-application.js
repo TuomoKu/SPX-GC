@@ -116,6 +116,11 @@ router.get('/renderwindow/:type', function (req, res) {
   }
 }); // get /renderwindow/:type end
 
+router.get('/login', function (req, res) {
+  // Added in 1.3.2
+  res.render('view-login', { layout: false });
+}); // login
+
 router.get('/logout', spxAuth.Logout, function (req, res) {
   res.redirect('/');
 }); // get /logout end
@@ -756,6 +761,13 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
   
   const fileDataAsJSON = await spx.RemoveFilepathKey(GetJsonData(datafile));
   // fileDataAsJSON = spx.RemoveFilepathKey(fileDataAsJSON); // Added in 1.3.0
+  
+  fileDataAsJSON.project = req.params.foldername; // Added in 1.3.2
+  fileDataAsJSON.rundown = req.params.filename; // Added in 1.3.2
+  // Please note, these does not show in the rundownfile itself,
+  // but is used in the controller view and is in memory only for now.
+  // Only when something is changed (or played), it will be written to the file.
+
   global.rundownData = fileDataAsJSON;
 
   let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
@@ -1024,6 +1036,8 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         });
 
         // saving new items to disk
+        rundownDataJSONobj.project = t_project; // Added in 1.3.2
+        rundownDataJSONobj.rundown = t_rundown; // Added in 1.3.2
         global.rundownData = rundownDataJSONobj;
         filepath = path.join(spx.getDatarootFolder(), t_project, 'data', t_rundown + '.json'); // Changed in 1.3.1
         await SaveRundownDataToDisc(filepath) // importCSVdata
@@ -1105,6 +1119,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       }
 
       try {
+        rundownDataJSONobj = await spx.appendProjectFile(rundownDataJSONobj, data.datafile, "from gc/removeItemFromRundown");
         global.rundownData = rundownDataJSONobj;
         await spx.writeFile(data.datafile, rundownDataJSONobj);
         res.status(200).send('Item removed ok.'); // ok 200 AJAX RESPONSE
@@ -1157,7 +1172,6 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
       // SAVE CHANGES MADE TO A SINGLE RUNDOWN ITEM /////////////////////////////////////////////////////////////////////////////////////////
       // Not in use, see --> /gc/saveItemChanges
       break;
-
   
     default:
       logger.warn('Warning: unknown gc-post command: ' + data.command);
@@ -1170,8 +1184,8 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   // Returns: AJAX response
   //
   // Handles playout commands of the rundown items in the controller.
-  // This function will collect data from datafile and will send out "stupid" playout commands
-  // to all needed renderer interfaces.
+  // This function will collect data from datafile and will send out "stupid" 
+  // playout commands to all needed renderer interfaces.
   //
   // This will also persist the onair state to rundown file.
   // 
@@ -1185,6 +1199,8 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   //        rundown to be read from memory data and not actual rundown file
   //        that was requested. Now a new forceFileRead parameter is added.
   //
+  // console.log('Playout command received.', req.body);
+
   // console.log('Playout command received.', req.body);
 
   let templateIndex = -1; // was 0 
@@ -1463,6 +1479,7 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 
     // persist to memory and to disk
     RundownData.updated = new Date().toISOString();
+    RundownData = await spx.appendProjectFile(RundownData, RundownFile, "from gc/playout");
     global.rundownData = RundownData // memory only
     if (playOutCommand == 'play' || playOutCommand == 'stop') {
       // Added in 1.3.0

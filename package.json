@@ -1,6 +1,6 @@
 {
   "name": "spx-gc",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "SPX | Softpix Graphics Controller",
   "homepage": "https://spx.graphics",
   "main": "server.js",

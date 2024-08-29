@@ -1335,8 +1335,7 @@ function getIndexOfRowItem(rowitem) {
     })
 } // getIndexOfRowItem ended
 
-function getElementIdByDomIndex(domIndex)
-{
+function getElementIdByDomIndex(domIndex) {
     // FIXME: Is this in use? From old logic?
     // A utility to iterate all DOM items and return ID of element at itemIndex.
     // request = dom index number
@@ -1347,8 +1346,42 @@ function getElementIdByDomIndex(domIndex)
     return JustElementID
 } // getElementIdByDomIndex ended
 
-function getDomIndexByElementId(ElementId)
-{
+async function appendSpxApiKey (data) {
+    // Added in v1.3.2
+    // Adds API key to data object or a URL
+    // from localstorage or a URL parameter
+
+    // Get apikey from URL
+    queryString = window.location.search;
+    urlParams   = new URLSearchParams(queryString);
+    addressKey  = urlParams.get('apikey') || null;
+
+    // Get apikey from local storage
+    let storageKey = localStorage.getItem('spxApiKey') || null;
+
+    if (!addressKey && !storageKey) {
+        // No API key found, return original data
+        return data;
+    }
+
+    let apikey = storageKey; // default to storage key
+    if (addressKey) {
+        apikey = addressKey; // use address key if present
+    }
+
+    if (typeof data === 'object') {
+        // POST - so add API key to data
+        data.apikey = apikey;
+        return data; // return object with API key
+    } else {
+        // GET - so add API key to URL
+        let char = data.includes('?') ? '&' : '?';
+        data += char + 'apikey=' + apikey; 
+        return data; // return URL with API key
+    }
+} // appendSpxApiKey
+
+function getDomIndexByElementId(ElementId) {
     // FIXME: Is this in use? From old logic?
     // A utility to iterate all DOM items and return dom index of given ElementId
     // Tested, this seem to work :)
@@ -2355,8 +2388,6 @@ function showMessageSlider(msg, type='info', persist=false) {
     /*
         top?.showMessageSlider?.('Hello graphics operator!', 'happy');
     */
-
-
     let txt = msg;
     let typ = type; // happy, info, warn, error (classes happyMsg, infoMsg, warnMsg, errorMsg...)
     let domElement
