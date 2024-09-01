@@ -19,11 +19,9 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const cors = require('cors');
 const { timeStamp } = require("console");
-const { httpPost } = require("../utils/spx_server_functions.js");
 // const { convertGddtoSpx } = require("../utils/GDDtoSPXconverter.js");
 const http = require('http');
 const axios = require('axios');
-// const HTMLParser = require('node-html-parser');
 // -----watchout!-----
 
 // const { config } = require("process");
@@ -1201,20 +1199,34 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
   //
   // console.log('Playout command received.', req.body);
 
-  // console.log('Playout command received.', req.body);
 
   let templateIndex = -1; // was 0 
   try {
-    let dataOut     = {}; // new object
-    dataOut.fields  = []; // init it with an empty arr as placeholder
-    let RundownFile = ""  // file reference
-    let RundownData = ""  // file JSON
-    let preventSave = false;
+    let dataOut          = {}; // new object
+    dataOut.fields       = []; // init it with an empty arr as placeholder
+    let RundownData      = ""  // file JSON
+    let preventSave      = false;
     let forceDiskRead    = req.body.forceFileReadOnce ? true : false; // Added in 1.3.0. Read Release Notes!
     let cacheRundownData = null; // Added in 1.3.0
-    let autoOutTimerID = null; // Added in 1.3.0
+    let autoOutTimerID   = null; // Added in 1.3.0
+    let itemID           = null; // Added in 1.3.2
+    let RundownFile      = path.normalize(req.body?.datafile || '') // file reference (in a normal call)
+    let ItemData         = {}; // Modified in 1.3.2
+    
+    if (req.body?.updateRundownItem?.persist) {
+      let project = req.body?.updateRundownItem?.project || '';
+      let rundown = req.body?.updateRundownItem?.rundown || '';
+      RundownFile = path.resolve(spx.getDatarootFolder(), project, 'data', rundown + '.json');
+    }
+    
+    // console.log('RundownFile', RundownFile);
+    // console.log('Body', req.body);
 
-    if (req.body.prepopulated && req.body.prepopulated=="true") {
+    let skipJSONRead = true;
+    if (req.body?.prepopulated!="true"){        skipJSONRead = false; }
+    if (req.body?.updateRundownItem?.persist) { skipJSONRead = false; }
+
+    if (skipJSONRead) {
       // data in pre-generated coming in. So we can just pass that along.
       logger.verbose('Playout command prepopulated [' + req.body.command + '] template [' + req.body.relpath + '].');
       dataOut = req.body;
@@ -1224,9 +1236,10 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       preventSave = true;
       // console.log('IF', dataOut);
     } else {
-      // normal method of working. We collect data from showfile.
-      logger.verbose('Playout command [' + req.body.command + '] item [' + req.body.epoch + '] of [' + req.body.datafile + '].');
-      RundownFile = path.normalize(req.body.datafile);
+      // Normal method of working (or when using directplayout persist request)
+      // We collect data from rundown first.
+      itemID = req.body?.epoch || req.body?.updateRundownItem?.itemID || '';
+      logger.verbose('Playout command [' + req.body.command + '] item [' + itemID + '] of [' + RundownFile + '].');
       
       // Refactored in 1.0.15 to prioritize memory over disk I/O
       // 1.3.0 added forceDiskRead parameter to use when API call is made.
@@ -1243,54 +1256,39 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       }
 
       RundownData.templates.forEach((template,index) => {
-        logger.debug('Matching ' + index + ': [' + template.itemID + '] (' + template.description + ') and [' + req.body.epoch + ']');
-        if (template.itemID == req.body.epoch) {
-            templateIndex=index;
-          }
+        logger.debug('Matching ' + index + ': [' + template.itemID + '] (' + template.description + ') and [' + itemID + ']');
+        if (template.itemID == itemID) {
+          templateIndex=index;
+        }
       });
 
       if (templateIndex==-1) {
-        throw 'Requested itemID [' + req.body.epoch + '] not found on the rundown [' + RundownFile + ']! Aborting ' + req.body.command + ' command.'; 
+        throw 'Requested itemID [' + itemID + '] not found on the rundown [' + RundownFile + ']! Aborting ' + req.body.command + ' command.'; 
       }
 
-      let ItemData = RundownData.templates[templateIndex];
-      dataOut.relpath   = ItemData.relpath;
-      dataOut.relpathCCG = ItemData.relpath.split('.htm')[0]; // casparCG needs template path without htm/html -extension. 
-      dataOut.playserver = ItemData.playserver;
-      dataOut.playchannel= ItemData.playchannel;
-      dataOut.playlayer  = ItemData.playlayer;
-      dataOut.webplayout = ItemData.webplayout;
-      dataOut.out        = ItemData.out; // 1.3.0 only used with direct API calls
-      dataOut.dataformat = ItemData.dataformat || 'json'; // Changed to JSON in 1.3.0
+      ItemData = RundownData.templates[templateIndex];
+      dataOut.relpath     = ItemData.relpath;
+      dataOut.relpathCCG  = ItemData.relpath.split('.htm')[0]; // casparCG needs template path without htm/html -extension. 
+      dataOut.playserver  = ItemData.playserver;
+      dataOut.playchannel = ItemData.playchannel;
+      dataOut.playlayer   = ItemData.playlayer;
+      dataOut.webplayout  = ItemData.webplayout;
+      dataOut.out         = ItemData.out; // 1.3.0 only used with direct API calls
+      dataOut.dataformat  = ItemData.dataformat || 'json'; // Changed to JSON in 1.3.0
       ItemData.DataFields.forEach(item => {
         // We pass data as custom JSON format and the format is changed
         // downstream in the playout controller as per renderer's needs.
         let FieldItem={};
         if ( item.field ) {  
             FieldItem.field = item.field;
-
             if ( item.value ) { // TODO: bug alert (&& item.field.value) check if there IS value to begin with. Added 29.01.2021
-              // FieldItem.value = item.value;
-              let temp1 = item.value.replace(/\n/g, '<br>');  // remove \n globally to support text areas
-              let temp2 = temp1.replace(/\r/g, '');           // remove \r globally to support text areas
-
-              // I am losing sleep over this - but it works! (Added 26.10.2020)
-              // console.log('Before HTMLentityfication: [' + temp2 + ']');
-              temp2 = temp2.replace(/&/g, "&amp;");
-              temp2 = temp2.replace(/>/g, "&gt;");
-              temp2 = temp2.replace(/</g, "&lt;");
-              temp2 = temp2.replace(/"/g, "&quot;");
-              temp2 = temp2.replace(/'/g, "&#039;");
-              temp2 = temp2.replace(/\\/g, "&#92;");
-              // console.log('After HTMLentityfication: [' + temp2 + ']');
-
-              FieldItem.value = temp2;
+              FieldItem.value = spx.cleanUpString(item.value); // Added in 1.3.2
             }
-            dataOut.fields.push(FieldItem);
-          }
-        });
-      dataOut.fields.push({'field':'epochID', 'value':req.body.epoch}); 
-    } // else
+          dataOut.fields.push(FieldItem);
+        }
+      });
+      dataOut.fields.push({'field':'epochID', 'value':itemID}); 
+    } // else (ie read from JSON)
     
     let playOutCommand = "";
     if ( req.body.command == 'playonce') {
@@ -1300,6 +1298,36 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
     } else {
       playOutCommand = req.body.command;
     }
+
+
+    // Added in 1.3.2 if directplayout is used, we need to
+    // update incoming data with the itemID.
+    // If data from API, then override
+    if (req.body?.updateRundownItem?.persist) {
+      let overrideTemplateIndex = -1;
+      RundownData.templates.forEach((template,index) => {
+        if (template.itemID == req.body.updateRundownItem.itemID) {
+          // console.log('Template FOUND', index, template.description);
+          overrideTemplateIndex = index;
+          template.DataFields.forEach((templateField,dfIndex) => {
+            // console.log('templateField', dfIndex)
+            req.body.fields.forEach((dataField,daIndex) => {
+              // note, "fields" not "DataFields"
+              // console.log('.....dataField', daIndex)
+              if (templateField.field == dataField.field) {
+                RundownData.templates[overrideTemplateIndex].DataFields[dfIndex].value = dataField.value;
+              }
+            });
+          })
+        }
+      });
+      dataOut = req.body; // override data for rendering
+    }
+
+
+    // console.log('RundownData after mods', RundownData.templates[templateIndex]);
+
+
 
     switch (playOutCommand) {
 
@@ -1330,6 +1358,10 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // == PLAY =====================================================
       case 'play':
         let playingSomewhere = false; // Added in 1.3.0
+
+
+        // console.log('DataOut', dataOut);
+
 
         // Send PlayoutCCG.functionCalls() if any ---------------------
         if ( dataOut.playserver && dataOut.playserver!='-' && spx.CCGServersConfigured ) { // 1.1.3 added dataOut.playserver
@@ -1477,19 +1509,34 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         break;
     }
 
+    // Added in 1.3.2 / updateRundownItem in the UI if set
+    if (req.body?.updateRundownItem?.updateUI) {
+      logger.verbose('API call: updateRundownItem in the UI.');
+      io.emit('SPXMessage2Client', {
+        spxcmd: 'updateRundownItem',
+        itemID: req.body.updateRundownItem.itemID,
+        relpath: dataOut.relpath,
+        command: playOutCommand
+      });
+    }
+    
     // persist to memory and to disk
     RundownData.updated = new Date().toISOString();
     RundownData = await spx.appendProjectFile(RundownData, RundownFile, "from gc/playout");
     global.rundownData = RundownData // memory only
     if (playOutCommand == 'play' || playOutCommand == 'stop') {
-      // Added in 1.3.0
-      if (!preventSave) {
-        logger.debug('Persisting rundown data to disk....');
-        await spx.writeFile(RundownFile, RundownData);
-      } else {
-        logger.debug('preventSave enabled, no need to persist to disk.');
+
+      if (req.body?.updateRundownItem?.persist) {
+        preventSave = false;
       }
-    }
+
+      if (preventSave) {
+        logger.verbose('preventSave enabled, no need to persist to disk.');
+      } else {
+        logger.verbose('Persisting rundown data to disk....');
+        await spx.writeFile(RundownFile, RundownData);
+      }
+    } 
 
     // Added in 1.3.0 / Restore cache (after an API call)
     if (cacheRundownData) {
@@ -1504,6 +1551,9 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
         throw(playOutCommand + ' warning! Template not found: ' + dataOut.relpath);
       }
     }
+
+
+
 
     res.status(200).send(); // ok 200 AJAX RESPONSE
   } // end try

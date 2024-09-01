@@ -137,11 +137,11 @@ const apiHandler = require('../utils/api-handlers.js');
             "endpoint"  :     "/api/v1/",
             "commands": [
               {
-                "vers"    :     "v1.0.12",
+                "vers"    :     "v1.0.12, v.1.3.2",
                 "method"  :     "POST",
                 "param"   :     "directplayout",
-                "info"    :     "Populate template and execute a play/continue/stop -command to it. Post request body example as JSON:",
-                "code"    :     {casparServer: "OVERLAY",  casparChannel: "1", casparLayer: "20", webplayoutLayer: "20", relativeTemplatePath: "/vendor/pack/template.html", out: "manual", DataFields: [{field: "f0", value: "Firstname"},{field: "f1", value: "Lastname"}], command: "play"}
+                "info"    :     "Populate template and execute a play/continue/stop -command to it. Please note the optional <code>updateRundownItem</code> property. <code>updateRundownItemitemID</code> is an optional object for forcing UI updates and persisting to defined rundown file. <b>Please note: special charaters in values does not work at the moment!</b> Post request body example as JSON:",
+                "code"    :     {casparServer: "OVERLAY",  casparChannel: "1", casparLayer: "20", webplayoutLayer: "20", relativeTemplatePath: "/vendor/pack/template.html", out: "manual", DataFields: [{field: "f0", value: "Firstname"},{field: "f1", value: "Lastname"}], command: "play", updateRundownItem: {updateUI: true, itemID: "myItemID", persist: true, "project": "myFirstProject", "rundown": "myFirstRundown"}}
             },
               {
                 "vers"    :     "v1.1.0",
@@ -326,6 +326,9 @@ const apiHandler = require('../utils/api-handlers.js');
   router.post('/directplayout', spxAuth.CheckAPIKey, async (req, res) => {
     // Improved in 1.3.0 to check valid JSON data and that template exists.
     // Also supports timed out modes.
+
+    // console.log('POST directplayout:', req.body);
+
     try {
       let templateFile = req.body.relativeTemplatePath || '/vendor/pack/template.html';
       let templateComd = req.body.command || 'play';
@@ -350,15 +353,21 @@ const apiHandler = require('../utils/api-handlers.js');
       dataOut.playlayer    = req.body.casparLayer || '1';
       dataOut.webplayout   = req.body.webplayoutLayer || '1';
       dataOut.out          = req.body.out || 'manual';
-      dataOut.prepopulated = 'true';
       dataOut.relpath      = templateFile;
       dataOut.command      = req.body.command || 'play';
       dataOut.dataformat   = req.body.dataformat || 'json'; // changed to json in 1.3.0
       dataOut.fields       = req.body.DataFields || '{field: f0, value: "Default field data. Something wrong with your API call?"}';
+      dataOut.prepopulated = 'true';
       dataOut.referrer     = 'directplayout';
       dataOut.apikey       = req.body.apikey || '';
 
+       // added in 1.3.2
+      if (req.body?.updateRundownItem?.itemID) {
+        dataOut.updateRundownItem = req.body.updateRundownItem;
+      }
+
       // Order changed in v.1.3.2
+      // console.log('executing playout:', dataOut);
       spx.httpPost(dataOut,'/gc/playout')
       res.status(200).json(dataOut);
       // 
@@ -370,7 +379,7 @@ const apiHandler = require('../utils/api-handlers.js');
       });
     }
     // TODO: Check if this supports MANUAL & 4000 ms play modes
-  });
+  }); // end directplayout
 
   router.get('/directplayout', spxAuth.CheckAPIKey, async (req, res) => {
     res.status(404).send('Sorry, this endpoint only available as POST REQUEST with parameters, see the example text or see controlRundownItemByID -endpoint for basic play/stop controls.');

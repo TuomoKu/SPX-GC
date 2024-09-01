@@ -20,10 +20,17 @@
 
 # Current dev notes
 
+Implemented:
+* If a username/password is configured, then apikey is also required
+* added project/rundown to the global state (for /api/v1/rundown/get)
+* Added new optional "updateRundownItem" -parameter to "directplayout" API call. If the UI is open and has an item by the same value and both the request and rundown item refers the same template file, it's Play/Stop indicator is changed to match the API request's command.
+
+
 These are in a broken, work-in-progress, state:
 
 * API/feedproxy post handler `executePOSTRequest()`
 * Drag and drop an image to the local renderer to set the static background using "setRendererBackgroundImage" -handler
+* All demo/production extensions must be redone, with public APIs and apikey config option!
 
 <BR>
 <BR>

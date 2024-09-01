@@ -35,7 +35,7 @@ module.exports = {
     // Append project and rundown info to the rundownData object
     // Yeah, this could be fancier.
     if (referrer) {
-      console.log('DEV - appendProjectFile project/filename ' + fullpath);
+      // console.log('DEV - appendProjectFile project/filename ' + fullpath);
     }
     let fldrname = path.dirname(fullpath);
     let rundname = path.basename(fullpath).replace('.json', '');
@@ -63,11 +63,56 @@ module.exports = {
   httpPost: function (JSONdata, endPoint) {
     // Send a http POST to an endpoint on the SPX server.
     // console.log('httpPost received', endPoint, JSONdata);
+
+    // TODO: httpPost function has a bug, it does not support special characters
+    console.log('Warn: httpPost function has a bug, it does not support special characters');
+
+    // console.log('httpPost received', endPoint, JSONdata);
+
+    // axios.post(endPoint, JSONdata)
+    // .then(function (response) {
+    //     if (response.data) {
+    //       console.log('Post response!')
+    //       return response.data;
+    //     };
+    // })
+    // .catch(function (error) {
+    //   if (error.response) {
+    //       console.log('Error response!');
+    //       console.log(error.response.data);
+    //       console.log(error.response.status);
+    //       console.log(error.response.headers);
+    //   } else if (error.request) {
+    //       console.log('Error request!', error.request);
+    //   } else {
+    //     console.log('Error!', error.message);
+    //   }
+    //   console.log('Error config');
+    //   console.log(error.config);
+    // });
+
+    // fetch(endPoint, {
+    //   method: 'POST',
+    //   body: JSON.stringify(JSONdata),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Content-Length': JSONdata.length
+    //   }
+    // })
+    // .then(function(response) {
+    //   // console.log('Response:', response);
+    //   return 'Sent request to server'
+    // })
+    // .catch(error => {
+    //   console.error('Error:', error)
+    //   return error
+    // }); 
+
+
     let JSONdata2 = JSON.stringify(JSONdata);
     try {
-      //JSONdata = JSON.stringify(JSONdata);
       const options = { port: port, path: endPoint, method: 'POST', headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=UTF-8',
           'Content-Length': JSONdata2.length
         }
       }
@@ -132,6 +177,24 @@ module.exports = {
       logger.error('ERROR in spx.checkServerConnections()', error);
     }
   }, // checkServerConnections
+
+
+  cleanUpString: function (str) {
+    // Utility added in 1.3.2
+    // Clean up a string for HTML output
+    // console.log('cleanUpString', str);
+    let temp1 = str.replace(/\n/g, '<br>');  // remove \n globally to support text areas
+    let temp2 = temp1.replace(/\r/g, '');    // remove \r globally to support text areas
+    // I am losing sleep over this - but it works! (Added 26.10.2020)
+    temp2 = temp2.replace(/&/g, "&amp;");
+    temp2 = temp2.replace(/>/g, "&gt;");
+    temp2 = temp2.replace(/</g, "&lt;");
+    temp2 = temp2.replace(/"/g, "&quot;");
+    temp2 = temp2.replace(/'/g, "&#039;");
+    temp2 = temp2.replace(/\\/g, "&#92;");
+    return temp2;
+  }, // cleanUpString
+
 
   duplicateFile: function (fileRefe, suffix) {
     try {
