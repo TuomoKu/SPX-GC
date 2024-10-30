@@ -64,8 +64,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487663",
-      "relpath": "/softpix/Template_Pack_1.3/BUMPER.html"
+      "imported": "1730312443998",
+      "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html"
     },
     {
       "description": "Top left with icon",
@@ -111,8 +111,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487702",
-      "relpath": "/softpix/Template_Pack_1.3/INFO_LEFT.html"
+      "imported": "1730312444014",
+      "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html"
     },
     {
       "description": "Top right with icon",
@@ -158,8 +158,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487759",
-      "relpath": "/softpix/Template_Pack_1.3/INFO_RIGHT.html"
+      "imported": "1730312444029",
+      "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html"
     },
     {
       "description": "Namestrap left",
@@ -209,8 +209,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487779",
-      "relpath": "/softpix/Template_Pack_1.3/NAME_LEFT.html"
+      "imported": "1730312444043",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html"
     },
     {
       "description": "Namestrap right",
@@ -260,8 +260,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487822",
-      "relpath": "/softpix/Template_Pack_1.3/NAME_RIGHT.html"
+      "imported": "1730312444058",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html"
     },
     {
       "description": "News Ticker from Excel data",
@@ -305,7 +305,7 @@
           "value": "10"
         },
         {
-          "field": "f2",
+          "field": "f3",
           "ftype": "number",
           "title": "Flipping interval in seconds (default '4')",
           "value": "4"
@@ -320,8 +320,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487859",
-      "relpath": "/softpix/Template_Pack_1.3/TICKER_EXCEL.html"
+      "imported": "1730312444080",
+      "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html"
     },
     {
       "description": "RSS News Ticker",
@@ -363,7 +363,7 @@
           "value": "10"
         },
         {
-          "field": "f2",
+          "field": "f3",
           "ftype": "number",
           "title": "Flipping interval in seconds (default '5')",
           "value": "5"
@@ -378,8 +378,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487888",
-      "relpath": "/softpix/Template_Pack_1.3/TICKER_RSS.html"
+      "imported": "1730312444094",
+      "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html"
     },
     {
       "description": "Title or a headline",
@@ -424,12 +424,12 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487917",
-      "relpath": "/softpix/Template_Pack_1.3/TITLE_2_STEPS.html"
+      "imported": "1730312444116",
+      "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html"
     }
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
   "smartpx": "(c) 2020-2021 SmartPX",
-  "updated": "2024-06-10T09:58:07.917Z",
+  "updated": "2024-10-30T18:20:44.117Z",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)"
 }

@@ -24,6 +24,8 @@ Implemented:
 * If a username/password is configured, then apikey is also required
 * added project/rundown to the global state (for /api/v1/rundown/get)
 * Added new optional "updateRundownItem" -parameter to "directplayout" API call. If the UI is open and has an item by the same value and both the request and rundown item refers the same template file, it's Play/Stop indicator is changed to match the API request's command.
+* Fixed a bug for "directplayout" and special characters
+* Added 'reloadRendererWithLayers' handler to renderer for SPX Zoom Connector plugin (required url args `&remote=true&name=<validName>`)
 
 
 These are in a broken, work-in-progress, state:

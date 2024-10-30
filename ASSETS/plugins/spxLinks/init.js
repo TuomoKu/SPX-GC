@@ -18,8 +18,8 @@ function PluginInstance() {
                     "value":"https://bit.ly/joinspx"
                 },
                 {
-                    "text": "SPX Store",
-                    "value":"https://spx.graphics/store"
+                    "text": "HTML Graphics",
+                    "value":"https://html.graphics/marketplace"
                 },
                 {
                     "text": "Knowledge Base",

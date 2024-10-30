@@ -11,6 +11,7 @@
 //
 // -------------------------------------------------------------- 
 
+
 function hello(options) {
     // This is a demo function that can be used
     // with onPlay handler in the template definition
@@ -33,22 +34,6 @@ function hello(options) {
     msg += "Field value ... " + options[1] + "\n"
     msg += "ItemID ........ " + options[2] + "\n"
     console.log(msg);
-}
-
-function APIConnector(mode='') {
-    let apiURL = '/api/v1/invokeTemplateFunction';
-    let layer = 10;
-    let fcall = 'templateFunction';
-
-    let url = apiURL + '?&webplayout=' + layer + '&function=' + fcall + '&params=' + mode;
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
 }
 
 function demo_popup(message){
