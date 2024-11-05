@@ -31,7 +31,7 @@
     "express": "^4.21.1",
     "express-handlebars": "^7.0.0",
     "express-session": "^1.18.1",
-    "glob": "^7.1.6",
+    "glob": "^9.0.0",
     "ip": "^1.1.9",
     "jsdom": "^24.1.1",
     "macaddress": "^0.5.1",
