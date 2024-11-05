@@ -28,11 +28,31 @@ router.get('/files', async (req, res) => {
 }); // file
 
 
+/* Will go into the API in 1.3.3
+router.get('/initRemCntrRenderer', async (req, res) => {
+  // Return URL of the remote control renderer
+  let urlDomain = null // no trailing slash
+  urlDomain = 'https://<SOMETHING-HERE>.spxcloud.app' // TODO: Change this to your own domain
+  urlDomain = 'https://localhost:5656'
+  let nick = req.query.name || '';
+  let url = urlDomain + '/renderer?remote=true&name=' + nick;
+  let data = {
+    url: url,
+    name: nick,
+    msg: 'OK'
+  }
+  res.send(data);
+}); // file
+*/
+
+
 router.get('/openFileFolder/', async (req, res) => {
   
-  // Added in 1.3.1
-  if (config.general.disableOpenFolderCommand != false) {
-    return res.status(403).send('Command disabled in config.');
+  // Added in 1.3.1. And fixed in 1.3.2... 
+  if (config.general.disableOpenFolderCommand == true) {
+    let msg = 'openFileFolder -command disabled in config.';
+    logger.warn(msg);  
+    return res.status(403).send(msg);
   }
 
   let relpath = req.query.file

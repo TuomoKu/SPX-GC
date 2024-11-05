@@ -62,71 +62,25 @@ module.exports = {
 
   httpPost: function (JSONdata, endPoint) {
     // Send a http POST to an endpoint on the SPX server.
-    // console.log('httpPost received', endPoint, JSONdata);
+    // v1.3.2 Fixed bug with special characters
+    let dataOut = JSON.parse(JSONdata);
 
-    // TODO: httpPost function has a bug, it does not support special characters
-    console.log('Warn: httpPost function has a bug, it does not support special characters');
-
-    // console.log('httpPost received', endPoint, JSONdata);
-
-    // axios.post(endPoint, JSONdata)
-    // .then(function (response) {
-    //     if (response.data) {
-    //       console.log('Post response!')
-    //       return response.data;
-    //     };
-    // })
-    // .catch(function (error) {
-    //   if (error.response) {
-    //       console.log('Error response!');
-    //       console.log(error.response.data);
-    //       console.log(error.response.status);
-    //       console.log(error.response.headers);
-    //   } else if (error.request) {
-    //       console.log('Error request!', error.request);
-    //   } else {
-    //     console.log('Error!', error.message);
-    //   }
-    //   console.log('Error config');
-    //   console.log(error.config);
-    // });
-
-    // fetch(endPoint, {
-    //   method: 'POST',
-    //   body: JSON.stringify(JSONdata),
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Content-Length': JSONdata.length
-    //   }
-    // })
-    // .then(function(response) {
-    //   // console.log('Response:', response);
-    //   return 'Sent request to server'
-    // })
-    // .catch(error => {
-    //   console.error('Error:', error)
-    //   return error
-    // }); 
-
-
-    let JSONdata2 = JSON.stringify(JSONdata);
     try {
       const options = { port: port, path: endPoint, method: 'POST', headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Content-Length': JSONdata2.length
         }
       }
       const httpreq = http.request(options, result => {
         result.on('data', d => {
           process.stdout.write(d)
-          return 'Sent request to server:' + port + ':' + endPoint + JSONdata2
+          return 'Sent request to server:' + port + ':' + endPoint + JSONdata
         })
       })
       httpreq.on('error', error => {
         logger.error(error)
         return error
       })
-      httpreq.write(JSONdata2)
+      httpreq.write(JSON.stringify(dataOut))
       httpreq.end()
     } catch (error) {
       logger.error('ERROR in spx.httpPost()', error);

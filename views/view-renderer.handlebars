@@ -441,12 +441,38 @@
             // Handles messages coming from server to this renderer client.
             // All comms using 'SPXMessage2Client' as a conduit with data object and
             // data.spxcmd as function identifier. Additional object values are payload.
-            // console.log('SPXMessage2Client ', data);
+            // console.log('SPXMessage2Client received to renderer', data);
 
             incomingData = data;
             let LayerNro;
 
             switch (data.spxcmd) {
+
+                case 'reloadRendererWithLayers':
+                    // Added in v.1.3.2
+                    // Used to programmatically to set new renderer URL
+                    // and reload the renderer.
+                    let currURL = window.location.href;
+                    const queryString = window.location.search;
+                    const urlParams = new URLSearchParams(queryString);
+                    let userName  = urlParams.get('name') || 'NO_NAME';
+                    let nameMatch = (userName.toUpperCase() === data?.name?.toUpperCase());
+                    if (urlParams.get('remote')=='true' && nameMatch) {
+                        // Yes, renderer is remotely controllable
+                        // as it has the 'remote=true' in the URL
+                        // and the passed name matches.
+                        let baseURL = currURL.split('?')[0];
+                        let layerList = "[" + data.layers.join(',') + "]";
+                        if (data?.layers?.length>0 ) {
+                            window.location.href = baseURL + '?layers=' + layerList + '&remote=true&name=' + userName;
+                        } else {
+                            window.location.href = baseURL + '?remote=true&name=' + userName;
+                        }
+                    } else {
+                        console.log('Remote control ignored.', data);
+                    }
+                    break;
+
                 case 'clearAllLayers':
                     // first we hide root, then clear all layers and show root again
                     spxWM(3);

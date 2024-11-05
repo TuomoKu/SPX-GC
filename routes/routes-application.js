@@ -1037,8 +1037,7 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
         rundownDataJSONobj.project = t_project; // Added in 1.3.2
         rundownDataJSONobj.rundown = t_rundown; // Added in 1.3.2
         global.rundownData = rundownDataJSONobj;
-        filepath = path.join(spx.getDatarootFolder(), t_project, 'data', t_rundown + '.json'); // Changed in 1.3.1
-        await SaveRundownDataToDisc(filepath) // importCSVdata
+        await SaveRundownDataToDisc(data.RundownFile) // Bug fixed in 1.3.2
         if (fieldsFound) {
           res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=Added ' + fieldIndex + ' templates.'); 
           break;
