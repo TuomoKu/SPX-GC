@@ -1,6 +1,8 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
-  "updated": "2024-07-20T14:14:48.702Z",
-  "templates": []
+  "updated": "2024-10-31T09:19:17.195Z",
+  "templates": [],
+  "project": "MyFirstProject",
+  "rundown": "MySecondRundown"
 }

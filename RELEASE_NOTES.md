@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2024-08-10<br>
+> Updated 2024-10-31<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -8,7 +8,6 @@
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases below.
 
 ## Coming up later...
-
 - Add several (not all) templates to a rundown at once
 - spxpack import/export
 - ctrl+drag rundown items to make them children
@@ -19,13 +18,7 @@
 <BR>
 
 # Current dev notes
-
-Implemented:
-* If a username/password is configured, then apikey is also required
-* added project/rundown to the global state (for /api/v1/rundown/get)
-* Added new optional "updateRundownItem" -parameter to "directplayout" API call. If the UI is open and has an item by the same value and both the request and rundown item refers the same template file, it's Play/Stop indicator is changed to match the API request's command.
-* Fixed a bug for "directplayout" and special characters
-* Added 'reloadRendererWithLayers' handler to renderer for SPX Zoom Connector plugin (required url args `&remote=true&name=<validName>`)
+* (none atm)
 
 
 These are in a broken, work-in-progress, state:
@@ -39,6 +32,21 @@ These are in a broken, work-in-progress, state:
 
 
 # Published releases
+
+## **1.3.2** (Oct 31 2024)
+ >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights. 
+
+ 1.3.2 is a maintenance release with some bug fixes and a few security and API
+ improvements.
+
+ **Changes**
+
+* Fixed a "special characters bug" in `directplayout` API endpoint
+* If a username/password is configured, then `apikey` is also required
+* added project/rundown to the global state (for `/api/v1/rundown/get`)
+* Added new optional "updateRundownItem" -parameter to `directplayout` API call. If the UI is open and has an item by the same value and both the request and rundown item refers the same template file, it's Play/Stop indicator is changed to match the API request's command.
+* Added `reloadRendererWithLayers` handler to renderer for SPX Zoom Connector plugin (required url args `&remote=true&name=<validName>`) [for SPX Graphics's internal integrations]
+
 
 ## **1.3.1** (Aug 10 2024)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.

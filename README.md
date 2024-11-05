@@ -7,9 +7,11 @@
 
 <img src="./static/img/spx_online.png" WIDTH="60" align="left" style="margin:0 1em 0 0">
 
-**SPX** runs locally on your computer (or in the cloud) and works with
+**SPX** runs locally on your computer or in the cloud and works seamlessly with
 [OBS](https://obsproject.com/?ref=spx.graphics),
 [vMIX](https://www.vmix.com/?ref=spx.graphics),
+[LiveU Studio](https://www.liveu.tv/products/produce/liveu-studio),
+[ToolsOnAir](https://www.toolsonair.com/),
 [CasparCG](https://github.com/CasparCG),
 [Wirecast](https://www.wirecast.io/en/?ref=spx.graphics),
 [XSplit](https://www.xsplit.com/?ref=spx.graphics), 
@@ -19,23 +21,26 @@
 [LiveOS](https://www.neton.live/products/liveos-production-suites/?ref=spx.graphics),
 [Tellyo](https://www.tellyo.com/?ref=spx.graphics),
 [Sienna](https://www.sienna-tv.com/newsite/?ref=spx.graphics),
-[AWS Elemental](https://aws.amazon.com/media-services/elemental/?ref=spx.graphics)...
-or <i>any</i> video pipeline that supports HTML overlays.
+[AWS Elemental](https://aws.amazon.com/media-services/elemental/?ref=spx.graphics)
+or <i>any other</i> video pipeline supporting HTML overlays.
 
-<br>
+> For the latest released **version 1.3.2** please visit [spx.graphics/controller](https://spx.graphics/controller/pricing).
+
 
 <small>Resources:</small><BR>
 🟩 [**spx.graphics**/_controller_](https://spx.graphics/controller)<br>
-🎬 [Showreel on Youtube ](https://www.youtube.com/watch?v=rdIkuza3MQI)<br>
+🎬 [SPX Youtube channel](https://www.youtube.com/@spxgraphics)<br>
 📘 [Knowledge Base](https://spxgc.tawk.help)<br>
 💬 [Discord server](https://bit.ly/joinspx)<br>
+✨ [Run SPX in the Cloud](https://spxcloud.app)<br>
+♻️ [Buy & sell on the HTML Marketplace](https://html.graphics)<br>
 
 <hr>
 
 <br>
 
 
->  Readme updated **August 10 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
+>  Readme updated **October 31 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
 
 
 
@@ -49,9 +54,8 @@ or <i>any</i> video pipeline that supports HTML overlays.
 
 ### Table of Contents
 
-- [LIVE DEMO](#demo) 🔥 and [Template TestDrive](#testdrive) 
 - [Screenshots](#screenshots)
-- Install [pre-built packages](#builds) for Windows, Mac or Linux.  Or build from [source code](#npminstall).
+- [Build from source code](#npminstall)
 - [Run multiple instances](#multipleinstances)
 - [Configuration](#config)
 - [Renderer parameters](#renderer)
@@ -63,6 +67,7 @@ or <i>any</i> video pipeline that supports HTML overlays.
 - [Using SPX with OBS (or vMix, Wirecast, XSplit...)](#streaming)
 - [SPX Server and https protocol ](#https)
 - [Control with external devices (Stream Deck etc)](#controlApi)
+- [Run SPX in the Cloud](#spxcloud)
 - [Product roadmap](#roadmap)
 - [Issues and Feedback](#feedback)
 - [Security and Vulnerabilities](#security)
@@ -87,28 +92,10 @@ Originally SPX was developed for [YLE](https://www.yle.fi), a public broadcaster
 
 <a id="demo"></a>
 ## Live demo 🔥
-~~Live SPX demo in the cloud: **http://demo.spx.graphics:5000**~~
 
 🔴 _Live demo is OFFLINE at the moment._
 
 > Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
-
-
-<BR>
-
-<a id="testdrive"></a>
-## Template Store & Testdrive 🔥
-A marketplace for free and premium SPX templates and plugins is at [spx.graphics/store](https://spx.graphics/store). Each store item can be testdriven, see these examples:
-
-| Template | Type | Link |
-| ------ | ------ | ------ |
-| **[Bug](https://www.spx.graphics/store/Bug-p291293870)** - You have logo. Why not show it?  | Free | [Test drive](http://demo.spx.graphics:5009/show/Template%20Demo%20-%20Bug) |
-| **[ImageLayer](https://www.spx.graphics/store/ImageLayer-p291331877)** - Pick an image and play.  | Free | [Test drive](http://demo.spx.graphics:5009/show/Template%20Demo%20-%20ImageLayer) |
-| **[Texter](https://www.spx.graphics/store/Texter-p291207513)** - An essential template for unbranded text.  | Premium | [Test drive](http://demo.spx.graphics:5009/show/Template%20Demo%20-%20Texter) |
-| **[TwoTone](https://www.spx.graphics/store/Two-Tone-p245011856)** - You have logo. Why not show it?  | Premium | [Test drive](http://demo.spx.graphics:5009/show/Template%20Demo%20-%20Two-Tone%20Pack) |
-| And much more ▶ [spx.graphics/store](https://www.spx.graphics/store)  |  |  |
-<BR>
-> Please be aware: just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day.
 
 
 <BR>
@@ -129,64 +116,25 @@ A marketplace for free and premium SPX templates and plugins is at [spx.graphics
 
 # Installation <a id="install"></a>
 
-SPX can be installed using a **ready-to-go binary package** which includes all required software components. Developers can alternatively get the full source code and run SPX with `npm scripts`, see section [install source code](#npminstall).
+Latest SPX versions are available for purchase as easy-to-setup installers at [spx.graphics/controller/pricing](https://spx.graphics/controller/pricing).
 
->Source is updated more frequently than binary packages. See [package.json](package.json) file for current version.
-
-
-<BR>
-
-### **Available pre-built packages:** <a id="builds"></a>
-
-| Package| Build date | Notes |
-|  ------ | ----- | ----- |
-| **Windows**<BR>[SPX_1_2_1_win64.zip](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_win64.zip   ) | Sep 20 2023 | The app is cross-platform and is mostly developed and tested on Windows. Approx 57% users are on Windows.
-| **Linux**<BR>[SPX_1_2_1_linux64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_linux64.zip ) | Sep 20 2023 | Tested with some flavours of Debian and Ubuntu but user's input is appreciated here, see [feedback](#feedback). 32% of users are on Linux|
-| **MacOS**<BR>[SPX_1_2_1_macos64.zip]( https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_1_macos64.zip ) | Sep 20 2023 | If any installation issues, please see this [Knowledge base article](https://spxgc.tawk.help/article/spx-gc-installation-steps). 11% of users are on Mac.|
-
-> For links to older packages see [RELEASE_NOTES](RELEASE_NOTES.md).
- Please [get in touch](#feedback) if you have problems downloading or installing these files.
-
-## Option 1: **Install a pre-built package**
-* Download a zip-file for your system using one of the links above.
-* Create a new folder for the app (for example on Windows `C:\SPX\`, or on Linux `/SPX` ).
-* >**PLEASE NOTE** if using `C:\Program Files\` folder on Windows you may need to start SPX with administrative priviledges, since SPX will generate files in that folder structure.  
-* >**AVOID SYMBOLIC LINKS** Some filesystem related operations are known to fail is SPX (at least on Windows) when using `SUBST` or `net use` to assign a drive letter to a folder. 
-* Extract the zip-file to that folder.
-* Locate the executable (for example `SPX_win64.exe` on Windows) and double click it to start the SPX server. A console window should open (and remain open) and show some startup information.
-* Chrome browser can be enabled to launch automatically at server start-up. See `launchcrome` setting in [config.json](#config).
-* When running application the first time it will create a file structure shown in the below screenshot. Note: unzipping and running SPX does _not_ usually require admin priviledges (See note above).
-* **On Linux** you _may_ need to add execute permission to the file (`sudo chmod a+x SPX_linux64`) and launch it in a console (`./SPX_linux64`). See this [KB article](https://spxgc.tawk.help/article/make-executable)
-* **On MacOS** you _may_ need to add execute permission to the file (`sudo chmod a+x SPX_macos64`) and launch it in the Terminal (`./SPX_macos64`). See this [KB article](https://spxgc.tawk.help/article/make-executable)
-* See next steps in the section [first launch](#firstlaunch).
+Alternatively you can get the source code and compile it for your target environment or run it with `npm scripts`:
 
 ![files](screenshots/windows-installation.png)
 
-
-
-## Option 2: **Install from source code** <a id="npminstall"></a>
+## **Install from source code** <a id="npminstall"></a>
 
 Developers can get the source code from the repository with [git](https://git-scm.com/) and run the application using [NodeJS](https://nodejs.org/) and [npm](https://www.npmjs.com/).
 
-> **PLEASE NOTE:** The source code in this repository is always in a <span style="color:red;">**WORK IN PROGRESS**</span> state and features may or may not work. For production work it is recommended to always use known [prebuilt binaries](#builds), which are more carefully tested. See also [Release Notes](RELEASE_NOTES.md).
-
-* Create an empty folder on your system and fetch the source code using a `git clone` command:
-```sh
-git clone https://github.com/TuomoKu/SPX-GC.git
-```
-* After downloading the source, install required additional dependencies (node_modules) with
+> **PLEASE NOTE:** The source code in this repository is always in a <span style="color:red;">**WORK IN PROGRESS**</span> state and features may or may not work. For production work it is recommended to always use known [published versions](#install), which are more carefully tested. See also [Release Notes](RELEASE_NOTES.md).
 
 ```sh
-npm install
-```
-* See `package.json` for available scripts, but in **development** the typical start script would be `npm run dev` which will use _nodemon_ to restart the server when changes are made to source files.
-```sh
-# on Windows:
+git clone https://github.com/TuomoKu/SPX-GC.git .
+npm i
 npm run dev
 
 # Or without hot reloading:
 node server.js
-
 ```
 ### pm2 process manager<a id="pm2"></a>
 * Installation of `pm2` process manager ([https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)) can help in advanced production scanarios.
@@ -336,23 +284,7 @@ An example `config.json` of the SPX server
     ]
   },
   "globalExtras": {
-    "customscript": "/ExtraFunctions/demoFunctions.js",
-    "CustomControls": [
-      {
-        "ftype": "button",
-        "bgclass": "bg_black",
-        "text": "ANIMATE OUT",
-        "fcall": "stopAll()",
-        "description": "Take all layers out"
-      },
-      {
-        "ftype": "button",
-        "bgclass": "bg_red",
-        "text": "PANIC",
-        "fcall": "clearAllChannels()",
-        "description": "Clear playout channels"
-      }
-    ]
+    "customscript": "/ExtraFunctions/demoFunctions.js"
   }
 }
 ```
@@ -878,6 +810,15 @@ If you come across a possible vulnerability, please use the Security Advisories 
 
 <br>
 
+# SPX Cloud SaaS <a id="spxcloud"></a>
+For high performance broadcast or event production graphics you can subscribe to our official [SPX Cloud](https://spxcloud.app) for a  day, week, month or more.
+
+SPX Cloud runs in a modern, global infrastructure with secure connections and sFTP connectivity for managing your own SPX Cloud instance assets, templates and media files. SPX Cloud is a perfect graphics solution for remote production.
+
+Visit [spxcloud.app](https://spxcloud.app) to create your own instance with a FREE TEST SESSION.
+
+<br>
+
 # Roadmap <a id="roadmap"></a>
 New releases will try address found issues and bugs in older versions and they will also introduce new features and functionality. See table for some planned features and use [feedback](#feedback) to submit suggestions.
 
@@ -889,7 +830,7 @@ New releases will try address found issues and bugs in older versions and they w
 | Release | Planned features (subject to change)| Timeframe |
 | ------ | ------ | ----- |
 | 1.X  | ~~Mac install folder [issue (#3)](/../../issues/3) fix~~. ~~Help page update~~, ~~internal logic change to fix [playlist item issue (#1)](/../../issues/1)~~, ~~http protocol for CasparCG templates~~, ~~simple rundown view for mobile / tablet browsers~~, automatically running rundowns, item grouping, ~~textarea control~~, ~~item / file duplication~~. Project and ~~rundown~~ rename. ~~Export/import CSV~~| TBD |
-| X.X  | Under consideration: OSC support, Built-in NDI support, mediafile picker, video playback control templates, ~~graphics preview~~, ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template store~~,  community marketplace. ~~Video tutorials.~~ ~~Knowledgebase~~. Forum. ~~Discord support channel.~~ Free lunches. | TBD |
+| X.X  | Under consideration: OSC support, Built-in NDI support, mediafile picker, video playback control templates, ~~graphics preview~~, ~~MIDI interface~~, global extras editor in appconfig, ~~public API for controls~~, ~~HTML template store~~,  ~~community marketplace~~. ~~Video tutorials.~~ ~~Knowledgebase~~. Forum. ~~Discord support channel.~~ Free lunches. | TBD |
 
 Strikethrough items are already done.<BR>
 Visit [spx.kampsite.co](https://spx.kampsite.co) to discuss the roadmap.

@@ -992,7 +992,7 @@ const apiHandler = require('../utils/api-handlers.js');
           throw 'Missing data, see log.';
         }
         let datafile = path.normalize(file);
-        const RundownData = await spx.GetJsonData(datafile);
+        let RundownData = await spx.GetJsonData(datafile);
         RundownData.templates.forEach((item,index) => {
           if (item.itemID === epoc) {
             item[prop] = valu
