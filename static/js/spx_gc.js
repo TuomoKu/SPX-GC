@@ -49,7 +49,9 @@ socket.on('SPXMessage2Client', function (data) {
     // Handles messages coming from server to this client.
     // All comms using 'SPXMessage2Client' as a conduit with data object and
     // data.spxcmd as function identifier. Additional object values are payload.
+
     // console.log('SPXMessage2Client received', data)
+    
     switch (data.spxcmd) {
         case 'notifyMultipleControllers':
             let notification = document.getElementById('severalDetected');
@@ -2488,7 +2490,7 @@ function spx_system(cmd,servername='') {
             break;
 
         case 'CHECKCONNECTIONS':
-            console.log('Checking connections to servers...', servername);
+            // console.log('Checking connections to servers...', servername);
             data.command = 'CHECKCONNECTIONS';
             data.server = servername;
             break;

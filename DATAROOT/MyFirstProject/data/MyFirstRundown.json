@@ -1,15 +1,15 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
-  "updated": "2024-08-30T08:56:32.768Z",
+  "updated": "2024-10-31T09:22:19.438Z",
   "templates": [
     {
-      "description": "Top right with icon",
+      "description": "Bumper or stinger example",
       "playserver": "OVERLAY",
       "playchannel": "1",
-      "playlayer": "8",
-      "webplayout": "8",
-      "out": "manual",
+      "playlayer": "18",
+      "webplayout": "18",
+      "out": "none",
       "dataformat": "json",
       "uicolor": "3",
       "DataFields": [
@@ -21,35 +21,55 @@
         },
         {
           "ftype": "instruction",
-          "value": "This template goes out in 3000 milliseconds by default. Try using emoji in the graphics also."
+          "value": "This design was created entirely in After Effects, exported as a lottie-file and converted to SPX template using StreamShapers Ferryman. Also, as this graphic is 'fire-and-forget' type of element, its 'out' property is 'none'."
         },
         {
-          "field": "f0",
+          "field": "_COLORVALUE",
+          "ftype": "dropdown",
+          "title": "Color palette",
+          "value": "3",
+          "items": [
+            {
+              "text": "Red",
+              "value": "1"
+            },
+            {
+              "text": "Blue",
+              "value": "2"
+            },
+            {
+              "text": "Green",
+              "value": "3"
+            },
+            {
+              "text": "Orange",
+              "value": "4"
+            },
+            {
+              "text": "Grey",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "field": "_BUMPERTEXT",
           "ftype": "textfield",
-          "title": "Info text",
-          "value": "Finland"
+          "title": "_BUMPERTEXT",
+          "value": "Swoosh!"
         },
         {
-          "field": "f1",
+          "field": "Image",
           "ftype": "filelist",
-          "title": "Icon",
-          "assetfolder": "./lottie/",
-          "extension": "json",
-          "value": "none"
-        },
-        {
-          "field": "f99",
-          "ftype": "filelist",
-          "title": "Visual theme",
-          "assetfolder": "./themes/",
-          "extension": "css",
-          "value": "./themes/Default.css"
+          "title": "Flare image",
+          "assetfolder": "./img/flares/",
+          "extension": "png",
+          "value": "./img/flares/whitey.png"
         }
       ],
       "onair": "false",
-      "imported": "1718013487759",
-      "relpath": "/softpix/Template_Pack_1.3/INFO_RIGHT.html",
-      "itemID": "1724691685501"
+      "imported": "1730312443998",
+      "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html",
+      "itemID": "1730366368630"
     },
     {
       "description": "Top left with icon",
@@ -94,10 +114,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "true",
-      "imported": "1718013487702",
-      "relpath": "/softpix/Template_Pack_1.3/INFO_LEFT.html",
-      "itemID": "1723807348250"
+      "onair": "false",
+      "imported": "1730312444014",
+      "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html",
+      "itemID": "1730366368631"
     },
     {
       "DataFields": [
@@ -114,8 +134,8 @@
         {
           "field": "f0",
           "ftype": "textfield",
-          "title": "Fullname",
-          "value": "Tuomo Kulomaa"
+          "title": "Info text",
+          "value": "😃 #hashtag"
         },
         {
           "field": "f1",
@@ -133,10 +153,17 @@
           "field": "f99",
           "ftype": "textfield",
           "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
           "value": "./themes/Default.css"
         }
       ],
-      "itemID": "172339349110920",
+      "onair": "false",
+      "imported": "1730312444029",
+      "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html",
+      "itemID": "1730366368632"
+    },
+    {
       "description": "Namestrap left",
       "playserver": "OVERLAY",
       "playchannel": "1",
@@ -184,77 +211,23 @@
         },
         {
           "field": "f2",
-          "ftype": "dropdown",
-          "title": "In animation",
-          "value": "fade",
-          "items": [
-            {
-              "text": "Fade",
-              "value": "fade"
-            },
-            {
-              "text": "Slide in from top",
-              "value": "slide-top"
-            },
-            {
-              "text": "Slide in from right",
-              "value": "slide-right"
-            },
-            {
-              "text": "Slide in from bottom",
-              "value": "slide-bottom"
-            },
-            {
-              "text": "Slide in from left",
-              "value": "slide-left"
-            },
-            {
-              "text": "Wipe in from top",
-              "value": "wipe-top"
-            },
-            {
-              "text": "Wipe in from right",
-              "value": "wipe-right"
-            },
-            {
-              "text": "Wipe in from bottom",
-              "value": "wipe-bottom"
-            },
-            {
-              "text": "Wipe in from left",
-              "value": "wipe-left"
-            }
-          ]
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": "White House"
         },
         {
-          "field": "f3",
-          "ftype": "dropdown",
-          "title": "Easing",
-          "value": "easeOutQuint",
-          "items": [
-            {
-              "text": "Smooth",
-              "value": "easeOutQuint"
-            },
-            {
-              "text": "Linear",
-              "value": "linear"
-            },
-            {
-              "text": "Ease back",
-              "value": "easeOutBack"
-            },
-            {
-              "text": "Bounce",
-              "value": "easeOutBounce"
-            }
-          ]
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
         }
       ],
       "onair": "false",
-      "imported": "1723400923691",
-      "relpath": "/smartpx/imageLayer/SPX_Image_Layer2.html",
-      "itemID": "1723400930682"
+      "imported": "1730312444043",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html",
+      "itemID": "1730366368633"
     },
     {
       "description": "RSS News Ticker",
@@ -310,10 +283,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "true",
-      "imported": "1723447575077",
-      "relpath": "/softpix/Template_Pack_1.3/TICKER_RSS.html",
-      "itemID": "1723447580971"
+      "onair": "false",
+      "imported": "1730312444058",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html",
+      "itemID": "1730366368634"
     },
     {
       "description": "News Ticker from Excel data",
@@ -372,9 +345,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1723447571522",
-      "relpath": "/softpix/Template_Pack_1.3/TICKER_EXCEL.html",
-      "itemID": "1723447585329"
+      "imported": "1730312444080",
+      "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html",
+      "itemID": "1730366368635"
     },
     {
       "description": "Namestrap right",
@@ -405,11 +378,48 @@
         {
           "field": "f1",
           "ftype": "textfield",
-          "title": "Title",
-          "value": "Billionaire"
+          "title": "RSS Feed URL",
+          "value": "http://feeds.bbci.co.uk/news/rss.xml"
         },
         {
           "field": "f2",
+          "ftype": "number",
+          "title": "How many items to show (default '10', all '-1')",
+          "value": "10"
+        },
+        {
+          "field": "f3",
+          "ftype": "number",
+          "title": "Flipping interval in seconds (default '5')",
+          "value": "5"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1730312444094",
+      "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html",
+      "itemID": "1730366368636"
+    },
+    {
+      "description": "Title or a headline",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "10",
+      "webplayout": "10",
+      "out": "manual",
+      "dataformat": "json",
+      "steps": 2,
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
           "ftype": "textfield",
           "title": "Company or location",
           "value": "Hadden Industries"
@@ -424,9 +434,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487822",
-      "relpath": "/softpix/Template_Pack_1.3/NAME_RIGHT.html",
-      "itemID": "1724353219171"
+      "imported": "1730312444116",
+      "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html",
+      "itemID": "1730366368637"
     }
   ],
   "project": "MyFirstProject",

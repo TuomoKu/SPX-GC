@@ -63,13 +63,13 @@ module.exports = {
                     cfg.general.port                            = 5656
                     cfg.general.disableConfigUI                 = false
                     cfg.general.disableLocalRenderer            = false
-                    cfg.general.disableOpenFolderCommand        = true
+                    cfg.general.disableOpenFolderCommand        = false
                     cfg.general.disableSeveralControllersWarning = false
                     cfg.general.hideRendererCursor               = false
                     cfg.general.resolution                      = "HD"
                     cfg.general.preview                         = "selected"
                     cfg.general.renderer                        = "normal"
-                    cfg.general.autoplayLocalRenderer           = false
+                    cfg.general.autoplayLocalRenderer           = true
                     // cfg.general.allowstats                   = true
 
                     cfg.general.recents                         = []
@@ -78,6 +78,7 @@ module.exports = {
                     cfg.casparcg.servers                        = []
                     newcasparcg                                 = {}
 
+                    // Experimental, WIP
                     cfg.osc                                     = {}
                     cfg.osc.enable                              = false
                     cfg.osc.port                                = 57121

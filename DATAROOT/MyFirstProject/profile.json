@@ -64,8 +64,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487663",
-      "relpath": "/softpix/Template_Pack_1.3/BUMPER.html"
+      "imported": "1730312443998",
+      "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html"
     },
     {
       "description": "Top left with icon",
@@ -111,8 +111,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487702",
-      "relpath": "/softpix/Template_Pack_1.3/INFO_LEFT.html"
+      "imported": "1730312444014",
+      "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html"
     },
     {
       "description": "Top right with icon",
@@ -158,8 +158,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487759",
-      "relpath": "/softpix/Template_Pack_1.3/INFO_RIGHT.html"
+      "imported": "1730312444029",
+      "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html"
     },
     {
       "description": "Namestrap left",
@@ -209,8 +209,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487779",
-      "relpath": "/softpix/Template_Pack_1.3/NAME_LEFT.html"
+      "imported": "1730312444043",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html"
     },
     {
       "description": "Namestrap right",
@@ -260,8 +260,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487822",
-      "relpath": "/softpix/Template_Pack_1.3/NAME_RIGHT.html"
+      "imported": "1730312444058",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html"
     },
     {
       "description": "News Ticker from Excel data",
@@ -320,8 +320,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1723447571522",
-      "relpath": "/softpix/Template_Pack_1.3/TICKER_EXCEL.html"
+      "imported": "1730312444080",
+      "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html"
     },
     {
       "description": "RSS News Ticker",
@@ -378,8 +378,8 @@
         }
       ],
       "onair": "false",
-      "imported": "1723447575077",
-      "relpath": "/softpix/Template_Pack_1.3/TICKER_RSS.html"
+      "imported": "1730312444094",
+      "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html"
     },
     {
       "description": "Title or a headline",
@@ -424,119 +424,12 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487917",
-      "relpath": "/softpix/Template_Pack_1.3/TITLE_2_STEPS.html"
-    },
-    {
-      "description": "L2 (e.g. backdrops)",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "2",
-      "webplayout": "2",
-      "out": "manual",
-      "uicolor": "7",
-      "dataformat": "json",
-      "DataFields": [
-        {
-          "field": "comment",
-          "ftype": "textfield",
-          "title": "Name item for rundown",
-          "value": "[ Item name ]"
-        },
-        {
-          "ftype": "instruction",
-          "value": "A full screen image (can be with transparency also). If URL is given it will be used instead of the local file from the dropdown selector. See source code for customization options."
-        },
-        {
-          "field": "f0",
-          "ftype": "filelist",
-          "title": "Choose image",
-          "assetfolder": "/media/images/hd/",
-          "extension": "png",
-          "value": "/media/images/hd/nature.png"
-        },
-        {
-          "field": "f1",
-          "ftype": "textfield",
-          "title": "Image URL",
-          "value": ""
-        },
-        {
-          "field": "f2",
-          "ftype": "dropdown",
-          "title": "In animation",
-          "value": "fade",
-          "items": [
-            {
-              "text": "Fade",
-              "value": "fade"
-            },
-            {
-              "text": "Slide in from top",
-              "value": "slide-top"
-            },
-            {
-              "text": "Slide in from right",
-              "value": "slide-right"
-            },
-            {
-              "text": "Slide in from bottom",
-              "value": "slide-bottom"
-            },
-            {
-              "text": "Slide in from left",
-              "value": "slide-left"
-            },
-            {
-              "text": "Wipe in from top",
-              "value": "wipe-top"
-            },
-            {
-              "text": "Wipe in from right",
-              "value": "wipe-right"
-            },
-            {
-              "text": "Wipe in from bottom",
-              "value": "wipe-bottom"
-            },
-            {
-              "text": "Wipe in from left",
-              "value": "wipe-left"
-            }
-          ]
-        },
-        {
-          "field": "f3",
-          "ftype": "dropdown",
-          "title": "Easing",
-          "value": "easeOutCubic",
-          "items": [
-            {
-              "text": "Smooth",
-              "value": "easeOutQuint"
-            },
-            {
-              "text": "Linear",
-              "value": "linear"
-            },
-            {
-              "text": "Ease back",
-              "value": "easeOutBack"
-            },
-            {
-              "text": "Bounce",
-              "value": "easeOutBounce"
-            }
-          ]
-        }
-      ],
-      "onair": "false",
-      "imported": "1723400923691",
-      "relpath": "/smartpx/imageLayer/SPX_Image_Layer2.html"
+      "imported": "1730312444116",
+      "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html"
     }
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
   "smartpx": "(c) 2020-2021 SmartPX",
-  "updated": "2024-08-12T07:26:15.077Z",
+  "updated": "2024-10-30T18:20:44.117Z",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)"
 }

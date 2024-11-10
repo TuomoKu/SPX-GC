@@ -326,7 +326,6 @@ const apiHandler = require('../utils/api-handlers.js');
   router.post('/directplayout', spxAuth.CheckAPIKey, async (req, res) => {
     // Improved in 1.3.0 to check valid JSON data and that template exists.
     // Also supports timed out modes.
-
     // console.log('POST directplayout:', req.body);
 
     try {
@@ -368,7 +367,7 @@ const apiHandler = require('../utils/api-handlers.js');
 
       // Order changed in v.1.3.2
       // console.log('executing playout:', dataOut);
-      spx.httpPost(dataOut,'/gc/playout')
+      spx.httpPost(JSON.stringify(dataOut),'/gc/playout')
       res.status(200).json(dataOut);
       // 
     } catch (error) {
@@ -993,7 +992,7 @@ const apiHandler = require('../utils/api-handlers.js');
           throw 'Missing data, see log.';
         }
         let datafile = path.normalize(file);
-        const RundownData = await spx.GetJsonData(datafile);
+        let RundownData = await spx.GetJsonData(datafile);
         RundownData.templates.forEach((item,index) => {
           if (item.itemID === epoc) {
             item[prop] = valu
