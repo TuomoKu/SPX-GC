@@ -1,7 +1,7 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
-  "updated": "2024-10-31T09:22:19.438Z",
+  "updated": "2024-11-10T12:23:47.587Z",
   "templates": [
     {
       "description": "Bumper or stinger example",
@@ -66,7 +66,7 @@
           "value": "./img/flares/whitey.png"
         }
       ],
-      "onair": "false",
+      "onair": "true",
       "imported": "1730312443998",
       "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html",
       "itemID": "1730366368630"
