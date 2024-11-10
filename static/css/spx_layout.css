@@ -174,11 +174,9 @@ td.aright{
 
 .breadcrumbGear {
     opacity: 0.3;
-    font-size: 0.7em;
+    margin: 0 0.5em;
+    font-size: 0.6em;
     color:  #ffffff;
-    margin-left: 0.7em;
-    border: 0px solid red;
-    margin-bottom: 3px;
 }
 
 .breadcrumbGear:hover {
@@ -195,10 +193,12 @@ td.aright{
 
 .breadIcon {
     height: 100%;
+    display: flex;
+    line-height: 1em;
     width: fit-content;
-    display: inline-flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    border: 0px solid yellow;
 }
 
 

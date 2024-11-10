@@ -25,30 +25,30 @@
   "author": "Tuomo Kulomaa <tuomo@softpix.io> (https://spx.graphics)",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.2",
-    "body-parser": "^1.19.0",
+    "axios": "^1.6.8",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "express-handlebars": "^5.3.1",
-    "express-session": "^1.17.1",
-    "glob": "^7.1.6",
-    "ip": "^1.1.5",
-    "jsdom": "^16.4.0",
+    "express": "^4.21.1",
+    "express-handlebars": "^7.0.0",
+    "express-session": "^1.18.1",
+    "glob": "^9.0.0",
+    "ip": "^1.1.9",
+    "jsdom": "^24.1.1",
     "macaddress": "^0.5.1",
-    "moment": "^2.27.0",
+    "moment": "^2.29.4",
     "morgan": "^1.9.1",
     "node-html-parser": "^6.1.13",
     "node-wav-player": "^0.1.0",
     "node-xlsx": "^0.15.1",
     "open": "^7.4.2",
-    "osc": "^2.4.4",
+    "osc": "^2.4.5",
     "path": "^0.12.7",
     "rotating-file-stream": "^2.1.3",
-    "socket.io": "^4.0.0",
+    "socket.io": "^4.8.0",
     "sox-play": "0.0.2",
-    "winston": "^3.3.3"
+    "winston": "^3.8.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.20"
   }
 }

@@ -99,10 +99,17 @@
               <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
               <span class="caret-icon">&#9654;</span>
               <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+              <div class="breadIcon">
+                <a  class="breadcrumbGear"
+                    href="/show/{{folder}}/config"
+                    onmouseover="tip('{{lang 'button.settings'}}');"
+                    title="{{lang 'button.settings'}}"><i class="fa fa-cog"></i></a>
+              </div>
+
               <span class="caret-icon">&#9654;</span>
               <span  class="breadcrumbs">{{filebasename}}</span>
               <div class="breadIcon">
-                <a class="breadcrumbGear" href="#" onClick="toggleRundownSettings(); return false;" title="Rundown options"><i class="fa fa-wrench"></i></a>
+                <a class="breadcrumbGear" href="#" onClick="toggleRundownSettings(); return false;" title="Rundown options"><i class="fa fa-bars"></i></a>
               </div>
             {{/ifValue}}
 
