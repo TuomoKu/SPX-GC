@@ -305,7 +305,7 @@
           "value": "10"
         },
         {
-          "field": "f2",
+          "field": "f3",
           "ftype": "number",
           "title": "Flipping interval in seconds (default '4')",
           "value": "4"
@@ -320,7 +320,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487859",
+      "imported": "1723447571522",
       "relpath": "/softpix/Template_Pack_1.3/TICKER_EXCEL.html"
     },
     {
@@ -363,7 +363,7 @@
           "value": "10"
         },
         {
-          "field": "f2",
+          "field": "f3",
           "ftype": "number",
           "title": "Flipping interval in seconds (default '5')",
           "value": "5"
@@ -378,7 +378,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1718013487888",
+      "imported": "1723447575077",
       "relpath": "/softpix/Template_Pack_1.3/TICKER_RSS.html"
     },
     {
@@ -426,10 +426,117 @@
       "onair": "false",
       "imported": "1718013487917",
       "relpath": "/softpix/Template_Pack_1.3/TITLE_2_STEPS.html"
+    },
+    {
+      "description": "L2 (e.g. backdrops)",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "2",
+      "webplayout": "2",
+      "out": "manual",
+      "uicolor": "7",
+      "dataformat": "json",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Name item for rundown",
+          "value": "[ Item name ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "A full screen image (can be with transparency also). If URL is given it will be used instead of the local file from the dropdown selector. See source code for customization options."
+        },
+        {
+          "field": "f0",
+          "ftype": "filelist",
+          "title": "Choose image",
+          "assetfolder": "/media/images/hd/",
+          "extension": "png",
+          "value": "/media/images/hd/nature.png"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Image URL",
+          "value": ""
+        },
+        {
+          "field": "f2",
+          "ftype": "dropdown",
+          "title": "In animation",
+          "value": "fade",
+          "items": [
+            {
+              "text": "Fade",
+              "value": "fade"
+            },
+            {
+              "text": "Slide in from top",
+              "value": "slide-top"
+            },
+            {
+              "text": "Slide in from right",
+              "value": "slide-right"
+            },
+            {
+              "text": "Slide in from bottom",
+              "value": "slide-bottom"
+            },
+            {
+              "text": "Slide in from left",
+              "value": "slide-left"
+            },
+            {
+              "text": "Wipe in from top",
+              "value": "wipe-top"
+            },
+            {
+              "text": "Wipe in from right",
+              "value": "wipe-right"
+            },
+            {
+              "text": "Wipe in from bottom",
+              "value": "wipe-bottom"
+            },
+            {
+              "text": "Wipe in from left",
+              "value": "wipe-left"
+            }
+          ]
+        },
+        {
+          "field": "f3",
+          "ftype": "dropdown",
+          "title": "Easing",
+          "value": "easeOutCubic",
+          "items": [
+            {
+              "text": "Smooth",
+              "value": "easeOutQuint"
+            },
+            {
+              "text": "Linear",
+              "value": "linear"
+            },
+            {
+              "text": "Ease back",
+              "value": "easeOutBack"
+            },
+            {
+              "text": "Bounce",
+              "value": "easeOutBounce"
+            }
+          ]
+        }
+      ],
+      "onair": "false",
+      "imported": "1723400923691",
+      "relpath": "/smartpx/imageLayer/SPX_Image_Layer2.html"
     }
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
   "smartpx": "(c) 2020-2021 SmartPX",
-  "updated": "2024-06-10T09:58:07.917Z",
+  "updated": "2024-08-12T07:26:15.077Z",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)"
 }
