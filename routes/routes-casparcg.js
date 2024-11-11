@@ -9,7 +9,6 @@ const path = require('path');
 const logger = require('../utils/logger');
 logger.debug('Caspar-route loading...');
 const spx = require('../utils/spx_server_functions.js');
-const open = require('open'); // open url in browser
 
 const ip = require('ip')
 const ipad = ip.address(); // my ip address
@@ -70,14 +69,6 @@ router.get('/system/:data', (req, res) => {
   logger.verbose('System utilities / ' + JSON.stringify(data));
   res.sendStatus(200);
   switch (data.command) {
-
-    // This was dumb. Doing this earlier in the client.
-    // case 'WEBRENDERER':
-      // (async () => {
-      // Opens the URL in a specified browser.
-      //await open(`http://${ipad}:${port}/renderer`, {app: 'chrome'});
-      // })();
-      // break;
 
     case 'DATAFOLDER':
       directoryPath = path.normalize(config.general.dataroot);
