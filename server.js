@@ -35,6 +35,10 @@ const fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const rfs = require('rotating-file-stream')
+
+//const open = require('open');
+const open = import('open');
+
 var macaddress = require('macaddress');
 
 console.log('\n  SPX Graphics Controller server is starting.\n  Closing this window/process will stop the server.\n');
@@ -77,7 +81,7 @@ app.use(express.static(path.join(__dirname,('static'))))                    // t
 app.use(express.static(path.resolve(spx.getStartUpFolder(),'ASSETS')))      // http root in startup folder / ASSETS
 
 const ipad = ip.address();
-const open = require('open');
+
 var pjson = require('./package.json');
 var packageversion = pjson.version;
 const vers = process.env.npm_package_version || packageversion || 'X.X.X';
@@ -124,8 +128,8 @@ var accessLogStream = rfs.createStream('access.log', {
 app.use(morgan('combined', { stream: accessLogStream }))
 
 
-// Handlebars templating
-app.engine('handlebars', exphbs({
+// Handlebars templating, updated in 1.3.3
+app.engine('handlebars', exphbs.engine({
   extname: '.handlebars',
   //defaultLayout: 'filelist',
   helpers: {
