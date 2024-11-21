@@ -19,7 +19,7 @@
 
 # Current dev notes v.1.3.3
 * Improved CONTINUE button UI-logic
-* 
+* Added `runScript` URL parameter handler to renderer loader
 
 
 These are in a broken, work-in-progress, state:

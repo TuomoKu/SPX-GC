@@ -1,7 +1,7 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
-  "updated": "2024-11-10T12:23:47.587Z",
+  "updated": "2024-11-21T18:44:53.140Z",
   "templates": [
     {
       "description": "Bumper or stinger example",
@@ -55,7 +55,7 @@
           "field": "_BUMPERTEXT",
           "ftype": "textfield",
           "title": "_BUMPERTEXT",
-          "value": "Swoosh!"
+          "value": "1.3.2"
         },
         {
           "field": "Image",
@@ -63,13 +63,13 @@
           "title": "Flare image",
           "assetfolder": "./img/flares/",
           "extension": "png",
-          "value": "./img/flares/whitey.png"
+          "value": "./img/flares/flare-hoop.png"
         }
       ],
       "onair": "true",
       "imported": "1730312443998",
       "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html",
-      "itemID": "1730366368630"
+      "itemID": "1732091877481"
     },
     {
       "description": "Top left with icon",
@@ -95,7 +95,7 @@
           "field": "f0",
           "ftype": "textfield",
           "title": "Info text",
-          "value": "FINLAND  ⛅+ 20°C"
+          "value": "HEADQUARTERS"
         },
         {
           "field": "f1",
@@ -117,19 +117,27 @@
       "onair": "false",
       "imported": "1730312444014",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html",
-      "itemID": "1730366368631"
+      "itemID": "1732091877482"
     },
     {
+      "description": "Top right with icon",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "8",
+      "webplayout": "8",
+      "out": "3000",
+      "dataformat": "json",
+      "uicolor": "3",
       "DataFields": [
-        {
-          "ftype": "instruction",
-          "value": "⚠ WARNING: This item was generated with CSV import and typically is not intended for manual editing. Please use the original template for manual input."
-        },
         {
           "field": "comment",
           "ftype": "textfield",
           "title": "Nickname of this item on the rundown",
           "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template goes out in 3000 milliseconds by default. Try using emoji in the graphics also."
         },
         {
           "field": "f0",
@@ -139,19 +147,15 @@
         },
         {
           "field": "f1",
-          "ftype": "textfield",
-          "title": "Title",
-          "value": "SPX Graphics"
-        },
-        {
-          "field": "f2",
-          "ftype": "textfield",
-          "title": "Company or location",
-          "value": ""
+          "ftype": "filelist",
+          "title": "Icon",
+          "assetfolder": "./lottie/",
+          "extension": "json",
+          "value": "none"
         },
         {
           "field": "f99",
-          "ftype": "textfield",
+          "ftype": "filelist",
           "title": "Visual theme",
           "assetfolder": "./themes/",
           "extension": "css",
@@ -161,7 +165,7 @@
       "onair": "false",
       "imported": "1730312444029",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html",
-      "itemID": "1730366368632"
+      "itemID": "1732091877483"
     },
     {
       "description": "Namestrap left",
@@ -170,44 +174,30 @@
       "playlayer": "5",
       "webplayout": "5",
       "out": "manual",
+      "dataformat": "json",
       "uicolor": "3",
-      "onair": "true",
-      "dataformat": "json",
-      "relpath": "/softpix/Template_Pack_1.3/NAME_LEFT.html"
-    },
-    {
-      "description": "L2 (e.g. backdrops)",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "2",
-      "webplayout": "2",
-      "out": "manual",
-      "uicolor": "7",
-      "dataformat": "json",
       "DataFields": [
         {
           "field": "comment",
           "ftype": "textfield",
-          "title": "Name item for rundown",
-          "value": "[ Item name ]"
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
         },
         {
           "ftype": "instruction",
-          "value": "A full screen image (can be with transparency also). If URL is given it will be used instead of the local file from the dropdown selector. See source code for customization options."
+          "value": "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
         },
         {
           "field": "f0",
-          "ftype": "filelist",
-          "title": "Choose image",
-          "assetfolder": "/media/images/hd/",
-          "extension": "png",
-          "value": "/media/images/hd/rugbystadium.png"
+          "ftype": "textfield",
+          "title": "Fullname",
+          "value": "Palmer Joss"
         },
         {
           "field": "f1",
           "ftype": "textfield",
-          "title": "Image URL",
-          "value": ""
+          "title": "Title",
+          "value": "Advisor"
         },
         {
           "field": "f2",
@@ -224,18 +214,17 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "false",
+      "onair": "true",
       "imported": "1730312444043",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html",
-      "itemID": "1730366368633"
+      "itemID": "1732091877484"
     },
     {
-      "description": "RSS News Ticker",
+      "description": "Namestrap right",
       "playserver": "OVERLAY",
       "playchannel": "1",
-      "playlayer": "3",
-      "webplayout": "3",
-      "steps": "1",
+      "playlayer": "6",
+      "webplayout": "6",
       "out": "manual",
       "dataformat": "json",
       "uicolor": "3",
@@ -248,31 +237,25 @@
         },
         {
           "ftype": "instruction",
-          "value": "Template uses SPX's feedproxy API endpoint to download data from external sources. Also remember SPX can utilize Google Sheets, files, databases etc."
+          "value": "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
         },
         {
           "field": "f0",
           "ftype": "textfield",
-          "title": "Headline",
-          "value": "RTL News"
+          "title": "Fullname",
+          "value": "S. R. Hadden"
         },
         {
           "field": "f1",
           "ftype": "textfield",
-          "title": "RSS Feed URL",
-          "value": "https://www.rtl.de/rss/feed/news"
+          "title": "Title",
+          "value": "Billionaire"
         },
         {
           "field": "f2",
-          "ftype": "number",
-          "title": "How many items to show (default '10', all '-1')",
-          "value": "10"
-        },
-        {
-          "field": "f3",
-          "ftype": "number",
-          "title": "Flipping interval in seconds (default '5')",
-          "value": "5"
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": "Hadden Industries"
         },
         {
           "field": "f99",
@@ -283,10 +266,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "false",
+      "onair": "true",
       "imported": "1730312444058",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html",
-      "itemID": "1730366368634"
+      "itemID": "1732091877485"
     },
     {
       "description": "News Ticker from Excel data",
@@ -347,14 +330,15 @@
       "onair": "false",
       "imported": "1730312444080",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html",
-      "itemID": "1730366368635"
+      "itemID": "1732091877486"
     },
     {
-      "description": "Namestrap right",
+      "description": "RSS News Ticker",
       "playserver": "OVERLAY",
       "playchannel": "1",
-      "playlayer": "6",
-      "webplayout": "6",
+      "playlayer": "3",
+      "webplayout": "3",
+      "steps": "1",
       "out": "manual",
       "dataformat": "json",
       "uicolor": "3",
@@ -367,13 +351,13 @@
         },
         {
           "ftype": "instruction",
-          "value": "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+          "value": "Template uses SPX's feedproxy API endpoint to download data from external sources. Also remember SPX can utilize Google Sheets, files, databases etc."
         },
         {
           "field": "f0",
           "ftype": "textfield",
-          "title": "Fullname",
-          "value": "S. R. Hadden"
+          "title": "Headline",
+          "value": "News Feed"
         },
         {
           "field": "f1",
@@ -402,10 +386,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "false",
+      "onair": "true",
       "imported": "1730312444094",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html",
-      "itemID": "1730366368636"
+      "itemID": "1732091877487"
     },
     {
       "description": "Title or a headline",
@@ -421,8 +405,24 @@
         {
           "field": "comment",
           "ftype": "textfield",
-          "title": "Company or location",
-          "value": "Hadden Industries"
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template has two steps. Click 'Play' and then 'Continue'..."
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Main title",
+          "value": "Now click continue"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Subtitle",
+          "value": "Step two completed!"
         },
         {
           "field": "f99",
@@ -433,10 +433,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "false",
+      "onair": "true",
       "imported": "1730312444116",
       "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html",
-      "itemID": "1730366368637"
+      "itemID": "1732091877488"
     }
   ],
   "project": "MyFirstProject",
