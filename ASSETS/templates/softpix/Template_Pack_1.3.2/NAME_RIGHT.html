@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2024 SPX Graphics
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+    Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+
+    ▸ spx.graphics | Copyright 2021-2024 SPX Graphics <https://spx.graphics>
+    
+    Version: ##-version-## / ##-comment-##
+    Build: ##-builddate-## 
+
+	----
+
+	Changes:
+    29.06.2022 Added FPS value check from SPX renderer
+    24.08.2022 Fixed bug FPS value check (if not available)
+    06.05.2024 Replaced GSAP with AnimeJS. Simplified source.
+
+-->
+
+
+
+<head>
+    <meta charset="utf-8" />
+    <title>RIGHT</title>
+    <script type="text/javascript" src="js/lib/anime.min.js"></script>
+    <script type="text/javascript" src="js/spx_interface.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
+    <link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/Default.css" />
+
+    <style>
+
+        .SPXWindow {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+
+        #gfx {
+            gap: 0;
+            border:0;
+            opacity: 0 /* animated */;
+            bottom: 5vh;
+            z-index: 10;
+            display:flex;
+            position: absolute;
+            flex-direction: column;
+            transform-origin: bottom right;
+            border-right: var(--theme-accent-width)
+                         solid 
+                         var(--theme-brandColor);
+            margin-right: 0em;
+        }
+
+        #box1 {
+            width: 100%;
+            font-size: 3vw;
+            font-family: 'BOLD';
+            padding: 0.1em 0.5em;
+        }
+
+        #details {
+            gap: 0px; 
+            display: flex;
+            flex-direction: row;
+        }
+
+        #box3,
+        #box4 {
+            font-size: 2.0vw;
+            font-family: "REGU";
+            padding: 0.2em 0;
+        }
+
+        #text1 {
+            width: 100%;
+            text-align: right;
+        }
+        #text2 {
+            padding: 0 0.8em;
+        }
+
+        #text3 {
+            padding-right: 0.8em;
+        }
+    </style>
+
+    <script>
+        function runTemplateUpdate() {
+            e('DynamicTheme').href = e('f99').innerText;
+            e('text1').innerHTML = htmlDecode(e('f0').innerText);
+            e('text2').innerHTML = htmlDecode(e('f1').innerText);
+            e('text3').innerHTML = htmlDecode(e('f2').innerText);
+
+            // Show all
+            e('box1').style.display='flex';
+            e('box3').style.display='flex';
+            e('box4').style.display='flex';
+
+            // Hide empty ones
+            if (e('f0').innerText=='') { e('box1').style.display='none'; }
+            if (e('f1').innerText=='') { e('box3').style.display='none'; }
+            if (e('f2').innerText=='') { e('box4').style.display='none'; }
+
+            setTimeout(runAnimationIN, 50);
+        }
+
+        let clipNone = "inset(0%   0% 0% 0%)";
+        let clipWest = "inset(0% 0% 0% 100%)";
+        let clipSout = "inset(0% 0% 100% 0%)";
+
+        function runAnimationIN() {
+
+            var timelineIn = anime.timeline({
+                easing:   'easeOutCubic',
+                duration: 500
+            })
+
+            .add({
+                targets:    ['#gfx'],
+                opacity:    [0,1],
+                duration:   50,
+                easing:     'linear'
+            },0)
+
+            .add({
+                targets:    ['#box1'],
+                duration:   300, 
+                clipPath:   [clipWest,clipNone],
+                opacity:    [0,1],
+            },50)
+            
+            .add({
+                targets:    ['#text1'],
+                opacity:    { value: [0,1], duration: 300},
+                translateX: { value: ['-50%','0%'], duration: 800 },
+            },0)
+
+            .add({
+                targets:    ['#box3', '#box4', '#text2', '#text3'],
+                opacity:    { value: [0,1], duration: 50, easing: 'linear'},
+                translateY: { value: ['-100%','0%'], duration: 500 },
+                delay:      anime.stagger(100)
+            },50);
+        }
+
+        function runAnimationOUT() {
+
+            var timelineOut = anime.timeline({
+                easing:   'easeInCubic',
+                duration: 600
+            })
+
+            .add({
+                targets:    ['#text1'],
+                opacity:    0,
+                translateX: { value: ['-50%'] },
+            },0)
+
+            .add({
+                targets:    ['#text3', '#text2'],
+                opacity:    { value: 0, duration: 200, easing: 'linear'},
+                delay:      anime.stagger(100)
+            },100)
+
+            .add({
+                targets:    ['#gfx'],
+                clipPath:   clipWest,
+                opacity:    { value: 0, duration: 200, delay: 500},
+            },100)
+            
+            .add({
+                targets:    '#logoRight',
+                clipPath:   clipWest,
+                duration:   200,
+            },500)
+            ;
+
+        }
+
+        window.SPXGCTemplateDefinition = {
+            "description": "Namestrap right",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "6",
+            "webplayout": "6",
+            "out": "manual",
+            "dataformat": "json",
+            "uicolor": "3",
+            "DataFields": [
+                {
+                    "field" : "comment",
+                    "ftype" : "textfield",
+                    "title" : "Nickname of this item on the rundown",
+                    "value" : "[ Item nickname ]"
+                },
+                {
+                    "ftype" : "instruction",
+                    "value" : "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+                },
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Fullname",
+                    "value" : "S. R. Hadden"
+                },
+                {
+                    "field" : "f1",
+                    "ftype" : "textfield",
+                    "title" : "Title",
+                    "value" : "Billionaire"
+                },
+                {
+                    "field" : "f2",
+                    "ftype" : "textfield",
+                    "title" : "Company or location",
+                    "value" : "Hadden Industries"
+                },
+                {
+                    "field": "f99",
+                    "ftype": "filelist",
+                    "title": "Visual theme",
+                    "assetfolder" : "./themes/" ,
+                    "extension" : "css",
+                    "value": "./themes/Default.css",
+                }  
+
+            ]
+        };
+    </script>
+</head>
+
+<body>
+    <div class="SPXWindow right">
+        <div id="gfx">
+            <div id="box1" class="darkOnLite"><span id="text1"></span></div>
+            <div id="details">
+                <div id="box3" class="liteOnColor">
+                    <span id="text2"></span>
+                </div>
+                <div id="box4" class="liteOnColor">
+                    <span id="text3"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="hiddenSpxData" data-info="See styles.css">
+        <div data-info="Fullname....." id="f0"></div>
+        <div data-info="Jobtitle....." id="f1"></div>
+        <div data-info="Company......" id="f2"></div>
+        <div data-info="Theme........" id="f99"></div>
+    </div>
+
+</body>
+</html>

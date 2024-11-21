@@ -1,0 +1,64 @@
+:root {
+
+  /* COLORS */
+  --theme-lite-color: white;
+  --theme-dark-color: black;
+  --theme-brandColor: rgb(218, 11, 11);
+  --theme-tickerBack: white;
+
+  --theme-accent-width: 1vw;
+  --theme-ticker-height: 4.7vh;
+
+  --theme-viewport-padding-top: 4vw;
+  --theme-viewport-padding-sides: 3vw;
+  --theme-viewport-padding-bottom: 2vh;
+}
+
+@font-face { font-family: "LITE"; src: url("../fonts/BarlowSemiCondensed-Regular.ttf");   }
+@font-face { font-family: "REGU"; src: url("../fonts/barlow.medium.ttf"); }
+@font-face { font-family: "BOLD"; src: url("../fonts/barlow.bold.ttf");    }
+@font-face { font-family: "BLAC"; src: url("../fonts/barlow.black.ttf");   }
+
+
+.right #details {
+  justify-content: flex-end;
+}
+
+#title1 {
+  background-color: var(--theme-lite-color);
+  color: var(--theme-dark-color);
+  font-family: 'BLAC';
+  font-size: 1.5em;
+  padding: 0.05em 0.8em;
+  text-transform: uppercase;
+  border-bottom: 0.1em solid var(--theme-brandColor);
+}
+
+#title2{
+  color: var(--theme-lite-color);
+  text-shadow: none;
+  font-family: 'REGU';
+  font-size: 0.75em;
+  padding: 0.5em 2.0em;
+  background-color: var(--theme-brandColor);
+}
+
+#rightInfo,
+#leftInfo {
+  background-color: var(--theme-lite-color);
+  color: var(--theme-dark-color);
+  font-family: 'REGU';
+  font-size: 2.3em;
+  padding: 0.2em 0.8em;
+  border-left: var(--theme-accent-width)
+               solid 
+               var(--theme-brandColor);
+}
+
+#rightInfo {
+  border-right: var(--theme-accent-width)
+                solid 
+                var(--theme-brandColor);
+  border-left: 0;
+
+}

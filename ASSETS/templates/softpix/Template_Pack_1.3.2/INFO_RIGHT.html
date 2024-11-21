@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+
+    (c) 2024 SPX Graphics
+    Demo template for SPX. See SPXGCTemplateDefinition -object below for data field descriptions.
+    Need custom templates? Get in touch! https://spx.graphics/contact
+
+	PLEASE SEE THE LICENSE FILE FOR TERMS AND CONDITIONS.  
+
+    ▸ spx.graphics | Copyright 2021-2024 SPX Graphics <https://spx.graphics>
+    
+    Version: ##-version-## / ##-comment-##
+    Build: ##-builddate-## 
+
+	----
+
+	Changes:
+    09.06.2024 Original version.
+
+-->
+
+
+<head>
+    <meta charset="utf-8" />
+    <title>INFOLEFT</title>
+    <script src="js/lib/anime.min.js"></script>
+    <script src="js/lib/lottie.min.js"></script>
+    <script src="js/spx_interface.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
+    <link rel="stylesheet" type="text/css" id="DynamicTheme" href="themes/Default.css" />
+    <style>
+
+        .SPXWindow {
+            display: flex;
+            align-items: flex-start; /* top */ 
+            justify-content: flex-end; /* horizontal */
+        }
+
+        #gfx {
+            gap: 0;
+            opacity: 0; /* animated */
+            width: 50%;
+            z-index: 10;
+            height: 6vh;
+            display:flex;
+            border-radius: 0;
+            position: absolute;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            border: 0px dotted yellow;
+            transform-origin: top right;
+        }
+
+        #icon {
+            z-index: 10;
+            width: 15vh;
+            height: 15vh;
+            display: flex;
+            position: absolute;
+            align-items: center;
+            justify-content: center;
+            border: 0px solid yellow;
+        }
+
+
+    </style>
+
+    <script>
+
+        let clipNone = "inset(0%   0% 0% 0%)";
+        let clipEast = "inset(0% 100% 0% 0%)";
+        let clipWest = "inset(0% 0% 0% 100%)";
+        let clipSout = "inset(0% 0% 100% 0%)";
+
+        function runTemplateUpdate() {
+            console.clear();
+            e('DynamicTheme').href = e('f99').innerText;
+            e('leftText').innerHTML = htmlDecode(e('f0').innerText);
+
+            if (e('f1').innerText=='none') {
+                // no icon
+                e('icon').style.display='none';
+            } else {
+                // show icon
+                e('rightInfo').style.paddingRight = '7vw';
+                e('icon').style.display='flex';
+                const params = {
+                    container: e('icon'),
+                    renderer: 'svg',
+                    loop: true,
+                    autoplay: true,
+                    path: e('f1').innerText
+                };
+                anim = lottie.loadAnimation(params);
+                anim.addEventListener('data_ready', () => {
+                    anim.goToAndPlay('in1');
+                })
+            }
+
+            runAnimationIN();
+        }
+
+        function runAnimationIN() {
+            var timelineIn = anime.timeline({
+                easing:   'easeOutCubic',
+                duration: 800
+            })
+
+            .add({
+                targets:    ['#gfx'],
+                opacity:    { value: [0,1], easing:'linear', duration: 100},
+                translateX: { value: ['20%','0%']},
+            },0)
+
+            .add({
+                targets:    ['#rightInfo'],
+                clipPath:   [clipWest, clipNone],
+                opacity:    [0,1],
+            },50)
+            
+            .add({
+                targets:    ['#leftText'],
+                opacity:    { value: [0,1]},
+                translateY: { value: ['-50%','0%'] },
+            }, 400)
+
+
+            ;
+        } // runAnimationIN
+
+        function runAnimationOUT() {
+            var timelineIn = anime.timeline({
+                easing:   'easeInCubic',
+                duration: 400
+            })
+
+            .add({
+                targets:    ['#leftText'],
+                translateX: '-20%',
+                opacity:    { value: 0, duration: 100, delay: 300},
+            }, 0)
+
+            .add({
+                targets:    ['#gfx'],
+                clipPath:   { value: clipWest, duration: 500},
+                opacity:    { value: 0, duration: 200, delay: 400},
+            }, 0)
+            ;
+        } // runAnimationOUT
+
+        window.SPXGCTemplateDefinition = {
+            "description": "Top right with icon",
+            "playserver": "OVERLAY",
+            "playchannel": "1",
+            "playlayer": "8",
+            "webplayout": "8",
+            "out": "3000",
+            "dataformat": "json",
+            "uicolor": "3",
+            "DataFields": [
+                {
+                    "field" : "comment",
+                    "ftype" : "textfield",
+                    "title" : "Nickname of this item on the rundown",
+                    "value" : "[ Item nickname ]"
+                },
+                {
+                    "ftype" : "instruction",
+                    "value" : "This template goes out in 3000 milliseconds by default. Try using emoji in the graphics also."
+                },
+                {
+                    "field" : "f0",
+                    "ftype" : "textfield",
+                    "title" : "Info text",
+                    "value" : "😃 #hashtag"
+                },
+                {
+                    "field": "f1",
+                    "ftype": "filelist",
+                    "title": "Icon",
+                    "assetfolder" : "./lottie/" ,
+                    "extension" : "json",
+                    "value": "none",
+                },
+                {
+                    "field": "f99",
+                    "ftype": "filelist",
+                    "title": "Visual theme",
+                    "assetfolder" : "./themes/" ,
+                    "extension" : "css",
+                    "value": "./themes/Default.css",
+                }  
+
+            ]
+        };
+    </script>
+
+</head>
+
+<body>
+
+    <div class="SPXWindow">
+        <div id="gfx" class="infoRight">
+            <div id="icon"></div>
+            <div id="rightInfo">
+                <div id="leftText"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="hiddenSpxData" data-info="See styles.css">
+        <div data-info="Text....." id="f0"></div>
+        <div data-info="Icon....." id="f1"></div>
+        <div data-info="Theme...." id="f99"></div>
+    </div>
+
+
+</body>
+</html>
