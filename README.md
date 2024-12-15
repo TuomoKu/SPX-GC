@@ -854,6 +854,6 @@ Have you seen this yet? [SPX Graphics for Zoom](https://spx.graphics/zoom)
 
 SPX Graphics as native Zoom Marketplace application. Install for **free** and use professionally designed and animated live graphics right within the Zoom client. No need to install any software on the computer or use software switchers or virtual cameras. More designs and graphics layers can be added from SPX Store. We also provide customized graphics packages to Enterprise users. Please [contact us](https://spx.graphics/contact) for more info.
 
-Install the app FOR FREE now: **[ Add to Zoom ](https://bit.ly/zoom-us-authorize-spx-graphics-button)**
+Install the app FOR FREE now: **[ Add to Zoom ](https://app.spxzoom.com/install)**
 
 
