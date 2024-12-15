@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2024-10-31<br>
+> Updated 2024-12-15<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -17,9 +17,18 @@
 <BR>
 <BR>
 
-# Current dev notes v.1.3.3
-* Improved CONTINUE button UI-logic
-* Added `runScript` URL parameter handler to renderer loader
+# Current dev notes v.1.3.4
+* Working on a new optional, section to **rundown datafiles** for rundown specific, static, information banner at the top of the rundown. This can become useful for tutorials, and such. Currently this must be added to the rundown files manually. All values are optional, except "body". Supported types: `info` (green accents) and `warn` (red). See example below:
+```json
+  "notification": {
+    "type": "info",
+    "head": "Rundown comment",
+    "body": "Lorem ipsum dolor sit amet!",
+    "pict": "https://static.spxcloud.app/controller-notification/STORE-BLACK-FRIDAY-50-OFF.png",
+    "link": "https://spxgc.tawk.help/article/some-page",
+    "text": "Read more"
+  }
+```
 
 
 These are in a broken, work-in-progress, state:
@@ -34,6 +43,23 @@ These are in a broken, work-in-progress, state:
 
 # Published releases
 
+## **1.3.3** (Dec 31 2024)
+ >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights. 
+
+ 1.3.3 is a maintenance release with some bug fixes and a few security and API
+ improvements.
+
+ **Changes**
+
+* Dependencies updated
+* Added a feature to open CSV folder when exporting a CSV file
+* Improved CONTINUE button UI-logic
+* Added `runScript` URL parameter handler to renderer loader
+* Fixed a type check bug in `httpPost()`
+
+
+<br>
+
 ## **1.3.2** (Oct 31 2024)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights. 
 
@@ -47,6 +73,8 @@ These are in a broken, work-in-progress, state:
 * added project/rundown to the global state (for `/api/v1/rundown/get`)
 * Added new optional "updateRundownItem" -parameter to `directplayout` API call. If the UI is open and has an item by the same value and both the request and rundown item refers the same template file, it's Play/Stop indicator is changed to match the API request's command.
 * Added `reloadRendererWithLayers` handler to renderer for SPX Zoom Connector plugin (required url args `&remote=true&name=<validName>`) [for SPX Graphics's internal integrations]
+
+<br>
 
 
 ## **1.3.1** (Aug 10 2024)
@@ -117,6 +145,8 @@ Please read the following list to get an overview of changes and improvements.
 
 - For latest builds visit ▶ [spx.graphics/pricing](https://spx.graphics/download)
     
+<br>
+
 
 ## **1.2.1** (Sep 20 2023)
 - This patch fixes a bug in the example rundown file `HelloWorld/MyFirstRundown` that caused SPX server to hang when navigating off that rundown view. The bug does not effect any other created rundown files, but was annoying for first time users. 
@@ -154,10 +184,16 @@ Please read the following list to get an overview of changes and improvements.
     [  Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_linux64.zip),
         [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.2/SPX_1_2_0_macos64.zip)
 
+<br>
+
+
 ## **1.1.3** (Jun 29 2022)
 > Version 1.1.3 was never released publicly as binaries. These features will be present in the future releases.
 - New url parameter added to the renderer to pass a desired refresh rate to templates `renderer/?fps=30`. This will require modifications to the templates with controllable update rates, such as the scrolling tickers, using **gsap** animation library (or similar.) See _Google Sheet Ticker_ -template for an example.
 - Minor fixes to registration view (remove Discord, not needed) and enable email checkbox always
+
+<br>
+
 
 ## **1.1.2** (Jun 20 2022)
 >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights.
@@ -193,6 +229,7 @@ Please read the following list to get an overview of changes and improvements.
     [Linux](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_linux64.zip),
     [Mac](https://storage.googleapis.com/spx-gc-bucket-fi/installers/1.1/SPX_1_1_2_macos64.zip)
 
+<br>
 
 
 ## **1.1.0** (Feb 23 2022)

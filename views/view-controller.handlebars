@@ -238,6 +238,97 @@
     color: white;
   }
 
+
+  /* notification styles */
+  /* see colors in :root */
+
+  :root {
+    --info: rgb(0, 100, 0);
+    --warn: rgb(160, 0, 0);
+  }
+
+  #rundownNotification {
+    display: flex;
+    padding: 0.6em;
+    font-size: 0.7rem;
+    flex-direction: row;
+    border-radius: 0.3em;
+    margin-bottom: 0.5em;
+    pointer-events: no-none;
+    color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(255, 255, 255, 0.527);
+    border-left: 10px solid rgba(128, 128, 128, 0.8);
+  }
+
+  .notifFGinfo { color: var(--info); }
+  .notifFGwarn { color: var(--warn); }
+  .notifBGinfo { background-color: var(--info); }
+  .notifBGwarn { background-color: var(--warn); }
+
+
+  #rundownNotification #notifLeft {
+    gap: 0.4em;
+    flex-grow: 1;
+    display: flex;
+    padding: 0.4em;
+    flex-direction: column;
+  }
+
+  #rundownNotification #notifLeft .notifHead {
+    font-size: 1.0em;
+    font-family: 'UI-Bold';
+  }
+
+  #rundownNotification #notifRight {
+    display: flex;
+    flex-shrink: 0;
+    flex-basis: 25%;
+    overflow: hidden;
+    border-radius: 0.5em;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* img set in hbs template */
+  }
+
+  .rundownNotificationinfo {
+    border-left-color: var(--info) !important;
+  }
+
+  .rundownNotificationwarn {
+    border-left-color: var(--warn) !important;
+  }
+
+  .notifLink a,
+  .notifLink a:visited,
+  .notifLink {
+    margin-top: 0.1em;
+    font-size: 1em;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    padding-left: 0px;
+    transition: padding-left 0.2s ease-in-out,
+                color 0.2s ease-in-out;
+  }
+
+  .notifLink a:hover {
+    color: var(--info);
+    padding-left: 4px;
+  }
+
+  .notifLink::before  {
+    content: "►";
+    padding-right: 0.2em;
+  }
+
+  .notifArrinfo {
+    color: var(--info);
+  }
+
+  .notifArrwarn {
+    color: var(--warn);
+  }
+
   </style>
 
   
@@ -373,7 +464,30 @@
               {{>rundownOptions comment=filedata.comment }}
             </div>
 
+
             <div id="itemList" class="content pM itemlist scroller" style="user-select: none; opacity:0.2; border-radius: 0.4em;">
+
+              {{#if filedata.notification}}
+                <div id="rundownNotification" class="rundownNotification{{filedata.notification.type}}">
+                  <div id="notifLeft">
+                    {{#if filedata.notification.head}}
+                      <div class="notifHead notifFG{{filedata.notification.type}}">{{filedata.notification.head}}</div>
+                    {{/if}}
+                    <div class="notifBody">{{filedata.notification.body}}</div>
+                    {{#if filedata.notification.link}}
+                      <div class="notifLink notifArr{{filedata.notification.type}}">
+                        <a target="_blank"
+                           href={{filedata.notification.link}}
+                           title="{{filedata.notification.link}}"
+                           >{{filedata.notification.text}}</a>
+                      </div>
+                    {{/if}}
+                  </div>
+                  {{#if filedata.notification.pict}}
+                    <div id="notifRight" style="background-image: url({{filedata.notification.pict}});"></div>
+                  {{/if}}
+                </div>
+              {{/if}}
 
               {{#if filedata.templates}}
                 <!-- // -->

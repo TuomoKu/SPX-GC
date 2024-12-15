@@ -24,7 +24,7 @@
 [AWS Elemental](https://aws.amazon.com/media-services/elemental/?ref=spx.graphics)
 or <i>any other</i> video pipeline supporting HTML overlays.
 
-> For the latest released **version 1.3.2** please visit [spx.graphics/controller](https://spx.graphics/controller/pricing).
+> For the latest released **version 1.3.3** please visit [spx.graphics/controller](https://spx.graphics/controller/pricing).
 
 
 <small>Resources:</small><BR>
@@ -40,7 +40,7 @@ or <i>any other</i> video pipeline supporting HTML overlays.
 <br>
 
 
->  Readme updated **October 31 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
+>  Readme updated **December 15 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
 
 
 
@@ -93,9 +93,9 @@ Originally SPX was developed for [YLE](https://www.yle.fi), a public broadcaster
 <a id="demo"></a>
 ## Live demo 🔥
 
-🔴 _Live demo is OFFLINE at the moment._
+🟢 Try SPX here: [spxcloud.app/demo](https://spxcloud.app/demo).
 
-> Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically few times a day. (Also pay attention to the version number, it may not be the latest version.)
+> Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically every 15 minutes.
 
 
 <BR>
@@ -218,11 +218,11 @@ Start making [configuration changes](#config) or creating [projects](#dataroot) 
 8. Double click `My First Project` to open it
 9. Add a new rundown to this project, for instance `My First Rundown`. (The new empty rundown opens.)
 10. Click **[ + ]** button to add an item to the rundown
-11. Pick **SPX1_INFO_LEFT** -template
-12. Double click rundown item to edit it, enter "Hello world!" and click **Save** to close the editor
+11. Pick **INFO_LEFT** -template
+12. Double click rundown item to edit it and click **Save** to close the editor
 13. Play the item with **SPACEBAR** or by clicking on **PLAY** button at the bottom of rundown list.
 
-![helloworld](screenshots/helloworld.png)
+![helloworld](screenshots/hq.gif)
 
 Congratulations! Now go back to your project's settings and add more templates to it...
 

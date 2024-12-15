@@ -1168,6 +1168,7 @@ function exportItemAsCSV(rowItem) {
     working('Generating CSV file to ASSETS/csv -folder.');
     ajaxpost('/api/exportCSVfile',data);
     showMessageSlider('CSV file generated to ASSETS/csv -folder.')
+    AJAXGET('/api/openFileFolder?openFolderOnly=csv');
 
 } // exportItemAsCSV ended
 

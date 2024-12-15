@@ -61,6 +61,7 @@ node_modules/
 .Spotlight-V100
 static/templateviewer/
 CONTENT_REPOSITORIES*/**
+spx-content-repo.txt
 
 
 # IGNORE SPX DATAROOT

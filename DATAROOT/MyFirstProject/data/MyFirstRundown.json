@@ -1,76 +1,8 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
-  "updated": "2024-11-21T18:44:53.140Z",
+  "updated": "2024-12-15T17:20:59.202Z",
   "templates": [
-    {
-      "description": "Bumper or stinger example",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "18",
-      "webplayout": "18",
-      "out": "none",
-      "dataformat": "json",
-      "uicolor": "3",
-      "DataFields": [
-        {
-          "field": "comment",
-          "ftype": "textfield",
-          "title": "Nickname of this item on the rundown",
-          "value": "[ Item nickname ]"
-        },
-        {
-          "ftype": "instruction",
-          "value": "This design was created entirely in After Effects, exported as a lottie-file and converted to SPX template using StreamShapers Ferryman. Also, as this graphic is 'fire-and-forget' type of element, its 'out' property is 'none'."
-        },
-        {
-          "field": "_COLORVALUE",
-          "ftype": "dropdown",
-          "title": "Color palette",
-          "value": "3",
-          "items": [
-            {
-              "text": "Red",
-              "value": "1"
-            },
-            {
-              "text": "Blue",
-              "value": "2"
-            },
-            {
-              "text": "Green",
-              "value": "3"
-            },
-            {
-              "text": "Orange",
-              "value": "4"
-            },
-            {
-              "text": "Grey",
-              "value": "5"
-            }
-          ]
-        },
-        {
-          "field": "_BUMPERTEXT",
-          "ftype": "textfield",
-          "title": "_BUMPERTEXT",
-          "value": "1.3.2"
-        },
-        {
-          "field": "Image",
-          "ftype": "filelist",
-          "title": "Flare image",
-          "assetfolder": "./img/flares/",
-          "extension": "png",
-          "value": "./img/flares/flare-hoop.png"
-        }
-      ],
-      "onair": "true",
-      "imported": "1730312443998",
-      "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html",
-      "itemID": "1732091877481"
-    },
     {
       "description": "Top left with icon",
       "playserver": "OVERLAY",
@@ -95,7 +27,7 @@
           "field": "f0",
           "ftype": "textfield",
           "title": "Info text",
-          "value": "HEADQUARTERS"
+          "value": "Headquarters"
         },
         {
           "field": "f1",
@@ -115,9 +47,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444014",
+      "imported": "1734277260167",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html",
-      "itemID": "1732091877482"
+      "itemID": "1734278677157"
     },
     {
       "description": "Top right with icon",
@@ -163,9 +95,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444029",
+      "imported": "1734277260207",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html",
-      "itemID": "1732091877483"
+      "itemID": "1734278677158"
     },
     {
       "description": "Namestrap left",
@@ -214,10 +146,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "true",
-      "imported": "1730312444043",
+      "onair": "false",
+      "imported": "1734277260250",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html",
-      "itemID": "1732091877484"
+      "itemID": "1734278677159"
     },
     {
       "description": "Namestrap right",
@@ -266,10 +198,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "true",
-      "imported": "1730312444058",
+      "onair": "false",
+      "imported": "1734277260291",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html",
-      "itemID": "1732091877485"
+      "itemID": "1734278677160"
     },
     {
       "description": "News Ticker from Excel data",
@@ -328,9 +260,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444080",
+      "imported": "1734277260333",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html",
-      "itemID": "1732091877486"
+      "itemID": "1734278677161"
     },
     {
       "description": "RSS News Ticker",
@@ -386,10 +318,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "true",
-      "imported": "1730312444094",
+      "onair": "false",
+      "imported": "1734277260401",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html",
-      "itemID": "1732091877487"
+      "itemID": "1734278677162"
     },
     {
       "description": "Title or a headline",
@@ -433,10 +365,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "true",
-      "imported": "1730312444116",
+      "onair": "false",
+      "imported": "1734277260443",
       "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html",
-      "itemID": "1732091877488"
+      "itemID": "1734278677163"
     }
   ],
   "project": "MyFirstProject",

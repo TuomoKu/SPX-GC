@@ -28,7 +28,7 @@ router.get('/files', async (req, res) => {
 }); // file
 
 
-/* Will go into the API in 1.3.3
+/* Will go into the API in 1.3.4
 router.get('/initRemCntrRenderer', async (req, res) => {
   // Return URL of the remote control renderer
   let urlDomain = null // no trailing slash
@@ -49,15 +49,26 @@ router.get('/initRemCntrRenderer', async (req, res) => {
 router.get('/openFileFolder/', async (req, res) => {
   
   // Added in 1.3.1. And fixed in 1.3.2... 
+  // Added optional parameter forceFolder to open a different folder than templates.
   if (config.general.disableOpenFolderCommand == true) {
     let msg = 'openFileFolder -command disabled in config.';
     logger.warn(msg);  
     return res.status(403).send(msg);
   }
-
-  let relpath = req.query.file
-  let filepath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', relpath);
-  let folder = path.dirname(filepath);
+  let dirpath, folder = null;
+  if (req.query.openFolderOnly) {
+    folder = path.join(spx.getStartUpFolder(), 'ASSETS', req.query.openFolderOnly);
+    // folder = path.dirname(dirpath);
+  } else {
+    let relpath = req.query.file
+    if (req.query.file) {
+      let msg = 'openFileFolder -command requires a file parameter.';
+      logger.warn(msg);  
+      return res.status(403).send(msg);
+    }
+    filepath = path.join(spx.getStartUpFolder(), 'ASSETS', 'templates', relpath);
+    folder = path.dirname(filepath);
+  }
 
   // Added in 1.3.1 for security: if not found nothing is done.
   if (!fs.existsSync) {

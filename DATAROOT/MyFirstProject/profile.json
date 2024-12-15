@@ -64,7 +64,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312443998",
+      "imported": "1734277260061",
       "relpath": "/softpix/Template_Pack_1.3.2/BUMPER.html"
     },
     {
@@ -111,7 +111,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444014",
+      "imported": "1734277260167",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html"
     },
     {
@@ -158,7 +158,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444029",
+      "imported": "1734277260207",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html"
     },
     {
@@ -209,7 +209,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444043",
+      "imported": "1734277260250",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html"
     },
     {
@@ -260,7 +260,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444058",
+      "imported": "1734277260291",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html"
     },
     {
@@ -320,7 +320,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444080",
+      "imported": "1734277260333",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html"
     },
     {
@@ -378,7 +378,7 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444094",
+      "imported": "1734277260401",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html"
     },
     {
@@ -424,12 +424,14 @@
         }
       ],
       "onair": "false",
-      "imported": "1730312444116",
+      "imported": "1734277260443",
       "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html"
     }
   ],
   "warning": "Modifications done in the SPX will overwrite this file.",
-  "smartpx": "(c) 2020-2021 SmartPX",
-  "updated": "2024-11-21T18:44:58.834Z",
-  "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)"
+  "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
+  "updated": "2024-12-15T16:40:07.030Z",
+  "general": {
+    "background": ""
+  }
 }

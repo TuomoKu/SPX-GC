@@ -63,7 +63,14 @@ module.exports = {
   httpPost: function (JSONdata, endPoint) {
     // Send a http POST to an endpoint on the SPX server.
     // v1.3.2 Fixed bug with special characters
-    let dataOut = JSON.parse(JSONdata);
+    // v1.3.3 Fixed a bug with JSONdata type check (JSON or string)
+
+    let dataOut = JSONdata;
+
+    var stringConstructor = "mockup string".constructor;
+    if (JSONdata.constructor === stringConstructor) {
+      dataOut = JSON.parse(JSONdata);
+    }
 
     try {
       const options = { port: port, path: endPoint, method: 'POST', headers: {
@@ -73,7 +80,7 @@ module.exports = {
       const httpreq = http.request(options, result => {
         result.on('data', d => {
           process.stdout.write(d)
-          return 'Sent request to server:' + port + ':' + endPoint + JSONdata
+          return 'Sent request to server:' + port + ':' + endPoint + ' ' + JSON.stringify(dataOut)
         })
       })
       httpreq.on('error', error => {
@@ -575,8 +582,7 @@ module.exports = {
         data.fileArr.sort();
         data.foldArr.sort();
         return data;
-      }
-      else {
+      } else {
         return "not-found";
       }
       

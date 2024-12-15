@@ -78,7 +78,7 @@
               <span class="caret-icon">&#9654;</span>
               <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
               <span class="caret-icon">&#9654;</span>
-              <span  class="breadcrumbs"><a href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+              <span  class="breadcrumbs"><a href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{prettyfyBreadcrumb folder}}</a></span>
               <span class="caret-icon">&#9654;</span>
               <span  class="breadcrumbs">{{lang 'pagetitle.configshow'}}</span>
             {{/ifValue}}
@@ -87,7 +87,7 @@
               <span class="caret-icon">&#9654;</span>
               <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
               <span class="caret-icon">&#9654;</span>
-              <span  class="breadcrumbs">{{folder}}</span>
+              <span  class="breadcrumbs">{{prettyfyBreadcrumb folder}}</span>
 
               <div class="breadIcon">
                 <span onClick="projectSettings();" class="breadcrumbGear" title="Project settings"><i class="fas fa-cog"></i></span>
@@ -98,7 +98,7 @@
               <span class="caret-icon">&#9654;</span>
               <span class="breadcrumbs"><A HREF="/shows" onmouseover="tip('{{lang 'hover.navishows'}}');">{{lang 'pagetitle.shows'}}</A></span>
               <span class="caret-icon">&#9654;</span>
-              <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{folder}}</a></span>
+              <span  class="breadcrumbs"><a  href="/show/{{folder}}" onmouseover="tip('{{lang 'hover.navishow'}}');">{{prettyfyBreadcrumb folder}}</a></span>
               <div class="breadIcon">
                 <a  class="breadcrumbGear"
                     href="/show/{{folder}}/config"
@@ -107,7 +107,7 @@
               </div>
 
               <span class="caret-icon">&#9654;</span>
-              <span  class="breadcrumbs">{{filebasename}}</span>
+              <span  class="breadcrumbs">{{prettyfyBreadcrumb filebasename}}</span>
               <div class="breadIcon">
                 <a class="breadcrumbGear" href="#" onClick="toggleRundownSettings(); return false;" title="Rundown options"><i class="fa fa-bars"></i></a>
               </div>

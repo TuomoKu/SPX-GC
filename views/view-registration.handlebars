@@ -469,9 +469,6 @@
                       placeholder="name@inter.net"
                       name="email" id="email" value="{{config.registration.email}}" oninput="checkEmail(this)">
                       <div style="font-size: 0.6em; margin-top: 1em; opacity: 0.5;">
-                        All users registered with an email will receive a <span class="fg_orange">20%
-                        discount code</span> for any purchase in the <a href="https://spx.graphics/store">SPX Store</a>! 
-                        <BR><BR>
                         <div id="checks">
                           <input  {{{ifValueMatch config.registration.newsletter true "checked" ""}}}
                                   type="checkbox"

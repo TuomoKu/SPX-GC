@@ -161,7 +161,7 @@ const apiHandler = require('../utils/api-handlers.js');
                 "vers"    :     "v1.0.14",
                 "method"  :     "GET",
                 "param"   :     "feedproxy?url=https://feeds.bbci.co.uk/news/rss.xml&format=xml",
-                "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources."
+                "info"    :     "A proxy endpoint for passing feed data from CORS protected datasources. (If you need to pass url parameters use <code>%26</code> instead of <code>&</code> to separate them)."
               },
               {
                 "vers"    :     "v1.3.0",
@@ -272,6 +272,7 @@ const apiHandler = require('../utils/api-handlers.js');
 
 // DIRECT COMMANDS (bypassing rundown) ----------------------------------------------------------
   router.get('/invokeTemplateFunction/', spxAuth.CheckAPIKey, async (req, res) => {
+
     try {
       // Init params
       let params = req.query.params || ''; // improved in 1.1.4 to avoid undefined
@@ -511,6 +512,7 @@ const apiHandler = require('../utils/api-handlers.js');
       URL = URL.replace(/meta-data/g, '');
       URL = URL.replace(/&path=/g, '###');
       // logger.info('Feedproxy URL:' + req.query.url + ' cleaned to --> ' + URL);
+      // logger.info('Feedproxy URL:' + URL);
       /* other possible clean-up? */
 
       axios.get(URL)

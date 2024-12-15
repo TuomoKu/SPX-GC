@@ -35,10 +35,6 @@ const fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const rfs = require('rotating-file-stream')
-
-//const open = require('open');
-const open = import('open');
-
 var macaddress = require('macaddress');
 
 console.log('\n  SPX Graphics Controller server is starting.\n  Closing this window/process will stop the server.\n');
@@ -578,6 +574,14 @@ app.engine('handlebars', exphbs.engine({
       return spx.lang(str);
     },
 
+    // Replace underscores with spaces (used by breadcrumbs)
+    prettyfyBreadcrumb(str) {
+      let fixed = str
+      fixed = fixed.replace(/_/g, ' ');
+      fixed = fixed.replace(/-/g, ' ');
+      return fixed;
+    },
+
 
     // Return object as JSON string
     myStringify(obj) {
@@ -967,7 +971,7 @@ var server = app.listen(port, (err) => {
   if ( config.general.launchBrowser || global.generatingDefaultConfig ) {
     try {
       (async () => {
-        await open(`http://${ipad}:${port}/`);
+        require("openurl").open(`http://${ipad}:${port}/`)
       })();
     } catch (error) {
       console.warn('Could not open browser.')
