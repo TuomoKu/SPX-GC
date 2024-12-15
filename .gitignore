@@ -29,6 +29,7 @@ Thumbs.db
 desktop.ini
 *config*.json
 static/*.json
+*.pdf
 
 ## Temp files or drafts
 zzz*.*
