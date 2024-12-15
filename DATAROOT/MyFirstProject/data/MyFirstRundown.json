@@ -1,8 +1,60 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
-  "updated": "2024-12-15T17:20:59.202Z",
+  "updated": "2024-12-11T07:21:37.393Z",
   "templates": [
+    {
+      "description": "Namestrap left",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "5",
+      "webplayout": "5",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+        },
+        {
+          "field": "f0",
+          "ftype": "textfield",
+          "title": "Fullname",
+          "value": "Tuomo Kulomaa"
+        },
+        {
+          "field": "f1",
+          "ftype": "textfield",
+          "title": "Title",
+          "value": "CTO"
+        },
+        {
+          "field": "f2",
+          "ftype": "textfield",
+          "title": "Company or location",
+          "value": "SPX Graphics"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "true",
+      "imported": "1730312444043",
+      "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html",
+      "itemID": "1732091877484"
+    },
     {
       "description": "Top left with icon",
       "playserver": "OVERLAY",
@@ -27,7 +79,7 @@
           "field": "f0",
           "ftype": "textfield",
           "title": "Info text",
-          "value": "Headquarters"
+          "value": "KIRKKONUMMI"
         },
         {
           "field": "f1",
@@ -46,10 +98,10 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "false",
-      "imported": "1734277260167",
+      "onair": "true",
+      "imported": "1730312444014",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_LEFT.html",
-      "itemID": "1734278677157"
+      "itemID": "1732091877482"
     },
     {
       "description": "Top right with icon",
@@ -95,61 +147,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1734277260207",
+      "imported": "1730312444029",
       "relpath": "/softpix/Template_Pack_1.3.2/INFO_RIGHT.html",
-      "itemID": "1734278677158"
-    },
-    {
-      "description": "Namestrap left",
-      "playserver": "OVERLAY",
-      "playchannel": "1",
-      "playlayer": "5",
-      "webplayout": "5",
-      "out": "manual",
-      "dataformat": "json",
-      "uicolor": "3",
-      "DataFields": [
-        {
-          "field": "comment",
-          "ftype": "textfield",
-          "title": "Nickname of this item on the rundown",
-          "value": "[ Item nickname ]"
-        },
-        {
-          "ftype": "instruction",
-          "value": "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
-        },
-        {
-          "field": "f0",
-          "ftype": "textfield",
-          "title": "Fullname",
-          "value": "Palmer Joss"
-        },
-        {
-          "field": "f1",
-          "ftype": "textfield",
-          "title": "Title",
-          "value": "Advisor"
-        },
-        {
-          "field": "f2",
-          "ftype": "textfield",
-          "title": "Company or location",
-          "value": "White House"
-        },
-        {
-          "field": "f99",
-          "ftype": "filelist",
-          "title": "Visual theme",
-          "assetfolder": "./themes/",
-          "extension": "css",
-          "value": "./themes/Default.css"
-        }
-      ],
-      "onair": "false",
-      "imported": "1734277260250",
-      "relpath": "/softpix/Template_Pack_1.3.2/NAME_LEFT.html",
-      "itemID": "1734278677159"
+      "itemID": "1732091877483"
     },
     {
       "description": "Namestrap right",
@@ -199,9 +199,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1734277260291",
+      "imported": "1730312444058",
       "relpath": "/softpix/Template_Pack_1.3.2/NAME_RIGHT.html",
-      "itemID": "1734278677160"
+      "itemID": "1732091877485"
     },
     {
       "description": "News Ticker from Excel data",
@@ -236,7 +236,7 @@
           "title": "Choose Excel file",
           "assetfolder": "/excel/ticker-demo/",
           "extension": "xlsx",
-          "value": "/excel/ticker-demo/basic-news-ticker.xlsx"
+          "value": "none"
         },
         {
           "field": "f2",
@@ -260,9 +260,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1734277260333",
+      "imported": "1730312444080",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_EXCEL.html",
-      "itemID": "1734278677161"
+      "itemID": "1732091877486"
     },
     {
       "description": "RSS News Ticker",
@@ -319,9 +319,9 @@
         }
       ],
       "onair": "false",
-      "imported": "1734277260401",
+      "imported": "1730312444094",
       "relpath": "/softpix/Template_Pack_1.3.2/TICKER_RSS.html",
-      "itemID": "1734278677162"
+      "itemID": "1732091877487"
     },
     {
       "description": "Title or a headline",
@@ -365,10 +365,71 @@
           "value": "./themes/Default.css"
         }
       ],
-      "onair": "false",
-      "imported": "1734277260443",
+      "onair": "true",
+      "imported": "1730312444116",
       "relpath": "/softpix/Template_Pack_1.3.2/TITLE_2_STEPS.html",
-      "itemID": "1734278677163"
+      "itemID": "1732091877488"
+    },
+    {
+      "description": "Giphy Icons",
+      "playserver": "OVERLAY",
+      "playchannel": "1",
+      "playlayer": "7",
+      "webplayout": "7",
+      "out": "manual",
+      "dataformat": "json",
+      "uicolor": "3",
+      "DataFields": [
+        {
+          "field": "comment",
+          "ftype": "textfield",
+          "title": "Nickname of this item on the rundown",
+          "value": "[ Item nickname ]"
+        },
+        {
+          "ftype": "instruction",
+          "value": "This template demonstrates the use of a button grid."
+        },
+        {
+          "field": "f0",
+          "ftype": "buttongrid",
+          "value": "Headquarters",
+          "items": [
+            {
+              "label": "Button 1",
+              "image": "./icons/someImage.gif",
+              "templateFunction": "playIcon(1)"
+            }
+          ]
+        },
+        {
+          "field": "f999",
+          "ftype": "button",
+          "title": "Click me",
+          "descr": "Instruction text here",
+          "fcall": "openExtension('mediapocket', this)"
+        },
+        {
+          "field": "f1",
+          "ftype": "filelist",
+          "title": "Icon",
+          "assetfolder": "./lottie/",
+          "extension": "json",
+          "value": "./lottie/live-default.json"
+        },
+        {
+          "field": "f99",
+          "ftype": "filelist",
+          "title": "Visual theme",
+          "assetfolder": "./themes/",
+          "extension": "css",
+          "value": "./themes/Default.css"
+        }
+      ],
+      "onair": "false",
+      "imported": "1733160003871",
+      "relpath": "/softpix/Template_Pack_1.3.2/DEV-BUTTONS.html",
+      "itemID": "1733160009173"
     }
   ],
   "project": "MyFirstProject",

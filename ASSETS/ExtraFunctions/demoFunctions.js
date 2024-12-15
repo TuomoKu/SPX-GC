@@ -1,4 +1,3 @@
-
 // --------------------------------------------------------------
 // SPX example custom functions for project/global extras.
 // --------------------------------------------------------------
@@ -10,13 +9,8 @@
 // See documentation for available user interface controls and
 // their settings.
 //
-// If you need help in developing custom functionality to SPX-GC
-// get in touch. 
-//
-// (C) 2021- SPX Graphics
-// MIT License.
-//
 // -------------------------------------------------------------- 
+
 
 function hello(options) {
     // This is a demo function that can be used
@@ -42,27 +36,10 @@ function hello(options) {
     console.log(msg);
 }
 
-
-function APIConnector(mode='') {
-    let apiURL = '/api/v1/invokeTemplateFunction';
-    let layer = 10;
-    let fcall = 'templateFunction';
-
-    let url = apiURL + '?&webplayout=' + layer + '&function=' + fcall + '&params=' + mode;
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-} // APIConnector
-
-function demo_popup(message) {
+function demo_popup(message){
     // A basic hello world example
     alert('A basic example of a custom function.\nThe text given as function argument was:\n\n' + message)
-} // demo_popup
+}
 
 function demo_toggle(eventButton) {
     // A basic toggle example
@@ -85,31 +62,15 @@ function demo_toggle(eventButton) {
             // add STOP logic here
             alert('Demo continues.\nThe script could actually STOP something...');
         }
-} // demo_toggle
+}
 
 function clearAllChannels() {
     // Will CLEAR all playout channels instantly, a "PANIC" button.
     console.log('Clearing gfx...');
     clearUsedChannels(); // <-- function in spx_gc.js
-} // clearAllChannels
- 
-function wipeClean() {
-    let data = {};
-    data.relpath       = 'smartpx/Template_Pack_1/SPX1_COLORBUMPER.html';    // template file
-    data.playserver    = 'OVERLAY';                          // CCG server or '-'
-    data.playchannel   = '1';                                // Channel
-    data.playlayer     = '20';                               // Layer
-    data.webplayout    = '20';                               // Web layer or '-'
-    data.relpathCCG    = data.relpath.split('.htm')[0];
-	data.command = 'play';
-	ajaxpost('/gc/playout',data, 'true');
-	setTimeout(function(){ 
-		stopAll()
-    }, 50);
-} // wipeClean
- 
-	
-function playAll() {
+}   
+
+function playAll(){
     // Will send PLAY commands to all layers used by current rundown.
     // Timeout here allows some time for server to handle the incoming commands. 
     // TODO: Far from elegant but kind of works. A better approach would be to 
@@ -121,31 +82,158 @@ function playAll() {
 			playItem(templateItem,'play')
             }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
         });
-} // playAll
+}   
 
-function openWebpage(url='https://spxgc.tawk.help/') {
+function openWebpage(url='https://spxgc.tawk.help/'){
     // Opens a new browser tab with url given.
     console.log("Hello ", url);
     window.open(url, '_blank');
     return false;
-} // openWebpage
+}
 
-function openSelectedURL(selectList) {
+function openSelectedURL(selectList){
     // Gets an item from a "selectbutton" dropdown and navigates to a URL 
     let URL = document.getElementById(selectList).value;
     openWebpage(URL)
-} // openSelectedURL
+}
+
+function openExtension(name, from){
+    // Opens the SPX extension in a new browser tab
+    // alert('Opening extension: ' + name + ' from ' + from)
+    // from.innerText = 'KAKKA'
+    // // let ref = openWebpage('/plugins/' + name)
+    // window.open('/plugins/' + name, 'spxExtension_' + name, '_blank,width=980,height=800,scrollbars=yes,location=no,status=no');
 
 
-function playAudiofile(file) {
-    playServerAudio(file,message='playAudiofile ' + file)
-} // playAudiofile
+    window.addEventListener("message", extensionWindowHandler, false);
 
-function playSelectedAudio(selectList) {
-    // Reads a path of audio file (in ASSETS folder) from current value of the select list
-    // and triggers a function which will pass the filename to SPX-GC which will play the
-    // sound on the server.
-    sfx = document.getElementById(selectList).value;
-    playServerAudio(sfx,message='Custom audio button')
-} // playSelectedAudio
+    const popup = window.open('/plugins/' + name, 'spxExtension_' + name, '_blank,width=980,height=800,scrollbars=yes,location=no,status=no');
 
+    // When the popup has fully loaded, if not blocked by a popup blocker:
+    
+    // This does nothing, assuming the window hasn't changed its location.
+    popup.postMessage(
+      "The user is 'bob' and the password is 'secret'",
+      "https://secure.example.net",
+    );
+    
+    // This will successfully queue a message to be dispatched to the popup, assuming
+    // the window hasn't changed its location.
+    setTimeout(() => {
+      popup.postMessage("hello there!", "http://example.com");
+    }, 1000);
+    
+    // window.addEventListener(
+    //   "message",
+    //   (event) => {
+    //     // Do we trust the sender of this message? (might be
+    //     // different from what we originally opened, for example).
+    //     if (event.origin !== "http://example.com") return;
+    
+    //     // event.source is popup
+    //     // event.data is "hi there yourself! the secret response is: rheeeeet!"
+    //   },
+    //   false,
+    // );
+
+}
+
+function extensionWindowHandler(event){
+    alert('Event received: ', event)
+}
+
+
+
+function yleTL(opts="") {
+    // Function to handle YLE logo in/out transitions.
+     const localStValue = opts[0]; // otsikko-in, otsikko-out, nimi-in, nimi-out...
+     console.log('yleTL:', localStValue);
+ 
+     switch (localStValue) {
+         case 'qr-code-play':
+             yleTL_logoContr('out');
+             break;
+ 
+         case 'qr-code-stop':
+             yleTL_logoContr('altin', true); // forced
+             break;
+ 
+         case 'logopump-only':
+             yleTL_logoContr('pump');
+             break;
+ 
+         case 'otsikko-in':
+             yleTL_logoContr('pump');
+             localStorage.setItem('yleTL', localStValue); 
+             break;
+ 
+         case 'nimi-vain-in':
+         case 'nimi-in':
+             let inUpPosition = opts[1]
+             if ( inUpPosition == false) { // not up, i.e. down...
+                 yleTL_logoContr('pump');
+                 localStorage.setItem('yleTL', localStValue);
+             }
+             break;
+ 
+         default:
+             showMessageSlider('Unknown yleTL option "' +  localStValue) + '", doing nothing.';
+             break;
+             return;
+ 
+     }
+ } // yleTL
+ 
+ 
+ function yleTL_logoContr(animID, forced = false) {
+     let prevent = false;
+     if (localStorage.getItem('yleTL-QR') == 'playing') {
+         prevent = true;
+         if (forced) { prevent = false; }
+     }
+ 
+     if (prevent) { return; }
+ 
+     let funCall = '';
+     let waitDelay = 0;
+     switch (animID) {
+         case 'pump':
+             funCall = 'logoOutIn';
+             break;
+ 
+         case 'in':
+             funCall = 'logoIn';
+             waitDelay = 250;
+             break;
+ 
+         case 'altin':
+             funCall = 'logoAltIn';
+             waitDelay = 250;
+             break;
+ 
+         case 'out':
+             funCall = 'logoOut';
+             break;
+         
+         default:
+             console.log('yleTL_logoContr: Unknown funtionCall ' + animID);
+             return;
+             break;
+     }
+ 
+     setTimeout(function() {
+         let logoLayerNro = 10; // YLE logo layer nro
+         let url = "/api/v1/invokeTemplateFunction?"
+         url += 'webplayout=' + logoLayerNro
+         url += '&function=' + funCall
+         fetch(url)
+         .then(response => response.json())
+         .then(data => {
+             // console.log('Success:', data);
+         })
+         .catch((error) => {
+             console.error('Error:', error);
+         });   
+     }, waitDelay);
+ 
+ } // yleTL_logoContr

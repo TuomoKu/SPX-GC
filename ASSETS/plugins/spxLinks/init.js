@@ -14,15 +14,11 @@ function PluginInstance() {
             color:          "green",
             items: [
                 {
-                    "text": "SPX Cloud",
-                    "value":"https://spxcloud.app"
-                },
-                {
                     "text": "SPX Discord",
                     "value":"https://bit.ly/joinspx"
                 },
                 {
-                    "text": "HTML Marketplace",
+                    "text": "HTML Graphics",
                     "value":"https://html.graphics/marketplace"
                 },
                 {
