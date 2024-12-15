@@ -93,7 +93,7 @@ Originally SPX was developed for [YLE](https://www.yle.fi), a public broadcaster
 <a id="demo"></a>
 ## Live demo 🔥
 
-🟢 Try SPX here: [spxcloud.app/demo](https://spxcloud.app/demo).
+🟢 Try SPX here: [spxcloud.app/demo](https://demo.spxcloud.app/gc/00-Getting-Started/1-Intro-To-Graphics).
 
 > Please be aware there is just _one instance_ running for demo purposes, so expect clashes and overall quirky experience if multiple users are logged in at once. Changes made in demo are reset automatically every 15 minutes.
 
