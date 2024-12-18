@@ -30,6 +30,7 @@ desktop.ini
 *config*.json
 static/*.json
 *.pdf
+sea-*.*
 
 ## Temp files or drafts
 zzz*.*
