@@ -60,8 +60,8 @@ router.get('/openFileFolder/', async (req, res) => {
     folder = path.join(spx.getStartUpFolder(), 'ASSETS', req.query.openFolderOnly);
     // folder = path.dirname(dirpath);
   } else {
-    let relpath = req.query.file
-    if (req.query.file) {
+    let relpath = req.query.file || '';
+    if (!req.query.file) {
       let msg = 'openFileFolder -command requires a file parameter.';
       logger.warn(msg);  
       return res.status(403).send(msg);
