@@ -12,8 +12,10 @@ const logger = require('../utils/logger');
 logger.debug('API-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const xlsx = require('node-xlsx').default;
-const { now } = require("moment");
-const { constants } = require("buffer");
+
+// --- WATCHOUT!!!! v1.3.3 disabled --------
+// const { now } = require("moment");
+// const { constants } = require("buffer");
 
 // ROUTES -------------------------------------------------------------------------------------------
 router.get('/', function (req, res) {
