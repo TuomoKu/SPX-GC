@@ -40,7 +40,7 @@ or <i>any other</i> video pipeline supporting HTML overlays.
 <br>
 
 
->  Readme updated **December 15 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
+>  Readme updated **December 19 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
 
 
 
@@ -333,6 +333,7 @@ Localization credits:
 |  Swedish | Christina F., Finland | v1.1.2 |
 |  Portuguese | Joao M., Portugal | v1.1.2 |
 |  Japanese | Masakazu Nakano, Japan | v1.3.0 |
+|  German | Manuel Grund, Austria  | v1.3.3 |
 
 <BR>
 

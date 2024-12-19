@@ -1,7 +1,11 @@
 {
   "warning": "Modifications done in the SPX will overwrite this file.",
   "copyright": "(c) 2020- SPX Graphics (https://spx.graphics)",
+<<<<<<< HEAD
   "updated": "2024-12-11T07:21:37.393Z",
+=======
+  "updated": "2024-12-17T15:07:29.614Z",
+>>>>>>> master
   "templates": [
     {
       "description": "Namestrap left",
