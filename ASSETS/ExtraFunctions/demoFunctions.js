@@ -237,3 +237,40 @@ function yleTL(opts="") {
      }, waitDelay);
  
  } // yleTL_logoContr
+
+ function SPX_TL(args) {
+    console.log('SPX_TL:',args);
+    let url = "/api/v1/rundown/get";
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            // console.log('Success:', data);
+            data.templates.forEach((item,i) => {
+                console.log('Template:',item);
+                if (item.itemID == args[2]) {
+                    item.DataFields.forEach((entry,j) => {
+                        if (entry.field == 'f0') {
+                            console.log(i + ' FOUND --> ', entry);
+                            callSPX( args[0], entry.value );
+                        }
+                    });
+                }
+            });
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+
+    function callSPX( call, args ) {
+        console.log('callSPX:',call,args);
+        let URL = '/api/v1/invokeTemplateFunction?webplayout=1&function=' + call;
+        let FUL = URL + '&params=' + decodeURIComponent( args );
+        fetch(FUL)
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+}

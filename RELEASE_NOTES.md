@@ -53,6 +53,18 @@ These are in a broken, work-in-progress, state:
 
 * Dependencies updated
 * Added a feature to open CSV folder when exporting a CSV file
+* Added a manually configurable `notification` option to rundowns, such as
+```json
+  "notification":{
+    "type": "warn",
+    "head": "PLEASE NOTE",
+    "body": "The ticker on this rundown requires an API-KEY.",
+    "link": "https://knowledge.base/instructions",
+    "text": "How to change the API-KEY",
+    "pict": "https://cdn-icons-png.flaticon.com/128/159/159469.png"
+  }
+```
+
 * Improved CONTINUE button UI-logic
 * Added `runScript` URL parameter handler to renderer loader
 * Fixed a type check bug in `httpPost()`
