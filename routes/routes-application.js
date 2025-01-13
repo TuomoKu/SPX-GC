@@ -65,6 +65,25 @@ router.get('/templates/empty.html', function (req, res) {
   res.render('view-empty', { layout: false });
 }); // get /templates/empty.html end
 
+
+router.get(['/compositor/index.html','/compositor'], function (req, res) {
+
+  // EXPERIMENTAL WEB COMPONENT RENDERER
+  let hideCursor = false;
+  if ( global.config.general.hideRendererCursor && global.config.general.hideRendererCursor==true) {
+    hideCursor = true;
+  }
+
+  let outputSize = getResolutionFromConfig(global.config, req.query);
+  
+  res.render('view-componentrenderer', { 
+    layout: false,
+    width:outputSize.width,
+    height:outputSize.height,
+    hideCursor:hideCursor
+  } );
+}); // get /compositor end
+
 router.get(['/renderer/index.html','/renderer'], function (req, res) {
   let hideCursor = false;
 

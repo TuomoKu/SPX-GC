@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+<!-- DO NOT MODIFY THIS FILE -->
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+    <!--      SPX GRAPHICS CONTROLLER      -->
+    <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
+    <!--                                   -->
+    <!--      Web Components Renderer      -->
+    <!--                                   -->
+    <!--      (c) 2020- SPX Graphics       -->
+    <!--        http://spx.graphics        -->
+    <!--                                   -->
+    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
+    
+    <!--
+      Scripts, no frameworks.
+      "Some extract of vanilla, enough to feed Godzilla."
+    -->
+
+    <script src="./js/socket.io.js"></script>
+    <script src="/js/lib/dotlottie-player.js"></script>
+    <script src="/js/spx_rendererUtils.js" type="module"></script> <!-- added in 1.3.3 RC-->
+    <title>SPX Renderer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            overflow: hidden;
+            margin: 0;
+            padding: 0px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0px;
+            background-color: transparent;
+            background-color: rgba(0,0,0,0);
+            color: black;
+            font-size: 3em;
+        }
+
+        #root {
+            padding: 0px;
+            /* MAIN RENDERER size set by SPX to {{width}}x{{height}} */ 
+            width: {{width}};
+            height: {{height}};
+            position: relative;
+            border: 0px dashed red;
+            background-size: 100% 100%;
+            background-color: rgba(0,0,0,0);
+        }
+        
+        #overlays {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            position: absolute;
+            border: 0px solid red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .renderer {
+            top:0;
+            left:0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            position: absolute;
+            border: 1px solid red;
+        }
+
+        .debugMessage{
+            top: 5%;
+            left: 10%;
+            opacity: 0.0;
+            z-index: 500;
+            font-size: 2em;
+            font-weight: bold;
+            position: absolute;
+            padding: 0.1em 0.5em;
+            display: inline-block;
+            color: rgb(3, 42, 3);
+            transform: rotate(1deg);
+            border: 1px solid green;
+            background-color: rgba(205, 255, 218, 0.85);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #cursorHider {
+            z-index: 200;
+            background-color: rgba(0,0,0,0.0);
+            cursor: none;
+        }
+
+        #wm {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            position: absolute;
+            border: 0px dashed red;
+            background-color: rgba(0,0,0,0);
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+    </style>
+
+    <script>
+
+
+        let incomingData; // a placeholder for templateData
+        let WMtimer = null;
+        let startTime = new Date().getTime();
+        // const inController = top.location.href.includes('renderer') ? false : true; 
+
+        function allowLayerControl(LayerNro) {
+            // Usage:
+            // http://localhost:5656/renderer/?layers=[2,4,20]
+            // Check if use is limited to certain layers only.
+            // Can control which layers renders on which renderer,
+            // like web conference: participant 1 = layer 1
+            //   true = allow control
+            //   false = do not allow control
+            // 1.0.12 fixes issue #32
+
+            // Added in 1.1.0 a check to skip command if
+            // a) window is in preview mode, but request is missing required preview flag
+            // b) window is in program mode, but request has the preview flag
+            let playMode = incomingData.playmode || 'notFoundSoMustBeProgramCommand' ;
+            if ( isPreviewMode() && playMode != 'preview') {
+                // Do not play previews in program
+                return false;
+            }
+
+            if ( !isPreviewMode() && playMode == 'preview') {
+                // Do not play programs in preview
+                return false;
+            }
+
+            const queryString   = window.location.search;
+            const urlParams     = new URLSearchParams(queryString);
+            const limitLayers   = urlParams.get('layers');
+            if (limitLayers) {
+                const limitItems   = limitLayers.replace("[","").replace("]","").replace(" ", "").split(",");  // Ugly, but works.
+                // Potential bug! FIXME: The value of LayerNro currently MUST be a string. Not integer! ==> Fixed in 1.1.4.
+                if ( limitItems.includes(String(LayerNro)) ) { // Forced to string since v.1.1.4
+                    // console.log('Commands to layer ' + LayerNro + ' allowed.');
+                    return true;
+                } else {
+                    console.log('Commands to layer ' + LayerNro + ' prevented.');
+                    return false;
+                }
+            } else {
+                return true
+            }
+        }
+
+        function validateLayerNro(LayerNro) {
+            // Added in 1.1.0 to add a preview functionality to renderer
+            // If renderer is in ?preview=true mode AND layer is within the valid layer rage, then layer is always 1
+            if (!allowLayerControl(LayerNro)) {
+                // not allowed
+                return false
+            }
+
+            if ( isPreviewMode() ) {
+                return 1 // hardcoded LayerNro for previews!
+            } else {
+                return LayerNro
+            }
+        }
+
+        function isPreviewMode() {
+            const url = new URL(window.location.href);
+            let previewFlag = url.searchParams.get('preview') || '';
+            let previewPage = url.pathname || '';
+            if ( previewFlag == 'true' || previewPage.includes('preview') ) {
+                // console.log('Yes, this is a preview window');
+                return true
+            } else {
+                // console.log('Nope, not a preview window');
+                return false
+            }
+        }
+
+        function isLocalRenderer() {
+            // Changed in 1.3.1
+            if (this.name == 'LOCAL') {
+                return true
+            } else {
+                return false
+            }
+        }
+
+        function clearLayer(LayerNro){
+            let ValidatedLayerNro = validateLayerNro(LayerNro);
+
+            // v1.1.4 allow clearing of all layers (even restricted ones)
+            if (!ValidatedLayerNro) {
+                console.log('...but forcefully clearing restricted layer ' + LayerNro + '.');
+                ValidatedLayerNro = LayerNro
+            }
+            populateLayer(ValidatedLayerNro,'',true); // clear layer forcefully
+        }
+
+        function echo(msg) {
+            document.getElementById('debugMessage').innerText=msg;
+        }
+        
+        function spxWM(mode=0,ref=0, minMins=15, maxMins=30) {
+            // Added in 1.3.0
+            // Watermark player. PANIC will kill this also.
+            // Can be controlled from any template:
+            // INIT and loop using defaults ---> parent.spxWM?.();
+            // HIDE AND PREVENT FUTURE PLAYS --> parent.spxWM?.(3);
+            // Forcefully play once -----------> parent.spxWM?.(4);
+
+            clearTimeout(WMtimer);
+            WMtimer = null;
+
+            let MODES = ['init','wait', 'play','stop', 'force'];
+            const player = document.getElementById('wm');
+            let file = '/img/json/wm-' + ref + '.json';
+            let fadeOutAfter = 8000; // Anim duration
+
+            switch (MODES[mode]) {
+                case 'init':
+                    console.log('0: spxWM init');
+                    player.style.opacity=0;
+                    player.load(file);
+                    spxWM(1,ref, minMins, maxMins);
+                    return;
+                    break;
+
+                case 'wait':
+                    // DEBUG #######
+                    // minMins = 0.2
+                    // maxMins = 0.5
+                    // #############
+                    let minMS = (parseFloat(minMins) * 60 * 1000); // default 15 min
+                    let maxMS = (parseFloat(maxMins) * 60 * 1000); // default 30 min
+                    minMS = Math.max(minMS, fadeOutAfter+500)
+                    let rnd = Math.floor(Math.random() * maxMS) + minMS;
+                    console.log('1: spxWM delay sec', (rnd/1000));
+                    WMtimer = setTimeout(function () {
+                        spxWM(2,ref, minMins, maxMins);
+                    }, rnd);
+                    return;
+                    break;
+
+                case 'play':
+                    console.log('2: spxWM play');
+                    player.style.opacity=1;
+                    player.seek(0);
+                    player.play();
+                    spxWM(1,ref, minMins, maxMins);
+                    setTimeout(function () {
+                        player.style.opacity=0;
+                    }, fadeOutAfter);
+                    break;
+
+                case 'stop':
+                    console.log('3: spxWM stop');
+                    clearTimeout(WMtimer);
+                    WMtimer = null; 
+                    player.stop();
+                    player.style.opacity=0;
+                    break;
+
+                case 'force':
+                    console.log('4: force play wm');
+                    player.load(file);
+                    setTimeout(function () {
+                        player.seek(0);
+                        player.style.opacity=1;
+                        player.play();
+                    }, 200);
+                    setTimeout(function () {
+                        player.style.opacity=0;
+                        if (WMtimer) {
+                            // Was running, continue with new
+                            clearTimeout(WMtimer);
+                            spxWM(1,ref);
+                        } else {
+                            // Not running, purge just in case
+                            clearTimeout(WMtimer);
+                            WMtimer = null; 
+                        }
+                    }, fadeOutAfter*1000);
+                    break;
+            }
+        }
+
+        function protocolCheck() {
+            // check if we are http or file.
+            let protocol = location.protocol;
+            if (protocol != "http:" && protocol != "https:") {
+                alert('Please use this via server! Functions and CORS may not work when used as a file. (Current protocol: ' + protocol + ')');
+            }
+
+            // Show spinner when in Controller
+            // if (inController) {
+            //     document.getElementById('loader').style.opacity=1;
+            // }
+
+            // FPS removed in v 1.3.1 ::
+            // If FPS given in the url param store it. Added in 1.1.3.
+            // Please note, none of default templates support this.
+            // const queryString   = window.location.search;
+            // const urlParams     = new URLSearchParams(queryString);
+            // const fps           = urlParams.get('fps');
+            // if (!window.top.spxRenderer) { window.top.spxRenderer = {} }
+            // if (fps) {
+            //    console.log('Framerate specified: ' + fps + ' FPS.');
+            //    window.top.spxRenderer.fps = fps;
+            // } else {
+            //    // console.log('Framerate not specified.');
+            //    window.top.spxRenderer.fps = null;
+            //}
+
+            // FIXME: v.1.3.1 Disabled: This is not needed anymore? ::
+            // Resize window according to resolution
+            // const root = document.getElementById('root');
+            // const style = getComputedStyle(root)
+            // const w = style.width.replace('px','');
+            // const h = style.height.replace('px','');
+            // console.log('Resizing window to ' + w + ' x ' + h + ' px.')
+            // window.resizeTo(w, h);
+
+       }
+            
+        function remoteFunction(LayerNro, functionName, arg) {
+            // console.log('remoteFunction ' + LayerNro);
+            // LayerNro = validateLayerNro(LayerNro);
+            LayerNro = validateLayerNro(LayerNro);
+            if (!LayerNro) { return }
+            let iframe = 'layer' + LayerNro;
+            document.getElementById(iframe).contentWindow.echo(arg);
+        }
+
+        function populateLayer(LayerNro,TemplateFileRef='', forced=false) {
+            console.log('populateLayer ' + LayerNro + ' with ' + TemplateFileRef);
+            if (!forced) {
+                // If not forced, then validate layer.
+                // Panic button uses "forced=true" to clear ALL layers.
+                LayerNro = validateLayerNro(LayerNro);
+                if (!LayerNro) { return }
+            }
+            let targetElement = 'layer' + LayerNro;
+            let templa = '';
+
+            if (TemplateFileRef!='') {
+                templa = TemplateRoot + TemplateFileRef;
+            } else {
+                templa = TemplateRoot + 'empty.html';
+            }
+
+            // Pass custom URL params to template url. Added in 1.2.2.
+            // let urlParams = new URLSearchParams(window.location.search);
+            // let customParams = '';
+            // for(let param of urlParams) {
+            //     customParams += '&' + param[0] + '=' + param[1];
+            // }
+            // let ranNro = (new Date()).getTime() + Math.floor(Math.random() * 1000000);
+            // document.getElementById(targetElement).src=templa + "?random=" + ranNro + customParams;
+            // console.log("\n\n ====> Loaded " + document.getElementById(targetElement).src + ".\n\n")
+
+            // WC version:
+            console.log('TODO: Populate layer HARDCODED', LayerNro, templa)
+            // loadGraphic('/graphics/basic',targetElement).catch(console.error)
+            loadTheGraphic('/graphics/basic',targetElement)
+        } // populateLayer
+
+        function playLayer(LayerNro,fieldData) {
+            console.log('playLayer (usually after populate)' + LayerNro);
+            // if (!allowLayerControl(LayerNro)) return; // check layer param
+            LayerNro = validateLayerNro(LayerNro);
+            if (!LayerNro) { return }
+            // let iframeID = 'layer' + LayerNro;
+            // let formattedJSON = formatJSONAndSetDomFields(fieldData, iframeID);
+            // document.getElementById(iframeID).contentWindow.update(formattedJSON); 
+            // document.getElementById(iframeID).contentWindow.play();
+            document.getElementById('layer' + LayerNro).firstChild.invokeAction({ method: 'play' });
+        }
+
+        function updateLayer(LayerNro,fieldData) {
+            // console.log('updateLayer ' + LayerNro);
+            LayerNro = validateLayerNro(LayerNro);
+            if (!LayerNro) { return }
+            let iframeID = 'layer' + LayerNro;
+            let formattedJSON = formatJSONAndSetDomFields(fieldData,iframeID);
+            document.getElementById(iframeID).contentWindow.update(formattedJSON);
+        }
+
+        function formatJSONAndSetDomFields(fieldData, iframeID) {
+            // console.log('formatJSONAndSetDomFields:', iframeID, fieldData);
+            let formattedJsonOut = {};
+            if (fieldData) {
+                var keys = [];
+                for (var k in fieldData) keys.push(k);
+                fieldData.forEach((item,index) => {
+                    let KEY = Object.keys(item)[0];
+                    let VAL = fieldData[index][Object.keys(item)[0]]
+                    formattedJsonOut[KEY]=VAL;
+                });
+                return JSON.stringify(formattedJsonOut)
+            }
+    }
+
+        function stopLayer(LayerNro) {
+            // console.log('stopLayer ' + LayerNro);
+            if (!allowLayerControl(LayerNro)) return; // check layer param
+            LayerNro = validateLayerNro(LayerNro);
+            let iframeID = 'layer' + LayerNro;
+            document.getElementById(iframeID).contentWindow.stop();
+        }
+
+        // init communications
+        var url_string = window.location.href; // "http://www.example.com/index.html?gc=http://192.168.1.44:5656"; 
+        var url = new URL(url_string);
+        let TemplateRoot;
+        var GCserver = url.searchParams.get("gc") || undefined;
+        if (GCserver==undefined) {
+            TemplateRoot = "/templates/";
+            var socket = io();
+        } else {
+            TemplateRoot = "templates/";
+            var socket = io(GCserver);
+        }
+
+        socket.on('connect', function () {
+            data={};
+            data.name   = 'SPX_RENDERER'; // <---- Name of this socket connection
+            data.spxcmd = 'identifyClient';
+            socket.emit('SPXMessage2Server', data);
+        });
+
+        socket.on('SPXMessage2Client', function (data) {
+            // Handles messages coming from server to this renderer client.
+            // All comms using 'SPXMessage2Client' as a conduit with data object and
+            // data.spxcmd as function identifier. Additional object values are payload.
+            // console.log('SPXMessage2Client received to renderer', data);
+
+            incomingData = data;
+            let LayerNro;
+
+            switch (data.spxcmd) {
+
+                case 'reloadRendererWithLayers':
+                    // Added in v.1.3.2
+                    // Used to programmatically to set new renderer URL
+                    // and reload the renderer.
+                    let currURL = window.location.href;
+                    const queryString = window.location.search;
+                    const urlParams = new URLSearchParams(queryString);
+                    let userName  = urlParams.get('name') || 'NO_NAME';
+                    let nameMatch = (userName.toUpperCase() === data?.name?.toUpperCase());
+                    if (urlParams.get('remote')=='true' && nameMatch) {
+                        // Yes, renderer is remotely controllable
+                        // as it has the 'remote=true' in the URL
+                        // and the passed name matches.
+                        let baseURL = currURL.split('?')[0];
+                        let layerList = "[" + data.layers.join(',') + "]";
+                        if (data?.layers?.length>0 ) {
+                            window.location.href = baseURL + '?layers=' + layerList + '&remote=true&name=' + userName;
+                        } else {
+                            window.location.href = baseURL + '?remote=true&name=' + userName;
+                        }
+                    } else {
+                        console.log('Remote control ignored.', data);
+                    }
+                    break;
+
+                case 'clearAllLayers':
+                    // first we hide root, then clear all layers and show root again
+                    spxWM(3);
+                    document.getElementById('root').style.opacity=0;
+                    document.querySelectorAll('.frame').forEach(function(frame,index) {
+                        LayerNro = (index+1);
+                        // console.log('Clearing layer ' + layerNro); // 1 based, not 0!
+                        clearLayer(LayerNro,'');
+                    });
+                    document.getElementById('root').style.opacity=1;
+                    break;
+
+                case 'clearLayer':
+                    clearLayer(data.layerno);
+                    break;
+
+                case 'loadTemplate':
+                    populateLayer(data.webplayout,data.relpath);
+                    break;
+
+                case 'forceWM':
+                    // console.log('view-renderer forceWM()...')
+                    spxWM(4); // forcefully play watermark and optionally continue
+                    break;
+
+                case 'playTemplate':
+                    // set callback function to the iframe and then load src to it.
+                    // Note, for PREVIEW the layer number will be set downstream in
+                    // the renderer if 'preview=true'
+                    console.log('playTemplate case', data.webplayout, data.fields);
+
+                    if (data.modify && data.modify==='autoPlayLocal' ) {
+                        if (!isLocalRenderer()) {
+                            // Current renderer is NOT the SPX-GC controller
+                            // so we don't do autoplay in this, so return out!
+                            return;
+                        }
+                    }
+
+                    LayerNro = validateLayerNro(data.webplayout);
+                    if (!LayerNro) { return }
+                    // HTML FILE VERSION:
+                    // document.getElementById('layer' + LayerNro).onload = function() {
+                    //     playLayer(LayerNro,data.fields);
+                    // };
+                    populateLayer(data.webplayout,data.relpath);
+                    break;
+
+                case 'nextTemplate':
+                    // set callback function to the iframe and then load src to it.
+                    // if (!allowLayerControl(data.webplayout)) return; // check layer param
+                    LayerNro = validateLayerNro(data.webplayout);
+                    if (!LayerNro) { return }
+                    document.getElementById('layer' + LayerNro).contentWindow.next();
+                    break;
+
+                case 'updateTemplate':
+                    setTimeout(function(){ updateLayer(data.webplayout,data.fields); }, 10);
+                    break;
+
+                case 'stopTemplate':
+                    LayerNro = validateLayerNro(data.webplayout);
+                    if (!LayerNro) { return }
+                    document.getElementById('layer' + LayerNro).contentWindow.stop();
+                    break;
+
+                case 'invokeFunction':
+                    LayerNro = validateLayerNro(data.webplayout);
+                    if (!LayerNro) { return }
+                    try {
+                        // Important change! --------------------------------------------------
+                        // Starting from version 1.2.0 it is recommended to use
+                        // "data.function" and "data.params" instead of "data.invoke"
+                        // that was a string representation of a function call with
+                        // parameters. Server will log all uses of the old "data.invoke"
+                        // and will recommend to use the new "data.function" and "data.params"
+                        // instead. The old "data.invoke" will be deprecated in the future.
+                        // --------------------------------------------------------------------
+
+                        if (data.function) {
+                            var myFunction = data.function;
+                            var myParamets = data.params || null;
+                            if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") {
+                                let paramPreview = '';
+                                if (myParamets && myParamets!="undefined") {
+                                    paramPreview = 'First 30 chars of args: ' + myParamets.substring(0, 30);
+                                } else {
+                                    paramPreview = 'No args.';
+                                }
+                                console.log('Executing "' + myFunction + '" on layer ' + LayerNro + '. ' + paramPreview)
+                                document.getElementById('layer' + LayerNro).contentWindow[myFunction](myParamets);
+                            } else {
+                                console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
+                            }
+                        } else {
+                            if  (data.invoke) {
+                                let warning = '\DEPRECATION WARNING\n';
+                                warning    += '`data.invoke` will be deprecated in the next SPX version. Refactor your extensions to '
+                                warning    += 'use `data.function` and `data.params` instead when calling the /gc/playout API or use ';
+                                warning    += 'the public API endpoint /api/v1/invokeTemplateFunction instead.\n';
+                                warning    += 'You had a call [' + data.invoke + '].\n\n';
+                                console.warn(warning);
+                                let myFunction = data.invoke.split('(')[0]; // Checking if template has this function
+                                if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
+                                    console.log('Evaluating existing function "' + data.invoke + '" on layer ' + LayerNro + '.');
+                                    eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
+                                    // TODO: This should be removed in the future.
+                                } else {
+                                    console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
+                                }
+                            }
+                        }
+                    } catch(err) {
+                        console.log('Error invoking "' + myFunction + '" on layer ' + LayerNro + '. Verify function and loaded template.');
+                    }
+                    break;
+
+                case 'setRendererBackgroundImage':
+                    // Added in 1.0.15. This function will be called everytime
+                    // a project is loaded in the controller. This changes the
+                    // renderer root background image
+                    if (data.background != '' ) {
+                        // console.log('Background to [' + data.background + ']');
+                        document.getElementById('root').style.backgroundImage = 'url(/' + data.background + ')';
+                    } else {
+                        // console.log('Background to transparent');
+                        document.getElementById('root').style.backgroundImage = '';
+                    }
+                    break;
+
+                default:
+                    // console.log('Unknown SPXMessage2Client command in renderer: ' + data.spxcmd);
+            }
+        });
+
+        socket.on('SPXWebRendererMessage', function (data) {
+            // Handles messages coming from server to this client.
+            // All comms using 'SPXWebRendererMessage' as a conduit with data object and
+            // data.spxcmd as function identifier. Additional object values are payload.
+            // console.log('SPXWebRendererMessage received (but doing nothing to it)', data)
+        }); // socketMessage handler ended
+
+        // Why do we have this?
+        window.addEventListener('load',protocolCheck,false);
+
+
+        // DEV DEV DEV BELOW THIS *********************************************************
+        console.log('WORK IN PROGRESS: SPX Renderer for Web Component Graphics');
+        // setTimeout(function () {
+        //     console.log('Loading Graphic...')
+        //     loadTheGraphic()
+        // }, 1000);
+
+        // setTimeout(function () {
+        //     console.log('Playing the Graphic...')
+        //     document.getElementById('layer1').firstChild.invokeAction({ method: 'play' });
+        // }, 2000);
+
+        // setTimeout(function () {
+        //     console.log('Unloading the Graphic...')
+        //     unloadTheGraphic()
+        // }, 3000);
+
+        let graphicInstance = null
+
+        window.loadTheGraphic = (component,target) => {
+            console.log('Loading Graphic "' + component + '" to ' + target)
+            if (graphicInstance) return // Already loaded
+            // loadGraphic('/graphics/l3rd-name').catch(console.error)
+            // loadGraphic('/graphics/minimal-1').catch(console.error)
+            // loadGraphic('/graphics/basic').catch(console.error)
+            loadGraphic(component,target).catch(console.error)
+        } // loadTheGraphic
+
+        window.unloadTheGraphic = () => {
+            console.log('Unloading Graphic...')
+            graphicInstance?.dispose().catch(console.error).finally(() => {
+                document.getElementById('render-target').innerHTML = ''
+                graphicInstance = null
+            })
+        } // unloadTheGraphic
+
+        async function loadGraphic(graphicPath, renderTarget) {
+            console.log(`Loading Graphic "${graphicPath}"`)
+            const invalidateCache = `?a=${Math.round(Math.random()*10000).toString(16)}` // Useful for development, to avoid caching issues
+            const manifestPath = `${graphicPath}/manifest.json`+ invalidateCache
+            const entrypointPath  = `${graphicPath}/graphic.mjs`+invalidateCache
+            const manifest = await loadManifest(manifestPath)
+            const elementName = await loadGraphicModule(manifest, entrypointPath)
+            graphicInstance = await initializeGraphic(graphicPath, manifest, elementName, renderTarget)
+            // SPX Autoplays graphics onload:
+            graphicInstance?.invokeAction({ method: 'play' })
+            console.log(`Done! Playing.`)
+        }; // loadGraphic
+
+        async function loadManifest(url) {
+            console.log(`Loading manifest from ${url}`)
+            const response = await fetch(url)
+            if (response.status === 200) {
+                const manifest = await response.json()
+                console.log('manifest', manifest)
+                // minimal check of the manifest:
+                if ( typeof manifest.id !=="string") throw new Error('Manifest expected to have an "id" property of type "string"')
+                if ( typeof manifest.version !=="number") throw new Error('Manifest expected to have a "version" property of type "number"')
+                return manifest
+            } else {
+                throw new Error(`Failed to load manifest from ${url}: [${response.status}] ${JSON.stringify(response.body)}`)
+            }
+        } // loadManifest
+
+        async function loadGraphicModule(manifest, url) {
+            console.log(`Loading Graphic module with manifest and ${url}`)
+            const graphicIdVersion = `${manifest.id}-${manifest.version}`
+
+            // Check if the Graphic is already registered:
+            const cachedGraphic = customElements.get( graphicIdVersion )
+            if (cachedGraphic) return graphicIdVersion
+
+            // Load the Graphic module:
+            const module = await import(url)
+
+            if (!module.Graphic) {
+                throw new Error('Module expected to expose a class named "Graphic" (found none)')
+            }
+            if (typeof module.Graphic !== 'function') {
+                throw new Error('Module expected to expose a class named "Graphic" (Graphic is not a function)')
+            }
+
+            // register the web component
+            customElements.define( graphicIdVersion, module.Graphic )
+            return graphicIdVersion
+        }; // loadGraphicModule
+
+        async function initializeGraphic(baseUrl, manifest, elementName, renderTarget) {
+            console.log(`Initializing Graphic with manifest and elementName ${elementName} and baseUrl ${baseUrl}`)
+            const graphicInstance = document.createElement(elementName)
+            document.getElementById(renderTarget).appendChild(graphicInstance)
+            await graphicInstance.load({ baseUrl, renderType: 'realtime' })
+            return graphicInstance
+        }; // initializeGraphic
+
+
+    </script>
+
+</head>
+
+ <body>
+    <div id="root">
+        <dotlottie-player id="wm"></dotlottie-player>
+        {{#ifValue hideCursor "true"}}
+            <div id="cursorHider"></div>
+        {{/ifValue}}
+        <div class="renderer" id="layer1"  style="z-index: 101;"></div>
+        <div class="renderer" id="layer2"  style="z-index: 102;"></div>
+        <div class="renderer" id="layer3"  style="z-index: 103;"></div>
+        <div class="renderer" id="layer4"  style="z-index: 104;"></div>
+        <div class="renderer" id="layer5"  style="z-index: 105;"></div>
+        <div class="renderer" id="layer6"  style="z-index: 106;"></div>
+        <div class="renderer" id="layer7"  style="z-index: 107;"></div>
+        <div class="renderer" id="layer8"  style="z-index: 108;"></div>
+        <div class="renderer" id="layer9"  style="z-index: 109;"></div>
+        <div class="renderer" id="layer10" style="z-index: 110;"></div>
+        <div class="renderer" id="layer11" style="z-index: 111;"></div>
+        <div class="renderer" id="layer12" style="z-index: 112;"></div>
+        <div class="renderer" id="layer13" style="z-index: 113;"></div>
+        <div class="renderer" id="layer14" style="z-index: 114;"></div>
+        <div class="renderer" id="layer15" style="z-index: 115;"></div>
+        <div class="renderer" id="layer16" style="z-index: 116;"></div>
+        <div class="renderer" id="layer17" style="z-index: 117;"></div>
+        <div class="renderer" id="layer18" style="z-index: 118;"></div>
+        <div class="renderer" id="layer19" style="z-index: 119;"></div>
+        <div class="renderer" id="layer20" style="z-index: 120;"></div>
+    </div>
+    <div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
+
+</body>
+</html>
