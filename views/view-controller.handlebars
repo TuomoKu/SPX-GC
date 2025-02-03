@@ -330,7 +330,6 @@
   }
 
   </style>
-
   
   {{{ hookLoadControllerPlugins }}}
 
@@ -435,7 +434,6 @@
       </div>
     </div>
   </div><!-- help overlay ended-->
-
 
 
 
@@ -773,16 +771,16 @@
                                   <tr><td class="aright">fType</td>  <td><input type="text" class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="dropdown"><BR><BR></td></tr>
                                 </table>
                                 <!-- then visible DOM elements -->
-                                  <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="DropdownValues[{{field}}]" data-tooltip="{{title}}" data-position="right center">
-                                    <option disabled>{{title}}:</option>
-                                    {{#each items}}
-                                      {{#ifValue value ../value}}
-                                          <option selected value="{{value}}">{{text}}</option>
-                                      {{else}}
-                                          <option value="{{value}}">{{text}}</option>
-                                      {{/ifValue}}
-                                    {{/each}}
-                                  </select>
+                                <select data-update="{{field}}" data-role="userEditable" class="gcinput select" name="DropdownValues[{{field}}]" data-tooltip="{{title}}" data-position="right center">
+                                  <option disabled>{{title}}:</option>
+                                  {{#each items}}
+                                    {{#ifValue value ../value}}
+                                        <option selected value="{{value}}">{{text}}</option>
+                                    {{else}}
+                                        <option value="{{value}}">{{text}}</option>
+                                    {{/ifValue}}
+                                  {{/each}}
+                                </select>
                               {{/ifValue}}
 
 
@@ -838,9 +836,10 @@
                                 </div>
                               {{/ifValue}}
 
-
-
-
+                              
+                              {{#> PRO--types ftype=ftype}}
+                                {{!-- Extended, proprietary ftypes --}}
+                              {{/PRO--types}}
 
                             {{/each}} <!-- ftype check ended -->
                           </TD>
@@ -1255,7 +1254,7 @@
 
 
     {{>footer}}
-</div><!-- wrapper end -->
+  </div><!-- wrapper end -->
   
 
   <script>
@@ -1378,9 +1377,6 @@
         socket.emit('SPXMessage2Server', data);
     });
     
-
-
-
   </script>
 </body>
 
