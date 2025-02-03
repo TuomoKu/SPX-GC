@@ -32,6 +32,7 @@ static/*.json
 *.pdf
 sea-*.*
 pro--*.*
+PRO--*.*
 
 ## Temp files or drafts
 zzz*.*
