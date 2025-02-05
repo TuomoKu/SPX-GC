@@ -29,6 +29,9 @@
     "text": "Read more"
   }
 ```
+* Ignore HTML and CVS files while browsing if filename starts with "_" or "."
+* If a loaded templatename starts with "_" it's protected and others will not load.
+* Fix a minor "double slash" issue in template paths/URLs.
 
 
 These are in a broken, work-in-progress, state:

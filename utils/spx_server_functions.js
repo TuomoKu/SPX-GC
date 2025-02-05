@@ -568,11 +568,12 @@ module.exports = {
             let fil = filter.toUpperCase();
             let fir = path.basename(curPath).charAt(0); // first character (dot files) Added in 1.1.0
 
-            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" && fir != '.') {
+            // skip all files starting with "." or "_"
+            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" && fir != '.' && fir != '_') {
               data.fileArr.push(path.basename(curPath));
             }
 
-            if (fil === 'CSV' && ext ==".CSV" && fir != '.') {
+            if (fil === 'CSV' && ext ==".CSV" && fir != '.' && fir != '_') {
               data.fileArr.push(path.basename(curPath));
             }
           }
