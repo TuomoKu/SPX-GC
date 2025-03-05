@@ -32,6 +32,7 @@ static/*.json
 *.pdf
 sea-*.*
 PRO--*.*
+gulpfile.js
 
 ## Temp files or drafts
 zzz*.*

@@ -2164,6 +2164,9 @@ function updateFormIndexes() {
     let IndexList = []
     let items = document.querySelectorAll('.itemrow');
     items.forEach((item,index) => {
+        if (item.classList.contains('child-item')) {
+            console.log('Child found --> ' + item.getAttribute('data-spx-epoch'));  
+        }
         IndexList.push(item.getAttribute('data-spx-epoch'));
         item.querySelector('form').name = "templates[" + index + "]";
     });
@@ -2534,9 +2537,26 @@ function spxInit() {
             handle: '.handle',
             animation: 150,
             disabled: false,
+            ghostClass: "sortable-ghost",
+            chosenClass: "sortable-chosen",
+            // dragClass: "sortable-drag",
             // sortable.option("disabled", true); // TAI false
+            // onStart: function (evt) {
+            //     console.log('Start Ctrl? = ', evt.originalEvent.ctrlKey)
+            // },
+            onMove: function (evt) {
+                console.log('Move Ctrl? = ', evt.originalEvent.ctrlKey)
+                if (evt.originalEvent.ctrlKey) {
+                    evt.dragged.classList.add('child-item');
+                } else {
+                    evt.dragged.classList.remove('child-item');
+                }
+                console.log('Hovering over ', evt.related.getAttribute('data-spx-epoch'));
+            },
             onEnd: function (evt) {
+                console.log('Dropped over ', evt.item.getAttribute('data-spx-epoch'));
                 SaveNewSortOrder();
+                // console.log('End Ctrl? = ', evt.originalEvent.ctrlKey)
             },
         });
     }

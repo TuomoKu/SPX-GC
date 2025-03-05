@@ -365,6 +365,8 @@
                 templa = TemplateRoot + '/empty.html';
             }
 
+            // Added in 1.3.4: fix double slashes bug
+            templa = templa.replace(/\/\//g, "/");
 
             // Check if there is a "protected" template on that layer
             // (for TL-stuff). Protected starts with "_".
@@ -434,10 +436,10 @@
         let TemplateRoot;
         var GCserver = url.searchParams.get("gc") || undefined;
         if (GCserver==undefined) {
-            TemplateRoot = "/templates";
+            TemplateRoot = "/templates/";
             var socket = io();
         } else {
-            TemplateRoot = "templates";
+            TemplateRoot = "templates/";
             var socket = io(GCserver);
         }
 

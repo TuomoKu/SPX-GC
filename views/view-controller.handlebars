@@ -36,6 +36,22 @@
 
   <style>
 
+    .sortable-ghost {
+      border-left-color: white;
+    }
+
+	  .sortable-chosen  {
+      /* border: 2px dotted yellow !important; */
+    }
+
+	  .sortable-drag {
+      /* border: 2px dashed red !important; */
+    }
+
+    .child-item {
+      margin-left: 20px;
+    }
+
     #previewIF {
       border: 0px solid yellow;
     }
@@ -238,13 +254,9 @@
     color: white;
   }
 
-
-  /* notification styles */
-  /* see colors in :root */
-
   :root {
     --info: rgb(0, 100, 0);
-    --warn: rgb(160, 0, 0);
+    --warn: rgb(160, 0, 0); 
   }
 
   #rundownNotification {

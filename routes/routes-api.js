@@ -93,13 +93,9 @@ router.get('/openFileFolder/', async (req, res) => {
 
 
 router.get('/licBasic/', async (req, res) => {
-  // added in 1.1.1 - license check. Minor tweaks in 1.1.3
-  // Format:
-  // 4x?rot(pmac)10x? | AA-AA-33-UQ-GZ-ZX-BB-BB-BB-BB
-  // Not safe because it is not encrypted.
+  // added in 1.1.1. Minor tweaks in 1.1.3
   let stripd = req.query.str.replace(/-/g, '');  // strip dashes
   let rotlic = stripd.substring(4,12); // get 8 chars
-  // console.log('rotlic // from: ' + rotlic + ' to ' + spx.rot(rotlic, true) + ' vs ' + global.pmac.toUpperCase());
   if (spx.rot(rotlic, true) === global.pmac.toUpperCase()) {
     res.status(200).send('{result:ok}');
   } else {
