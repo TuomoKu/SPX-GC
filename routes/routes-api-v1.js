@@ -567,27 +567,43 @@ const apiHandler = require('../utils/api-handlers.js');
 
 
     async function executePOSTRequest(req, res) {
-      // Added in 1.3.0
-      // Fixed multiple bugs in 1.3.1
-      // * headers were not sent
-      // * data was sent incorrectly
-      // Improved in 1.3.2
-
-      // console.log('Using POST method', req.body);
-
-      fetch(req.body.url, {
-        method: 'POST',
-        body: JSON.stringify(req.body.postBody),
-        headers: req.body.headers
-      })
-      .then(function(response) {
-        // console.log('Response:', response);
-        res.status(response.status).send(response.json())
-      })
-      .catch(error => {
-        console.error('Error:', error)
-      }); 
-    } // end executePOSTRequest
+      try {
+        const { url, headers, postBody } = req.body;
+    
+        // Check if required parameters are present
+        if (!url || !headers || !postBody) {
+          return res.status(400).json({ error: 'Missing required parameters in request body' });
+        }
+    
+        // Parse the postBody as JSON
+        let requestBody;
+        try {
+          requestBody = JSON.parse(postBody);
+        } catch (error) {
+          return res.status(400).json({ error: 'Invalid postBody format' });
+        }
+    
+        // Forward the request to the target API
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+          headers: headers
+        });
+    
+        // Handle the response from the target API
+        if (!response.ok) {
+          return res.status(response.status).json({ error: `Target API returned an error: ${response.status} ${response.statusText}` });
+        }
+    
+        const data = await response.json();
+    
+        // Return the response data to the client
+        res.status(response.status).json(data);
+      } catch (error) {
+        console.error('Error in executePOSTRequest:', error);
+        res.status(500).json({ error: 'Failed to forward POST request' });
+      }
+    }
 
     function executeGETRequest(req, res) {
       // This handles response to the client
