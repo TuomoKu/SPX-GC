@@ -581,7 +581,7 @@ const apiHandler = require('../utils/api-handlers.js');
         headers: req.body.headers
       })
       .then(function(response) {
-        // console.log('Response:', response);
+        // console.log('Response:', response.json());
         res.status(response.status).send(response.json())
       })
       .catch(error => {
@@ -724,6 +724,7 @@ const apiHandler = require('../utils/api-handlers.js');
 
     router.get('/getFileList', spxAuth.CheckAPIKey, async (req, res) => {
       // Added in 1.3.0
+      // Improved in 1.3.4 to check the first character of the folder name
       let fileList = [];
       try {
         // Get files from a given folder and return an array of files
@@ -732,7 +733,12 @@ const apiHandler = require('../utils/api-handlers.js');
           throw {status: 400, message: errMsg};
         }
 
-        let dirPath = path.resolve(spx.getStartUpFolder(),'ASSETS', req.query.assetsfolder);
+        let lookupFolder = req.query.assetsfolder;
+        if (req.query.assetsfolder.charAt(0) == '/') {
+          lookupFolder = req.query.assetsfolder.substring(1);
+        }
+        
+        let dirPath = path.resolve(spx.getStartUpFolder(),'ASSETS', lookupFolder);
         if (!fs.existsSync(dirPath)) {
           let errMsg = 'Folder not found ' + dirPath;
           throw {status: 404, message: errMsg};

@@ -18,6 +18,8 @@
   <script>
     var socket = io();
   </script>
+
+  <script src="/js/spxlib.js"></script>
   <script src="/js/spx_gc.js"></script>
 
 
@@ -652,7 +654,6 @@
                                 <input type="number"  data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
                               {{/ifValue}}
 
-
                               {{#ifValue ftype "instruction"}}
                                 <!-- "INSTRUCTION" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -663,7 +664,6 @@
                                 <div class="instruction">{{value}}</div>
                                 <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
                               {{/ifValue}}
-
 
                               {{#ifValue ftype "caption"}}
                                 <!-- "CAPTION" TYPE OF TEMPLATE FIELD -->
@@ -676,7 +676,6 @@
                                 <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
                               {{/ifValue}}
 
-
                               {{#ifValue ftype "hidden"}}
                                 <!-- "HIDDEN" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -688,7 +687,6 @@
                                 <input type="hidden"  name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}">
                               {{/ifValue}}
 
-
                               {{#ifValue ftype "textfield"}}
                                 <!-- "TEXTFIELD" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -698,7 +696,6 @@
                                 </div>
                                 <input type="text" data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" value="{{value}}" placeholder="{{title}}" ondblclick="event.stopPropagation();" onkeypress="javascript:applyTextEditChanges(event,this);" class="gcinput"><BR>
                               {{/ifValue}}
-
 
                               {{#ifValue ftype "checkbox"}}
                                 <!-- "CHECKBOX" TYPE OF TEMPLATE FIELD (added in 1.0.10) --> 
@@ -726,7 +723,6 @@
                                 </div> -->
 
                               {{/ifValue}}
-
 
                               {{#ifValue ftype "button"}}
                                 <!-- "BUTTON" TYPE OF TEMPLATE FIELD (added in 1.0.11) --> 
@@ -766,7 +762,6 @@
                                 </div>
                               {{/ifValue}}
 
-
                               {{#ifValue ftype "textarea"}}
                                 <!-- "TEXTAREA" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -776,7 +771,6 @@
                                 </div>
                                 <textarea rows="8" data-tooltip="{{title}}" data-position="right center" name="RundownItem[DataFields][{{@index}}][value]" data-update="{{field}}" data-role="userEditable" ondblclick="event.stopPropagation();" class="gcinput">{{injectNewlines value}}</textarea><BR>
                               {{/ifValue}}
-
 
                               {{#ifValue ftype "dropdown"}}
                                 <!-- "DROPDOWN" TYPE OF TEMPLATE FIELD -->
@@ -797,7 +791,6 @@
                                   </select>
                               {{/ifValue}}
 
-
                               {{#ifValue ftype "filelist"}}
                                 <!-- "FILELIST" TYPE OF TEMPLATE FIELD -->
                                 <div class="wide HIDE">
@@ -814,10 +807,9 @@
                                   <option disabled>{{assetfolder}}</option>
                                   <option disabled></option>
                                   <option value="none">-</option>
-                                    {{{ PopulateFilelistOptions assetfolder extension value ../relpath }}}
+                                    {{{ PopulateFilelistOptions assetfolder extension value ../relpath prettyfilenames}}}
                                 </select>
                               {{/ifValue}}
-
 
                               {{#ifValue ftype "divider"}}
                                 <!-- "DIVIDER" TYPE OF TEMPLATE FIELD -->
@@ -828,7 +820,6 @@
                                 </div>
                                 <div class="divider">{{title}}</div>
                               {{/ifValue}}
-
 
                               {{#ifValue ftype "color"}}
                                 <!-- "COLOR PICKER" TYPE OF TEMPLATE FIELD -->

@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2024-12-15<br>
+> Updated 2025-04-26<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -32,6 +32,9 @@
 * Ignore HTML and CVS files while browsing if filename starts with "_" or "."
 * If a loaded templatename starts with "_" it's protected and others will not load.
 * Fix a minor "double slash" issue in template paths/URLs.
+* Fix a minor "leading slash" issue in `getFileList` API handler.
+* Adds a support for multiple file extensions in the `filelist` -field.
+* Improved `templateDefinitionMissing` error handler.
 
 
 These are in a broken, work-in-progress, state:

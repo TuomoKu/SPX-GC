@@ -187,7 +187,8 @@ html, body, .page {
   }
   
   .folder::before { content: "\f07b"; color: rgb(9, 119, 170);}
-  .file::before { content: "\f15b"; color: rgb(241, 241, 237);}
+  .file::before { content: "\f1c9"; color: rgb(241, 241, 237);}  /* file code icon */
+  .file::before { content: "\f15b"; color: rgb(241, 241, 237);}  /* file normal icon */
   .back::before { content: "\f106"; }
   .home::before { content: "\f102"; }
 

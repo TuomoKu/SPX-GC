@@ -262,23 +262,45 @@ module.exports = {
         return html
   }, // generateCollapsedHeadline
 
-  getFileList: function (FOLDER, EXTENSION) {
+  getFileList: function (FOLDER, EXT, MAKEPRETTY=false) {
+    // v1.3.4 adds two news features:
+    // - a support for both single ('jpg') and an array (['jpg','png']) values
+    // - a support for prettyfying the file names
+    // and now returns an two level array.
+
     try {
       // Get files from a given folder and return an array of files
       const directoryPath = path.normalize(FOLDER);
       let fileList=[];
+      let EXTENSIONS = [];
+      let visibleText = '';
+      
+      if (typeof EXT == 'object') {
+        EXTENSIONS = [...EXT];
+      } else {
+        EXTENSIONS.push(EXT);
+      }
+
+      let TARGETFILETYPES = EXTENSIONS.map(ext => ext.toUpperCase());
       fs.readdirSync(directoryPath).forEach((file, index) => {
-        // console.log(index + ': ' + file + '(' + path.extname(file) + ')');
-        let TARGETFILETYPE = EXTENSION.toUpperCase()
-        let CURRENTFILETYPE = path.extname(file).toUpperCase();
-        if (CURRENTFILETYPE.includes(TARGETFILETYPE) ) {
-          fileList.push(file);
+        let CURRENTFILETYPE = path.extname(file).toUpperCase().replace('.', '');
+
+        visibleText = file;
+        if (MAKEPRETTY) {
+          visibleText = visibleText.split("_").join(" ");
+          visibleText = visibleText.split("-").join(" ");
+          visibleText = visibleText.split(".")[0];
+          visibleText = visibleText.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        if (TARGETFILETYPES.includes(CURRENTFILETYPE) ) {
+          fileList.push([file,visibleText]);
         }
       });
-      return fileList;
+      return fileList; // [[filename1, prettyfilename1], [filename2, prettyfilename2]...]
     }
     catch (error) {
-      logger.error('ERROR in spx.getFileList (Folder: ' + FOLDER + ', Extension: ' + EXTENSION + '): ' + error);
+      logger.error('ERROR in spx.getFileList (Folder: ' + FOLDER + ', Extension: ' + EXT + '): ' + error);
       return false;
     }
   }, // getFileList ended
@@ -421,8 +443,9 @@ module.exports = {
   }, // isJson
 
   lang: function (str) {
+    const spxlangfile = config.general.langfile || 'english.json';
     try {
-      const spxlangfile = config.general.langfile || 'english.json';
+      // const spxlangfile = config.general.langfile || 'english.json';
       let langpath = path.join(this.getStartUpFolder(), 'locales', spxlangfile);
 
       var lang = require(langpath);

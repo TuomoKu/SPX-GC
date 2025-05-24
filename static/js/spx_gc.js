@@ -1,7 +1,7 @@
 // ***************************************
 // Client javascript for SPX
 // ***************************************
-// (c) 2020-2024 SPX Graphics
+// (c) 2020- SPX Graphics
 // ***************************************
 
 var socket = io();
@@ -264,41 +264,6 @@ function rundownPopup(mode) {
 }
 
 
-
-
-function Test(routine) {
-    // execute a test function on the server
-    // this gets triggered by menu > ping
-    let data = {};
-    switch (routine) {
-        case 'A':
-            data.spxcmd     = 'loadTemplate';
-            data.layer      = '10';
-            data.template   = 'spxtestgrid.html';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-        case 'B':
-            data.spxcmd     = 'playTemplate';
-            data.layer      = '10';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-        case 'C':
-            data.spxcmd     = 'stopTemplate';
-            data.layer      = '10';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-
-        default:
-            console.log('Uknown Test', routine);
-        }
-}
-
-
-
-
 function tip(msg) {
     // request ..... 
     // returns ..... 
@@ -310,7 +275,7 @@ function tip(msg) {
         // playServerAudio('beep', 'We are in TIP function');
     }
 } // tip mgsed
- 
+
 
 
 // -------------- ABC from this onwards
@@ -2567,7 +2532,6 @@ function spxInit() {
     document.getElementById('itemList').style.opacity=1;
 
 } // end spxInit
-
 function setProfile(profileName) {
     // FIXME: remove?
     // change profile to profileName and save to localStorage

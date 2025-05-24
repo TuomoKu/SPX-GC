@@ -716,12 +716,11 @@ app.engine('handlebars', exphbs.engine({
     // Note: these files are returned as http-assets from SPX server
     // Feature added in 1.0.3. and improved in 1.0.6, 1.0.9
     // v1.0.15 adds relative assets (within template root folder).
-    PopulateFilelistOptions(assetfolder, extension, value, relpath='') {
+    PopulateFilelistOptions(assetfolder, extension, value, relpath='', makepretty=false) {
       let html = '';
       let sel = '';
       let fullFilePath = '';
       let fullPath = '';
-      let SERVER_URL = 'http://' + ip.address() + ':' + port;
       
       if ( assetfolder.startsWith('./') ) {
         // relative path support added in 1.0.15
@@ -735,19 +734,19 @@ app.engine('handlebars', exphbs.engine({
       }
       
       let selectedValue = value;
-      let fileList = spx.getFileList(fullPath, extension);
+      let fileList = spx.getFileList(fullPath, extension, makepretty);
       // console.log('files', fileList);
       if (fileList) {
         fileList.forEach((fileRef,index) => {
           if (assetfolder.substr(assetfolder.length - 1)!="/") { // fixed a bug in 1.1.1
             assetfolder = assetfolder + "/";
           }
-          fullFilePath = assetfolder + fileRef;
+          fullFilePath = assetfolder + fileRef[0];
           sel = "";
           if (fullFilePath == selectedValue) {
             sel = 'selected';
           }
-          html += '<option value="' + assetfolder + fileRef + '" ' + sel + '>' + fileRef  + '</option>';
+          html += '<option value="' + assetfolder + fileRef[0] + '" ' + sel + '>' + fileRef[1]  + '</option>';
         });
       } 
       return html

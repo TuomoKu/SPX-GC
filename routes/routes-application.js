@@ -1428,8 +1428,12 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
       // == NEXT / aka CONTINUE  =====================================
       case 'next':
 
-        if (dataOut.playserver!='-' || dataOut.webplayout!='-') {
-          RundownData.templates[templateIndex].onair='true';
+        // Added in 1.3.4 / Allow "next" command to be used with API calls
+        // that has the prepopulated flag set to true.
+        if (!skipJSONRead) {
+          if (dataOut.playserver!='-' || dataOut.webplayout!='-') {
+            RundownData.templates[templateIndex].onair='true';
+          } 
         }
       
         // Send PlayoutCCG.functionCalls() if any ---------------------
@@ -1826,6 +1830,14 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   // Original method using just JSDOM
   const dom = new JSDOM(templatehtml, { runScripts: "dangerously" });
   SPXGCTemplateDefinition = dom.window.SPXGCTemplateDefinition; // Mandatory!
+
+  // console.log('SPXGCTemplateDefinition', SPXGCTemplateDefinition);
+
+  if (!SPXGCTemplateDefinition) {
+    logger.warn('Cancel! File ' + TemplatePath + ' is missing SPXGCTemplateDefinition' );
+    profileData.error = 'templateDefinitionMissing';
+    return profileData; // return same profileData, no changes made.
+  }
 
   // HTMLparser & JSDOM used for SPX definition import.
   // This will allow us limit the JSDOM script execution to only to a

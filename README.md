@@ -40,7 +40,7 @@ or <i>any other</i> video pipeline supporting HTML overlays.
 <br>
 
 
->  Readme updated **December 19 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
+>  Readme updated **Apr 2 2025**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
 
 
 
@@ -648,7 +648,8 @@ Theoretically all properties are optional, but it's recommended most properties,
                 "ftype": "filelist",
                 "title": "Choose background image from global ASSETS-folder",
                 "assetfolder" : "/media/images/bg/" ,
-                "extension" : "png",
+                "extension" : ["png", "jpg"],
+                "prettyfilenames": false,
                 "value": "/media/images/bg/checker.png",
             },
             {
@@ -719,7 +720,7 @@ Theoretically all properties are optional, but it's recommended most properties,
 | `textfield`  | A typical single line text input field. | `Firstname Lastname` |
 | `dropdown` | A dropdown selector list. Options is an _items_ array, each consisting of _text_ (which is visible) and the  _value_ (which the template will use). The default selection is defined as `value` and it must be one of the values in the _items_ array. See an example definition above. | `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]` |
 | `textarea`  | A multiline text control which accepts _return_ key for new lines. (Added in 1.0.2)| `First line \n Second line` |
-| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX. This is useful for picking images or other media files in templates. (Added in 1.0.3). Version 1.0.15 introduced _relative folders_. If `assetfolder` path value starts with `"./"` the path is considered relative to the template root folder. This is useful for optional CSS styles or alternative images. See examples of both path styles above. | `sport_logo.png, news_logo.png` |
+| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX. This is useful for picking images or other media files in templates. (Added in 1.0.3). Version 1.0.15 introduced _relative folders_. If `assetfolder` path value starts with `"./"` the path is considered relative to the template root folder. This is useful for optional CSS styles or alternative images. See examples of both path styles above. Version 1.3.4 add support for multiple extensions as an array, like `["jpg", "png", "gif"]`.| `["jpg", "png", "gif"]` and a `prettyfilenames` flag, that will make `file-name.ext` to read `File Name` in the dropdown for instance. |
 | `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | |
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |
