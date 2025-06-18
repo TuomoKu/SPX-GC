@@ -10,7 +10,7 @@ services:
     volumes:
       - ./DATAROOT:/app/DATAROOT
       - ./LOG:/app/LOG
-      - ./config.json:/app/config.json
+      # - ./config.json:/app/config.json
       - ./ASSETS:/app/ASSETS
     environment:
       - NODE_ENV=production
