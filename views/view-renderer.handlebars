@@ -649,7 +649,10 @@
         <iframe class="frame" allow="autoplay" id="layer18" style="z-index: 118;" src="about:blank"></iframe>
         <iframe class="frame" allow="autoplay" id="layer19" style="z-index: 119;" src="about:blank"></iframe>
         <iframe class="frame" allow="autoplay" id="layer20" style="z-index: 120;" src="about:blank"></iframe>
-    </div><div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
-
+    </div>
+    <div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
+    {{#if dataTable}}
+        {{> datatable dataTable}}
+    {{/if}}
 </body>
 </html>

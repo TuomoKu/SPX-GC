@@ -28,6 +28,7 @@
     "axios": "^0.30.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "express": "^4.21.2",
     "express-handlebars": "^8.0.1",
     "express-session": "^1.18.1",

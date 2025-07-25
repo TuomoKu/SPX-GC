@@ -11,6 +11,7 @@ const glob = require("glob");
 const ip = require('ip')
 const axios = require('axios')
 const http = require('http');
+const csv = require('csv-parser');
 // ----------------------------------------- good until here
 // const { config } = require('process');
 
@@ -244,6 +245,11 @@ module.exports = {
                 html += '<span id="datapreview_' + fieldIndex + '">' + this.shortifyString(fValu) + '</span>';
                 Counter++;
                 break;
+
+              case "datatable":
+                html += '<span id="datapreview_' + fieldIndex + '">DATATABLE: ' + this.shortifyString(this.fileNameFromPath(fValu)) + '</span>';
+                Counter++;
+                break;
               
               default:
                 skip = true
@@ -330,6 +336,47 @@ module.exports = {
       return (error);
     }
   }, // GetJsonData ended
+
+  getCsvData: async function (fileref) {
+    // require ..... Full file path or URL
+    // returns ..... File contents as a JSON object
+    const results = [];
+    return new Promise((resolve, reject) => {
+      if (fileref.startsWith('http')) {
+        // Handle URL
+        axios.get(fileref, { responseType: 'stream' })
+          .then(response => {
+            response.data
+              .pipe(csv())
+              .on('data', (data) => results.push(data))
+              .on('end', () => {
+                resolve(results);
+              });
+          })
+          .catch(error => {
+            logger.error('ERROR in spx.getCsvData() from URL: ' + error);
+            reject(error);
+          });
+      } else {
+        // Handle local file
+        if (!fs.existsSync(fileref)) {
+          logger.warn('Tried to read CSV from non-existing file ' + fileref);
+          resolve([]); // Return empty array if file does not exist
+          return;
+        }
+        fs.createReadStream(fileref)
+          .pipe(csv())
+          .on('data', (data) => results.push(data))
+          .on('end', () => {
+            resolve(results);
+          })
+          .on('error', (error) => {
+            logger.error('ERROR in spx.getCsvData() from file: ' + error);
+            reject(error);
+          });
+      }
+    });
+  },
 
   getJSONFileList: function (FOLDER) {
     try {
@@ -568,11 +615,11 @@ module.exports = {
             let fil = filter.toUpperCase();
             let fir = path.basename(curPath).charAt(0); // first character (dot files) Added in 1.1.0
 
-            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" && fir != '.') {
+            if (fil === 'HTM' && (ext == ".HTM" || ext == ".HTML") && fir != '.') {
               data.fileArr.push(path.basename(curPath));
             }
 
-            if (fil === 'CSV' && ext ==".CSV" && fir != '.') {
+            if (fil === 'CSV' && ext == ".CSV" && fir != '.') {
               data.fileArr.push(path.basename(curPath));
             }
           }

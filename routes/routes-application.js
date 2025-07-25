@@ -585,6 +585,12 @@ router.post('/show/:foldername/config', spxAuth.CheckLogin, async (req, res) => 
             newExtra.fcall='demo_toggle(this)';
             break;
 
+        case 'datatable':
+            newExtra.description='A new datatable';
+            newExtra.ftype='datatable';
+            newExtra.value='';
+            break;
+
           case 'selectbutton':
             newExtra.description='Selectbutton demo';
             newExtra.ftype='selectbutton';
@@ -759,6 +765,18 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
   
   const fileDataAsJSON = await spx.RemoveFilepathKey(GetJsonData(datafile));
   // fileDataAsJSON = spx.RemoveFilepathKey(fileDataAsJSON); // Added in 1.3.0
+
+  if (fileDataAsJSON && fileDataAsJSON.templates) {
+    for (const template of fileDataAsJSON.templates) {
+      if (template.DataFields) {
+        for (const field of template.DataFields) {
+          if (field.ftype === 'datatable' && field.value) {
+            field.dataTable = await spx.getCsvData(field.value);
+          }
+        }
+      }
+    }
+  }
   
   fileDataAsJSON.project = req.params.foldername; // Added in 1.3.2
   fileDataAsJSON.rundown = req.params.filename; // Added in 1.3.2
@@ -853,201 +871,82 @@ router.post('/gc/:foldername/:filename/', spxAuth.CheckLogin, async (req, res) =
 
     case 'importCSVdata':
       try {
-        // CSV IMPORT function. The source CSV must have been exported via the EXPORT function.
-        let fieldsFound = false; // check at the end
-        logger.verbose('Importing CSV from ' + data.curFolder + '/' + data.importFile + ' to be appended to ' + data.RundownFile);
-        rundownDataJSONobj = await GetJsonData( path.resolve(data.RundownFile) );
-        if (!rundownDataJSONobj.templates) {
-          rundownDataJSONobj.templates = []
-        }
-        // now get the CSV file and start parsing line-by-line
-        let CSVfileData = await GetTextFileData( path.join(data.curFolder, data.importFile ))
-        // console.log('CSV content', CSVfileData.toString());
+        const rundownPath = path.resolve(data.RundownFile);
+        const rundownData = await GetJsonData(rundownPath) || { templates: [] };
+        const csvPath = path.join(data.curFolder, data.importFile);
+        const csvData = await spx.getCsvData(csvPath);
 
-        let startSeconds = String(Date.now());
-
-        let csvLines = CSVfileData.split('\n')
-
-        var t_description
-        var t_playserver
-        var t_playchannel
-        var t_playlayer
-        var t_webplayout
-        var t_out
-        var t_uicolor
-        var t_onair
-        var t_dataformat
-        var t_relpath
-        var t_project
-        var t_rundown
-
-
-        let curLineItems = []
-        var protoFields = [];
-        var protoFtypes = [];
-        var protoTitles = [];
-        var protoValues = [];
-        var dataFiProto = {}; // placeholder obj for fields
-        var templateTmp = []; // placeholder arr for objects
-        var fieldIndex = 0; // iterate 
-
-
-        // First we get METADATA (another lines forEach for content afterwards)
-        csvLines.forEach((line,lineindex) => {
-          if (line.trim()==='') { return; }
-          curLineItems = line.split(';')
-          // console.log('Line ' + lineindex, curLineItems);
-          switch ( curLineItems[0].trim() ){
-            case '# description #':
-              t_description = curLineItems[1].trim();
-              break;
-
-            case '# playserver #':
-              t_playserver = curLineItems[1].trim();
-              break;
-
-            case '# playchannel #':
-              t_playchannel = curLineItems[1].trim();
-              break;
-
-            case '# playlayer #':
-              t_playlayer = curLineItems[1].trim();
-              break;
-
-            case '# webplayout #':
-              t_webplayout = curLineItems[1].trim();
-              break;
-
-            case '# out #':
-              t_out = curLineItems[1].trim();
-              break;
-
-            case '# uicolor #':
-              t_uicolor = curLineItems[1].trim();
-              break;
-
-            case '# onair #':
-              t_onair = curLineItems[1].trim();
-              break;
-
-            case '# dataformat #':
-              t_dataformat = curLineItems[1].trim();
-              break;
-
-            case '# relpath #':
-              t_relpath = curLineItems[1].trim();
-              break;
-
-            case '# project #':
-              t_project = curLineItems[1].trim();
-              break;
-
-            case '# rundown #':
-              t_rundown = curLineItems[1].trim();
-              break;
-
-
-            case '# FieldUUIDs #':
-              // this line carries f-field ids (f0, f1, etc)
-              // and will generate required objects
-              fieldsFound = true;
-              for (let uuidindex = 1; uuidindex < curLineItems.length-1; uuidindex++) {
-                protoFields.push(curLineItems[uuidindex].trim());
+        if (data.templateIndex) {
+          // New method: Add CSV data to a specific template's datatable field
+          const templateIndex = parseInt(data.templateIndex, 10);
+          const itemID = data.itemID;
+          let success = false;
+          for (const template of rundownData.templates) {
+            if (template.itemID === itemID) {
+              for (const field of template.DataFields) {
+                if (field.ftype === 'datatable') {
+                  field.value = csvPath;
+                  field.dataTable = csvData;
+                  success = true;
+                  break;
+                }
               }
-              break;
-
-            case '# FieldTypes #':
-              for (let typeindex = 1; typeindex < curLineItems.length-1; typeindex++) {
-                let thisFieldType = curLineItems[typeindex].trim()
-                protoFtypes.push(thisFieldType)
-              }
-              break;
-
-            case '# FieldTitls #':
-              for (let titindex = 1; titindex < curLineItems.length-1; titindex++) {
-                protoTitles.push(curLineItems[titindex].trim())
-              }
-              break;
-          } // switch line type
-        }); // for each line METADATA done
-
-
-        // Then iterate all CONTENT LINES and append template to OBJ array
-        var templateData
-        csvLines.forEach((line,loopIndex) => {
-          if (line.trim()==='') { return; } // empty line
-          curLineItems = line.split(';')
-          templateData = {}
-          templateData.DataFields = []
-
-          if (line.startsWith('# ID:')) {
-
-            fieldIndex++; // template counter for GUI message
-
-            for (let index = 1; index < curLineItems.length-1; index++) {
-              protoValues.push(curLineItems[index].trim())
             }
-
-            // generate ID
-            if (line.startsWith('# ID:auto')) {
-              // generate EPOCH
-              templateData.itemID = startSeconds + loopIndex
-            } else {
-              // use the given value
-              templateData.itemID = curLineItems[0].trim().replace('# ID:', '').trim()
-            }
-
-            templateData.description  = t_description
-            templateData.playserver   = t_playserver
-            templateData.playchannel  = t_playchannel
-            templateData.playlayer    = t_playlayer
-            templateData.webplayout   = t_webplayout
-            templateData.out          = t_out
-            templateData.uicolor      = t_uicolor
-            templateData.onair        = t_onair
-            templateData.dataformat   = t_dataformat
-            templateData.relpath      = t_relpath
-
-            // Append warning
-            templateData.DataFields.push({
-                ftype: "instruction",
-                value: "⚠ WARNING: This item was generated with CSV import and typically is not intended for manual editing. Please use the original template for manual input."
-              });
-
-            // Then iterate all fields and assing values
-            for (let i = 0; i < protoFields.length; i++) {
-              dataFiProto={}            
-              dataFiProto.field = protoFields[i]
-              if (protoFtypes[i]=='textarea') {
-                dataFiProto.ftype = 'textarea'  // for multiline texts
-              } else {
-                dataFiProto.ftype = 'textfield' // protoFtypes[i] !forced!
-              }
-              // dataFiProto.ftype = "textfield" // protoFtypes[i] !forced!
-              dataFiProto.title = protoTitles[i]
-              dataFiProto.value = curLineItems[i+1].replace(/<BR>/g,'\n') // add newlines back
-              templateData.DataFields.push(dataFiProto);
-            }
-
-            rundownDataJSONobj.templates.push(templateData)
-          } // content line process ended 
-        });
-
-        // saving new items to disk
-        rundownDataJSONobj.project = t_project; // Added in 1.3.2
-        rundownDataJSONobj.rundown = t_rundown; // Added in 1.3.2
-        global.rundownData = rundownDataJSONobj;
-        await SaveRundownDataToDisc(data.RundownFile) // Bug fixed in 1.3.2
-        if (fieldsFound) {
-          res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=Added ' + fieldIndex + ' templates.'); 
-          break;
+            if(success) break;
+          }
+          if (!success) {
+            return res.redirect(`/gc/${data.foldername}/${data.filebasename}?msg=datatableFieldNotFound`);
+          }
         } else {
-          res.redirect('/gc/' + data.foldername + '/' + data.filebasename + '?msg=invalidCSV'); 
+          // Legacy method: Append new templates from CSV
+          const templateProto = csvData.find(row => row['# FieldUUIDs #']);
+          if (!templateProto) {
+            return res.redirect(`/gc/${data.foldername}/${data.filebasename}?msg=invalidCSV`);
+          }
+          const protoFields = Object.keys(templateProto).filter(key => key.startsWith('f'));
+          const newTemplates = csvData.map((row, index) => {
+            if (row['# ID:']) {
+              const newTemplate = {
+                itemID: row['# ID:'] === 'auto' ? `${Date.now()}${index}` : row['# ID:'],
+                description: row['# description #'] || '',
+                playserver: row['# playserver #'] || '-',
+                playchannel: row['# playchannel #'] || '1',
+                playlayer: row['# playlayer #'] || '20',
+                webplayout: row['# webplayout #'] || '20',
+                out: row['# out #'] || 'manual',
+                uicolor: row['# uicolor #'] || '0',
+                onair: 'false',
+                dataformat: row['# dataformat #'] || 'json',
+                relpath: row['# relpath #'] || '',
+                DataFields: [
+                  {
+                    ftype: 'instruction',
+                    value: '⚠ WARNING: This item was generated with CSV import and typically is not intended for manual editing. Please use the original template for manual input.'
+                  },
+                  ...protoFields.map(field => ({
+                    field,
+                    ftype: row['# FieldTypes #'] && row['# FieldTypes #'][field] === 'textarea' ? 'textarea' : 'textfield',
+                    title: row['# FieldTitls #'] ? row['# FieldTitls #'][field] : '',
+                    value: row[field] ? row[field].replace(/<BR>/g, '\n') : ''
+                  }))
+                ]
+              };
+              return newTemplate;
+            }
+            return null;
+          }).filter(Boolean);
+          rundownData.templates.push(...newTemplates);
         }
+
+        rundownData.project = data.foldername;
+        rundownData.rundown = data.filebasename;
+        global.rundownData = rundownData;
+        await SaveRundownDataToDisc(rundownPath);
+        res.redirect(`/gc/${data.foldername}/${data.filebasename}?msg=Added ${csvData.length} templates.`);
       } catch (error) {
         logger.error('importCSVdata Error: ', error);
+        res.redirect(`/gc/${data.foldername}/${data.filebasename}?msg=importError`);
       }
-
       break;
 
     case 'addAllItemsToRundown': 

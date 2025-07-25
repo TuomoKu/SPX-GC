@@ -2264,7 +2264,13 @@ function saveTemplateItemChangesByElement(itemrow) {
             {
                 let updatedObj = {}
                 updatedObj.field = input.getAttribute('data-update');
-                updatedObj.value = input.value;
+                switch (input.getAttribute('data-ftype')) {
+                    case 'datatable':
+                        updatedObj.value = input.value;
+                        break;
+                    default:
+                        updatedObj.value = input.value;
+                }
                 if (input.type === 'checkbox') {
                     if (input.checked) {
                         updatedObj.value = '1';
@@ -2761,8 +2767,85 @@ function ToggleExpand(rowelement='') {
                 }
             AppState('EDITING');
         }
+
+        const itemID = rowelement.getAttribute('data-spx-epoch');
+        const templateData = JSON.parse(decodeURI(rowelement.querySelector('input[name="RundownItem[DataFields]"]').value));
+        templateData.forEach(field => {
+            if (field.ftype === 'datatable') {
+                const dataTableUI = createDataTableUI(field, itemID);
+                Expanded.querySelector('.expandedcontent').appendChild(dataTableUI);
+            }
+        });
     }
 } // ToggleExpand
+
+function createDataTableUI(field, itemID) {
+    const container = document.createElement('div');
+    container.classList.add('datatable-container');
+
+    const label = document.createElement('label');
+    label.textContent = field.title || 'Data Source';
+    container.appendChild(label);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = field.value || '';
+    input.setAttribute('data-role', 'userEditable');
+    input.setAttribute('data-update', field.field);
+    input.setAttribute('data-ftype', 'datatable');
+    input.placeholder = 'Enter Google Sheet URL or select a local CSV file';
+    container.appendChild(input);
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.csv';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const csvData = e.target.result;
+                const data = {
+                    command: 'importCSVdata',
+                    RundownFile: document.getElementById('datafile').value,
+                    curFolder: 'ASSETS/csv',
+                    importFile: file.name,
+                    templateIndex: getIndexOfRowItem(getElementByEpoch(itemID)),
+                    itemID: itemID,
+                    csvData: csvData
+                };
+                post('', data, 'post');
+            };
+            reader.readAsText(file);
+        }
+    });
+    container.appendChild(fileInput);
+
+    const fileButton = document.createElement('button');
+    fileButton.textContent = 'Select Local CSV';
+    fileButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+    container.appendChild(fileButton);
+
+    const importButton = document.createElement('button');
+    importButton.textContent = 'Import from URL';
+    importButton.addEventListener('click', () => {
+        const data = {
+            command: 'importCSVdata',
+            RundownFile: document.getElementById('datafile').value,
+            curFolder: '',
+            importFile: input.value,
+            templateIndex: getIndexOfRowItem(getElementByEpoch(itemID)),
+            itemID: itemID
+        };
+        post('', data, 'post');
+    });
+    container.appendChild(importButton);
+
+    return container;
+}
 
 function updateItem(itemrow) {
     // request ..... rundown template index
@@ -2790,7 +2873,11 @@ function updateItem(itemrow) {
     CurrentDomFields.forEach((item,index) => {
       let formField={};
       formField.field = item.getAttribute('data-update');
-      formField.value = item.value;
+      if (item.getAttribute('data-ftype') === 'datatable') {
+        formField.value = item.value;
+      } else {
+        formField.value = item.value;
+      }
       if (item.type === 'checkbox') {
         if (item.checked) { 
             formField.value = '1'

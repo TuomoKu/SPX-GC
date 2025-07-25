@@ -1,0 +1,44 @@
+<style>
+    .datatable-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .datatable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .datatable th, .datatable td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    .datatable tr:nth-child(even){background-color: #f2f2f2;}
+    .datatable tr:hover {background-color: #ddd;}
+    .datatable th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4CAF50;
+        color: white;
+    }
+</style>
+
+<div class="datatable-container">
+    <table class="datatable">
+        <thead>
+            <tr>
+                {{#each headers}}
+                    <th>{{this}}</th>
+                {{/each}}
+            </tr>
+        </thead>
+        <tbody>
+            {{#each rows}}
+                <tr>
+                    {{#each this}}
+                        <td>{{this}}</td>
+                    {{/each}}
+                </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

@@ -726,9 +726,52 @@ Theoretically all properties are optional, but it's recommended most properties,
 | `checkbox` | `Title` is used as label in UI. _Value_ is "0" or "1" when checked. (Added in 1.0.10) | `[x] Show logo`  |
 | `color` | `Title` is used as label in UI. _Value_ is a valid CSS color string such as `rgb(255,0,0)` (full red) or `rgba(0,0,0,0.33)` (black with 33% opacity). (Added in 1.1.1)<BR>_**Please note**: The Color Picker UI feels a bit flaky, color may need to be selected two or more times for it to register as intended. This may improve in future versions._| `rgba(255,255,255,1.0)`  |
 | `spacer` | Just an empty line to separate out sections. This can be used in very complex templates to visually separate control groups (Added in 1.1.2) | `(no parameters)`|
+| `datatable` | A field for handling tabular data from CSV files or Google Sheets. The `value` can be a URL to a Google Sheet or a path to a local CSV file. | `https://docs.google.com/spreadsheets/d/e/2PACX-1v...` or `/media/csv/data.csv` |
 
 
 > **Note** additional user interface controls may be added in future releases.
+
+### Using the `datatable` fType
+
+The `datatable` fType allows you to display tabular data from a CSV file or a Google Sheet in your templates.
+
+#### Google Sheets
+
+To use a Google Sheet as a data source, you need to publish it to the web as a CSV file.
+
+1.  In your Google Sheet, go to **File > Share > Publish to web**.
+2.  In the **Link** section, select the sheet you want to publish.
+3.  In the **Embed** section, select **Comma-separated values (.csv)**.
+4.  Click **Publish**.
+5.  Copy the generated URL and paste it into the `value` field of your `datatable` in the template definition.
+
+**Example:**
+
+```json
+{
+    "field": "f0",
+    "ftype": "datatable",
+    "title": "My Google Sheet Data",
+    "value": "https://docs.google.com/spreadsheets/d/e/2PACX-1v.../pub?gid=0&single=true&output=csv"
+}
+```
+
+#### Local CSV Files
+
+To use a local CSV file as a data source, you need to place the file in the `ASSETS/csv` folder. Then, in the `datatable` field in the template definition, you can specify the path to the file.
+
+**Example:**
+
+```json
+{
+    "field": "f0",
+    "ftype": "datatable",
+    "title": "My Local CSV Data",
+    "value": "/csv/my_data.csv"
+}
+```
+
+In the controller, you can also select a local CSV file using the file browser that appears when you expand the template item.
 
 ## Anatomy of an example rundown item
 ![anatomy-of-an-item](screenshots/anatomy-of-an-item.png)
