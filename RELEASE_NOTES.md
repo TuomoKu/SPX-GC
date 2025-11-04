@@ -18,6 +18,7 @@
 <BR>
 
 # Current dev notes v.1.3.4
+* Adds `plugin` ftype
 * Working on a new optional, section to **rundown datafiles** for rundown specific, static, information banner at the top of the rundown. This can become useful for tutorials, and such. Currently this must be added to the rundown files manually. All values are optional, except "body". Supported types: `info` (green accents) and `warn` (red). See example below:
 ```json
   "notification": {

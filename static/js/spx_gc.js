@@ -872,7 +872,6 @@ async function revealItemID(button) {
     }
 } // revealItemID
 
-
 async function revealItemTiming(button) {
     let curValue = button.textContent;
     let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
@@ -1089,6 +1088,36 @@ function edi() {
     document.location = '/shows/' + filename;
 } // edi ended
 
+function openPluginForValue(name, epochID, index) {
+    // Open a plugin in a new window.
+    // This is used by "plugin" ftype from rundown.
+    var w = 500;
+    var h = 500;
+    var left = (screen.width/2)-(w/2);
+    var top = (screen.height/2)-(h/2);
+    var OPT = '_blank,toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left;
+    window.open('/plugins/' + name + '/index.html?id=' + epochID + '&index=' + index, 'pop-' + epochID, OPT);
+} // openPluginForValue ended
+
+function handleReturnValueFromPlugin(epochID, index, value) {
+    // Get data from plugin and update the item.
+    // This is called from the plugin window.
+    console.log('handleReturnValueFromPlugin', epochID, index, value);
+    let itemrow = document.querySelector('.itemrow[data-spx-epoch="' + epochID + '"]');
+    if (itemrow) {
+        itemrow.querySelector("#displayPluginValue").innerText = value;
+        let formField = itemrow.querySelector('input[name="RundownItem[DataFields][' + index + '][value]"')
+        console.log(formField)
+        if (formField) {
+            console.log('Updating itemrow '+ itemrow + ' with index ' + index + ' to [' +  value + '].');
+            formField.value = value;
+        } else {
+            console.info('No form field found for field:', index);
+        }   
+    }    
+    showMessageSlider(`Extension closed. ID: ${epochID} - ${index} - ${value}`);
+} // handleReturnValueFromPlugin ended
+
 function openRelpathFolder(itemrow) {
     // added in 1.1.1 - Open a file for editing.
     let fileRef = itemrow.querySelector("[id^='relpath']").value;
@@ -1099,7 +1128,7 @@ function openLightModePanel() {
     // Open a light mode panel (in Controller only)
     let newUrl = window.location.href + '/light';
     window.open(newUrl, 'SPX-LITE', '_blank, width=680, height=850, scrollbars=yes, location=yes,status=yes');
-}
+} // openLightModePanel ended
 
 function eps() {
     // Opens the selected (or current) file in controller.
@@ -1119,7 +1148,7 @@ function eps() {
     }
     if (foldername==""){return};
     document.location = '/show/' + foldername;
-} // cas ended
+} // eps ended
 
 function exportItemAsCSV(rowItem) {
     // export an item as a CSV file, which then can be
@@ -1309,7 +1338,6 @@ function getElementByEpoch(itemID) {
     }
     return false; // added in 1.2.0
 } // getElementByEpoch ended
-
 
 function getIndexOfRowItem(rowitem) {
     // Utility, gets a row element and returns it's index

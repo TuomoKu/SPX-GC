@@ -1,0 +1,20 @@
+
+<div class="wide HIDE">
+    <table class="wide spxTableHeadsmall">
+    <tr><td class="aright">ftype</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][ftype]" value="plugin"></td></tr>
+    <tr><td class="aright">plugin</td>      <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][fcall]" value="{{plugin}}"></td></tr>
+    <tr><td class="aright">title</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][title]" value="{{title}}"></td></tr>
+    <tr><td class="aright">descr</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][descr]" value="{{descr}}"></td></tr>
+    <tr><td class="aright">value</td>       <td><input type="text"  class="wide" name="RundownItem[DataFields][{{@index}}][value]" value="{{value}}"></td></tr>
+    </table>
+</div>
+<div class="gcpluginbuttondiv">
+    <div class="gcplugindescription">{{descr}}</div><br>
+    <button type="button"
+        onClick="openPluginForValue('{{plugin}}', '{{itemID}}', '{{index}}'); return false;" 
+        class="btnsmall ripple bg_grey15"
+        >{{title}}</button>&nbsp;<br>
+    <span id="displayPluginValue">{{value}}</span>
+</div>
+
+

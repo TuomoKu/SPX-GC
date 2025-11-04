@@ -841,6 +841,11 @@
                                 </div>
                               {{/ifValue}}
 
+                              {{#ifValue ftype "plugin"}}
+                                {{> ftype-plugin itemID=../itemID  index=@index }}
+                              {{/ifValue}}
+
+
                               {{#> PRO--types ftype=ftype}}
                                 {{!-- Extended, proprietary ftypes --}}
                               {{/PRO--types}}
