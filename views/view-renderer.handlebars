@@ -177,7 +177,7 @@
             if ( isPreviewMode() ) {
                 return 1 // hardcoded LayerNro for previews!
             } else {
-                return LayerNro
+                return Math.min(parseInt(LayerNro),5);
             }
         }
 
@@ -634,21 +634,6 @@
         <iframe class="frame" allow="autoplay" id="layer3"  style="z-index: 103;" src="about:blank"></iframe>
         <iframe class="frame" allow="autoplay" id="layer4"  style="z-index: 104;" src="about:blank"></iframe>
         <iframe class="frame" allow="autoplay" id="layer5"  style="z-index: 105;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer6"  style="z-index: 106;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer7"  style="z-index: 107;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer8"  style="z-index: 108;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer9"  style="z-index: 109;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer10" style="z-index: 110;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer11" style="z-index: 111;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer12" style="z-index: 112;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer13" style="z-index: 113;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer14" style="z-index: 114;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer15" style="z-index: 115;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer16" style="z-index: 116;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer17" style="z-index: 117;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer18" style="z-index: 118;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer19" style="z-index: 119;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer20" style="z-index: 120;" src="about:blank"></iframe>
     </div><div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
 
 </body>

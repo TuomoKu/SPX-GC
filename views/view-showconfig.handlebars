@@ -79,7 +79,7 @@
             <div id="template{{@index}}">
             <button class="collapsible bg_grey15 row_accent{{uicolor}}" type="button" onmouseover="tip('{{lang 'hover.confitem'}}');">
                 {{{nameFromTemplatePath relpath }}}
-                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{playlayer}} | {{webplayout}}</SPAN>
+                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{playlayer}} | {{{max5 webplayout}}}</SPAN>
               </button>
             <div class="collapsiblecontent spxConfigHead" >
               <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">
@@ -133,6 +133,7 @@
                   <td>
                     <select class="wide drop bg_grey15" name="templateData[webplayout]" onmouseover="tip('{{lang 'hover.weblayer'}}');">
                       {{{generateWebPlayoutOptions webplayout}}}
+                      
                     </select>
                   </td>
                 </tr>

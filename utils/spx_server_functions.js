@@ -30,6 +30,10 @@ try {
 
 module.exports = {
 
+  max5: function (num) {
+    return Math.min(5, parseInt(num));
+  },
+
   appendProjectFile: async function (rundownData, fullpath, referrer='') {
     // Added in 1.3.2
     // Append project and rundown info to the rundownData object
@@ -433,6 +437,66 @@ module.exports = {
       return str + " missing from " + spxlangfile;
     }
   }, // lang
+
+  getEasterEggImage: function () {
+    // Added in 0.8.9
+    let ddmm = moment().format('DD-MM');
+    let image = false;
+    let greet = '';
+    // ddmm = '08-03' // DEV TESTING Day-Month
+
+    switch (ddmm) {
+      case '31-12':
+      case '01-01':
+        greet = 'Happy New Year from <A target="egg" href="http://spx.graphics">SPX Graphics</A>!';
+        image = 'new-year-sparks.png';
+        break;
+
+      case '08-03':
+        greet = 'Happy Women\'s Day from <A target="egg" href="http://spx.graphics">SPX Graphics</A>!';
+        image = 'rose.png';
+        break;
+
+      case '04-07':
+        greet = 'Happy Birthday USA!';
+        image = 'usa.png';
+        break;
+
+      case '22-04':
+        greet = 'Happy <A target="egg" href="https://www.earthday.org/">Earth day!</A>';
+        image = 'earth-day.png';
+        break;
+
+      case '04-10':
+        greet = 'Have a great <A target="egg" href="https://en.wikipedia.org/wiki/World_Animal_Day">World Animal Day!</A>';
+        image = 'animal-day.png';
+        break;
+
+      case '09-10':
+        greet = 'Have a tasty Cinnamon Roll Day!';
+        image = 'korvamunkki.png';
+        break;
+
+      case '06-12':
+        greet = '<A target="egg" href="https://en.wikipedia.org/wiki/Independence_Day_(Finland)">Hyvää itsenäisyyspäivää!</A>';
+        image = 'finland.png';
+        break;
+
+      case '24-12':
+      case '25-12':
+      case '26-12':
+        greet = 'Merry Christmas from <A href="http://spx.graphics">SPX Graphics</A>!';
+        image = 'animated-santa.png';
+        break;
+
+    }
+
+    if (image) {
+      logger.verbose('Easter egg activated for ' + ddmm + ': ' + image);
+    }
+
+    return [image, greet];
+  }, // getEasterEggImage
 
   getStartUpFolder: function () {
     // a workaround to resolve the path to the current startup folder

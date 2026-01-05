@@ -1,9 +1,16 @@
 
 # SPX Graphics Controller
 
-### Manage and control HTML graphics in live production.
+**Manage and control HTML graphics in live production.**
+
+
+>  Readme updated **Dec 14 2025**
+
+
+
 
 <br>
+
 
 <img src="./static/img/spx_online.png" WIDTH="60" align="left" style="margin:0 1em 0 0">
 
@@ -24,11 +31,26 @@
 [AWS Elemental](https://aws.amazon.com/media-services/elemental/?ref=spx.graphics)
 or <i>any other</i> video pipeline supporting HTML overlays.
 
-> For the latest released **version 1.3.3** please visit [spx.graphics/controller](https://spx.graphics/controller/pricing).
+<br>
 
+## SPX free vs paid?
+
+SPX Graphics is a available for hobbyists and developers as an open-source project (this repo) and there are commercial versions with extended features and API's for professional users, such as production houses, broadcasters and system vendors requiring 24/7 Support SLA's, Professional/Creative Services and custom development. For details please visit [SPX Graphics website](https://spx.graphics). 
+
+| | | |
+| ------ | ------ | ------ |
+| **🟩SPX Solo** | **🟦SPX Production** | **🟨SPX Broadcast** |
+| Open-Source MIT version of SPX Graphics Controller. SPX Solo is available as a source code here on this page or it can be purchased as compiled version for Windows, Mac and Linux from SPX Graphics website.|A commercial version of SPX Graphics Controller for professional, manual live production with additional features and Control API.|SPX Broadcast has a Server API for fully automated playout and other broadcast specific workflows, such as MOS protocol integration.
+| * 5 layers  | * 10 layers| * 20 layers |
+| * Basic API | * Controller API| * Server API |
+|  | * Additional features| * Integrations |
+|  | * Support | * 24/7 Support |
+
+
+<br>
 
 <small>Resources:</small><BR>
-🟩 [**spx.graphics**/_controller_](https://spx.graphics/controller)<br>
+🟩 [**spx.graphics**/controller](https://spx.graphics/controller)<br>
 🎬 [SPX Youtube channel](https://www.youtube.com/@spxgraphics)<br>
 📘 [Knowledge Base](https://spxgc.tawk.help)<br>
 💬 [Discord server](https://bit.ly/joinspx)<br>
@@ -38,10 +60,6 @@ or <i>any other</i> video pipeline supporting HTML overlays.
 <hr>
 
 <br>
-
-
->  Readme updated **December 19 2024**.<br><small>See [RELEASE_NOTES.md](RELEASE_NOTES.md) for latest changes.</small>
-
 
 
 <br>
@@ -648,7 +666,8 @@ Theoretically all properties are optional, but it's recommended most properties,
                 "ftype": "filelist",
                 "title": "Choose background image from global ASSETS-folder",
                 "assetfolder" : "/media/images/bg/" ,
-                "extension" : "png",
+                "extension" : ["png", "jpg"],
+                "prettyfilenames": false,
                 "value": "/media/images/bg/checker.png",
             },
             {
@@ -686,6 +705,14 @@ Theoretically all properties are optional, but it's recommended most properties,
                 "ftype": "color",
                 "title": "Text color",
                 "value": "rgba(255, 255, 255, 1.0)"
+            },
+            {
+                "field": "f9",
+                "ftype": "plugin",
+                "fcall": "myPluginPath",
+                "title": "My Own Plugin",
+                "descr": "Launch My Own Plugin",
+                "value": ""
             }
         ]
     };
@@ -719,7 +746,7 @@ Theoretically all properties are optional, but it's recommended most properties,
 | `textfield`  | A typical single line text input field. | `Firstname Lastname` |
 | `dropdown` | A dropdown selector list. Options is an _items_ array, each consisting of _text_ (which is visible) and the  _value_ (which the template will use). The default selection is defined as `value` and it must be one of the values in the _items_ array. See an example definition above. | `"items":[ {"text": "Hundred", "value": 100}, {"text": "Dozen", "value": 12} ]` |
 | `textarea`  | A multiline text control which accepts _return_ key for new lines. (Added in 1.0.2)| `First line \n Second line` |
-| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX. This is useful for picking images or other media files in templates. (Added in 1.0.3). Version 1.0.15 introduced _relative folders_. If `assetfolder` path value starts with `"./"` the path is considered relative to the template root folder. This is useful for optional CSS styles or alternative images. See examples of both path styles above. | `sport_logo.png, news_logo.png` |
+| `filelist` | A dropdown selector list for files of of given type _extension_ in an _assetfolder_ within ASSETS -folderstructure of SPX. This is useful for picking images or other media files in templates. (Added in 1.0.3). Version 1.0.15 introduced _relative folders_. If `assetfolder` path value starts with `"./"` the path is considered relative to the template root folder. This is useful for optional CSS styles or alternative images. See examples of both path styles above. Version 1.3.4 add support for multiple extensions as an array, like `["jpg", "png", "gif"]`.| `["jpg", "png", "gif"]` and a `prettyfilenames` flag, that will make `file-name.ext` to read `File Name` in the dropdown for instance. |
 | `divider` | A utility ftype to add a visual divider to a template. Can be used to create visual seqments for ease of use. (Added in 1.0.3) | |
 | `instruction` | _Value_ can be used as a longer help text on the template but does not have any other functionality. (Added in 1.0.6) | `Max 100 characters to the field below.`  |
 | `number` | _Value_ is exposed as a number field in the template UI. (Added in 1.0.7) | `45`  |

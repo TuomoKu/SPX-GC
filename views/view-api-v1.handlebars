@@ -34,6 +34,7 @@
     }
 
     h3 {
+      margin-top: 2em;
       margin-bottom: 0;
       font-size: 1.5em;
     }
@@ -96,6 +97,53 @@
       border: none;
       font-size: 1.1em;
     }
+
+    .notActive {
+      background-color: red;
+      color: white;
+      padding: 0.2em 0.4em;
+      border-radius: 100em;
+      font-size: 0.8em;
+    }
+    
+    .hostid {
+      padding: 0.2em 0.5em;
+      border: 1px solid rgba(0,0,0,0.4);
+      display: block;
+      width: fit-content;
+    }
+
+    .promo {
+      margin: 1em 0;
+      display: block;
+      width: clamp(400px, 70%, 800px);
+      font-size: 0.9em;
+      border-radius: 0.4em;
+      padding: 0.8em;
+      background-color: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgb(153, 153, 153);
+      border-left: 10px solid rgb(10, 97, 36);
+      box-shadow: 0 0 0.5em rgba(0,0,0,0.2);
+    } 
+
+    .promo h2 {
+      margin: 0.4em 0 0.8em 0;
+
+      padding: 0;
+    }
+    
+    .promo p {
+      margin: 0.7em 0;
+    }
+
+    h1 .vers {
+      font-size: 0.5em;
+      vertical-align: super;
+      margin-left: 0.2em;
+      color: rgba(0,0,0,0.8);
+      background-color: transparent;
+    }
+    
   </style>
 
 
@@ -122,19 +170,21 @@
 
 <body class="bg_body">
   <input type=""hidden id="currServerAddress" value="{{{getServerAddress}}}">
-  <H1>SPX Graphics / API v1</H1>
-  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); text-transform: uppercase;">SPX Host-ID: <B>{{{getHostID}}}</B></small>
+  <H1>SPX Solo API <span class="vers">v.{{version}}</span></H1>
+  <span class="hostid">SPX Host-ID: <B>{{{getHostID}}}</B></span>
+  <br>
+  <div class="promo">
+    <h2>Need more API functionality?</h2>
+    <p>SPX Solo is a limited version with basic features and API endpoints.</p>
+    <p>SPX Production comes with ControlAPI for controlling rundown interface with external systems such as Stream Deck. SPX Broadcast adds ServerAPI for automated graphics workflows and system integration, such as NRCS, NLE and MOS.</p>
+    <p>Visit <a href="https://spx.graphics" target="website">spx.graphics</a> website or <a href="https://spx.graphics/contact" target="website">contact us</a> for more info</p>
+    
+  </div>
   <BR>
-  <BR>
-  <B>http/get</B> commands available for external systems to trigger SPX events. See also <a href="/osc">osc</a>.
+  <B>http/get</B> commands available for external systems to trigger SPX events.
   <BR>
   SPX will need to be open in a browser (in the same network as the server) for most of these to work.
   <br><br>
-  API connections can be restricted with an <b>apikey</b> parameter set in the config file and in the URL <code>?apikey=1234567890</code>
-  <BR><BR>
-  <small>Remember, SPX is primarily targeted to live, manually operated
-  workflows and API allows only limited modifications of template data or other advanced procedures.</small>
-  <BR><BR>
   <input  type="checkbox" id="useLocalhost" onchange="localhostToggle()"> Use "localhost" addresses in examples
   <BR><BR>
   
@@ -146,15 +196,20 @@
       {{#each commands}}
         <tr>
           {{#ifValue method "POST"}}
-            <td class="apiLink" colspan="3">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</td>
+             <td class="apiLink" colspan="3">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</td>
           {{else}}
-            <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
+            <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">{{../endpoint}}{{param}}</A></td>
           {{/ifValue}}
         </tr>
         <tr>
           <td class="{{method}}">{{method}}</td>
           <td class="vers">{{vers}}</td>
-          <td class="info">{{{info}}}</td>
+          <td class="info">
+            {{#ifValue active false}}
+              <span class="notActive">Not in this SPX version.</span>
+            {{/ifValue}}
+            {{{info}}}
+          </td>
         </tr>
         {{#if code}}
           <tr>

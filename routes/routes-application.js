@@ -757,6 +757,8 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
   // G R A P H I C   C O N T R O L L E R   M A I N   V I E W
   let datafile = path.join(config.general.dataroot, req.params.foldername,'data', req.params.filename) + '.json';
   
+  let [easterImg, easterTxt] = spx.getEasterEggImage();
+
   const fileDataAsJSON = await spx.RemoveFilepathKey(GetJsonData(datafile));
   // fileDataAsJSON = spx.RemoveFilepathKey(fileDataAsJSON); // Added in 1.3.0
   
@@ -822,7 +824,9 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
     assetsFolder:   assetsFolder,
     disableConfigUI: disableConfigUI,
     disableLRender: disableLRenderer,
-    autoplayLocalRenderer: config.general.autoplayLocalRenderer
+    autoplayLocalRenderer: config.general.autoplayLocalRenderer,
+    easteregg:     easterImg,
+    easterText:    easterTxt
   });
 
   let bgImage = ''
@@ -1857,12 +1861,16 @@ function addTemplateToProfile(profileData, TemplatePath, showFolder, curFolder, 
   if (!SPXGCTemplateDefinition.description) {SPXGCTemplateDefinition.description = ""};
   if (!SPXGCTemplateDefinition.playserver)  {SPXGCTemplateDefinition.playserver  = "-"};
   if (!SPXGCTemplateDefinition.playchannel) {SPXGCTemplateDefinition.playchannel = "1"};
-  if (!SPXGCTemplateDefinition.playlayer)   {SPXGCTemplateDefinition.playlayer   = "20"};
-  if (!SPXGCTemplateDefinition.webplayout)  {SPXGCTemplateDefinition.webplayout  = "20"}; // added in 1.2.2
+  if (!SPXGCTemplateDefinition.playlayer)   {SPXGCTemplateDefinition.playlayer   = "5"};
+  if (!SPXGCTemplateDefinition.webplayout)  {SPXGCTemplateDefinition.webplayout  = "5"}; // added in 1.2.2, changed in 1.3.5
   if (!SPXGCTemplateDefinition.onair)       {SPXGCTemplateDefinition.onair       = "false"};
   if (!SPXGCTemplateDefinition.out)         {SPXGCTemplateDefinition.out         = "manual"};
   if (!SPXGCTemplateDefinition.dataformat)  {SPXGCTemplateDefinition.dataformat  = "json"}; // changed XML to JSON in 1.2.2
   if (!SPXGCTemplateDefinition.uicolor)     {SPXGCTemplateDefinition.uicolor     = "0"};
+
+  // Solo 1.3.5
+  if (parseInt(SPXGCTemplateDefinition.webplayout)>5) { {SPXGCTemplateDefinition.webplayout = "5"}; }
+  if (parseInt(SPXGCTemplateDefinition.playlayer)>5 ) { {SPXGCTemplateDefinition.playlayer  = "5"}; }
 
   // v.1.0.15 add imported timestamp
   SPXGCTemplateDefinition.imported = String(Date.now()); // epoch. This COULD be used to compare template versions in profile/rundown.

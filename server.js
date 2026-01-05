@@ -130,7 +130,12 @@ app.engine('handlebars', exphbs.engine({
   //defaultLayout: 'filelist',
   helpers: {
 
-   // Convert JSON data and return as JSONstring.
+    max5: function (data) {
+      if (parseInt(data)>5) { data = "5"; }
+      return data;
+    },
+
+    // Convert JSON data and return as JSONstring.
     // (used to store arrays to hidden form fields)
     DataToJSONString: function (data) {
       let s = encodeURI(JSON.stringify(data));
@@ -286,6 +291,9 @@ app.engine('handlebars', exphbs.engine({
 
     // generate a pretty string for each template to display playout configs
     GeneratePlayoutInfo(playserver='', playchannel='', playlayer='', webplayout='', out='' , itemid='') {
+
+      webplayout = spx.max5(webplayout);
+
       let html = '<div data-spx-name="playoutConfig">';
       // html += '<input type="text" data-clipboard-action="copy" data-clipboard-target="#copy' + itemid + '">';
 
@@ -462,9 +470,10 @@ app.engine('handlebars', exphbs.engine({
 
     // populate WebPlayout options for show config templates
     generateWebPlayoutOptions(currentLayer='-') {
-      logger.debug('Generating webplayout options. This selection: ' + currentLayer + '.');
+      currentLayer = spx.max5(currentLayer);
+      logger.debug('Generating webplayout options. This selection: '+ currentLayer);
       let html="";
-      let AvailableLayers=['-',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+      let AvailableLayers=['-',1,2,3,4,5];
       AvailableLayers.forEach((layerOption,i) => {
         let curSrv = layerOption || '-';
         let cfgSrv = currentLayer || '-';
@@ -472,6 +481,9 @@ app.engine('handlebars', exphbs.engine({
         if (curSrv==cfgSrv){ sel="selected" }
         html += '<option value="' + curSrv + '" ' + sel + '>' + curSrv + '</option>';
       });
+      // html += '<option disabled>SPX Production has 10 layers</option>';
+      // html += '<option disabled>SPX Broadcast has 20 layers</option>';
+
       return html
     },
 
@@ -904,7 +916,7 @@ process.on('uncaughtException', function(err) {
 var server = app.listen(port, (err) => {
 
   let splash = '  Copyright 2020- SPX Graphics\n\n' +
-  `  SPX Server version ........ ${global.vers}\n` +  
+  `  SPX Solo version .......... ${global.vers}\n` +  
   '  License ................... See LICENSE.txt\n' +
   `  Config file ............... ${configfileref}\n`  +
   `  Cfg / locale .............. ${config.general.langfile}\n`  +
@@ -938,15 +950,17 @@ var server = app.listen(port, (err) => {
   // `  and please visit spx.graphics/store to support us.\n\n` +  
   `\n  Explore SPX Graphics related resources:` +  
   `\n  + Homepage ................ https://spx.graphics` +  
-  `\n  + Knowledge Base .......... https://spxgc.tawk.help` +  
+  `\n  + Knowledge Base .......... https://docs.spx.graphics` +  
   `\n  + SPX in the Cloud ........ https://spxcloud.app` + 
-  `\n  + Creative Services ....... https://spx.graphics/contact` +  
+  // `\n  + Creative Services ....... https://spx.graphics/contact` +  
   `\n  + SPX Graphics for Zoom ... https://spxzoom.com` +
-  `\n  + Buy and sell templates .. https://html.graphics/marketplace`;
+  // `\n  + Buy and sell templates .. https://html.graphics/marketplace` +
+  `\n` +
+  `\n  This is SPX Solo. For professional features and support\n  options see SPX Production and SPX Broadcast.`;
 
   console.log(splash);
 
-  let prompt = 'Open SPX in a browser:';
+  let prompt = 'Open SPX Solo in a browser:';
   let spxUrl = `http://${ipad}:${port}`;
   let urLeng = spxUrl.length;
   let prLeng = prompt.length;

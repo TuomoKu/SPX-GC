@@ -329,6 +329,21 @@
     color: var(--warn);
   }
 
+  #easter {
+    right: 0;
+    bottom: 9px;
+    z-index: 100;
+    width: 250px;
+    aspect-ratio: 2/1;
+    position: absolute;
+    pointer-events: none;
+    border: 0px dotted yellow;
+    background-size: 100% auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('/img/easter/{{easteregg}}');
+  }
+
   </style>
   
   {{{ hookLoadControllerPlugins }}}
@@ -537,7 +552,7 @@
                         <div  class="utilitySection "
                               onClick="copyItemID('{{itemID}}');"
                               onmouseover="tip('Copy play API command for ItemID: {{itemID}}');">
-                          <span class="utiliteValueLarge">{{webplayout}}</span>
+                          <span class="utiliteValueLarge">{{{max5 webplayout}}}</span>
                         </div>
 
                         <div  class="utilitySection hoverable"
@@ -916,7 +931,7 @@
                             <tr><td class="aright">playchannel</td> <td><input style="width: 100%;" type="text" id="playchannel{{@index}}" name="RundownItem[playchannel]"     value="{{playchannel}}"></td></tr>
                             <tr><td class="aright">playlayer</td>   <td><input style="width: 100%;" type="text" id="playlayer{{@index}}"   name="RundownItem[playlayer]"       value="{{playlayer}}"></td></tr>
                             <tr><td class="aright">dataformat</td>  <td><input style="width: 100%;" type="text" id="dataformat{{@index}}"  name="RundownItem[dataformat]"      value="{{dataformat}}"></td></tr>
-                            <tr><td class="aright">webplayout</td>  <td><input style="width: 100%;" type="text" id="webplayout{{@index}}"  name="RundownItem[webplayout]"      value="{{webplayout}}"></td></tr>
+                            <tr><td class="aright">webplayout</td>  <td><input style="width: 100%;" type="text" id="webplayout{{@index}}"  name="RundownItem[webplayout]"      value="{{{max5 webplayout}}}"></td></tr>
                             <tr><td class="aright">onair</td>       <td><input style="width: 100%;" type="text" id="onair{{@index}}"       name="RundownItem[onair]"           value="{{onair}}"></td></tr>
                             <tr><td class="aright">out</td>         <td><input style="width: 100%;" type="text" id="out{{@index}}"         name="RundownItem[out]"             value="{{out}}"></td></tr>
                             <tr><td class="aright">uicolor</td>     <td><input style="width: 100%;" type="text" id="uicolor{{@index}}"     name="RundownItem[uicolor]"         value="{{uicolor}}"></td></tr>
@@ -1252,6 +1267,9 @@
         </div>
     </div><!-- content end -->
 
+    {{#if easteregg}}
+      <div id="easter"></div>
+    {{/if}}
 
     {{>footer}}
   </div><!-- wrapper end -->

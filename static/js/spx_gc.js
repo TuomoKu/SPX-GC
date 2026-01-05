@@ -619,7 +619,6 @@ function checkKey(e) {
                         return;
                     }
                     saveTemplateItemChangesByElement(getFocusedRow()); 
-                    // saveTemplateItemChanges(getElementIdOfFocusedItem()) // this includes toggle to close it
                     e.preventDefault();
                     break;
                 
@@ -930,8 +929,10 @@ async function revealItemTiming(button) {
 async function revealItemLayer(button) {
     let curValue = button.textContent;
     let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
-    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 20:", curValue);
+    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 5:", curValue);
+
     if (newValue != null && newValue != curValue) {
+        newValue = Math.min(5, parseInt(newValue));
         let file = document.getElementById('datafile').value;
         let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
         axios.get(URL)
@@ -1269,75 +1270,18 @@ function focusRow(rowitemOrIndex) {
      setMasterButtonStates(TargetElement, 'from focusRow');
 } // focusRow ended
 
-function org_focusRow(index, useID=false) {
-    // FIXME: This is archived version of this function.
-    // Delete at some point -----------------------------
-
-    // will make TG item focused
-    // and will set TG button states.
-    // index = target number
-    // useID = if true will use index as element ID, otherwise as index
-
-    let TargetElement = '';
-    index = Math.max(0,index); // do not allow negative numbers
-    let rows = document.querySelectorAll('.itemrow');
-    rows.forEach(function (item) {
-        let classes = item.classList;
-        if (classes.contains("inFocus")) {
-            item.classList.remove('inFocus');
-        }
-    })
-    if (useID) {
-        // use absolute ID when clicked with mouse
-        TargetElement = document.getElementById('playlistitem' + index);
-        }
-    else {
-        // use list index when up / down keys
-        TargetElement = document.querySelectorAll('.itemrow')[index];
-    }
-
-    // console.log('Focusing to ' + index + ' [use ElementID: ' + useID + '], which is ' + TargetElement.id + ' and scrolling that to view.');
-    if (TargetElement){
-        TargetElement.classList.add('inFocus');
-        TargetElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "center"
-        });
-    }
-     setMasterButtonStates(index, 'from focusRow');
-} // focusRow ended
-
-function getElementIdOfFocusedItem() {
-    // FIXME: Is this in use? From old logic?
-    // a utility to iterate DOM items, return element ID of focused
-    for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-        if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus'))
-            {
-                return getElementIdByDomIndex(nro)
-            };
-    }
-} // getElementIdOfFocusedItem ended
 
 function getFocusedRow() {
     // a utility to iterate DOM rows, returns focused element reference
-
     return document.querySelectorAll('.inFocus')[0];
-
-    // for (let nro = 0; nro < document.querySelectorAll('.itemrow').length; nro++) {
-    //     if (document.querySelectorAll('.itemrow')[nro].classList.contains('inFocus')) {
-    //         console.log('Focused row is ' + nro + ' ID: ' + document.querySelectorAll('.itemrow')[nro].getAttribute('data-spx-epoch'));
-    //         return document.querySelectorAll('.itemrow')[nro];
-    //     };
-    // }
 } // getFocusedRow ended
+
 
 function getElementByEpoch(itemID) {
     // get element by epoch id (added in 1.0.8)
     let DomItemID;
     for (let index = 0; index < document.querySelectorAll('.itemrow').length; index++) {
         DomItemID = document.querySelectorAll('.itemrow')[index].getAttribute('data-spx-epoch');
-        // console.log('Checking ' + DomItemID + ' against ' + itemID + '...');
         if (DomItemID==itemID) {
             return document.querySelectorAll('.itemrow')[index]
         };
@@ -1354,17 +1298,6 @@ function getIndexOfRowItem(rowitem) {
         }
     })
 } // getIndexOfRowItem ended
-
-function getElementIdByDomIndex(domIndex) {
-    // FIXME: Is this in use? From old logic?
-    // A utility to iterate all DOM items and return ID of element at itemIndex.
-    // request = dom index number
-    // returns = ElementID number
-
-    let ElementFullID = document.querySelectorAll('.itemrow')[domIndex].id;
-    let JustElementID = ElementFullID.replace('playlistitem','');
-    return JustElementID
-} // getElementIdByDomIndex ended
 
 async function appendSpxApiKey (data) {
     // Added in v1.3.2
@@ -1402,9 +1335,7 @@ async function appendSpxApiKey (data) {
 } // appendSpxApiKey
 
 function getDomIndexByElementId(ElementId) {
-    // FIXME: Is this in use? From old logic?
     // A utility to iterate all DOM items and return dom index of given ElementId
-    // Tested, this seem to work :)
     // request = ElementID
     // returns = dom index of the given ElementID
 
@@ -1982,26 +1913,21 @@ function setItemButtonStates(itemrow, forcedCommand=''){
         // Convert button to STOP button and execute play command
         // first we need to dim all other elements which are playing on same output channel / layer
         // console.log('was stopped. so send PLAY and make button STOP');
-        let PlayoutConfig = itemrow.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
+        let PlayoutConfig = itemrow.querySelector('[name="RundownItem[webplayout]"').value;
         rows.forEach(function (item, index) {
-            let CurrentConfig = item.querySelector('[data-spx-name="playoutConfig"]').innerText.split(" ").join("-");
-            if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig )
-                {
-                    // console.log('Dom item ' + index + ' is the same, so dim it');
-                    item.setAttribute('data-spx-onair','false');
-                    item.querySelector('[name="RundownItem[onair]"]').value='false';
-                    item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
-                    item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
-                    CancelOutTimerIfRunning(itemrow);
-                    curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
-                    curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
-                    curExpandedPlay.classList.remove('bg_red');
-                    curExpandedPlay.classList.add('bg_green');
-                }
-            else
-                {
-                    // console.log('Dom item ' + index + ' was (' + CurrentConfig + ') not the same, so let it be...');
-                }
+            let CurrentConfig = item.querySelector('[name="RundownItem[webplayout]"')?.value||0;
+            if (item.getAttribute('data-spx-onair')=="true" && CurrentConfig==PlayoutConfig ) {
+                console.log('Dom item ' + index + ' is the same, so dim it');
+                item.setAttribute('data-spx-onair','false');
+                item.querySelector('[name="RundownItem[onair]"]').value='false';
+                item.querySelector('[data-spx-name="icon"]').classList.remove('playTrue');
+                item.querySelector('[data-spx-name="icon"]').classList.add('playFalse');
+                CancelOutTimerIfRunning(itemrow);
+                curExpandedPlay = item.querySelector('[data-spx-name="playbutton"]')
+                curExpandedPlay.innerText = curExpandedPlay.getAttribute('data-spx-playtext');
+                curExpandedPlay.classList.remove('bg_red');
+                curExpandedPlay.classList.add('bg_green');
+            } 
         })
         EXPANDEDPLAY.innerText = EXPANDEDPLAY.getAttribute('data-spx-stoptext');
         EXPANDEDPLAY.classList.remove('bg_green');
@@ -2115,8 +2041,9 @@ async function revealItemTiming(button) {
 async function revealItemLayer(button) {
     let curValue = button.textContent;
     let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
-    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 20:", curValue);
+    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 5:", curValue);
     if (newValue != null && newValue != curValue) {
+        newValue = Math.min(5, parseInt(newValue));
         let file = document.getElementById('datafile').value;
         let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
         axios.get(URL)
