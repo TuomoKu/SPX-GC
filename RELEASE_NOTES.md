@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2024-12-15<br>
+> Updated 2026-01-05<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -17,8 +17,7 @@
 <BR>
 <BR>
 
-# Current dev notes v.1.3.4
-* Working on a new optional, section to **rundown datafiles** for rundown specific, static, information banner at the top of the rundown. This can become useful for tutorials, and such. Currently this must be added to the rundown files manually. All values are optional, except "body". Supported types: `info` (green accents) and `warn` (red). See example below:
+# Current dev notes* Working on a new optional, section to **rundown datafiles** for rundown specific, static, information banner at the top of the rundown. This can become useful for tutorials, and such. Currently this must be added to the rundown files manually. All values are optional, except "body". Supported types: `info` (green accents) and `warn` (red). See example below:
 ```json
   "notification": {
     "type": "info",
@@ -42,6 +41,10 @@ These are in a broken, work-in-progress, state:
 
 
 # Published releases
+
+## **1.3.4** (Jan 04 2026)
+
+1.3.4 is a patch with a fix for the renderer embedding.
 
 ## **1.3.3** (Dec 31 2024)
  >See also [Latest changes Knowledge Base article](https://spxgc.tawk.help/article/latest-changes) for selected feature highlights. 
