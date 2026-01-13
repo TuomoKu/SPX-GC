@@ -178,6 +178,22 @@ pm2 kill
 
 
 ---
+
+### Docker Support <a id="dockersupport"></a>
+
+To run the project using Docker, follow these steps:
+
+1. **Install Docker**: Ensure you have Docker installed on your system. You can download it from [Docker's official website](https://www.docker.com/).
+
+2. **Build and Run the Docker Container**:
+   Use the following command to build the Docker image and start the container. This command will build the image and run the container in detached mode, mapping port 5656 from the container to your host machine.
+
+   ```sh
+   docker-compose up --build
+   ```
+3. **Access the Application**:
+  Once the container is running, you can access the application via your web browser at `http://localhost:5656`.
+
 # First launch <a id="firstlaunch"></a>
 * When the app is started the very first time a default browser is launched with SPX user interface open
 * In the subsequent server starts use a web browser (such as Chrome) and load SPX gui from URL shown in the console at the start-up.

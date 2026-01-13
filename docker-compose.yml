@@ -1,0 +1,18 @@
+
+version: '3.8'
+
+services:
+  spx-gc:
+    build: .
+    container_name: spx-gc
+    ports:
+      - "5656:5656"
+    volumes:
+      - ./DATAROOT:/app/DATAROOT
+      - ./LOG:/app/LOG
+      - ./config.json:/app/config.json
+      - ./ASSETS:/app/ASSETS
+    environment:
+      - NODE_ENV=production
+      - SPX_ROOT_FOLDER=/app
+    restart: unless-stopped
