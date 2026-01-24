@@ -41,4 +41,35 @@ cat > /app/config.json << EOF
 }
 EOF
 
+# Start background S3 sync if S3_TEMPLATES_URL is set
+if [ -n "$S3_TEMPLATES_URL" ]; then
+  # Extract bucket name from S3 URL (e.g., s3://bucket-name/path -> bucket-name)
+  BUCKET_NAME=$(echo "$S3_TEMPLATES_URL" | sed 's|s3://||' | cut -d'/' -f1)
+  SYNC_TARGET="/app/ASSETS/templates/${BUCKET_NAME}"
+  SYNC_INTERVAL="${S3_SYNC_INTERVAL:-60}"
+
+  # Optional endpoint for MinIO or other S3-compatible storage
+  ENDPOINT_ARG=""
+  if [ -n "$S3_ENDPOINT_URL" ]; then
+    ENDPOINT_ARG="--endpoint-url $S3_ENDPOINT_URL"
+  fi
+
+  mkdir -p "$SYNC_TARGET"
+
+  echo "Starting S3 template sync from $S3_TEMPLATES_URL to $SYNC_TARGET (interval: ${SYNC_INTERVAL}s)"
+  if [ -n "$S3_ENDPOINT_URL" ]; then
+    echo "Using custom S3 endpoint: $S3_ENDPOINT_URL"
+  fi
+
+  # Background sync loop
+  (
+    while true; do
+      aws s3 sync "$S3_TEMPLATES_URL" "$SYNC_TARGET" --delete $ENDPOINT_ARG 2>&1 | while read line; do
+        echo "[S3 Sync] $line"
+      done
+      sleep "$SYNC_INTERVAL"
+    done
+  ) &
+fi
+
 exec node server.js
