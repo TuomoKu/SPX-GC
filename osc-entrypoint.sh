@@ -56,16 +56,21 @@ if [ -n "$S3_TEMPLATES_URL" ]; then
 
   mkdir -p "$SYNC_TARGET"
 
-  echo "Starting S3 template sync from $S3_TEMPLATES_URL to $SYNC_TARGET (interval: ${SYNC_INTERVAL}s)"
+  echo "Starting bidirectional S3 template sync with $S3_TEMPLATES_URL (local: $SYNC_TARGET, interval: ${SYNC_INTERVAL}s)"
   if [ -n "$S3_ENDPOINT_URL" ]; then
     echo "Using custom S3 endpoint: $S3_ENDPOINT_URL"
   fi
 
-  # Background sync loop
+  # Background sync loop (bidirectional)
   (
     while true; do
+      # Upload local changes to S3 (without --delete to avoid race conditions between instances)
+      aws s3 sync "$SYNC_TARGET" "$S3_TEMPLATES_URL" $ENDPOINT_ARG 2>&1 | while read line; do
+        echo "[S3 Upload] $line"
+      done
+      # Download from S3 (with --delete so all instances mirror S3)
       aws s3 sync "$S3_TEMPLATES_URL" "$SYNC_TARGET" --delete $ENDPOINT_ARG 2>&1 | while read line; do
-        echo "[S3 Sync] $line"
+        echo "[S3 Download] $line"
       done
       sleep "$SYNC_INTERVAL"
     done
