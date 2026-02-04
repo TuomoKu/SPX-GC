@@ -41,36 +41,59 @@ cat > /app/config.json << EOF
 }
 EOF
 
-# Start background S3 sync if S3_TEMPLATES_URL is set
+# Optional endpoint for MinIO or other S3-compatible storage
+ENDPOINT_ARG=""
+if [ -n "$S3_ENDPOINT_URL" ]; then
+  ENDPOINT_ARG="--endpoint-url $S3_ENDPOINT_URL"
+  echo "Using custom S3 endpoint: $S3_ENDPOINT_URL"
+fi
+
+SYNC_INTERVAL="${S3_SYNC_INTERVAL:-60}"
+
+# Start background S3 sync for templates if S3_TEMPLATES_URL is set
 if [ -n "$S3_TEMPLATES_URL" ]; then
   # Extract bucket name from S3 URL (e.g., s3://bucket-name/path -> bucket-name)
   BUCKET_NAME=$(echo "$S3_TEMPLATES_URL" | sed 's|s3://||' | cut -d'/' -f1)
   SYNC_TARGET="/app/ASSETS/templates/${BUCKET_NAME}"
-  SYNC_INTERVAL="${S3_SYNC_INTERVAL:-60}"
-
-  # Optional endpoint for MinIO or other S3-compatible storage
-  ENDPOINT_ARG=""
-  if [ -n "$S3_ENDPOINT_URL" ]; then
-    ENDPOINT_ARG="--endpoint-url $S3_ENDPOINT_URL"
-  fi
 
   mkdir -p "$SYNC_TARGET"
 
   echo "Starting bidirectional S3 template sync with $S3_TEMPLATES_URL (local: $SYNC_TARGET, interval: ${SYNC_INTERVAL}s)"
-  if [ -n "$S3_ENDPOINT_URL" ]; then
-    echo "Using custom S3 endpoint: $S3_ENDPOINT_URL"
-  fi
 
   # Background sync loop (bidirectional)
   (
     while true; do
       # Upload local changes to S3 (without --delete to avoid race conditions between instances)
       aws s3 sync "$SYNC_TARGET" "$S3_TEMPLATES_URL" $ENDPOINT_ARG 2>&1 | while read line; do
-        echo "[S3 Upload] $line"
+        echo "[S3 Templates Upload] $line"
       done
       # Download from S3 (with --delete so all instances mirror S3)
       aws s3 sync "$S3_TEMPLATES_URL" "$SYNC_TARGET" --delete $ENDPOINT_ARG 2>&1 | while read line; do
-        echo "[S3 Download] $line"
+        echo "[S3 Templates Download] $line"
+      done
+      sleep "$SYNC_INTERVAL"
+    done
+  ) &
+fi
+
+# Start background S3 sync for projects if S3_PROJECTS_URL is set
+if [ -n "$S3_PROJECTS_URL" ]; then
+  PROJECTS_SYNC_TARGET="/data"
+
+  mkdir -p "$PROJECTS_SYNC_TARGET"
+
+  echo "Starting bidirectional S3 project sync with $S3_PROJECTS_URL (local: $PROJECTS_SYNC_TARGET, interval: ${SYNC_INTERVAL}s)"
+
+  # Background sync loop (bidirectional)
+  (
+    while true; do
+      # Upload local changes to S3 (without --delete to avoid race conditions between instances)
+      aws s3 sync "$PROJECTS_SYNC_TARGET" "$S3_PROJECTS_URL" $ENDPOINT_ARG 2>&1 | while read line; do
+        echo "[S3 Projects Upload] $line"
+      done
+      # Download from S3 (with --delete so all instances mirror S3)
+      aws s3 sync "$S3_PROJECTS_URL" "$PROJECTS_SYNC_TARGET" --delete $ENDPOINT_ARG 2>&1 | while read line; do
+        echo "[S3 Projects Download] $line"
       done
       sleep "$SYNC_INTERVAL"
     done
