@@ -174,7 +174,71 @@ Stop all running instances
 pm2 kill
 ```
 
+### S3/MinIO Sync Configuration (OSC Deployment)<a id="s3sync"></a>
 
+When deploying SPX Graphics Controller using Docker (via `Dockerfile.osc`) for multi-instance cloud deployments, you can enable optional S3 synchronization for templates, projects, plugins, and media files. This allows multiple SPX instances to share resources through S3-compatible storage (AWS S3, MinIO, DigitalOcean Spaces, etc.).
+
+#### Environment Variables
+
+Configure S3 sync by setting these environment variables:
+
+| Variable | Description | Example |
+| ------ | ------ | ------ |
+| `S3_ENDPOINT_URL` | Custom S3 endpoint (for MinIO, DigitalOcean Spaces, etc.) | `http://minio:9000` |
+| `S3_SYNC_INTERVAL` | Sync interval in seconds (default: 60) | `30` |
+| `S3_TEMPLATES_URL` | S3 URL for templates | `s3://templates` or `s3://my-bucket/templates` |
+| `S3_PROJECTS_URL` | S3 URL for projects | `s3://dataroot` or `s3://my-bucket/projects` |
+| `S3_PLUGINS_URL` | S3 URL for plugins | `s3://plugins` or `s3://my-bucket/plugins` |
+| `S3_MEDIA_URL` | S3 URL for media | `s3://media` or `s3://my-bucket/media` |
+
+Additionally, standard AWS credentials are required:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_DEFAULT_REGION` (optional, default: us-east-1)
+
+**Bucket Configuration Options:**
+
+You can organize your S3 storage in two ways:
+
+1. **Separate buckets** (recommended for OSC): One bucket per resource type
+   - `S3_TEMPLATES_URL=s3://templates`
+   - `S3_PROJECTS_URL=s3://dataroot`
+   - `S3_PLUGINS_URL=s3://plugins`
+   - `S3_MEDIA_URL=s3://media`
+
+2. **Folders within a single bucket**: One bucket with folders for each resource
+   - `S3_TEMPLATES_URL=s3://my-bucket/templates`
+   - `S3_PROJECTS_URL=s3://my-bucket/projects`
+   - `S3_PLUGINS_URL=s3://my-bucket/plugins`
+   - `S3_MEDIA_URL=s3://my-bucket/media`
+
+Both approaches work. The separate buckets approach provides better isolation and access control.
+
+#### Sync Behavior
+
+All syncs are bidirectional to ensure multi-instance consistency:
+- **Upload phase**: Local changes are uploaded to S3 (without `--delete` to prevent race conditions)
+- **Download phase**: S3 changes are downloaded locally (with `--delete` to mirror S3 as source of truth)
+- Sync runs automatically in the background at the configured interval
+
+This ensures all instances eventually converge to the same state while preventing conflicts.
+
+#### Example Docker Run
+
+```sh
+docker run -d -p 5656:5656 \
+  -e S3_ENDPOINT_URL=http://minio:9000 \
+  -e S3_TEMPLATES_URL=s3://templates \
+  -e S3_PROJECTS_URL=s3://dataroot \
+  -e S3_PLUGINS_URL=s3://plugins \
+  -e S3_MEDIA_URL=s3://media \
+  -e S3_SYNC_INTERVAL=60 \
+  -e AWS_ACCESS_KEY_ID=your-access-key \
+  -e AWS_SECRET_ACCESS_KEY=your-secret-key \
+  spx-gc-osc
+```
+
+> All S3 sync variables are optional. If not set, SPX will use local filesystem storage only.
 
 
 ---
