@@ -30,6 +30,12 @@ try {
 
 module.exports = {
 
+  max5: function (num) {
+    let res = Math.min(5, parseInt(num));
+    console.log('max5 function got ' + num + ', returning ' + res +' (as String)');
+    return String(res);
+  },
+
   appendProjectFile: async function (rundownData, fullpath, referrer='') {
     // Added in 1.3.2
     // Append project and rundown info to the rundownData object
@@ -290,14 +296,7 @@ module.exports = {
     try {
       datarootSize()
       .then(function(sizeArr) {
-
-        let pform
-        if (global.env.product) {
-          pform = global.env.product.slice(0, 5) + global.env.version + '_' + process.platform; 
-        } else {
-          pform = process.platform; 
-        }
-
+        let pform  = process.platform;
         let paramstring =""
         paramstring += "v="  + vers 
         paramstring += "&o=" + lPad(pform.replace(" ", "_"), 25, ".")
@@ -376,7 +375,7 @@ module.exports = {
       TemplateServer = "";
       logger.verbose('Using filesystem and caspar.config for template-path.');
     } else if ( !TemplateSource || TemplateSource == 'spx-ip-address') {
-      TemplateServer = 'http://' + ip.address(); // For https see https://spxgc.tawk.help/article/https-protocol
+      TemplateServer = 'http://' + ip.address(); // For https see https://docs.spxgraphics.com/Documentation/Control+Interfaces/https
       logger.verbose('Using ip.address() for TemplateServer IP address: ' + TemplateServer);
     } else {
       if (TemplateSource.substring(0, 4)!='http') {TemplateSource = 'http://' + TemplateSource}
@@ -433,6 +432,66 @@ module.exports = {
       return str + " missing from " + spxlangfile;
     }
   }, // lang
+
+  getEasterEggImage: function () {
+    // Added in 0.8.9
+    let ddmm = moment().format('DD-MM');
+    let image = false;
+    let greet = '';
+    // ddmm = '08-03' // DEV TESTING Day-Month
+
+    switch (ddmm) {
+      case '31-12':
+      case '01-01':
+        greet = 'Happy New Year from <A target="egg" href="http://spxgraphics.com">SPX Graphics</A>!';
+        image = 'new-year-sparks.png';
+        break;
+
+      case '08-03':
+        greet = 'Happy Women\'s Day from <A target="egg" href="http://spxgraphics.com">SPX Graphics</A>!';
+        image = 'rose.png';
+        break;
+
+      case '04-07':
+        greet = 'Happy Birthday USA!';
+        image = 'usa.png';
+        break;
+
+      case '22-04':
+        greet = 'Happy <A target="egg" href="https://www.earthday.org/">Earth day!</A>';
+        image = 'earth-day.png';
+        break;
+
+      case '04-10':
+        greet = 'Have a great <A target="egg" href="https://en.wikipedia.org/wiki/World_Animal_Day">World Animal Day!</A>';
+        image = 'animal-day.png';
+        break;
+
+      case '09-10':
+        greet = 'Have a tasty Cinnamon Roll Day!';
+        image = 'korvamunkki.png';
+        break;
+
+      case '06-12':
+        greet = '<A target="egg" href="https://en.wikipedia.org/wiki/Independence_Day_(Finland)">Hyvää itsenäisyyspäivää!</A>';
+        image = 'finland.png';
+        break;
+
+      case '24-12':
+      case '25-12':
+      case '26-12':
+        greet = 'Merry Christmas from <A href="http://spxgraphics.com">SPX Graphics</A>!';
+        image = 'animated-santa.png';
+        break;
+
+    }
+
+    if (image) {
+      logger.verbose('Easter egg activated for ' + ddmm + ': ' + image);
+    }
+
+    return [image, greet];
+  }, // getEasterEggImage
 
   getStartUpFolder: function () {
     // a workaround to resolve the path to the current startup folder
@@ -568,11 +627,16 @@ module.exports = {
             let fil = filter.toUpperCase();
             let fir = path.basename(curPath).charAt(0); // first character (dot files) Added in 1.1.0
 
-            if (fil === 'HTM' && ext ==".HTM" || ext ==".HTML" && fir != '.') {
+            // Skip all the files that start with a "." or "_"
+            if (fil === 'HTM' && (ext ==".HTM" || ext ==".HTML") && fir != '.' && fir != '_') {
               data.fileArr.push(path.basename(curPath));
             }
 
-            if (fil === 'CSV' && ext ==".CSV" && fir != '.') {
+            if (fil === 'CSV' && ext ==".CSV" && fir != '.' && fir != '_') {
+              data.fileArr.push(path.basename(curPath));
+            }
+            // Add support for OGRAF files
+            if (fil === 'OGRAF' && ext === ".JSON" && fir != '.' && fir != '_') {
               data.fileArr.push(path.basename(curPath));
             }
           }
@@ -700,6 +764,12 @@ module.exports = {
   prettifyName: function (fullFilePath){
     if (!fullFilePath) return "";
     try {
+      if (fullFilePath.toLowerCase().endsWith(".ograf.json")) {
+      // This uses the data.name property from the OGraf manifest file rather than the filename
+      const absolutePath = path.join("ASSETS", "templates", fullFilePath);
+      const data = this.GetJsonData(absolutePath)
+      return data.name
+    }
       // request ..... a long file name with some slashes ("c:/temp/some_file-name.html")
       // return ...... nice name ("some file name")
       // logger.debug('Prettifying ' + fullFilePath);
@@ -739,7 +809,20 @@ module.exports = {
       return new Promise(resolve => {
         let fldrname = path.dirname(orgfile);
         let extename = path.extname(orgfile);
-        let renafile = path.normalize(path.join(fldrname, newname + extename));
+        let newFilePath = path.join(fldrname, newname + extename);
+        // Helper variables for possible renaming if file exists
+        let finalNewName = newname;
+        let counter = 1;
+
+        // Check if file exists and add counter if it does
+        while (fs.existsSync(newFilePath)) {
+          finalNewName = newname + ' (' + counter + ')';
+          newFilePath = path.join(fldrname, finalNewName + extename);
+          counter++;
+        }
+
+        let renafile = path.normalize(newFilePath);
+        
         fs.rename(orgfile, renafile, (err) => {
               if (err) throw err;
               logger.verbose('Rundown file ' + orgfile + ' was renamed to ' + renafile + '.');
@@ -885,7 +968,7 @@ module.exports = {
           // this.talk('Writing file');
           // this.playAudio('beep.wav', 'spx.writeFile');
           data.warning = "Modifications done in the SPX will overwrite this file.";
-          data.copyright = "(c) 2020- SPX Graphics (https://spx.graphics)";
+          data.copyright = "(c) 2020- SPX Graphics (https://spxgraphics.com)";
           data.updated = new Date().toISOString();
           let filedata = JSON.stringify(data, null, 2);
 

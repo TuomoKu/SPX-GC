@@ -50,7 +50,7 @@ One of the drivers of global HTML adoption will be SPX Marketplace, where any de
 
 Thanks for reading! I'm looking forward seeing your contributions in my inbox soon. Please be gentle, this is new to me!
 
-Please [contact me directly](mailto:tuomo@softpix.io) if you have any questions, comments or suggestions!
+Please [contact us](mailto:info@spxgraphics.com) if you have any questions, comments or suggestions!
 
 Tuomo Kulomaa<br>
 Founder of SPX
@@ -77,7 +77,7 @@ There are a lot of ways to contribute to SPX and we love your help! As a communi
 
 <a id="bug"></a>
 ## 📢 Found something? Say something! 
-If you come across a bug, typo, obsolete, missing or incorrect information on our [website](https://spx.graphics), Knowledge Base (the [original](https://spxgc.tawk.help) or the [new](https://intercom.help/spx-graphics/en/)) , [README file](README.md), [RELEASE NOTES file](RELEASE_NOTES.md), this document or elsewhere, please report it by submitting a [support ticket](https://www.spx.graphics/support) or a [Github issue](https://github.com/TuomoKu/SPX-GC/issues/new) so it can be fixed for everyone.
+If you come across a bug, typo, obsolete, missing or incorrect information on our [website](https://spxgraphics.com), Knowledge Base (the [original](https://spxgc.tawk.help) or the [new](https://intercom.help/spx-graphics/en/)) , [README file](README.md), [RELEASE NOTES file](RELEASE_NOTES.md), this document or elsewhere, please report it by submitting a [support ticket](https://www.spxgraphics.com/support) or a [Github issue](https://github.com/TuomoKu/SPX-GC/issues/new) so it can be fixed for everyone.
 
 <br>
 
@@ -109,7 +109,7 @@ Need ideas? Check out [issues](https://github.com/TuomoKu/SPX-GC/issues) for sma
 
 <a id="create"></a>
 ## ✨ Create stuff
-SPX Marketplace will open Q3-2024 and you can setup a storefront for your creations there. Graphics, plugins, extensions, tutorials, integrations... Interested? Join our [mailing list](mailto:info@softpix.io?subject=marketplace-mailinglist) and stay in the loop.
+SPX Marketplace will open Q3-2024 and you can setup a storefront for your creations there. Graphics, plugins, extensions, tutorials, integrations... Interested? Join our [mailing list](mailto:info@spxgraphics.com?subject=marketplace-mailinglist) and stay in the loop.
 
 <br>
 <br>

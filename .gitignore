@@ -72,6 +72,7 @@ spx-content-repo.txt
 # ...but allow specific files and folders for GitHub
 DATAROOT/
 !DATAROOT/MyFirstProject/
+!DATAROOT/MyFirstOGrafProject/
 
 
 # IGNORE SPX ASSETS
@@ -80,7 +81,8 @@ ASSETS/**
 !ASSETS/csv/csv-folder.md
 !ASSETS/excel/ticker-demo/basic-news-ticker.xlsx
 # Add templates with:
-# git add ASSETS/templates/softpix/Template_Pack_1.3.2/** -f
+# git add ASSETS/templates/softpix/html/Template_Pack_1.4.0/** -f
+# git add ASSETS/templates/softpix/ograf/Template_Pack_1.4.0/** -f
 
 # ...allow some PLUGIN files for GitHub
 !ASSETS/plugins/lib

@@ -1,110 +1,24 @@
 <!DOCTYPE html>
-{{>copyright }}
-
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPX API v1</title>
+  <title>SPX API v1 Documentation</title>
   <link rel="icon" type="image/png" href="/img/spx-gc.ico">
-  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-
-  <style>
-
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background-color: rgb(223, 223, 223);
-      padding: 1em;
-    }
-
-    
-    .apiLink {
-      font-family: monospace;
-      text-decoration: none;
-      font-size: 1.4em;
-      font-weight: bold;
-      padding: 0.2em 0.2em;
-      background-color: rgba(255,255,255,0.4);
-    }
-
-    .apiLink:hover {
-      background-color: rgb(255, 248, 189);
-    }
-
-    h3 {
-      margin-bottom: 0;
-      font-size: 1.5em;
-    }
-
-    p {
-      margin-top: 0.2em;
-    }
-
-
-    .auto-resizable-iframe {
-      max-width: 100%;
-      margin: 0px auto;
-    }
-
-    .POST {
-      background-color: rgb(242, 180, 180);
-      width: 5em;
-      text-align: center;
-      font-size: 0.7em;
-    }
-
-    .GET {
-      background-color: rgb(148, 184, 198);
-      width: 5em;
-      text-align: center;
-      font-size: 0.7em;
-    }
-
-    .info {
-      background-color: rgba(255,255,255,0.4);
-    }
-
-    .vers {
-      background-color: rgba(255,255,255,0.4);
-      font-size: 0.7em;
-      text-align: center;
-    }
-
-    td {
-      padding: 0.3em;
-    }
-
-    .api {
-      width: 100%;
-    }
-
-    code {
-      font-family: monospace;
-      font-size: 1.1em;
-      background-color: rgba(0,0,0,0.1);
-      padding: 0.1em 0.5em;
-      border-radius: 0.1em;
-    }
-
-    .info pre {
-      background-color: rgba(0,0,0,0.05);
-      margin: 0.2em;
-      padding: 1.0em;
-      border-radius: 0.5em;
-      border: none;
-      font-size: 1.1em;
-    }
-  </style>
-
-
+  <link rel="stylesheet" type="text/css" href="/css/spx_fonts.css">
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <script src="/js/bootstrap.bundle.min.js"></script>
   <script>
-    // let ipAddess = {{{getServerAddress}}};
+    function toggleCheckbox() {
+      const checkbox = document.getElementById("useLocalhost");
+      checkbox.checked = !checkbox.checked; // Toggle the checkbox status
+      localhostToggle(); // Call the existing localhostToggle function
+    }
+
     function localhostToggle() {
-      // console.log("toggle", document.getElementById("useLocalhost").checked);
       if (document.getElementById("useLocalhost").checked) {
-        ipAddess = "localhost:5656";
+        ipAddess = "localhost:" + document.getElementById("currServerAddress").value.split(":")[1];
       } else {
         ipAddess = document.getElementById("currServerAddress").value;
       }
@@ -116,64 +30,311 @@
     }
 
   </script>
+  <style>
+    body {
+      font-family: "UI-Regular", Arial, sans-serif;
+      background-color: #e6e6e6;
+      padding: 2rem;
+    }
 
+    h1, h2, h3 {
+      font-family: "UI-Bold", Arial, sans-serif;
+    }
+
+    button:focus, .accordion-button:focus, .accordion-button:active {
+      box-shadow: none;
+    }
+
+    a,
+    .text-primary {
+      /* color: #295aaf !important; */
+      color: rgb(46, 126, 65) !important;
+      /* color: #54af3c !important; */
+    }
+
+    a {
+      transition: all 0.1s ease;
+      text-underline-offset: 2px;
+    }
+
+    a:hover {
+      transition: all 0.1s ease;
+      color: rgb(0, 0, 0) !important;
+      text-underline-offset: 6px;
+    }
+    
+    .localhost-check {
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+      background-color: transparent;
+      font-family: "UI-Regular", Arial, sans-serif;
+      font-size: 1em;
+      padding: 0.5em 1em;
+      border: 1px solid #00000000;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: fit-content;
+      user-select: none;
+    }
+
+    .localhost-check:hover {
+      /* background-color: #e9ecef; */
+    }
+
+    .localhost-check input[type="checkbox"] {
+      pointer-events: none; /* Prevents direct interaction with the checkbox */
+      accent-color: #295aaf;
+    }
+
+    .spx-host-id {
+      border: 1px solid #dee2e6;
+      border-radius: 0.5em;
+      padding: 0.5em 1em;
+      font-family: "UI-Regular", Arial, sans-serif;
+      background-color: #fff;
+    }
+    
+    .strong {
+      font-family: "UI-Bold", Arial, sans-serif;
+    }
+
+    .text-muted {
+      font-family: 'UI-Regular', Arial, sans-serif;
+    }
+
+    .section-description {
+      font-size: 1rem;
+      color: rgb(33, 37, 41, 0.65) !important;
+      line-height: 1.5;
+    }
+
+    .section-title {
+      margin-bottom: 0.5em;
+    }
+
+    .accordion {
+      overflow: visible;
+    }
+
+    .accordion-item .accordion-button {
+      border-radius: 0.5em !important;
+    }
+
+    .accordion-item {
+      border-radius: 0.5em !important;
+      border: 1px solid #dee2e6;
+      overflow: visible;
+    }
+
+    .accordion-item:not(:first-of-type) {
+      border-top: 1px solid #dee2e6;
+    }
+
+    .accordion-item:not(:last-child) {
+      margin-bottom: 1em;
+    }
+
+    .accordion-button:not(.collapsed) {
+      background-color: transparent;
+      color: #000;
+    }
+
+    .message-info { 
+      /* border-left-color: #295aaf !important; */
+      border-left-color: rgb(42, 107, 57) !important;
+      /* border-left-color: #54af3c !important; */
+      border-left: 8px solid rgb(42, 107, 57); 
+    }
+
+    .accordion-button {
+      font-size: 1.2rem;
+      padding: 1.5em 1em;
+      font-weight: bold;
+      font-family: "UI-Bold", Arial, sans-serif;
+      overflow: visible;
+    }
+
+    .api-card {
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background-color: #ffffff;
+    }
+
+    .api-card .method {
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      color: #fff;
+      font-family: "UI-Bold", Arial, sans-serif;
+    }
+
+    .api-card .method.GET {
+      background-color: #295aaf;
+    }
+
+    .api-card .method.POST {
+      background-color: #e57010;
+    }
+
+    .api-card .method.DELETE {
+      background-color: #dc3545;
+    }
+
+    .api-card .method.PUT {
+      background-color: #ffc107;
+    }
+
+    .api-card pre {
+      background-color: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-family: "UI-Light", Arial, sans-serif;
+    }
+
+    .api-card a {
+      text-decoration: none;
+      color: #007bff;
+      font-size: 0.9em;
+      font-family: "UI-Regular", Arial, sans-serif;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+      display: block;
+    }
+
+    .api-card a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      font-family: "UI-Light", Arial, sans-serif;
+    }
+
+    .back, .back a {
+        position: absolute;
+        transform: translateX(-1.0em);
+        font-family: 'UI-Regular', Arial, sans-serif;
+        text-decoration: none;
+        color: rgb(42, 107, 57);
+        transition: all 0.3s ease;
+    }
+
+    .back:hover {
+      transition: all 0.3s ease;
+      transform: translateX(-1.1em);
+      color: rgb(204, 135, 6) !important;
+    }
+
+    code {
+      font-family: monospace;
+      background-color: hsla(214, 29%, 64%, 0.301);
+      padding: 0.1em 0.5em;
+      border-radius: 0.1em;
+      color: #000;
+      font-size: 1.05em;
+    }
+
+    pre > code  {
+      background-color: transparent;
+    }
+
+    #titleCont {
+      padding-bottom: 0.5em;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    #restrictionCont {
+      color: white;
+      display: flex;
+      font-size: 0.75em;
+      margin-left: 1em;
+      align-items: center;
+      padding: 0.2em 0.8em;
+      border-radius: 1000px;
+      justify-content: center;
+      background-color: rgba(228, 112, 16);
+      text-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.5);
+      font-family: 'UI-Regular', Arial, sans-serif;
+    }
+
+    #linkCont {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+  </style>
 </head>
 
+<body>
+  <input type="hidden" id="currServerAddress" value="{{{getServerAddress}}}">
+  <div class="container">
+    <header class="mb-4">
+      <h1 class="text-primary"><a class="back" href="/">&lt;</a>SPX API v1</h1>
+      <p class="text-muted">Explore the available API endpoints provided by this SPX Graphics instance. Use the expandable sections below to find the endpoints you need. See <a href="https://docs.spxgraphics.com/" target="_blank">SPX Docs</a> for an introduction to the Control API.</p>
+      <small class="spx-host-id">{{license.productName}} HOST-ID: <span class="strong">{{{getHostID}}}</span></small><BR>
+      <div class="localhost-check" onclick="toggleCheckbox()"><input class="checkbox" type="checkbox" id="useLocalhost" onchange="localhostToggle()"> Use "localhost" addresses in examples</div>
+    </header>
 
-<body class="bg_body">
-  <input type=""hidden id="currServerAddress" value="{{{getServerAddress}}}">
-  <H1>SPX Graphics / API v1</H1>
-  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); text-transform: uppercase;">SPX Host-ID: <B>{{{getHostID}}}</B></small>
-  <BR>
-  <BR>
-  <B>http/get</B> commands available for external systems to trigger SPX events. See also <a href="/osc">osc</a>.
-  <BR>
-  SPX will need to be open in a browser (in the same network as the server) for most of these to work.
-  <br><br>
-  API connections can be restricted with an <b>apikey</b> parameter set in the config file and in the URL <code>?apikey=1234567890</code>
-  <BR><BR>
-  <small>Remember, SPX is primarily targeted to live, manually operated
-  workflows and API allows only limited modifications of template data or other advanced procedures.</small>
-  <BR><BR>
-  <input  type="checkbox" id="useLocalhost" onchange="localhostToggle()"> Use "localhost" addresses in examples
-  <BR><BR>
-  
-  {{#each functionList.sections}}
-    <BR>
-    <h3>{{section}}</h3>
-    <p>{{info}}</p>
-    <table class="api">
-      {{#each commands}}
-        <tr>
-          {{#ifValue method "POST"}}
-            <td class="apiLink" colspan="3">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</td>
-          {{else}}
-            <td class="apiLink" colspan="3"><A HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">http://{{{getServerAddress}}}{{../endpoint}}{{param}}</A></td>
-          {{/ifValue}}
-        </tr>
-        <tr>
-          <td class="{{method}}">{{method}}</td>
-          <td class="vers">{{vers}}</td>
-          <td class="info">{{{info}}}</td>
-        </tr>
-        {{#if code}}
-          <tr>
-            <td colspan="3" class="info">
-              <pre class="prettyprint lang-js">{{myStringify code}}</pre>
-            </td>
-          </tr>
-        {{/if}}
-        <tr>
-          <td colspan="3">&nbsp;</td>
-        </tr>
-        
+    <div class="accordion" id="apiAccordion">
+      {{#each functionList.sections}}
+        <div class="accordion-item message-info">
+          <h2 class="accordion-header" id="heading-{{@index}}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{@index}}" aria-expanded="false" aria-controls="collapse-{{@index}}">
+              <span class="d-flex flex-column">
+                <div id="titleCont">
+                  <div class="fw-bold">{{section}}</div>
+                  {{#if restriction}}<div id="restrictionCont"><div>{{restriction}}</div></div>{{/if}}
+                </div>
+                <p class="text-muted section-description">{{info}}</p>
+              </span>
+            </button>
+          </h2>
+          <div id="collapse-{{@index}}" class="accordion-collapse collapse" aria-labelledby="heading-{{@index}}" data-bs-parent="#apiAccordion">
+            <div class="accordion-body">
+
+              {{#each commands}}
+                <div class="api-card">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="method {{method}}">{{method}}</span>
+                    <span class="badge bg-secondary">{{vers}}</span>
+                  </div>
+                  <h5 class="mt-2">
+                    <td class="apiLink" colspan="3">
+                      <div id="linkCont">
+                        {{#ifValue active false}}
+                          <div>🔒</div>
+                        {{/ifValue}}
+                        <A class="apiLink" HREF="http://{{{getServerAddress}}}{{../endpoint}}{{param}}">
+                          http://{{{getServerAddress}}}{{../endpoint}}{{param}}
+                        </A>
+                      </div></td>
+                  </h5>
+                  <p class="text-muted">{{{info}}}</p>
+
+                  {{#if code}}
+                    <pre><code>{{myStringify code}}</code></pre>
+                  {{/if}}
+                </div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
       {{/each}}
-    </table>
-  {{/each}}
+    </div>
 
-  <br>
-  <BR>
-  <small style="padding: 0.4em; border: 1px solid rgba(0,0,0,0.4); ">If you have needs for additional integrations or graphics, please <A href="https://spx.graphics/contact" target="website">contact us</A>.</B></small>
-
+    <footer class="mt-5">
+      <p class="text-center text-muted">
+        Need custom development or system integration?<BR>
+        <a href="https://spxgraphics.com/contact" target="_blank">Contact us</a>.<BR><BR>
+        <small>&copy; 2021- SPX Graphics</small>
+      </p>
+    </footer>
+  </div>
 </body>
+
 </html>

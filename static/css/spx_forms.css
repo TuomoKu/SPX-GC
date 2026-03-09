@@ -1,5 +1,5 @@
 /*
-  Copyright 2020 Softpix
+  Copyright 2020 SPX Graphics
   CSS file for form items. Loaded after spx_layout.css
 */
 
@@ -136,6 +136,10 @@
     font-family: "UI-Regular", Arial, Helvetica, sans-serif;
     text-shadow: rgb(0, 0, 0, 0.4) 0 0px 8px;
     box-shadow: rgb(0, 0, 0, 0.4) 0 3px 8px;
+}
+
+.drop option:disabled {
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .drop:hover {

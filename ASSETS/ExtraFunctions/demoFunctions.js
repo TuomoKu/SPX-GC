@@ -14,7 +14,6 @@
 // get in touch. 
 //
 // (C) 2021- SPX Graphics
-// MIT License.
 //
 // -------------------------------------------------------------- 
 
@@ -42,22 +41,6 @@ function hello(options) {
     console.log(msg);
 }
 
-
-function APIConnector(mode='') {
-    let apiURL = '/api/v1/invokeTemplateFunction';
-    let layer = 10;
-    let fcall = 'templateFunction';
-
-    let url = apiURL + '?&webplayout=' + layer + '&function=' + fcall + '&params=' + mode;
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-} // APIConnector
 
 function demo_popup(message) {
     // A basic hello world example
@@ -93,39 +76,10 @@ function clearAllChannels() {
     clearUsedChannels(); // <-- function in spx_gc.js
 } // clearAllChannels
  
-function wipeClean() {
-    let data = {};
-    data.relpath       = 'smartpx/Template_Pack_1/SPX1_COLORBUMPER.html';    // template file
-    data.playserver    = 'OVERLAY';                          // CCG server or '-'
-    data.playchannel   = '1';                                // Channel
-    data.playlayer     = '20';                               // Layer
-    data.webplayout    = '20';                               // Web layer or '-'
-    data.relpathCCG    = data.relpath.split('.htm')[0];
-	data.command = 'play';
-	ajaxpost('/gc/playout',data, 'true');
-	setTimeout(function(){ 
-		stopAll()
-    }, 50);
-} // wipeClean
- 
 	
-function playAll() {
-    // Will send PLAY commands to all layers used by current rundown.
-    // Timeout here allows some time for server to handle the incoming commands. 
-    // TODO: Far from elegant but kind of works. A better approach would be to 
-    // develop a server-side function for this. 
-    let ITEMS = document.querySelectorAll('.itemrow');
-    ITEMS.forEach(function (templateItem, itemNro) {
-        console.log('iterate row ' + itemNro);
-        setTimeout(function(){ 
-			playItem(templateItem,'play')
-            }, (itemNro * 50)); // 50, 100, 150, 200ms etc...
-        });
-} // playAll
-
-function openWebpage(url='https://spxgc.tawk.help/') {
+function openWebpage(url='https://docs.spxgraphics.com/') {
     // Opens a new browser tab with url given.
-    console.log("Hello ", url);
+    console.log("Opening a webpage ", url);
     window.open(url, '_blank');
     return false;
 } // openWebpage
@@ -135,17 +89,4 @@ function openSelectedURL(selectList) {
     let URL = document.getElementById(selectList).value;
     openWebpage(URL)
 } // openSelectedURL
-
-
-function playAudiofile(file) {
-    playServerAudio(file,message='playAudiofile ' + file)
-} // playAudiofile
-
-function playSelectedAudio(selectList) {
-    // Reads a path of audio file (in ASSETS folder) from current value of the select list
-    // and triggers a function which will pass the filename to SPX-GC which will play the
-    // sound on the server.
-    sfx = document.getElementById(selectList).value;
-    playServerAudio(sfx,message='Custom audio button')
-} // playSelectedAudio
 

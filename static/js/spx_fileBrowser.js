@@ -324,7 +324,7 @@ window.addEventListener('load', async () => {
                 "height" : 1000,
                 "left": 50,
                 "top": 50,
-                /* "ZZZimageJsonApiUrl": "http://visitools.co.uk/OHGraphics/?jsonpath=/" */
+                "imageJsonApiUrl": ""
             },
             "template": {
                 "file" : "smartpx/imagelayer/SPX_Image_Layer2.html",

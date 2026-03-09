@@ -1,0 +1,61 @@
+{
+    "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+    "name": "Name Right Graphic",
+    "description": "This graphic includes a name on the right side of the screen.",
+    "id": "name-right-graphic",
+    "version": "1",
+    "main": "NAME_RIGHT.mjs",
+    "supportsRealTime": true,
+    "supportsNonRealTime": false,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "comment": {
+                "type": "string",
+                "title": "Nickname of this item on the rundown",
+                "default": "[ Item nickname ]"
+            },
+            "instruction": {
+                "v_spx": {
+                    "ftype": "instruction"
+                },
+                "type": "string",
+                "title": "Instruction",
+                "default": "This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+            },
+            "f0": {
+                "type": "string",
+                "title": "Fullname",
+                "default": "John Brand"
+            },
+            "f1": {
+                "type": "string",
+                "title": "Title",
+                "default": "Professor"
+            },
+            "f2": {
+                "type": "string",
+                "title": "Company or Location",
+                "default": "Plan A"
+            },
+            "f99": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Name_right/themes/",
+                    "extension": "css"
+                },
+                "type": "string",
+                "title": "Visual Theme",
+                "default": "./resources/Name_right/themes/Default.css"
+            }
+        }
+    },
+    "v_spx": {
+        "playserver": "OVERLAY",
+        "playchannel": "1",
+        "playlayer": "2",
+        "webplayout": "2",
+        "out": "manual",
+        "uicolor": "3"
+    }
+}

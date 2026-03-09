@@ -34,6 +34,34 @@
       color: rgb(255, 255, 255);
       background-color: rgb(85, 3, 3);
     }
+
+    .soloInfo {
+      color: #aaa;
+      padding: 0.6em;
+      border-radius: 0.4em;
+      background-color: rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: inset 0 0 0.5em rgba(0, 0, 0, 0.5);
+      background-image: linear-gradient(
+        178deg,
+        transparent 30%,
+        rgba(0, 0, 0, 0.1) 55%
+      );
+      background-repeat: no-repeat;
+    }
+
+    .soloInfo h1 {
+      margin: 0;
+      font-size: 0.7em;
+      padding-bottom: 0.5em;
+    }
+
+    .soloInfo p {
+      font-size: clamp(11px, 1vw, 20px);
+      opacity: 0.8;
+    }
+
   </style>
 
 </head>
@@ -75,6 +103,17 @@
           <input type="hidden" name="general[showusercommapass]" value="{{config.general.showusercommapass}}">
 
           <table class="wide" border=0>
+            <TR>
+              <td colspan="2">
+                <div class="soloInfo" >
+                  <h1>SPX Solo</h1>
+                  <p>
+                    This SPX Solo v.{{{ShowVersion}}} is a limited version of SPX Graphics for personal use and light productions. For more advanced professional features and capabilities, consider SPX Production or SPX Broadcast.
+                    <a href="https://spxgraphics.com/software/#compare">Read more</a>
+                </div>
+                <br>
+              </td>
+            </TR>
             <TR>
               <td class="vmid tableheaderText">{{lang 'config.general'}} </td>
               <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('config');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>

@@ -1,10 +1,28 @@
+<style>
+  .modal{
+    left: 55%;
+  }
+
+  .dialogHeaderBar {
+    cursor: move;
+  }
+</style>
+
+<script>
+    // Make the DIV element draggable:
+    document.addEventListener("DOMContentLoaded", function() {
+        dragElement(document.getElementById("dialog"));
+    });
+</script>
+
+
 <!-- This is the file browser modal overlay (used by view-showconfig) -->
 <div class="overlay" id="fileoverlay" idzzz="filebrowserModal">
 
    <div class="modal wrapper">
 
     <div class="dialogHeaderBar" >
-      <div>{{lang 'pagetitle.selectemplate'}}</div> 
+      <div>{{lang 'pagetitle.selectemplate'}} ({{showconfig.projectFormat}})</div> 
       <div class="dialogHeaderBarClose">
         <i class="fas fa-window-close dialogCloseButton" onClick="ModalOff('fileoverlay')"></i>
       </div>
@@ -12,6 +30,9 @@
 
     <div class="tabButtonRow" id="AddTemplatesTabBar">
       <button onclick="AddTemplatesTab(1)" id="tabBtn1" class="tablinks tabSelected" >Installed templates</button>
+      <button id="formatSPX" class="tablinks {{#ifValue showconfig.projectFormat "SPX"}}tabSelected{{/ifValue}}">SPX</button>
+      <button id="formatOGRAF" class="tablinks {{#ifValue showconfig.projectFormat "OGRAF"}}tabSelected{{/ifValue}}">OGRAF</button>
+      
       <div>
         <button onclick="AddTemplatesTab(2)" id="tabBtn2" class="tablinks">SPX Store</button>
         <button onclick="AddTemplatesTab(3)" id="tabBtn3" class="tablinks">Loopic</button>
@@ -38,7 +59,7 @@
       <div class="modal_bottom">
         <div class="storeIcon"
           onmouseover="showMessage('Visit SPX Store for more templates')"
-          onclick="window.open('https://spx.graphics/store', '_blank');"
+          onclick="window.open('https://spxgraphics.com/store', '_blank');"
           ></div>
         <div style="flex-grow: 1;" >
           <span id="browserMessage" class="browserMessage"></span>
@@ -66,7 +87,7 @@
               SPX Store is SPX Graphics' official Store for free and premium SPX
               templates and application extensions.</p>
             <br>
-            ▶ <a href="https://spx.graphics/store" target="store">spx.graphics/store</a>
+            ▶ <a href="https://spxgraphics.com/store" target="store">spxgraphics.com/store</a>
             <br>
             <h2>Creative Services</h2>
             <p>
@@ -82,7 +103,7 @@
               <li>SLA and Support</li>
             </ul>
             <br>
-            ▶ <a href="https://spx.graphics/contact" target="_blank">Get in touch</a>
+            ▶ <a href="https://spxgraphics.com/contact" target="_blank">Get in touch</a>
 
 
           </div>
@@ -118,7 +139,7 @@
             <p>
               Resources:<br>
               ▶ <a href="https://docs.loopic.io/user-guide" target="ldocs">User Guide</a><br>
-              ▶ <a href="https://spxgc.tawk.help/article/templates-from-loopic" target="ldocs">SPX templates using Loopic</a>
+              ▶ <a href="https://docs.spxgraphics.com/Guides/Tutorials/How+to+create+HTML+graphics+using+Loopic" target="ldocs">SPX templates using Loopic</a>
             </p>
 
           </div>
@@ -156,7 +177,7 @@
             <p>
               Resources<br>
               ▶ <a href="https://www.streamshapers.com/docs/streamshapers-converter/tutorial" target="fdocs">Ferryman tutorial</a><br>
-              ▶ <a href="https://spxgc.tawk.help/article/templates-from-ferryman" target="fdocs">SPX templates using Ferryman</a>
+              ▶ <a href="https://docs.spxgraphics.com/Guides/Tutorials/How+to+create+HTML+graphics+in+After+Effects" target="fdocs">SPX templates using Ferryman</a>
             </p>
             <br>
 

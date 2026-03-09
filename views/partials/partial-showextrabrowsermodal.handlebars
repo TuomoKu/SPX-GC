@@ -1,7 +1,22 @@
+<style>
+  #extrabrowserHeaderBar {
+    cursor: move;
+  }
+</style>
+
+<script>
+    // Make the DIV element draggable:
+    document.addEventListener("DOMContentLoaded", function() {
+        dragElement(document.getElementById("extrabrowser"));
+    });
+
+</script>
+
+
 <!-- This is the file browser modal overlay (used by view-showconfig) -->
 <div class="overlay" id="extraoverlay" id="extrabrowserModal">
-   <div class="modal wrapper">
-    <div class="modal_top height4">
+   <div class="modal wrapper" id="extrabrowser">
+    <div class="modal_top height4" id="extrabrowserHeaderBar">
       <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
         <tr style="background-color: rgba(255,255,255,0.2);">
           <td valign="middle" style="font-size: 0.8em;">

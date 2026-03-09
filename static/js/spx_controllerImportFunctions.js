@@ -16,7 +16,6 @@ function RenderFolder(data) { //controllerImportCSV
     showMessage(document.getElementById('templaterootmassage').value);
     document.getElementById('homefolder').classList.add('disabled'); 
     document.getElementById('prefolder').classList.add('disabled'); 
-
   } else  {
     showMessage('');
     document.getElementById('homefolder').classList.remove('disabled'); 

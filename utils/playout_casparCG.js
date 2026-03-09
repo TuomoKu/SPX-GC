@@ -107,23 +107,15 @@ module.exports = {
             if (DataType == 'xml'){
               // generate data in XML format
               TEMPLATEDATA += this.CGComponentFactory(item.field, item.value);
-              } 
-            else
-              {
-                // generate data in JSON format
-                TEMPLATEDATA += '\\"' + item.field + '\\":\\"' + item.value + '\\",';
-                // Examples in XML and JSON
-                // correct xml : CG 1-10 ADD 0 "SMARTPX/GC_PACK_2/HEADLINE" 1 "<templateData><componentData id=\"f0\"><data id=\"text\" value=\"KEPPI\"/></componentData><componentData id=\"f1\"><data id=\"text\" value=\"Kepponen\"/></componentData></templateData>"\r\n
-                // correct json: CG 1-10 ADD 0 "SMARTPX/GC_PACK_2/HEADLINE" 1 "{\"f0\":\"KEPPI\",\"f1\":\"Kepponen\"}"\r\n
-                // testing json: CG 1-12 ADD 1 "smartpx/GC_YSV/Otsikko"     1 "{\"f0\":\"KEPPI\",\"f1\":\"Kepponen\"}"\r\n
-              }
+            } else {
+              TEMPLATEDATA += '\\"' + item.field + '\\":\\"' + item.value + '\\",';
+            }
           });
         }
         if (DataType == 'xml'){
           // finalize XML format
           DataStr = "<templateData>" + TEMPLATEDATA + "</templateData>";
-        }
-        else{
+        } else {
           // finalize JSON formatby removing trailing comma
           if (TEMPLATEDATA.slice(-1)==','){
             TEMPLATEDATA = TEMPLATEDATA.slice(0, -1);
