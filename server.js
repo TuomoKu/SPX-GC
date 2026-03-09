@@ -929,6 +929,7 @@ io.sockets.on('connection', function (socket) {
     delete clients[socket.id];
 
     // Notify controller of other clients lost (such as renderers closed with X)
+    data = {};
     data.spxcmd = 'clientLostNotification'
     data.source = 'windowClose'
     data.clientName = SPXClientName

@@ -32,7 +32,6 @@ module.exports = {
 
   max5: function (num) {
     let res = Math.min(5, parseInt(num));
-    console.log('max5 function got ' + num + ', returning ' + res +' (as String)');
     return String(res);
   },
 
