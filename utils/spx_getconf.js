@@ -89,7 +89,7 @@ module.exports = {
 
                     // Write config file. Note, this does not use utility function.
                     cfg.warning = "GENERATED DEFAULT CONFIG. Modifications done in the SPX will overwrite this file.";
-                    cfg.copyright = "(c) 2020- SPX Graphics (https://spx.graphics)";
+                    cfg.copyright = "(c) 2020- SPX Graphics (https://spxgraphics.com)";
                     cfg.updated = new Date().toISOString();
                     global.config = cfg; // <---- config to global scope
                     let filedata = JSON.stringify(cfg, null, 2);

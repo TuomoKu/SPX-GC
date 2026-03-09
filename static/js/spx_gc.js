@@ -3,7 +3,6 @@
 // ***************************************
 // (c) 2020-2024 SPX Graphics
 // ***************************************
-
 var socket = io();
 
 // Global App State
@@ -264,58 +263,7 @@ function rundownPopup(mode) {
 }
 
 
-
-
-function Test(routine) {
-    // execute a test function on the server
-    // this gets triggered by menu > ping
-    let data = {};
-    switch (routine) {
-        case 'A':
-            data.spxcmd     = 'loadTemplate';
-            data.layer      = '10';
-            data.template   = 'spxtestgrid.html';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-        case 'B':
-            data.spxcmd     = 'playTemplate';
-            data.layer      = '10';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-        case 'C':
-            data.spxcmd     = 'stopTemplate';
-            data.layer      = '10';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-
-        default:
-            console.log('Uknown Test', routine);
-        }
-}
-
-
-
-
-function tip(msg) {
-    // request ..... 
-    // returns ..... 
-    // Describe the function here 
-    e = document.getElementById('statusbar') || null;
-    if (e) {
-        document.getElementById('statusbar').innerText=msg;
-        event.stopPropagation();
-        // playServerAudio('beep', 'We are in TIP function');
-    }
-} // tip mgsed
  
-
-
-// -------------- ABC from this onwards
-
-
 
 function addSelectedTemplate(idx) {
   // alert('Selected index ' + idx);
@@ -405,43 +353,58 @@ var isValid=(function(){
 })();
 
 
-function add() {
+function add(ModalID) { 
     // require ..... nothing
     // returns ..... posts a name of a file to server which redirects
     // Improved in 1.3.0 with validation
 
-    var rundownName
-    while(true){
-        rundownName = prompt("Creating a new rundown. Name?").trim();
-        if ( isValid(rundownName) ) {
-            break;
-        } else {
-            alert("Please enter a valid file name, no special characters.");
+
+    ModalOn(ModalID)
+    document.getElementById('rundownName').focus();
+    document.getElementById('rundownForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const rundownName = document.getElementById('rundownName').value.trim();
+        if (!isValid(rundownName)) {
+            alert("Please enter a valid rundown name, no special characters.");
+            return;
         }
-    }
-    if (rundownName != null && rundownName != "") {
-        post('', { filebasename: rundownName }, 'post');
-    }
+        if (rundownName != null && rundownName != "") {
+            post('', { filebasename: rundownName }, 'post');
+        }
+    });
+
+    document.getElementById('cancelForm').addEventListener('click', function() {
+        ModalOff(ModalID);
+    })
+
 } //add
 
 
-function addshow() {
+function addshow(ModalID) {
     // require ..... nothing
     // returns ..... posts a name of a folder to server which redirects
     // Improved in 1.3.0 with validation
 
-    var projectName
-    while(true){
-        projectName = prompt("Creating a new project. Name?").trim();
-        if ( isValid(projectName) ) {
-            break;
-        } else {
+    ModalOn(ModalID);
+    
+    document.getElementById('projectName').focus();
+    document.getElementById('projectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const projectName = document.getElementById('projectName').value.trim();
+        const projectFormat = document.querySelector('input[name="projectFormat"]:checked').value;
+        // const projectFormat = document.getElementById('projectFormat').value;       IF YOU WANT TO USE DROPDOWN INSTEAD OF RADIO BUTTONS
+        if (!isValid(projectName)) {
             alert("Please enter a valid folder name, no special characters.");
+            return;
         }
-    }
-    if (projectName != null && projectName != "") {
-        post('', { foldername: projectName }, 'post');
-    }
+        if (projectName != null && projectName != "") {
+            post('', { foldername: projectName, format: projectFormat }, 'post');
+        }
+    });
+
+    document.getElementById('cancelForm').addEventListener('click', function() {
+        ModalOff(ModalID);
+    });
 
 } // addshow
 
@@ -647,18 +610,37 @@ function checkKey(e) {
         
                 case 32: // space
                     if (e.shiftKey) {
-                        // Shift + Space = NEXT
-                        nextItem();
-                    } else {
-                        // Space = PLAY
-                        // Bug fix added in 1.1.1. Dblcheck if we are opened...
-                        if (getFocusedRow().querySelector('#Expanded').style.display!="none") {
-                            // console.log('Ignoring play while opened for editing');
-                            return; 
-                        }
+                        // Shift + Space = PLAY/STOP
                         playItem();
+                    } else {
+                        let item = getFocusedRow();
+                        // Space = PLAY/CONTINUE/STOP
+                        // Bug fix added in 1.1.1. Dblcheck if we are opened...
+                        if (
+                            item.querySelector('#Expanded')?.style
+                                .display != 'none'
+                        ) {
+                            return;
+                        }
+
+                        // Added in v1.4.0 space works as PLAY/CONTINUE/STOP.
+                        var stepsleft = parseInt(item?.getAttribute('data-spx-stepsleft'));
+
+                        // Check if stepsleft isNan (not defined in templateDefinition) = PLAY/STOP, if == 1 (last step) = PLAY/STOP, if > 1 and not playing = PLAY
+                        if 
+                            (isNaN(stepsleft) 
+                                || stepsleft == 1 
+                                || (stepsleft > 1 && item.getAttribute('data-spx-onair') != 'true') 
+                                || (stepsleft == -1 && item.getAttribute('data-spx-onair') != 'true')
+                            ) {
+                            playItem();
+                        }
+                        // Check if the item has steps, if so, continue to next step
+                        else if (stepsleft > 1 || stepsleft == -1) {
+                            nextItem();
+                        }
                     }
-                    
+
                     e.preventDefault();
                     break;
         
@@ -931,13 +913,18 @@ async function revealItemLayer(button) {
     let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
     var newValue = prompt("You can change web playout layer here. Use any value between 1 and 5:", curValue);
 
-    if (newValue != null && newValue != curValue) {
-        newValue = Math.min(5, parseInt(newValue));
+    if (newValue != null && newValue != curValue && !isNaN(newValue)) {
+        let wasOverLimit = newValue > 5;
+        newValue = Math.min(newValue, 5); // enforce max limit of 5
         let file = document.getElementById('datafile').value;
         let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
         axios.get(URL)
         .then(function (response) {
-            showMessageSlider('Item webplay layer changed to ' + newValue)
+            if (wasOverLimit) {
+                showMessageSlider('Item webplay layer must be 5 or less, changed to 5 ', "warn")
+            } else {
+                showMessageSlider('Item webplay layer changed to ' + newValue)
+            }
             button.textContent = newValue;
             button.closest('.itemrow').querySelectorAll('input[id^=webplayout]')[0].value = newValue;
             // document.querySelectorAll('.itemrow')[0].querySelectorAll('input[id^=out]')[0];
@@ -945,6 +932,8 @@ async function revealItemLayer(button) {
         .catch(function (error) {
             showMessageSlider('Unable to change value, please try again.', 'error')
         });
+    } else {
+        showMessageSlider('Unable to change value, please try again.', 'error')
     }
 } // revealItemLayer
 
@@ -1430,6 +1419,8 @@ function getMessages(curVerInfo) {
         document.getElementById('message_link').innerText=messages.notification.link;
       }
 
+      return // Check if there is a promo for this version
+
       // Added in 1.1.2
       // versionStr = "1.0.0"; // DEBUG## with specific version number
       if (messages.homepagepromo[versionStr] ) {
@@ -1505,29 +1496,83 @@ function help(section) {
     // request ..... section or <empty>
     // returns ..... opens a tab with help content
 
-    let HELP_ROOT = "https://spxgc.tawk.help/"
+    let HELP_ROOT = "https://docs.spxgraphics.com/"
     let HELP_PAGE = ""
     section = section.toUpperCase()
 
     switch (section) {
-        case "INTRO":               HELP_PAGE = "article/help-intro"                ; break;
-        case "PROJECTS":            HELP_PAGE = "article/help-dataroot"             ; break;
-        case "PLAYLISTS":           HELP_PAGE = "article/help-dataroot"             ; break;
-        case "CONFIG":              HELP_PAGE = "article/help-config-general"       ; break;
-        case "WEBPLAYOUT":          HELP_PAGE = "article/help-config-renderer"      ; break;
-        case "CASPARCG":            HELP_PAGE = "article/help-config-casparcg"      ; break;
-        case "GLOBALEXTRAS":        HELP_PAGE = "article/help-config-globalextras"  ; break;
-        case "PROJECTGENERAL":      HELP_PAGE = "article/help-project-general"      ; break;
-        case "PROJECTTEMPLATES":    HELP_PAGE = "article/help-project-templates"    ; break;
-        case "PROJECTVARIABLES":    HELP_PAGE = "article/help-project-variables"    ; break;
-        case "PROJECTEXTRAS":       HELP_PAGE = "article/help-project-extras"       ; break;
-        case "CONTROLLER":          HELP_PAGE = "article/help-controller"           ; break;
-        case "CSV":                 HELP_PAGE = "article/help-csv-files"            ; break;
-        case "API":                 HELP_PAGE = "article/help-api"                  ; break;
-        case "ITEM-DETAILS":        HELP_PAGE = "article/help-item-details"         ; break;
-        case "SEVERAL":             HELP_PAGE = "article/help-several-controllers"  ; break;
-        case "LIGHTMODE":           HELP_PAGE = "article/light-mode"                ; break;
-        default: break;
+        case 'INTRO':
+            HELP_PAGE = 'Welcome+to+SPX+Docs';
+            break;
+        case 'PROJECTS':
+            HELP_PAGE = 'Documentation/Server/Content+Management#Projects';
+            break;
+        case 'PLAYLISTS':
+            HELP_PAGE = 'Documentation/Server/Content+Management#Rundowns';
+            break;
+        case 'CONFIG':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Application+Configuration';
+            break;
+        case 'WEBPLAYOUT':
+            HELP_PAGE = 'Documentation/Renderer/Overview';
+            break;
+        case 'CASPARCG':
+            HELP_PAGE = 'Documentation/Renderer/Workflows/CasparCG+-+AMCP';
+            break;
+        case 'GLOBALEXTRAS':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Plugins+%26+Extensions#Global+Extras+vs+Plugins';
+            break;
+        case 'PROJECTGENERAL':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Project+Settings#Template+Configuration';
+            break;
+        case 'PROJECTTEMPLATES':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Project+Settings';
+            break;
+        case 'PROJECTVARIABLES':
+            HELP_PAGE = 'article/help-project-variables';
+            break;
+        case 'PROJECTEXTRAS':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Project+Settings#Project+Extras+(showExtras)';
+            break;
+        case 'CONTROLLER':
+            HELP_PAGE = 'Documentation/Control+Interfaces/External+Control';
+            break;
+        case 'CSV':
+            HELP_PAGE = 'Guides/Tutorials/how+to+use+csv+files';
+            break;
+        case 'API':
+            HELP_PAGE = 'Documentation/Control+Interfaces/REST/Overview+of+SPX+API';
+            break;
+        case 'ITEM-DETAILS':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Overview#Playout+details';
+            break;
+        case 'SEVERAL':
+            HELP_PAGE = 'Documentation/Graphics+Controller/Overview#Several+SPX+controllers';
+            break;
+        case 'LIGHTMODE':
+            HELP_PAGE = 'article/light-mode';
+            break;
+        case 'MOS':
+            HELP_PAGE = 'Documentation/Server/Integration/MOS';
+            break;
+        case 'OLDBROWSERDETECTED':
+            HELP_PAGE = 'article/old-browser-detected';
+            break;
+        case 'LICENSING':
+            HELP_PAGE = 'Documentation/Server/License';
+            break;
+        case 'CALLUPID':
+            HELP_PAGE = 'article/callupid';
+            break;
+        case 'THUMBNAILGENERATION':
+            HELP_PAGE = 'article/thumbnail-generation';
+            break;
+        case 'OGRAF':
+            HELP_PAGE = 'Documentation/Graphic+Templates/Formats/OGraf';
+            break;
+        default:
+            HELP_PAGE = 'Welcome+to+SPX+Docs/';
+            break;
     }
 
     let FULL_URL = HELP_ROOT + HELP_PAGE;
@@ -2038,27 +2083,6 @@ async function revealItemTiming(button) {
     }
 } // revealItemTiming
 
-async function revealItemLayer(button) {
-    let curValue = button.textContent;
-    let ID = button.closest('.itemrow').getAttribute('data-spx-epoch');
-    var newValue = prompt("You can change web playout layer here. Use any value between 1 and 5:", curValue);
-    if (newValue != null && newValue != curValue) {
-        newValue = Math.min(5, parseInt(newValue));
-        let file = document.getElementById('datafile').value;
-        let URL  = `/api/v1/changeItemData?rundownfile=${file}&ID=${ID}&key=webplayout&newValue=${newValue}`
-        axios.get(URL)
-        .then(function (response) {
-            showMessageSlider('Item webplay layer changed to ' + newValue)
-            button.textContent = newValue;
-            button.closest('.itemrow').querySelectorAll('input[id^=webplayout]')[0].value = newValue;
-            // document.querySelectorAll('.itemrow')[0].querySelectorAll('input[id^=out]')[0];
-        })
-        .catch(function (error) {
-            showMessageSlider('Unable to change value, please try again.', 'error')
-        });
-    }
-} // revealItemLayer
-
 function removeItemFromRundown(itemrow)
 {
   // Collect data for server processing
@@ -2434,6 +2458,20 @@ function spx_system(cmd,servername='') {
     }
 } // end spx_system
 
+
+function tip(msg) {
+    // request ..... 
+    // returns ..... 
+    // Describe the function here 
+    e = document.getElementById('statusbar') || null;
+    if (e) {
+        document.getElementById('statusbar').innerText=msg;
+        event.stopPropagation();
+        // playServerAudio('beep', 'We are in TIP function');
+    }
+} // tip mgsed
+
+
 function e(ID) {
     return document.getElementById(ID);
 } // e
@@ -2532,35 +2570,6 @@ function swap2HTMLntities(str){
     return str;
 } // end swap2HTMLntities
 
-function Test(routine) {
-    // execute a test function on the server
-    // this gets triggered by menu > ping
-    let data = {};
-    switch (routine) {
-        case 'A':
-            data.spxcmd     = 'loadTemplate';
-            data.layer      = '10';
-            data.template   = 'spxtestgrid.html';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-        case 'B':
-            data.spxcmd     = 'playTemplate';
-            data.layer      = '10';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-        case 'C':
-            data.spxcmd     = 'stopTemplate';
-            data.layer      = '10';
-            socket.emit('SPXWebRendererMessage', data);
-            break;
-
-
-        default:
-            console.log('Uknown Test', routine);
-        }
-} // Test ended
 
 function tip(msg) {
     // request ..... 
@@ -2779,3 +2788,47 @@ function toggleNormalRenderer(cmd) {
         document.getElementById('previewIF').src='/renderer';
     }
 } // toggleNormalRenderer
+
+
+// This script is gotten straight from https://www.w3schools.com/howto/howto_js_draggable.asp
+function dragElement(elmnt) {
+        if (!elmnt) { return } // element not found, bail out
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        if (document.getElementById(elmnt.id + "HeaderBar")) {
+            // if present, the header is where you move the DIV from:
+            document.getElementById(elmnt.id + "HeaderBar").onmousedown = dragMouseDown;
+        } else {
+            // otherwise, move the DIV from anywhere inside the DIV:
+            elmnt.onmousedown = dragMouseDown;
+        }
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // set the element's new position:
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            // stop moving when mouse button is released:
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }

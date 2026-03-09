@@ -12,7 +12,7 @@
     <!--      SPX GRAPHICS CONTROLLER      -->
     <!--     ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨    -->
     <!--      (c) 2020- SPX Graphics       -->
-    <!--        http://spx.graphics        -->
+    <!--        http://spxgraphics.com        -->
     <!--                                   -->
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -->
     
@@ -24,6 +24,8 @@
     <script src="./js/socket.io.js"></script>
     <script src="/js/lib/dotlottie-player.js"></script>
     <script src="/js/spx_rendererUtils.js" type="module"></script> <!-- added in 1.3.3 RC-->
+    <script src="/js/ograf_functions.js"></script>
+    <script src="/js/spx_gc.js"></script>
     <title>SPX Renderer</title>
     <style>
         * {
@@ -75,6 +77,17 @@
             border: 0px solid red;
         }
 
+        .ografRenderTarget > iframe,
+        .ografRenderTarget {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            overflow: hidden;
+            position: absolute;
+            border: 0px dashed green;
+        }
+
         .debugMessage{
             top: 5%;
             left: 10%;
@@ -118,47 +131,41 @@
     </style>
 
     <script>
+        // Renderer info to console
+        console.log('RENDERER: ' + navigator?.userAgent);
 
         let incomingData; // a placeholder for templateData
         let WMtimer = null;
         let startTime = new Date().getTime();
-        // const inController = top.location.href.includes('renderer') ? false : true; 
+        
+        function setTarget(LayerNro, projectFormat) {
+            if (projectFormat === "OGRAF") {
+                return 'div' + LayerNro;
+            } else {
+                return 'layer' + LayerNro;
+            }
+        }
 
         function allowLayerControl(LayerNro) {
-            // Usage:
-            // http://localhost:5656/renderer/?layers=[2,4,20]
-            // Check if use is limited to certain layers only.
-            // Can control which layers renders on which renderer,
-            // like web conference: participant 1 = layer 1
-            //   true = allow control
-            //   false = do not allow control
-            // 1.0.12 fixes issue #32
-
-            // Added in 1.1.0 a check to skip command if
-            // a) window is in preview mode, but request is missing required preview flag
-            // b) window is in program mode, but request has the preview flag
             let playMode = incomingData.playmode || 'notFoundSoMustBeProgramCommand' ;
             if ( isPreviewMode() && playMode != 'preview') {
-                // Do not play previews in program
                 return false;
             }
 
             if ( !isPreviewMode() && playMode == 'preview') {
-                // Do not play programs in preview
                 return false;
             }
 
             const queryString   = window.location.search;
             const urlParams     = new URLSearchParams(queryString);
             const limitLayers   = urlParams.get('layers');
+            LayerNro = Math.min(parseInt(LayerNro), 5); 
             if (limitLayers) {
-                const limitItems   = limitLayers.replace("[","").replace("]","").replace(" ", "").split(",");  // Ugly, but works.
-                // Potential bug! FIXME: The value of LayerNro currently MUST be a string. Not integer! ==> Fixed in 1.1.4.
-                if ( limitItems.includes(String(LayerNro)) ) { // Forced to string since v.1.1.4
-                    // console.log('Commands to layer ' + LayerNro + ' allowed.');
+                let allowedLayers = JSON.parse(limitLayers);
+                if ( allowedLayers.includes(LayerNro) ) {
                     return true;
                 } else {
-                    console.log('Commands to layer ' + LayerNro + ' prevented.');
+                    console.log('Layer ' + LayerNro + ' blocked, allows ', allowedLayers);
                     return false;
                 }
             } else {
@@ -167,16 +174,12 @@
         }
 
         function validateLayerNro(LayerNro) {
-            // Added in 1.1.0 to add a preview functionality to renderer
-            // If renderer is in ?preview=true mode AND layer is within the valid layer rage, then layer is always 1
-            if (!allowLayerControl(LayerNro)) {
-                // not allowed
-                return false
-            }
+            if (!allowLayerControl(LayerNro)) { return false }
 
             if ( isPreviewMode() ) {
-                return 1 // hardcoded LayerNro for previews!
+                return 1
             } else {
+                console.log('Validating LayerNro ' + LayerNro); // debug
                 return Math.min(parseInt(LayerNro),5);
             }
         }
@@ -186,16 +189,13 @@
             let previewFlag = url.searchParams.get('preview') || '';
             let previewPage = url.pathname || '';
             if ( previewFlag == 'true' || previewPage.includes('preview') ) {
-                // console.log('Yes, this is a preview window');
                 return true
             } else {
-                // console.log('Nope, not a preview window');
                 return false
             }
         }
 
         function isLocalRenderer() {
-            // Changed in 1.3.1
             if (this.name == 'LOCAL') {
                 return true
             } else {
@@ -208,7 +208,6 @@
 
             // v1.1.4 allow clearing of all layers (even restricted ones)
             if (!ValidatedLayerNro) {
-                console.log('...but forcefully clearing restricted layer ' + LayerNro + '.');
                 ValidatedLayerNro = LayerNro
             }
             populateLayer(ValidatedLayerNro,'',true); // clear layer forcefully
@@ -219,16 +218,8 @@
         }
         
         function spxWM(mode=0,ref=0, minMins=15, maxMins=30) {
-            // Added in 1.3.0
-            // Watermark player. PANIC will kill this also.
-            // Can be controlled from any template:
-            // INIT and loop using defaults ---> parent.spxWM?.();
-            // HIDE AND PREVENT FUTURE PLAYS --> parent.spxWM?.(3);
-            // Forcefully play once -----------> parent.spxWM?.(4);
-
             clearTimeout(WMtimer);
             WMtimer = null;
-
             let MODES = ['init','wait', 'play','stop', 'force'];
             const player = document.getElementById('wm');
             let file = '/img/json/wm-' + ref + '.json';
@@ -289,11 +280,9 @@
                     setTimeout(function () {
                         player.style.opacity=0;
                         if (WMtimer) {
-                            // Was running, continue with new
                             clearTimeout(WMtimer);
                             spxWM(1,ref);
                         } else {
-                            // Not running, purge just in case
                             clearTimeout(WMtimer);
                             WMtimer = null; 
                         }
@@ -308,41 +297,9 @@
             if (protocol != "http:" && protocol != "https:") {
                 alert('Please use this via server! Functions and CORS may not work when used as a file. (Current protocol: ' + protocol + ')');
             }
-
-            // Show spinner when in Controller
-            // if (inController) {
-            //     document.getElementById('loader').style.opacity=1;
-            // }
-
-            // FPS removed in v 1.3.1 ::
-            // If FPS given in the url param store it. Added in 1.1.3.
-            // Please note, none of default templates support this.
-            // const queryString   = window.location.search;
-            // const urlParams     = new URLSearchParams(queryString);
-            // const fps           = urlParams.get('fps');
-            // if (!window.top.spxRenderer) { window.top.spxRenderer = {} }
-            // if (fps) {
-            //    console.log('Framerate specified: ' + fps + ' FPS.');
-            //    window.top.spxRenderer.fps = fps;
-            // } else {
-            //    // console.log('Framerate not specified.');
-            //    window.top.spxRenderer.fps = null;
-            //}
-
-            // FIXME: v.1.3.1 Disabled: This is not needed anymore? ::
-            // Resize window according to resolution
-            // const root = document.getElementById('root');
-            // const style = getComputedStyle(root)
-            // const w = style.width.replace('px','');
-            // const h = style.height.replace('px','');
-            // console.log('Resizing window to ' + w + ' x ' + h + ' px.')
-            // window.resizeTo(w, h);
-
        }
             
         function remoteFunction(LayerNro, functionName, arg) {
-            // console.log('remoteFunction ' + LayerNro);
-            // LayerNro = validateLayerNro(LayerNro);
             LayerNro = validateLayerNro(LayerNro);
             if (!LayerNro) { return }
             let iframe = 'layer' + LayerNro;
@@ -350,13 +307,12 @@
         }
 
         function populateLayer(LayerNro,TemplateFileRef='', forced=false) {
+            let projectFormat = incomingData.projectFormat || 'SPX'; // default value
             if (!forced) {
-                // If not forced, then validate layer.
-                // Panic button uses "forced=true" to clear ALL layers.
                 LayerNro = validateLayerNro(LayerNro);
                 if (!LayerNro) { return }
             }
-            let iframe = 'layer' + LayerNro;
+            let renderTarget = setTarget(LayerNro, projectFormat);
             let templa = '';
 
             if (TemplateFileRef!='') {
@@ -365,38 +321,43 @@
                 templa = TemplateRoot + 'empty.html';
             }
 
-            // Pass custom URL params to template url. Added in 1.2.2.
+            templa = templa.replace(/\/\//g, "/");
             let urlParams = new URLSearchParams(window.location.search);
             let customParams = '';
             for(let param of urlParams) {
                 customParams += '&' + param[0] + '=' + param[1];
             }
             let ranNro = (new Date()).getTime() + Math.floor(Math.random() * 1000000);
-            document.getElementById(iframe).src=templa + "?random=" + ranNro + customParams;
-            // console.log("\n\n ====> Loaded " + document.getElementById(iframe).src + ".\n\n")
+            document.getElementById(renderTarget).src=templa + "?random=" + ranNro + customParams;
         }
 
-        function playLayer(LayerNro,fieldData) {
-            // if (!allowLayerControl(LayerNro)) return; // check layer param
+        function playLayer(LayerNro,fieldData, projectFormat = 'SPX', incomingData) {
             LayerNro = validateLayerNro(LayerNro);
             if (!LayerNro) { return }
-            let iframeID = 'layer' + LayerNro;
-            let formattedJSON = formatJSONAndSetDomFields(fieldData, iframeID);
-            document.getElementById(iframeID).contentWindow.update(formattedJSON); 
-            document.getElementById(iframeID).contentWindow.play();
+            let renderTarget = setTarget(LayerNro, projectFormat)
+            let formattedJSON = formatJSONAndSetDomFields(fieldData, renderTarget);
+            let manifestPath = incomingData.relpath;
+            if (projectFormat === "OGRAF") {
+                loadTheGraphic("/templates" + manifestPath, renderTarget, incomingData);
+            } else {
+                document.getElementById(renderTarget).contentWindow?.update(formattedJSON);
+                document.getElementById(renderTarget).contentWindow?.play();
+            }
         }
 
-        function updateLayer(LayerNro,fieldData) {
-            // console.log('updateLayer ' + LayerNro);
+        async function updateLayer(LayerNro,fieldData, projectFormat = "SPX") {
             LayerNro = validateLayerNro(LayerNro);
             if (!LayerNro) { return }
-            let iframeID = 'layer' + LayerNro;
-            let formattedJSON = formatJSONAndSetDomFields(fieldData,iframeID);
-            document.getElementById(iframeID).contentWindow.update(formattedJSON);
+            let renderTarget = setTarget(LayerNro, projectFormat)
+            let formattedJSON = formatJSONAndSetDomFields(fieldData, renderTarget);
+            if (projectFormat === "OGRAF") {
+                updateItem()
+            } else {
+                document.getElementById(renderTarget).contentWindow?.update(formattedJSON);
+            }
         }
 
         function formatJSONAndSetDomFields(fieldData, iframeID) {
-            // console.log('formatJSONAndSetDomFields:', iframeID, fieldData);
             let formattedJsonOut = {};
             if (fieldData) {
                 var keys = [];
@@ -408,18 +369,20 @@
                 });
                 return JSON.stringify(formattedJsonOut)
             }
-    }
-
-        function stopLayer(LayerNro) {
-            // console.log('stopLayer ' + LayerNro);
-            if (!allowLayerControl(LayerNro)) return; // check layer param
-            LayerNro = validateLayerNro(LayerNro);
-            let iframeID = 'layer' + LayerNro;
-            document.getElementById(iframeID).contentWindow.stop();
         }
 
-        // init communications
-        var url_string = window.location.href; // "http://www.example.com/index.html?gc=http://192.168.1.44:5656"; 
+        function stopLayer(LayerNro, projectFormat = "SPX") {
+            if (!allowLayerControl(LayerNro)) return; // check layer param
+            LayerNro = validateLayerNro(LayerNro);
+            let renderTarget = setTarget(LayerNro, projectFormat)
+            if (projectFormat === "OGRAF") {
+                graphicInstances[renderTarget]?.stopAction({})
+            } else {
+                document.getElementById(renderTarget).contentWindow?.stop();
+            }
+        }
+
+        var url_string = window.location.href;
         var url = new URL(url_string);
         let TemplateRoot;
         var GCserver = url.searchParams.get("gc") || undefined;
@@ -439,29 +402,18 @@
         });
 
         socket.on('SPXMessage2Client', function (data) {
-            // Handles messages coming from server to this renderer client.
-            // All comms using 'SPXMessage2Client' as a conduit with data object and
-            // data.spxcmd as function identifier. Additional object values are payload.
-            // console.log('SPXMessage2Client received to renderer', data);
-
             incomingData = data;
             let LayerNro;
-
+            let projectFormat = ""
+            let customCommand = ""
             switch (data.spxcmd) {
-
                 case 'reloadRendererWithLayers':
-                    // Added in v.1.3.2
-                    // Used to programmatically to set new renderer URL
-                    // and reload the renderer.
                     let currURL = window.location.href;
                     const queryString = window.location.search;
                     const urlParams = new URLSearchParams(queryString);
                     let userName  = urlParams.get('name') || 'NO_NAME';
                     let nameMatch = (userName.toUpperCase() === data?.name?.toUpperCase());
                     if (urlParams.get('remote')=='true' && nameMatch) {
-                        // Yes, renderer is remotely controllable
-                        // as it has the 'remote=true' in the URL
-                        // and the passed name matches.
                         let baseURL = currURL.split('?')[0];
                         let layerList = "[" + data.layers.join(',') + "]";
                         if (data?.layers?.length>0 ) {
@@ -469,21 +421,25 @@
                         } else {
                             window.location.href = baseURL + '?remote=true&name=' + userName;
                         }
-                    } else {
-                        console.log('Remote control ignored.', data);
                     }
                     break;
 
                 case 'clearAllLayers':
-                    // first we hide root, then clear all layers and show root again
                     spxWM(3);
                     document.getElementById('root').style.opacity=0;
-                    document.querySelectorAll('.frame').forEach(function(frame,index) {
+                    document.querySelectorAll('.htmlFrame').forEach(function(frame,index) {
                         LayerNro = (index+1);
-                        // console.log('Clearing layer ' + layerNro); // 1 based, not 0!
                         clearLayer(LayerNro,'');
                     });
-                    document.getElementById('root').style.opacity=1;
+
+                    document.querySelectorAll('.ografFrame').forEach(function(frame,index) {
+                        LayerNro = (index+1);
+                        frame.innerHTML = '';
+                    });
+                    
+                    setTimeout(function() {
+                        document.getElementById('root').style.opacity=1;
+                    }, 200);
                     break;
 
                 case 'clearLayer':
@@ -495,48 +451,59 @@
                     break;
 
                 case 'forceWM':
-                    // console.log('view-renderer forceWM()...')
-                    spxWM(4); // forcefully play watermark and optionally continue
+                    spxWM(4);
                     break;
 
                 case 'playTemplate':
-                    // set callback function to the iframe and then load src to it.
-                    // Note, for PREVIEW the layer number will be set downstream in
-                    // the renderer if 'preview=true'
-
+                projectFormat = incomingData.projectFormat || 'SPX';
                     if (data.modify && data.modify==='autoPlayLocal' ) {
                         if (!isLocalRenderer()) {
-                            // Current renderer is NOT the SPX-GC controller
-                            // so we don't do autoplay in this, so return out!
                             return;
                         }
                     }
 
                     LayerNro = validateLayerNro(data.webplayout);
                     if (!LayerNro) { return }
-                    document.getElementById('layer' + LayerNro).onload = function() {
-                        playLayer(LayerNro,data.fields);
-                    };
+                    if (projectFormat === "OGRAF") {
+                        playLayer(LayerNro, data.fields, projectFormat, incomingData);
+                    }else {
+                        document.getElementById('layer' + LayerNro).onload = function() {
+                            playLayer(LayerNro, data.fields, projectFormat, incomingData);
+                        };
+                    }
+
                     populateLayer(data.webplayout,data.relpath);
                     break;
 
                 case 'nextTemplate':
-                    // set callback function to the iframe and then load src to it.
-                    // if (!allowLayerControl(data.webplayout)) return; // check layer param
+                    projectFormat = incomingData.projectFormat || 'SPX';
                     LayerNro = validateLayerNro(data.webplayout);
+                    let renderTarget = setTarget(LayerNro, projectFormat);
                     if (!LayerNro) { return }
-                    document.getElementById('layer' + LayerNro).contentWindow.next();
+                    if (projectFormat === "OGRAF") {
+                        graphicInstances[renderTarget].playAction();
+                    } else {
+                        document.getElementById(renderTarget).contentWindow?.next();
+                    }
                     break;
 
                 case 'updateTemplate':
-                    setTimeout(function(){ updateLayer(data.webplayout,data.fields); }, 10);
+                    projectFormat = incomingData.projectFormat || 'OGRAF'; // default value
+                    LayerNro = validateLayerNro(data.webplayout);
+                    setTimeout(function(){ updateLayer(data.webplayout, data.fields, projectFormat); }, 10);
                     break;
 
                 case 'stopTemplate':
+                    projectFormat = incomingData.projectFormat || 'SPX'; // default value
                     LayerNro = validateLayerNro(data.webplayout);
                     if (!LayerNro) { return }
-                    document.getElementById('layer' + LayerNro).contentWindow.stop();
+                    stopLayer(LayerNro, projectFormat);
                     break;
+
+                case 'customAction':
+                    LayerNro = validateLayerNro(data.webplayout)
+                    graphicInstances['div' + LayerNro].customAction({id: incomingData.id})
+
 
                 case 'invokeFunction':
                     LayerNro = validateLayerNro(data.webplayout);
@@ -561,11 +528,20 @@
                                 } else {
                                     paramPreview = 'No args.';
                                 }
-                                console.log('Executing "' + myFunction + '" on layer ' + LayerNro + '. ' + paramPreview)
                                 document.getElementById('layer' + LayerNro).contentWindow[myFunction](myParamets);
                             } else {
-                                console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
+                                console.warn('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
                             }
+
+                            let ografLayer = document.getElementById('div' + LayerNro)
+                            let ografFrame = ografLayer.querySelector('.ografRenderTarget').querySelector('iframe')
+                            let ografContent = ografFrame.contentWindow
+                            if (typeof ografContent[myFunction] === "function") {
+                                ografContent[myFunction](myParamets);
+                            } else {
+                                console.warn('Function "' + myFunction + '" not found on OGraf ' + LayerNro + '. Verify function and loaded graphic.');
+                            }
+
                         } else {
                             if  (data.invoke) {
                                 let warning = '\DEPRECATION WARNING\n';
@@ -576,28 +552,21 @@
                                 console.warn(warning);
                                 let myFunction = data.invoke.split('(')[0]; // Checking if template has this function
                                 if (typeof document.getElementById('layer' + LayerNro).contentWindow[myFunction] === "function") { 
-                                    console.log('Evaluating existing function "' + data.invoke + '" on layer ' + LayerNro + '.');
                                     eval("document.getElementById('layer' + " + LayerNro + ").contentWindow." + data.invoke);
-                                    // TODO: This should be removed in the future.
                                 } else {
-                                    console.log('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
+                                    console.warn('Function "' + myFunction + '" not found on layer ' + LayerNro + '. Verify function and loaded template.');
                                 }
                             }
                         }
                     } catch(err) {
-                        console.log('Error invoking "' + myFunction + '" on layer ' + LayerNro + '. Verify function and loaded template.');
+                        console.warn('Error invoking "' + myFunction + '" on layer ' + LayerNro + '. Verify function and loaded template.');
                     }
                     break;
 
                 case 'setRendererBackgroundImage':
-                    // Added in 1.0.15. This function will be called everytime
-                    // a project is loaded in the controller. This changes the
-                    // renderer root background image
                     if (data.background != '' ) {
-                        // console.log('Background to [' + data.background + ']');
                         document.getElementById('root').style.backgroundImage = 'url(/' + data.background + ')';
                     } else {
-                        // console.log('Background to transparent');
                         document.getElementById('root').style.backgroundImage = '';
                     }
                     break;
@@ -614,7 +583,6 @@
             // console.log('SPXWebRendererMessage received (but doing nothing to it)', data)
         }); // socketMessage handler ended
 
-        // Why do we have this?
         window.addEventListener('load',protocolCheck,false);
 
 
@@ -624,17 +592,22 @@
 
  <body>
     <div id="root">
-        <dotlottie-player id="wm"></dotlottie-player><!-- see private wm notes -->
+        <dotlottie-player id="wm"></dotlottie-player>
         {{#ifValue hideCursor "true"}}
             <div id="cursorHider"></div>
         {{/ifValue}}
-        {{!-- <iframe class="frame" onload="frameLoaded(this)" allow="autoplay" id="layer1"  style="z-index: 101;" src="about:blank"></iframe> --}}
-        <iframe class="frame" allow="autoplay" id="layer1"  style="z-index: 101;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer2"  style="z-index: 102;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer3"  style="z-index: 103;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer4"  style="z-index: 104;" src="about:blank"></iframe>
-        <iframe class="frame" allow="autoplay" id="layer5"  style="z-index: 105;" src="about:blank"></iframe>
-    </div><div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
-
+        <!-- SPX Solo does not support in-layer transitions -->
+        <iframe class="frame htmlFrame" allow="autoplay" id="layer1"  style="z-index: 101;" src="about:blank"></iframe>
+        <iframe class="frame htmlFrame" allow="autoplay" id="layer2"  style="z-index: 102;" src="about:blank"></iframe>
+        <iframe class="frame htmlFrame" allow="autoplay" id="layer3"  style="z-index: 103;" src="about:blank"></iframe>
+        <iframe class="frame htmlFrame" allow="autoplay" id="layer4"  style="z-index: 104;" src="about:blank"></iframe>
+        <iframe class="frame htmlFrame" allow="autoplay" id="layer5"  style="z-index: 105;" src="about:blank"></iframe>
+        <div class="frame ografFrame" allow="autoplay" id="div1" style="z-index: 201"></div>
+        <div class="frame ografFrame" allow="autoplay" id="div2" style="z-index: 202"></div>
+        <div class="frame ografFrame" allow="autoplay" id="div3" style="z-index: 203"></div>
+        <div class="frame ografFrame" allow="autoplay" id="div4" style="z-index: 204"></div>
+        <div class="frame ografFrame" allow="autoplay" id="div5" style="z-index: 205" ></div> 
+    </div>
+    <div class="debugMessage" id="debugMessage" style="opacity:0; position: absolute; z-index:1000;"></div>
 </body>
 </html>

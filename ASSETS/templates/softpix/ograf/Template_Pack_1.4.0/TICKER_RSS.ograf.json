@@ -1,0 +1,72 @@
+{
+    "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+    "name": "Ticker RSS Graphic",
+    "description": "This Graphic includes ticker utilizing RSS.",
+    "id": "ticker-rss-graphic",
+    "version": "1",
+    "supportsRealTime": true,
+    "supportsNonRealTime": false,
+    "main": "TICKER_RSS.mjs",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "comment": {
+                "type": "string",
+                "title": "Nickname of this item on the rundown",
+                "default": "[ Item nickname ]"
+            },
+            "instruction": {
+                "v_spx": {
+                    "ftype": "instruction"
+                },
+                "type": "string",
+                "title": "Instruction",
+                "default": "Template uses SPX's feedproxy API endpoint to download data from external sources. Also remember SPX can utilize Google Sheets, files, databases etc."
+            },
+            "f0": {
+                "type": "string",
+                "title": "Headline",
+                "default": "News Feed"
+            },
+            "f1": {
+                "type": "string",
+                "title": "RSS Feed URL",
+                "default": "http://feeds.bbci.co.uk/news/rss.xml"
+            },
+            "f2": {
+                "v_spx": {
+                    "ftype": "number"
+                },
+                "type": "string",
+                "title": "How many items to show (default '10', all '-1')",
+                "default": "10"
+            },
+            "f3": {
+                "v_spx": {
+                    "ftype": "number"
+                },
+                "type": "string",
+                "title": "Flipping interval in seconds (default '5')",
+                "default": "5"
+            },
+            "f99": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Ticker_rss/themes/",
+                    "extension": "css"
+                },
+                "type": "string",
+                "title": "Visual Theme",
+                "default": "./resources/Ticker_rss/themes/Default.css"
+            }
+        }
+    },
+    "v_spx": {
+        "playserver": "OVERLAY",
+        "playchannel": "1",
+        "playlayer": "1",
+        "webplayout": "1",
+        "out": "manual",
+        "uicolor": "3"
+    }
+}

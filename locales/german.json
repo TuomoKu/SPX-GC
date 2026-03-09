@@ -79,13 +79,26 @@
     "selectshow": "Wählen Sie ein Projekt aus",
     "select": "Wählen Sie einen Rundown aus",
     "selectshowextra": "Fügen Sie dem Projekt ein extra Steuerelement hinzu",
-    "selectemplate": "Wähle Sie ein Template aus (htm, html)",
+    "selectemplate": "Wähle Sie ein Template aus",
     "selectfile": "Wählen Sie eine Datei aus",
     "shortcuts": "Tastaturkürzel",
     "controller": "Controller",
     "configapp": "Anwendung konfigurieren",
     "configshow": "Projekteinstellungen",
-    "shows": "Projekte"
+    "shows": "Projekte",
+    "f1ShortcutTip" : "Dieser Hilfebildschirm",
+    "upDownShortcutTip" : "Fokus auf vorheriges / nächstes Element",
+    "homeEndShortcutTip" : "Fokus auf erstes / letztes Element",
+    "enterShortcutTip" : "Fokussiertes Element zum Bearbeiten öffnen / schließen",
+    "spaceShortcutTip" : "Fokussiertes Playlist-Element abspielen / fortsetzen / stoppen",
+    "tipContinue" : "Unterstützung für den next-Befehl muss im Template implementiert werden um continue zu verwenden",
+    "ctrlDShortcutTip" : "Template-Element duplizieren",
+    "shiftSpaceShortcutTip" : "Fokussiertes Playlist-Element abspielen / stoppen",
+    "f5ShortcutTip" : "Sofortiges Update an das Template senden (z. B. um Tippfehler zu korrigieren).",
+    "supportUpdateCommandTip" : "Unterstützung für den update-Befehl muss im Template implementiert werden.",
+    "capsShortcutTip" : "Element-Overlays für schnelle Infos und zum schnellen Kopieren von API-Befehlen anzeigen.",
+    "escShortcutTip": "Alle vom aktuellen Rundown verwendeten Layer stoppen."
+
   },
   "config": {
     "addnewtip": "Neues Item durch Ausfüllen und Speichern hinzufügen",

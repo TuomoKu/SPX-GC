@@ -12,6 +12,7 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+    <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
   <script src="/js/axios.min.js"></script>
   <script src="/js/fontawesome.all.min.js"></script>
   <script src="/js/anime.min.js"></script>
@@ -49,7 +50,7 @@
 
 
 </head>
-
+{{>rundownForm}}
 
 <body onload="pageInit();" class="bg_body" onmouseover="tip('');">
 
@@ -74,14 +75,28 @@
           {{#if error}}
           <div class="messagerror">{{error}}</div>
           {{/if}}
+          <div style="display: flex;">
+            <div style="flex-grow: 1" class="vmidTD tableheaderText">{{lang 'headline.selectfile'}}</div>
+            <div class="tableheaderHelp">
+              {{#ifValue showconfig.projectFormat 'OGRAF'}}
+              <a onClick="help('ograf');" onmouseenter="tip('What is OGraf?');" onmouseleave="tip('');">
+                <img src="/img/ograf-logo-mono-white.svg" style="width: 5vw;">
+              </a>
+              {{/ifValue}}
+              &nbsp;
+            </div>
+            <div class="tableheaderHelp"><a title="{{lang 'general.help'}}" onClick="help('playlists');">
+                <i class="far fa-question-circle"></i>
+                </a></div>
+          </div>
 
 
-          <table class="wide" border=0>
+          {{!-- <table class="wide" border=0>
             <TR>
               <td class="vmid tableheaderText">{{lang 'headline.selectfile'}}</td>
               <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('playlists');"><i class="far fa-question-circle"></i>&nbsp;</td>
             </TR>
-          </table>
+          </table> --}}
           <hr class="h2hr"><!-- =========================================== -->
           <table style="width: 100%;" cellspacing="10" border="0">
 
@@ -112,7 +127,7 @@
           <table style="width: 100%;" cellspacing="10" border="0">
             <tr>
               <td valign="top" width="50%">
-                <button onmouseover="tip('{{lang 'hover.addrundown'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px; width: 48%;" onClick="add();">{{lang 'button.addplaylist'}}</button>
+                <button onmouseover="tip('{{lang 'hover.addrundown'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px; width: 48%;" onClick="add('rundownFormOverlay');">{{lang 'button.addplaylist'}}</button>
                 <button onmouseover="tip('{{lang 'hover.duplicaterundown'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px; width: 48%;" onClick="duplicateRundown();">{{lang 'button.duplicate'}}</button>
                 <button onmouseover="tip('{{lang 'hover.renameepisode'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px;  width: 48%;" onClick="renameRundown();">{{lang 'button.rename'}}</button>
                 <button onmouseover="tip('{{lang 'hover.deletepisode'}}');" class="spxformtext btn bg_blue ripple"  style="margin:2px;  width: 48%;" onClick="del();">{{lang 'button.delete'}}...</button>

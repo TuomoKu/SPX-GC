@@ -1,0 +1,77 @@
+{
+    "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+    "name": "Ticker Excel Graphic",
+    "description": "This Graphic includes ticker utilizing an Excel file.",
+    "id": "ticker-excel-graphic",
+    "version": "1",
+    "supportsRealTime": true,
+    "supportsNonRealTime": false,
+    "main": "TICKER_EXCEL.mjs",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "comment": {
+                "type": "string",
+                "title": "Nickname of this item on the rundown",
+                "default": "[ Item nickname ]"
+            },
+            "instruction": {
+                "v_spx": {
+                    "ftype": "instruction"
+                },
+                "type": "string",
+                "title": "Instruction",
+                "default": "This template uses SPX's Excel reader. See ASSETS/excel folder for example files. Also remember SPX can utilize Google Sheets, RSS files, databases etc."
+            },
+            "f0": {
+                "type": "string",
+                "title": "Headline",
+                "default": "Local news"
+            },
+            "f1": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "/excel/ticker-demo/",
+                    "extension": "xlsx"
+                },
+                "type": "string",
+                "title": "Choose Excel File",
+                "default": "/excel/ticker-demo/basic-news-ticker.xlsx"
+            },
+            "f2": {
+                "v_spx": {
+                    "ftype": "number"
+                },
+                "type": "string",
+                "title": "How many items to show (default '10', all '-1')",
+                "default": "10"
+            },
+            "f3": {
+                "v_spx": {
+                    "ftype": "number"
+                },
+                "type": "string",
+                "title": "Flipping interval in seconds (default '4')",
+                "default": "4"
+            },
+            "f99": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Ticker_excel/themes/",
+                    "extension": "css"
+                },
+                "type": "string",
+                "title": "Visual Theme",
+                "default": "./resources/Ticker_excel/themes/Default.css"
+            }
+        }
+    },
+    "v_spx": {
+        "playserver": "OVERLAY",
+        "playchannel": "1",
+        "playlayer": "1",
+        "webplayout": "1",
+        "out": "manual",
+        "uicolor": "3"
+    }
+}

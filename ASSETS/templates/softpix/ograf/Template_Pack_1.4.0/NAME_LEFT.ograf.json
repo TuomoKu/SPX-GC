@@ -1,0 +1,61 @@
+{
+    "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+    "name": "Name Left Graphic",
+    "description": "This graphic includes a name on the left side of the screen.",
+    "id": "name-left-graphic",
+    "version": "1",
+    "supportsRealTime": true,
+    "supportsNonRealTime": false,
+    "main": "NAME_LEFT.mjs",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "comment": {
+                "type": "string",
+                "title": "Nickname of this item on the rundown",
+                "default": "[ Item nickname ]"
+            },
+            "instruction": {
+                "v_spx": {
+                    "ftype": "instruction"
+                },
+                "type": "string",
+                "title": "Instruction",
+                "default": "You can leave any field empty for a different style. This is an example from the default template pack. For more templates see ▶ spx.graphics/store"
+            },
+            "f0": {
+                "type": "string",
+                "title": "Fullname",
+                "default": "Murph Cooper"
+            },
+            "f1": {
+                "type": "string",
+                "title": "Title",
+                "default": "Gravity Equations Expert"
+            },
+            "f2": {
+                "type": "string",
+                "title": "Company or Location",
+                "default": "NASA HQ"
+            },
+            "f99": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Name_left/themes/",
+                    "extension": "css"
+                },
+                "type": "string",
+                "title": "Visual Theme",
+                "default": "./resources/Name_left/themes/Default.css"
+            }
+        }
+    },
+    "v_spx": {
+        "playserver": "OVERLAY",
+        "playchannel": "1",
+        "playlayer": "3",
+        "webplayout": "3",
+        "out": "manual",
+        "uicolor": "3"
+    }
+}

@@ -1,0 +1,61 @@
+{
+    "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+    "name": "Info Right Graphic",
+    "description": "This graphic includes info text on the right side of the screen.",
+    "id": "info-right-graphic",
+    "version": "1",
+    "supportsRealTime": true,
+    "supportsNonRealTime": false,
+    "main": "INFO_RIGHT.mjs",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "comment": {
+                "type": "string",
+                "title": "Nickname of this item on the rundown",
+                "default": "[ Item nickname ]"
+            },
+            "instruction": {
+                "v_spx": {
+                    "ftype": "instruction"
+                },
+                "type": "string",
+                "title": "Instruction",
+                "default": "This template demonstrates the use of dropdowns to choose a file. Animated vector icons are in the lottie-subfolder. Try using emoji in the graphics also."
+            },
+            "f0": {
+                "type": "string",
+                "title": "Text",
+                "default": "😃 #hashtag"
+            },
+            "f1": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Info_right/lottie/",
+                    "extension": "json"
+                },
+                "type": "string",
+                "title": "Icon",
+                "default": "./resources/Info_right/lottie/live-default.json"
+            },
+            "f99": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Info_right/themes/",
+                    "extension": "css"
+                },
+                "type": "string",
+                "title": "Visual Theme",
+                "default": "./resources/Info_right/themes/Default.css"
+            }
+        }
+    },
+    "v_spx": {
+        "playserver": "OVERLAY",
+        "playchannel": "1",
+        "playlayer": "5",
+        "webplayout": "5",
+        "out": "manual",
+        "uicolor": "3"
+    }
+}

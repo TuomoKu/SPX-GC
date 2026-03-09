@@ -1,7 +1,4 @@
 
-// // -----------------------------------------
-// // Handle Express server routes for the API.
-// // -----------------------------------------
 // var express = require("express");
 // const router = express.Router();
 // const path = require('path');

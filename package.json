@@ -1,8 +1,8 @@
 {
   "name": "spx-gc",
   "version": "1.4.0",
-  "description": "SPX | Softpix Graphics Controller",
-  "homepage": "https://spx.graphics",
+  "description": "SPX Graphics Controller",
+  "homepage": "https://spxgraphics.com",
   "main": "server.js",
   "bin": "server.js",
   "pkg": {
@@ -22,7 +22,7 @@
     "build": "BUILD_PACKAGES.BAT"
   },
   "keywords": [],
-  "author": "Tuomo Kulomaa <tuomo@softpix.io> (https://spx.graphics)",
+  "author": "Tuomo Kulomaa <tuomo@spxgraphics.com> (https://spxgraphics.com)",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.30.0",

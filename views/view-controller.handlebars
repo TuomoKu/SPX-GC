@@ -20,6 +20,14 @@
   </script>
   <script src="/js/spx_gc.js"></script>
 
+      <script>
+    // Make the DIV element draggable:
+    document.addEventListener("DOMContentLoaded", function() {
+        dragElement(document.getElementById("dialog"));
+    });
+    </script>
+
+
 
   <title>SPX | {{lang 'pagetitle.controller'}}</title>
   <link rel="icon" type="image/png" href="/img/spx-gc.ico">
@@ -329,6 +337,10 @@
     color: var(--warn);
   }
 
+  #dialogHeaderBar {
+    cursor: move;
+  }
+
   #easter {
     right: 0;
     bottom: 9px;
@@ -368,8 +380,8 @@
 
   <div class="overlay" id="overlayTemplatePicker">
     <!-- This is the file browser modal overlay -->
-    <div class="modal wrapper">
-      <div class="modal_top height2">
+    <div class="modal wrapper" id="dialog">
+      <div class="modal_top height2" id="dialogHeaderBar">
         <table class="wide" style="height:50%; border: 0px solid white; border-spacing: 0px;">
           <tr style="background-color: rgba(255,255,255,0.2);">
             <td valign="middle" style="font-size: 0.8em; border: 0px solid white">
@@ -436,15 +448,15 @@
             <TR>
               <th width="30%"><B>Key</B></th><th><B>Function</B></th>
             </TR>
-            <TR><td>F1</td>           <td>This :-)</td></TR>
-            <TR><td>Up / Down</td>    <td>Select previous / next item</td></TR>
-            <TR><td>Enter</td>        <td>Open / close selected item for editing</td></TR>
-            <TR><td>Space</td>        <td>Play / stop selected playlist item</td></TR>
-            <TR><td>Ctrl + D</td>     <td>Duplicate a template item.</td></TR>
-            <TR><td>Shift + Space</td><td>Continue animation to next step.<BR><small>Support for next -command must be implemented in the template.</small></td></TR>
-            <TR><td>F5</td>           <td>Send an instant update to the template (to fix typos, for instance).<BR><small>Support for update command must be implemented in the template.</small></td></TR>
-            <TR><td>Esc</td>          <td>Stop all layers used by current rundown.</td></TR>
-            <TR><td>CapsLock</td>     <td>Show item overlays for quick info and for copying API commands quickly.</td></TR>
+            <TR><td>F1</td>           <td>{{lang 'pagetitle.f1ShortcutTip'}}</td></TR>
+            <TR><td>Up / Down</td>    <td>{{lang 'pagetitle.upDownShortcutTip'}}</td></TR>
+            <TR><td>Enter</td>        <td>{{lang 'pagetitle.enterShortcutTip'}}</td></TR>
+            <TR><td>Space</td>        <td>{{lang 'pagetitle.spaceShortcutTip'}}<BR><small>{{lang 'pagetitle.tipContinue'}}</small></td></TR>
+            <TR><td>Ctrl + D</td>     <td>{{lang 'pagetitle.ctrlDShortcutTip'}}</td></TR>
+            <TR><td>Shift + Space</td><td>{{lang 'pagetitle.shiftSpaceShortcutTip'}}</td></TR>
+            <TR><td>F5</td>           <td>{{lang 'pagetitle.f5ShortcutTip'}}<BR><small>{{lang 'pagetitle.supportUpdateCommandTip'}}</small></td></TR>
+            <TR><td>Esc</td>          <td>{{lang 'pagetitle.escShortcutTip'}}</td></TR>
+            <TR><td>CapsLock</td>     <td>{{lang 'pagetitle.capsShortcutTip'}}</td></TR>
         </table>
       </div>
     </div>
@@ -1064,20 +1076,8 @@
             
           </div>
 
-          <!-- options foldable -->
-          <!-- Functions Zone -->
           <div id="controllerFunctionsZone" style="opacity:0;">
             <div id="renderOptionsFoldable" style="position: relative;">
-              
-              <!-- TODO: Enable promo notification icon
-              <i  class="fas fa-bell"
-                  style=" position:absolute;
-                          margin: 0.7em;
-                          font-size: 0.7em;
-                          top:0; right: 0;
-                          color: orange;"></i>
-              -->
-              
 
               <button id="localRendererCollapsiple"
                       class="collapsibleZone optionsButton {{{ GenerateLocalRendererOptions 'class' }}}"
@@ -1085,52 +1085,6 @@
                       >OPTIONS</button>
 
               <div class="collapsiblecontent spxConfigHead" style="box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.2); padding:0;">
-
-                <!--
-                
-                <div id="promo"
-                      style="width: 100%;
-                            height:20vh;
-                            padding: 0.5em;
-                            display: block;
-                            position: relative;
-                            border: 0px solid yellow;
-                            box-sizing: border-box;"
-                      >
-                    <div id="closePromo"
-                        class="closePromo"
-                        onClick="closePromo()"; 
-                        style="position: absolute;
-                              cursor: pointer;
-                              width: 25px; height: 25px;
-                              z-index:2; top: 0px; right: 0px;
-                              background-color:rgba(0, 0, 0, 0.459);
-                              display: flex; align-items: center; justify-content: center;">
-                              <i  class="fas fa-times"
-                                  style=" position:absolute;
-                                  font-size: 0.7em;
-                                  color: white;"></i></div>
-                    <div id="promo"
-                        style="width: 100%;
-                              height:100%;
-                              top: 0; left: 0;
-                              display: block;
-                              border: 0px solid red;
-                              border-radius: 0.5em;
-                              overflow: hidden;
-                              box-sizing: border-box;"
-                        data-promo-name="example"
-                        >
-
-                    <iframe src="https://smartpx.fi/gc/messageservice2/promo/example/"
-                            id="promoFrame"
-                            class="scroller"
-                            style="position: relative;
-                            top: 0; width: 100%; height:100%;
-                            border: 0;"></iframe>
-                  </div>
-                </div>
-                -->
                 
                 <div style="padding:10px;">
                   <table style="width:100%;">
@@ -1184,7 +1138,7 @@
                     </tr>
                     <tr> 
                       <td width="60%" id="toggleInfo1" style="font-size: 0.7em;">
-                        Popup renderer
+                        Popup program renderer
                       </td>
                       <td width="20%" ALIGN="center">
                         <div class="toggle-container">
@@ -1223,7 +1177,7 @@
                   <table style="width:100%;">
                     <tr> 
                       <td width="60%" id="toggleInfo2" style="font-size: 0.7em;">
-                        Show preview viewer
+                        Popup preview viewer
                       </td>
                       <td width="20%" ALIGN="center">
                         <div class="toggle-container">

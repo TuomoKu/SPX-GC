@@ -1,7 +1,5 @@
 
 ' Tiny Text to Speech (only works on Windows)!
-' (c) 2020 tuomo@smartpx.fi
-'
 ' Commandline usage:
 ' wscript talk.vbs Hello world!
 

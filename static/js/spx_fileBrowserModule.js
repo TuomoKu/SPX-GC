@@ -40,9 +40,7 @@ async function fetchData(url) {
         const txt = await res.text();
         json = JSON.parse(txt);
 
-
-        console.log('json', json);
-
+        // console.log('json', json);
         // if (json.code && json.code!=200) {
         //     console.warn('Error occurred while SPX Social reading data source. Return code: ' + json.code + '.', json.errors);
         // }
@@ -64,7 +62,7 @@ async function fetchData(url) {
             e('folderinbox').appendChild(el);
         });
 
-        console.log('files', json.files);
+        // console.log('files', json.files);
 
         json.files.forEach(itemData => {
             const el = document.createElement('image-item');
@@ -72,18 +70,17 @@ async function fetchData(url) {
                 base: json.baseUrl,
                 path: json.currentPath,
                 file: itemData,
-                fullImageUrl: 'http://visitools.co.uk/OHGraphics/graphics/ATEM/ATEM-Mini-Extreme-ISO-Rear.png'
+                fullImageUrl: ''
             }
             el.spxData = spxData;
             e('fileinbox').appendChild(el);
         });
-
         hideMessageSlider()
     } catch (error) {
         showMessageSlider('Error while loading, see console.', 'error', false)
         console.error('SPX Itemlist error in OfficeHours module.', error);
     }
 
-} // fetchFlocklerData
+} // fetchData
 
 export { fetchData  }

@@ -24,32 +24,12 @@ router.get('/', function (req, res) {
 
 
 router.get('/files', async (req, res) => {
-  // Get files
   const fileListAsJSON = await GetDataFiles();
   res.send(fileListAsJSON);
 }); // file
 
 
-/* Will go into the API in 1.3.4
-router.get('/initRemCntrRenderer', async (req, res) => {
-  // Return URL of the remote control renderer
-  let urlDomain = null // no trailing slash
-  urlDomain = 'https://<SOMETHING-HERE>.spxcloud.app' // TODO: Change this to your own domain
-  urlDomain = 'https://localhost:5656'
-  let nick = req.query.name || '';
-  let url = urlDomain + '/renderer?remote=true&name=' + nick;
-  let data = {
-    url: url,
-    name: nick,
-    msg: 'OK'
-  }
-  res.send(data);
-}); // file
-*/
-
-
 router.get('/openFileFolder/', async (req, res) => {
-  
   // Added in 1.3.1. And fixed in 1.3.2... 
   // Added optional parameter forceFolder to open a different folder than templates.
   if (config.general.disableOpenFolderCommand == true) {
@@ -307,7 +287,10 @@ router.post('/exportCSVfile', async (req, res) => {
         item_out,
         item_uicolor,
         item_dataformat,
-        item_relpath
+        item_relpath,
+        item_graphicPath,
+        item_version,
+        item_id
 
     rundownData.templates.forEach((item,index) => {
       // console.log('Iterating template index ' + index);
@@ -323,9 +306,15 @@ router.post('/exportCSVfile', async (req, res) => {
         item_out         = item.out || 'manual';
         item_uicolor     = item.uicolor || '0';
         item_dataformat  = item.dataformat || 'json';
-        item_relpath     = item.relpath || '';
+        item_relpath     = item.relpath || '';        
+        // if OGraf, we need to add a few more properties:
+        if (item_relpath.toLowerCase().endsWith(".ograf.json")) {
+          item_graphicPath = item.ografProps.graphicPath || '';
+          item_version     = item.ografProps.version || '';
+          item_id          = item.ografProps.id || '';
+        }
 
-        CSVdata  = '\r\n# SPX Rundown item CSV export. (More info: https://spxgc.tawk.help/article/help-csv-files)\r\n\r\n' 
+        CSVdata  = '\r\n# SPX Rundown item CSV export. (More info: https://docs.spxgraphics.com/Guides/Tutorials/how+to+use+csv+files)\r\n\r\n' 
         CSVdata += '# description #;' + item_description + '\r\n' 
         CSVdata += '# playserver #;' + item_playserver + '\r\n'
         CSVdata += '# playchannel #;' + item_playchannel + '\r\n'
@@ -334,7 +323,13 @@ router.post('/exportCSVfile', async (req, res) => {
         CSVdata += '# out #;' + item_out + '\r\n'
         CSVdata += '# uicolor #;' + item_uicolor + '\r\n'
         CSVdata += '# dataformat #;' + item_dataformat + '\r\n'
-        CSVdata += '# relpath #;' + item_relpath + '\r\n'
+        CSVdata += '# relpath #;' + item_relpath + '\r\n'        
+        // if OGraf, add graphicPath, version and id
+        if (item_relpath.toLowerCase().endsWith(".ograf.json")) {
+          CSVdata += '# graphicPath #;' + item_graphicPath + '\r\n';
+          CSVdata += '# version #;' + item_version + '\r\n';
+          CSVdata += '# id #;' + item_id + '\r\n';
+        }
         CSVdata += '# onair #;false\r\n'
         CSVdata += '# project #;' + showFolder  + '\r\n'
         CSVdata += '# rundown #;' + datafile  + '\r\n'
@@ -349,7 +344,7 @@ router.post('/exportCSVfile', async (req, res) => {
         });
         CSVdata += '\r\n';
 
-        // print field typer
+        // print field types
         CSVdata += '# FieldTypes #;'
         item.DataFields.forEach((field,findex) => {
           if (field.field && field.field!='' ) {
@@ -367,13 +362,23 @@ router.post('/exportCSVfile', async (req, res) => {
         });
         CSVdata += '\r\n'
 
+        // print field fcalls if button
+        CSVdata += '# Fieldfcalls #;'
+        item.DataFields.forEach((field,findex) => {
+          if (field.field && field.field!='' && field.fcall) {
+            CSVdata += field.fcall + ";";
+          }
+
+        });
+        CSVdata += '\r\n'
+
         // print field values
         CSVdata += '\r\n'
         let itemData = '# ID:auto;'
         item.DataFields.forEach((field,findex) => {
-          if (field.field && field.field!='' ) {
+          if (field.field && field.field!='' && field.value) {
             let dataToSave = field.value.replace(/\n/g,'<BR>') || ''; // replace all newlines with <BR>
-            itemData += dataToSave + ';'
+            itemData += dataToSave + ";";
           }
         });
         CSVdata += itemData + '\r\n'

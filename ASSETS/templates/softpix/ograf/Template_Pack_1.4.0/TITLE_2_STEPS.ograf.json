@@ -1,0 +1,58 @@
+{
+    "$schema": "https://ograf.ebu.io/v1/specification/json-schemas/graphics/schema.json",
+    "name": "Title 2 Steps Graphic",
+    "description": "This graphic includes a 2 step main and subtitle.",
+    "id": "title-2-steps-graphic",
+    "version": "1",
+    "supportsRealTime": true,
+    "supportsNonRealTime": false,
+    "main": "TITLE_2_STEPS.mjs",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "comment": {
+                "type": "string",
+                "title": "Nickname of this item on the rundown",
+                "default": "[ Item nickname ]"
+            },
+            "instruction": {
+                "v_spx": {
+                    "ftype": "instruction"
+                },
+                "type": "string",
+                "title": "Instruction",
+                "default": "This template has two steps. Click 'Play' and then 'Continue'..."
+            },
+            "f0": {
+                "type": "string",
+                "title": "Main Title",
+                "default": "Now click continue"
+            },
+            "f1": {
+                "type": "string",
+                "title": "Subtitle",
+                "default": "Step two completed!"
+            },
+            "f99": {
+                "v_spx": {
+                    "ftype": "filelist",
+                    "assetfolder": "./resources/Title_2_steps/themes/",
+                    "extension": "css"
+                },
+                "type": "string",
+                "title": "Visual Theme",
+                "default": "./resources/Title_2_steps/themes/Default.css"
+            }
+        }
+    },
+    "customActions": [],
+    "stepCount": 2,
+    "v_spx": {
+        "playserver": "OVERLAY",
+        "playchannel": "1",
+        "playlayer": "2",
+        "webplayout": "2",
+        "out": "manual",
+        "uicolor": "3"
+    }
+}

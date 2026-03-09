@@ -1,0 +1,145 @@
+<!-- This is the file browser modal overlay (used by view-showconfig) -->
+<style>
+    #projectWrapper {
+        padding: 0;
+        font-size: 1em;
+        border-radius: 0.4em;
+        border: 0px solid #ccc;
+        width: clamp(300px, 50vw, 800px);
+        height: clamp(250px, 25vh, 500px);
+        height: fit-content;
+        box-sizing: border-box;
+    }
+
+    #projectWrapperHeaderBar {
+        width: 100%;
+        cursor: move;
+        color: white;
+        padding: 0.8em;
+        font-size: 0.8em;
+        background-color: rgba(0, 0, 0, 0.5);
+        position: relative;
+    }
+    .formTable {
+        width: 100%;
+        border-collapse: collapse;
+        padding: 0.5em;
+        border: 0px solid #ccc;
+        box-sizing: border-box;
+    }
+    .formTable tr td {
+        padding: 0.75em;
+        vertical-align: top;
+        border: 0px solid #ccc;
+    }
+
+    .infoTD {
+        width: 10%;
+        text-align: left;
+        padding: 1.5em 1.5em;
+        font-size: 0.8em;
+        white-space: nowrap;
+    }
+
+    #projectName{
+        width: 100%;
+        padding: 0.2em 0.5em;
+        font-family: 'UI-Regular';
+        font-size: 1.0em;
+        border-radius: 0.2em;
+    }
+
+    input[type="radio"] {
+        accent-color:  #43c748; /* Change the color of the radio button */
+        height: 1.2em;
+        width: 1.5em;
+        cursor: pointer;
+    }
+
+    #radios {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 0.4em;
+    }
+
+    .thisBtns {
+        margin: 0.5em;
+        padding: 0.5em 1em;
+        border-radius: 0.1em;
+        cursor: pointer;
+    }
+
+    #helpBtn {
+        right: 0.5em;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 1.2em;
+        position: absolute;
+        background-color: transparent;
+    }
+
+    #helpBtn:hover {
+        color: #43c748;
+    }
+
+    label{
+        cursor: pointer;
+    }
+
+    .vcenter {
+        vertical-align: middle  !important;
+    }
+
+</style>
+<script>
+    // Make the DIV element draggable:
+    document.addEventListener("DOMContentLoaded", function() {
+        dragElement(document.getElementById("projectWrapper"));
+    });
+</script>
+
+<div class="overlay" id="projectFormOverlay">
+   <div class="modal wrapper" id="projectWrapper">
+        <div id="projectWrapperHeaderBar">
+            <span>{{lang 'hover.addshow'}}</span>
+            <button id="helpBtn" title="{{lang 'general.help'}}" onClick="help('projects');"><i class="far fa-question-circle"></i>&nbsp;</button>
+        </div>
+        <form id="projectForm">
+            <table class="formTable" >
+                <tr>
+                    <td class="infoTD vcenter">Project name</td>
+                    <td>
+                        <input type="text" class="gcinput" id="projectName" name="projectName" required placeholder="Name of the project"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="infoTD">Format</td>
+                    <td>
+                        <div id="radios">
+                            <div>
+                                <input type="radio" id="formatSPX" name="projectFormat" value="SPX" checked>
+                                <label for="formatSPX">SPX Template</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="formatOGRAF" name="projectFormat" value="OGRAF">
+                                <label for="formatOGRAF">OGraf</label>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"  style="text-align: right;">
+                        <button type="button" class="thisBtns btn ripple bg_grey" id="cancelForm">{{lang 'button.cancel'}}</button>
+                        <button type="submit" class="thisBtns btn ripple bg_green">Create</button>
+                    </td>
+                </tr>
+            </table>
+
+
+
+        </form>
+  </div>
+</div><!-- overlay ended-->

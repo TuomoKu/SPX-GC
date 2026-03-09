@@ -29,6 +29,10 @@
 <input type="hidden" id="showfolder" value="{{folder}}">
 <input type="hidden" id="templateroot" value="{{TemplateRootFolder}}">
 <input type="hidden" id="templaterootmassage" value="{{lang 'error.preventBrowseUp'}}">
+<input type="hidden" id="projectFormat" value="{{showconfig.projectFormat}}">
+
+
+{{!-- <h1>format: {{showconfig.projectFormat}}</h1> --}}
 
 
 {{>partial-templatebrowsermodal}}
@@ -54,6 +58,21 @@
           {{#if errorCode}}
           <div class="messagerror"><B>{{errorCode}}</B><BR><BR>{{lang errorCode}}</div>
           {{/if}}
+          <div style="display: flex;">
+            <div style="flex-grow: 1" class="vmidTD tableheaderText">{{lang 'config.templates'}}</div>
+            <div class="tableheaderHelp">
+              {{#ifValue showconfig.projectFormat 'OGRAF'}}
+              <a onClick="help('ograf');" onmouseover="tip('What is OGraf?');">
+                <img src="/img/ograf-logo-mono-white.svg" style="width: 5vw;">
+              </a>
+              {{/ifValue}}
+              &nbsp;
+            </div>
+            <div class="tableheaderHelp"><a title="{{lang 'general.help'}}" onClick="help('projecttemplates');"
+            onmouseover="tip('{{lang 'hover.help'}}');">
+                <i class="far fa-question-circle"></i>
+                </a></div>
+          </div>
 
 
 <!--
@@ -64,12 +83,16 @@
 -->
 
 
-          <table class="wide" border=0>
+          {{!-- <table class="wide" border=0>
             <TR>
               <td class="vmid tableheaderText">{{lang 'config.templates'}}</td>
+
               <td class="vmid tableheaderHelp aright" title="{{lang 'general.help'}}" onClick="help('projecttemplates');" onmouseover="tip('{{lang 'hover.help'}}');"><i class="far fa-question-circle"></i>&nbsp;</td>
             </TR>
-          </table>
+          </table> --}}
+
+
+
           <hr class="h2hr"><!-- =========================================== -->
 
           <!-- iterate all templates from showconfig =========================================================================  -->
@@ -133,7 +156,6 @@
                   <td>
                     <select class="wide drop bg_grey15" name="templateData[webplayout]" onmouseover="tip('{{lang 'hover.weblayer'}}');">
                       {{{generateWebPlayoutOptions webplayout}}}
-                      
                     </select>
                   </td>
                 </tr>

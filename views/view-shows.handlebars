@@ -11,6 +11,7 @@
   <link rel="stylesheet" type="text/css" href="/css/spx_layout.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_forms.css">
   <link rel="stylesheet" type="text/css" href="/css/spx_colors.css">
+  <link rel="stylesheet" type="text/css" href="/css/spx_modal.css">
   <script src="/js/axios.min.js"></script>
   <script src="/js/fontawesome.all.min.js"></script>
   <script src="/js/anime.min.js"></script>
@@ -18,6 +19,7 @@
   <script src="/js/spx_gc.js"></script>
 </head>
 <body onload="pageInit();" class="bg_body" onmouseover="tip('');">
+  {{>projectForm}}
   <div class="wrapper">
     <div class="header">
       {{>header page="shows"}}
@@ -80,7 +82,7 @@
           </table>
           <HR>
           <div class="spxFlexContainer">
-            <button onmouseover="tip('{{lang 'hover.addshow'}}');" class="spxformtext btn spxFlexItem bg_blue ripple"    onClick="addshow();">{{lang 'button.add'}}</button>
+            <button onmouseover="tip('{{lang 'hover.addshow'}}');" class="spxformtext btn spxFlexItem bg_blue ripple"    onClick="addshow('projectFormOverlay');">{{lang 'button.add'}}</button>
             <button onmouseover="tip('{{lang 'hover.deleteshow'}}');" class="spxformtext btn spxFlexItem bg_blue ripple"    onClick="delshow();">{{lang 'button.delete'}}...</button>
             <button onmouseover="tip('{{lang 'hover.navishow'}}');" class="spxformtext btn spxFlexItem bg_orange ripple"  onClick="eps();">{{lang 'button.select'}}</button>
           </div>
