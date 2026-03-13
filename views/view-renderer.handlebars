@@ -491,7 +491,7 @@
                     break;
 
                 case 'updateTemplate':
-                    projectFormat = incomingData.projectFormat || 'OGRAF'; // default value
+                    projectFormat = incomingData.projectFormat || 'SPX'; // default value
                     LayerNro = validateLayerNro(data.webplayout);
                     setTimeout(function(){ updateLayer(data.webplayout, data.fields, projectFormat); }, 10);
                     break;
