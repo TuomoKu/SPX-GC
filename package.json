@@ -1,6 +1,6 @@
 {
   "name": "spx-gc",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "SPX Graphics Controller",
   "homepage": "https://spxgraphics.com",
   "main": "server.js",

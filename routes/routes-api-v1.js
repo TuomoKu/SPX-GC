@@ -32,7 +32,8 @@ const apiHandler = require('../utils/api-handlers.js');
 const notInSolo = {
 	status: 501,
 	message: 'Not Implemented',
-	info: 'This API endpoint is not available in SPX Solo.'
+	info: 'This API endpoint is not available in SPX Solo.',
+  more: 'For advanced API features, please see SPX Production or Broadcast: https://spxgraphics.com/software#compare'
 }
 
 // ROUTES -------------------------------------------------------------------------------------------
@@ -124,28 +125,26 @@ router.get('/', function (req, res) {
 						"method": "GET",
 						"param": "/api/v1/rundown/focusFirst",
 						"info": "Move focus to the first item on the rundown.",
-						"active": false,
 					},
 					{
 						"vers": "1.0",
 						"method": "GET",
 						"param": "/api/v1/rundown/focusLast",
 						"info": "Move focus to the last item on the rundown.",
-						"active": false,
 					},
 					{
 						"vers": "1.0",
 						"method": "GET",
 						"param": "/api/v1/rundown/focusByID/1234567890",
 						"info": "Move focus by ID on the rundown.",
-						"active": false,
 					},
+
 					{
 						"vers": "1.0",
 						"method": "GET",
 						"param": "/api/v1/item/play/1234567890",
 						"info": "Start item by ID on the active rundown.",
-						"active": false,
+            "active": false,
 					},
 
 					{
@@ -617,29 +616,48 @@ router.get('/rundown/focusPrevious/', spxAuth.CheckAPIKey, async (req, res) => {
 }); // end focusPrevious
 
 
-router.get('/invokeTemplateFunction/', spxAuth.CheckAPIKey, async (req, res) => {
-	res.status(501).json(notInSolo);
-}); // end invokeTemplateFunction
-
-
-router.get('/invokeExtensionFunction/', spxAuth.CheckAPIKey, async (req, res) => {
-	res.status(501).json(notInSolo);
-}); // end invokeExtensionFunction
-
-
 router.get('/rundown/focusFirst/', spxAuth.CheckAPIKey, async (req, res) => {
-	res.status(501).json(notInSolo);
+  let dataOut = {};
+  dataOut.info    = ack2
+  dataOut.APIcmd  = 'RundownFocusFirst';
+  dataOut.apikey  = req.query.apikey || '';
+  io.emit('SPXMessage2Controller', dataOut);
+  res.status(200).json(dataOut);
 }); // end focusFirst
 
-
 router.get('/rundown/focusLast/', spxAuth.CheckAPIKey, async (req, res) => {
-	res.status(501).json(notInSolo);
+  let dataOut = {};
+  dataOut.info    = ack2
+  dataOut.APIcmd  = 'RundownFocusLast';
+  dataOut.apikey  = req.query.apikey || '';
+  io.emit('SPXMessage2Controller', dataOut);
+  res.status(200).json(dataOut);
 }); // end focusLast
 
-
 router.get('/rundown/focusByID/:id', spxAuth.CheckAPIKey, async (req, res) => {
-	res.status(501).json(notInSolo);
+  let dataOut = {};
+  dataOut.info    = ack2;
+  dataOut.APIcmd  = 'RundownFocusByID';
+  dataOut.apikey  = req.query.apikey || '';
+  dataOut.itemID  = req.params.id;
+  io.emit('SPXMessage2Controller', dataOut);
+  res.status(200).send('Sent request to controller: ' + JSON.stringify(dataOut));
 }); // end focusByID
+
+
+// router.get('/rundown/focusFirst/', spxAuth.CheckAPIKey, async (req, res) => {
+// 	res.status(501).json(notInSolo);
+// }); // end focusFirst
+
+
+// router.get('/rundown/focusLast/', spxAuth.CheckAPIKey, async (req, res) => {
+// 	res.status(501).json(notInSolo);
+// }); // end focusLast
+
+
+// router.get('/rundown/focusByID/:id', spxAuth.CheckAPIKey, async (req, res) => {
+// 	res.status(501).json(notInSolo);
+// }); // end focusByID
 
 
 router.get('/item/play/:id', spxAuth.CheckAPIKey, async (req, res) => {
@@ -655,6 +673,16 @@ router.get('/item/continue/:id', spxAuth.CheckAPIKey, async (req, res) => {
 router.get('/item/stop/:id', spxAuth.CheckAPIKey, async (req, res) => {
 	res.status(501).json(notInSolo);
 }); // end item stop by ID
+
+
+router.get('/invokeTemplateFunction/', spxAuth.CheckAPIKey, async (req, res) => {
+	res.status(501).json(notInSolo);
+}); // end invokeTemplateFunction
+
+
+router.get('/invokeExtensionFunction/', spxAuth.CheckAPIKey, async (req, res) => {
+	res.status(501).json(notInSolo);
+}); // end invokeExtensionFunction
 
 
 // SERVER API ----------------------------------------------------------------------------------

@@ -2490,8 +2490,6 @@ function spxInit() {
     // executes on page load:
     // - load values from localStorage
     // - init Sortable
-    console.log('%c  SPX Graphics Controller (c) 2020- SPX Graphics  ', 'border-radius: 200px; font-size: 1.1em; padding: 0.4em; background: #0e7a27; color: #fff');
-
 
     // Init sortable and saveData onEnd
     if ( ife('identifier').value=="controller" ) {

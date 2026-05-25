@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2026-03-08<br>
+> Updated 2026-05-25<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -8,8 +8,13 @@
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases.
 
 
-
 # Published releases
+
+## **1.4.1** (May 25 2026)
+
+* Minor cleanup, re-enable a couple of ControllerAPI endpoints
+* Registration form backend changes
+
 
 ## **1.4.0** (Mar 08 2026)
 
