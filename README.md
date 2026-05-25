@@ -3,7 +3,7 @@
 
 **Manage and control HTML graphics in live production.**
 
->  Readme updated 2026-03-09
+>  Readme updated 2026-05-25
 <br>
 
 ## SPX in a nut shell
@@ -46,7 +46,7 @@ or any other video pipeline supporting HTML sources.
 
 ## OPEN SOURCE VERSION
 
-Latest version 1.4.0 (March 2026)
+Latest version 1.4.1 (May 2026)
 
 This repository contains the open source version of the SPX Graphics Controller. You can clone the repo and use it freely. The open source version does not contain all features or API functionalities of the commercial applications, but it can be used without any other limitations or watermarks.
 
@@ -66,7 +66,6 @@ There are commercial SPX Graphics versions for professional users with additiona
 <br>
 
   > For more information visit SPX website to [compare SPX versions](https://spxgraphics.com/software#compare) or [contact us](https://spxgraphics.com/contact).
-
 <br>
 <br>
 
