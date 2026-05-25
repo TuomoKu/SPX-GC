@@ -80,7 +80,7 @@ There are commercial SPX Graphics versions for professional users with additiona
 | ![animation](screenshots/spx-gc-ui-anim-v1-0.gif) | SPX's UI is browser based and can be operated with a mouse or keyboard. Additonal _extra controls_ can be added as _plugins_ to execute specific tasks or to trigger events in external devices. |
 | ![project list](screenshots/01-spx-gc-projectlist.png) | Content is managed in _projects_. Each project can have unlimited amount of _rundowns_ and _graphics templates_. Projects and their rundowns and settings are stored in _dataroot -folder_. |
 | ![controller](screenshots/05-spx-gc-controller-rundown.png) | Main Controller: rundown with few items and a local preview. Items can be edited and controlled also with keyboard shortcuts. Fullscreen viewing mode recommended. Buttons below preview are customizeable. | 
-| [![intro video on Youtube](screenshots/yt_mockup.png)](https://www.youtube.com/watch?v=JAo689wOL2Q) | A 20 min intro video on Youtube to learn the core concepts of the appklication.  | 
+| [![intro video on Youtube](screenshots/yt_mockup.png)](https://www.youtube.com/watch?v=JAo689wOL2Q) | A 20 min intro video on Youtube to learn the core concepts of the application.  | 
 | [![intro video on Youtube](screenshots/yt_mockup-showreel.png)](https://youtu.be/Ruxz4DACDT4) | A showreel of SPX Graphics.  | 
 
 

@@ -54,7 +54,7 @@
           "title": "Flare image",
           "assetfolder": "./img/flares/",
           "extension": "png",
-          "value": "./img/flares/whitey.png"
+          "value": "./img/flares/flare-hoop.png"
         }
       ],
       "onair": "false",

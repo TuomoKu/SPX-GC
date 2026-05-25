@@ -453,7 +453,7 @@ app.engine('handlebars', exphbs.engine({
 
     // populate WebPlayout options for show config templates
     generateWebPlayoutOptions(currentLayer='-') {
-      console.log('generateWebPlayoutOptions got currentLayer: ' + currentLayer);
+      // console.log('generateWebPlayoutOptions got currentLayer: ' + currentLayer);
       currentLayer = spx.max5(currentLayer);
       logger.debug('Generating webplayout options. This selection: '+ currentLayer);
       let html="";
