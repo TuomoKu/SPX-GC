@@ -52,7 +52,7 @@ module.exports = {
 
     logger.debug('CGComponentFactory (for XML data only) - fieldID: ' + fieldID + ', value: ' + value);
 
-    let decodedValue = decodeURIComponent(value) || "null"; // changed 05092020. Was += " " <:-/
+    let decodedValue = decodeURIComponent(value) || ""; // changed again. Was += " " and then "null" <:-/
     return `<componentData id=\\"${fieldID}\\"><data id=\\"text\\" value=\\"${decodedValue}\\"/></componentData>`;
   },
 
