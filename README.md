@@ -3,7 +3,7 @@
 
 **Manage and control HTML graphics in live production.**
 
->  Readme updated 2026-05-25
+>  Readme updated 2026-05-28
 <br>
 
 ## SPX in a nut shell

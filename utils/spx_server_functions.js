@@ -30,6 +30,23 @@ try {
 
 module.exports = {
 
+  getUpTime: function() {
+    try {
+        let uptimeSeconds = process.uptime();
+        let d = String(Math.floor(uptimeSeconds / (3600 * 24))).padStart(2, '0');
+        let h = String(
+            Math.floor((uptimeSeconds % (3600 * 24)) / 3600),
+        ).padStart(2, '0');
+        let m = String(Math.floor((uptimeSeconds % 3600) / 60)).padStart(2, '0');
+        let s = String(Math.floor(uptimeSeconds % 60)).padStart(2, '0');
+        let ddhhmmss = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+        return [uptimeSeconds, ddhhmmss];
+    } catch (error) {
+        logger.error('Error in getUpTime: ' + error);
+        return 0;
+    }
+  }, // getUpTime
+
   max5: function (num) {
     let res = Math.min(5, parseInt(num));
     return String(res);

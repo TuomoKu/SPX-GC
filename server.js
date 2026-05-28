@@ -883,23 +883,23 @@ var server = app.listen(port, (err) => {
 
   let prompt = 'Open SPX Solo in a browser:';
   let spxUrl = `http://${ipad}:${port}`;
+  let spxLoc = `http://localhost:${port}`;
   let urLeng = spxUrl.length;
+  let loLeng = spxLoc.length;
   let prLeng = prompt.length;
-  let maxWid = Math.max(urLeng, prLeng)
-  let minWid = Math.min(urLeng, prLeng)
+  let maxWid = Math.max(urLeng, loLeng, prLeng)
+  let minWid = Math.min(urLeng, loLeng, prLeng)
   let line1s = '╭' + "─".repeat(maxWid+4) + "╮"
   let line2s = prompt + " ".repeat(maxWid-prLeng)
   let line3s = '╰' + "─".repeat(maxWid+4) + "╯"
-  let spaCnt, spacer
-  if (urLeng > prLeng) {
-    spacer = ""
-  } else {
-    spacer = " ".repeat(maxWid-minWid)
-  }
+  let spaCnt, spacer1, spacer2
+  spacer1 = " ".repeat(maxWid-urLeng)
+  spacer2 = " ".repeat(maxWid-loLeng)
   
   console.log('\n  ' + line1s);
   console.log('  │ ' + line2s + '   │');
-  console.log('  │ ' + spxUrl + spacer + '   │');
+  // console.log('  │ ' + spxUrl + spacer1 + '   │');
+  console.log('  │ ' + spxLoc + spacer2 + '   │');
   console.log('  ' + line3s);
   console.log('');
 

@@ -50,7 +50,7 @@ module.exports = {
                     cfg.general.username                        = "admin"
                     cfg.general.password                        = ""
                     // cfg.general.showusercommapass            = "username,password"
-                    cfg.general.hostname                        = ""
+                    cfg.general.hostname                        = generateDefaultHostname()
                     cfg.general.greeting                        = ""
                     cfg.general.langfile                        = "english.json"
                     cfg.general.loglevel                        = "info"
@@ -123,3 +123,30 @@ module.exports = {
     }
 
 } // end of exports
+
+
+function generateDefaultHostname() {
+    let ip = ""
+    let os = require('os');
+    let interfaces = os.networkInterfaces();
+    let addresses = [];
+    for (let iface in interfaces) {
+        for (let i = 0; i < interfaces[iface].length; i++) {
+            let address = interfaces[iface][i];
+            if (address.family === 'IPv4' && !address.internal) {
+                addresses.push(address.address);
+            }
+        }
+    }
+    if (addresses.length > 0) {
+        ip = addresses[0]; // Return the first non-internal IPv4 address found
+    } else {
+        ip = 'localhost'; // Fallback to localhost if no external IP is found
+    }
+
+    let lastIpNro = ip.split('.').slice(-1)[0];
+    let hostname = os.hostname();
+    let value = ("SPX-" + (hostname ? hostname : '') + "-" + lastIpNro).toUpperCase();
+
+    return value;
+}

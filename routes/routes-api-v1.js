@@ -297,13 +297,40 @@ router.get('/', function (req, res) {
 // COMMON API  ----------------------------------------------------------
 
 router.get('/version', async (req, res) => {
-	let data = {};
-	data.vendor = "SPX Graphics";
-	data.product = "SPX Solo";
-	data.version = global.vers;
-	data.id = global.pmac;
-	data.os = process.platform;
-	return res.status(200).json(data)
+	// let data = {};
+	// data.vendor = "SPX Graphics";
+	// data.product = "SPX Solo";
+	// data.version = global.vers;
+	// data.id = global.pmac;
+	// data.os = process.platform;
+	// return res.status(200).json(data)
+    let data = {};
+    data.vendor = 'SPX Graphics';
+    data.product = 'SPX Solo';
+    data.version = global.vers;
+    data.id = global.pmac;
+    data.hostname = config.general.hostname || '';
+    data.os = process.platform;
+    data.rootFolder = spx.getStartUpFolder();
+    data.uptime = {};
+    let uptime = spx.getUpTime();
+    data.uptime.seconds = uptime[0];
+    data.uptime.text = uptime[1];
+
+    // await spx.checkLicense();
+    // if (global.licensed) {
+    //     data.license.type = global.license.productBrand;
+    //     data.license.expiration = global.license.expiration;
+    //     data.license.days = spx.getLicenseDaysRemaining();
+    // }
+
+    if (global.env && global.env.vendor) {
+        data.env = {};
+        data.env.vendor = global.env.vendor;
+        data.env.product = global.env.product;
+        data.env.version = global.env.version;
+    }
+    return res.status(200).json(data);
 }); // end version
 
 

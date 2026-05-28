@@ -1,6 +1,6 @@
 
 # SPX Release Notes
-> Updated 2026-05-25<br>
+> Updated 2026-05-28<br>
 <small>Most recent updates are at the top.</small>
 
 <BR>
@@ -10,10 +10,13 @@
 
 # Published releases
 
-## **1.4.1** (May 25 2026)
+## **1.4.1** (May 28 2026)
 
+* Fixes a CasparcCG AMCP "undefined" (as string) of empty fields
 * Minor cleanup, re-enable a couple of ControllerAPI endpoints
 * Registration form backend changes
+* Version api endpoint information improved
+* Generates a default hostname to config.json at first launch
 
 
 ## **1.4.0** (Mar 08 2026)
