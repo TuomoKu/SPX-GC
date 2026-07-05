@@ -1619,6 +1619,18 @@ function moveFocus(nro) {
     }
 } // moveFocus ended
 
+function sendStepCommand(itemrow, command) {
+    // Shared by nextItem() / prevItem(): builds the step-command payload and posts it.
+    var data = {};
+    data.datafile = document.getElementById('datafile').value;
+    data.epoch    = itemrow.getAttribute('data-spx-epoch');
+    data.command  = command;
+
+    working('Sending ' + data.command + ' request.');
+    ajaxpost('/gc/playout', data);
+    return data;
+} // sendStepCommand
+
 function nextItem(itemrow='') {
     // Next / continue command.
 
@@ -1632,13 +1644,10 @@ function nextItem(itemrow='') {
         return;
     }
 
-    data = {};
-    data.datafile      = document.getElementById('datafile').value;
-    data.epoch         = itemrow.getAttribute('data-spx-epoch');
-
     // decrease steps left
     var stepsleft= parseInt(itemrow.getAttribute('data-spx-stepsleft'))-1;
     itemrow.setAttribute('data-spx-stepsleft',stepsleft);
+    var command;
     if (stepsleft < 1) {
         // console.log('No more steps (' + stepsleft + ') left, stopping item.');
         // This should go somewhere else - because of DRY.
@@ -1647,16 +1656,15 @@ function nextItem(itemrow='') {
         itemrow.setAttribute('data-spx-stepsleft',itemrow.querySelector('input[name="RundownItem[steps]"]').value); // reset counter
         let uselessReturnValue = setItemButtonStates(itemrow, forcedCommand='stop');
         document.getElementById('MasterCONTINUE').classList.add('disabled');
-        data.command = 'stop';
+        command = 'stop';
         setMasterButtonStates(itemrow);
     } else {
         // console.log('Steps left: ' + stepsleft + ', continuing item...');
-        data.command = 'next';
+        command = 'next';
         setMasterButtonStates(itemrow);
     }
 
-    working('Sending ' + data.command + ' request.');
-    ajaxpost('/gc/playout',data);
+    var data = sendStepCommand(itemrow, command);
 
     //### DEBUG
     return;
@@ -1706,16 +1714,10 @@ function prevItem(itemrow='') {
         return;
     }
 
-    data = {};
-    data.datafile      = document.getElementById('datafile').value;
-    data.epoch         = itemrow.getAttribute('data-spx-epoch');
-    data.command       = 'prev';
-
     stepsleft = stepsleft + 1;
     itemrow.setAttribute('data-spx-stepsleft', stepsleft);
 
-    working('Sending ' + data.command + ' request.');
-    ajaxpost('/gc/playout', data);
+    sendStepCommand(itemrow, 'prev');
 
     document.getElementById('MasterCONTINUE').classList.remove('disabled');
     setMasterButtonStates(itemrow);
