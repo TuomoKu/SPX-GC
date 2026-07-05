@@ -46,16 +46,33 @@ class Graphic extends HTMLElement {
     }
   }
   async playAction(_params) {
-    if (this.iframe.contentWindow) {
-      if (this.step > 0) {
-        this.iframe.contentWindow.next();
-      } else {
-        this.iframe.contentWindow.play();
-      }
-      this.step++;
-    } else {
+    if (!this.iframe.contentWindow) {
       console.error("Error");
+      return;
     }
+    if (this.step === 0) {
+      // First call always plays the IN animation, regardless of params.
+      this.iframe.contentWindow.play();
+      this.step = 1;
+      return;
+    }
+
+    let targetStep = this.step;
+    if (_params && typeof _params.goto === "number") {
+      targetStep = _params.goto;
+    } else if (_params && typeof _params.delta === "number") {
+      targetStep = this.step + _params.delta;
+    } else {
+      targetStep = this.step + 1;
+    }
+    if (targetStep < 1) { targetStep = 1; } // floor at step 1 (the state right after play()); use stopAction to fully exit
+
+    if (targetStep > this.step) {
+      this.iframe.contentWindow.next();
+    } else if (targetStep < this.step) {
+      this.iframe.contentWindow.prev();
+    }
+    this.step = targetStep;
   }
   async stopAction(_params) {
     if (this.iframe.contentWindow) {

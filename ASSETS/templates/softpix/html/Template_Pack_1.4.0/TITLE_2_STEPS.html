@@ -185,6 +185,32 @@
 
         } // runAnimationNEXT
 
+        function runAnimationPREV() {
+
+            var timelinePrev = anime.timeline({
+                easing:   'easeInOutCubic',
+                duration: 800
+            })
+
+            .add({
+                targets:    ['#titleBox1'],
+                translateY: '0%'
+            },0)
+
+            .add({
+                targets:    ['#titleBox2'],
+                translateY: '0%',
+                opacity:    0
+            },0)
+
+            .add({
+                targets:    ['#title2'],
+                opacity:    {value: 0, duration: 50, easing: 'linear'},
+                clipPath:   { value: [clipNone, clipHCen], delay: 200},
+            },50)
+
+        } // runAnimationPREV
+
         function runAnimationOUT() {
 
             var timelineOut = anime.timeline({

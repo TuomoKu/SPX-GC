@@ -490,6 +490,19 @@
                     }
                     break;
 
+                case 'prevTemplate': {
+                    projectFormat = incomingData.projectFormat || 'SPX';
+                    LayerNro = validateLayerNro(data.webplayout);
+                    if (!LayerNro) { return }
+                    let renderTarget = setTarget(LayerNro, projectFormat);
+                    if (projectFormat === "OGRAF") {
+                        graphicInstances[renderTarget].playAction({delta: -1});
+                    } else {
+                        document.getElementById(renderTarget).contentWindow?.prev();
+                    }
+                    break;
+                }
+
                 case 'updateTemplate':
                     projectFormat = incomingData.projectFormat || 'OGRAF'; // default value
                     LayerNro = validateLayerNro(data.webplayout);
