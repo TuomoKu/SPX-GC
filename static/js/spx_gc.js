@@ -615,8 +615,6 @@ function checkKey(e) {
                     } else if (e.ctrlKey) {
                         // Ctrl + Space = PREVIOUS
                         prevItem();
-                        e.preventDefault();
-                        break;
                     } else {
                         let item = getFocusedRow();
                         // Space = PLAY/CONTINUE/STOP
@@ -1693,6 +1691,10 @@ function prevItem(itemrow='') {
     if (!itemrow) {
         // itemrow not given, get focused row
         itemrow = getFocusedRow();
+    }
+    if (!itemrow) {
+        // no row focused, nothing to step back
+        return;
     }
 
     var stepsVal = itemrow.querySelector('input[name="RundownItem[steps]"]').value || 0;
