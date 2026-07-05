@@ -612,6 +612,9 @@ function checkKey(e) {
                     if (e.shiftKey) {
                         // Shift + Space = PLAY/STOP
                         playItem();
+                    } else if (e.ctrlKey) {
+                        // Ctrl + Space = PREVIOUS
+                        prevItem();
                     } else {
                         let item = getFocusedRow();
                         // Space = PLAY/CONTINUE/STOP
@@ -644,10 +647,20 @@ function checkKey(e) {
                     e.preventDefault();
                     break;
         
+                case 37: // left arrow
+                    prevItem();
+                    e.preventDefault();
+                    break;
+
                 case 38: // up
                     moveFocus(-1);
                     break;
-        
+
+                case 39: // right arrow
+                    nextItem();
+                    e.preventDefault();
+                    break;
+
                 case 40: // down
                     moveFocus(1);
                     break;
@@ -1606,21 +1619,35 @@ function moveFocus(nro) {
     }
 } // moveFocus ended
 
+function sendStepCommand(itemrow, command) {
+    // Shared by nextItem() / prevItem(): builds the step-command payload and posts it.
+    var data = {};
+    data.datafile = document.getElementById('datafile').value;
+    data.epoch    = itemrow.getAttribute('data-spx-epoch');
+    data.command  = command;
+
+    working('Sending ' + data.command + ' request.');
+    ajaxpost('/gc/playout', data);
+    return data;
+} // sendStepCommand
+
 function nextItem(itemrow='') {
     // Next / continue command.
-    
+
     if (!itemrow) {
         // itemrow not given, get focused row
         itemrow = getFocusedRow();
     }
 
-    data = {};
-    data.datafile      = document.getElementById('datafile').value;
-    data.epoch         = itemrow.getAttribute('data-spx-epoch');
+    // Guard: only allow nextItem on items that are currently on air
+    if (itemrow.getAttribute('data-spx-onair') != 'true') {
+        return;
+    }
 
     // decrease steps left
     var stepsleft= parseInt(itemrow.getAttribute('data-spx-stepsleft'))-1;
     itemrow.setAttribute('data-spx-stepsleft',stepsleft);
+    var command;
     if (stepsleft < 1) {
         // console.log('No more steps (' + stepsleft + ') left, stopping item.');
         // This should go somewhere else - because of DRY.
@@ -1629,15 +1656,15 @@ function nextItem(itemrow='') {
         itemrow.setAttribute('data-spx-stepsleft',itemrow.querySelector('input[name="RundownItem[steps]"]').value); // reset counter
         let uselessReturnValue = setItemButtonStates(itemrow, forcedCommand='stop');
         document.getElementById('MasterCONTINUE').classList.add('disabled');
-        data.command = 'stop';
+        command = 'stop';
         setMasterButtonStates(itemrow);
     } else {
         // console.log('Steps left: ' + stepsleft + ', continuing item...');
-        data.command = 'next';
+        command = 'next';
+        setMasterButtonStates(itemrow);
     }
 
-    working('Sending ' + data.command + ' request.');
-    ajaxpost('/gc/playout',data);
+    var data = sendStepCommand(itemrow, command);
 
     //### DEBUG
     return;
@@ -1665,6 +1692,37 @@ function nextItem(itemrow='') {
 
 
 } // nextItem
+
+function prevItem(itemrow='') {
+    // Previous command. Mirrors nextItem() but moves backward through steps.
+
+    if (!itemrow) {
+        // itemrow not given, get focused row
+        itemrow = getFocusedRow();
+    }
+    if (!itemrow) {
+        // no row focused, nothing to step back
+        return;
+    }
+
+    var stepsVal = itemrow.querySelector('input[name="RundownItem[steps]"]').value || 0;
+    var steps = parseInt(stepsVal);
+    var stepsleft = parseInt(itemrow.getAttribute('data-spx-stepsleft'));
+
+    if (stepsleft >= steps) {
+        // Already at the first step, nothing to go back to.
+        return;
+    }
+
+    stepsleft = stepsleft + 1;
+    itemrow.setAttribute('data-spx-stepsleft', stepsleft);
+
+    sendStepCommand(itemrow, 'prev');
+
+    document.getElementById('MasterCONTINUE').classList.remove('disabled');
+    setMasterButtonStates(itemrow);
+
+} // prevItem
 
 function previewItem(itemrow='') {
     // Added in 1.1.0
@@ -2282,12 +2340,14 @@ function setMasterButtonStates(itemrow, debugMessage='') {
     let TOGGLEBUTTON = document.getElementById('MasterTOGGLE');
     let UPDATEBUTTON = document.getElementById('MasterUPDATE');
     let CONTINBUTTON = document.getElementById('MasterCONTINUE');
+    let PREVBUTTON = document.getElementById('MasterPREVIOUS');
 
     if (document.querySelectorAll('.itemrow').length<1){
         // no items on page, so disable buttons and bale out
-        if (TOGGLEBUTTON) {TOGGLEBUTTON.classList.add('disabled')}; 
-        if (UPDATEBUTTON) {UPDATEBUTTON.classList.add('disabled')}; 
-        if (CONTINBUTTON) {CONTINBUTTON.classList.add('disabled')}; 
+        if (TOGGLEBUTTON) {TOGGLEBUTTON.classList.add('disabled')};
+        if (UPDATEBUTTON) {UPDATEBUTTON.classList.add('disabled')};
+        if (CONTINBUTTON) {CONTINBUTTON.classList.add('disabled')};
+        if (PREVBUTTON) {PREVBUTTON.classList.add('disabled')};
         return
     }
 
@@ -2315,9 +2375,17 @@ function setMasterButtonStates(itemrow, debugMessage='') {
     // console.log('Onair', onair, 'Changed', chngd, 'Steps', steps );
 
     // CONTINUE
-    CONTINBUTTON.classList.add('disabled'); 
+    CONTINBUTTON.classList.add('disabled');
     if (stepsleft > 1 && onair ) {
         setTimeout(function () { CONTINBUTTON.classList.remove('disabled'); }, 3);
+    }
+
+    // PREVIOUS
+    if (PREVBUTTON) {
+        PREVBUTTON.classList.add('disabled');
+        if (stepsleft < steps && onair) {
+            setTimeout(function () { PREVBUTTON.classList.remove('disabled'); }, 3);
+        }
     }
 
     // PLAY - STOP TOGGLE

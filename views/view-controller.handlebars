@@ -454,6 +454,8 @@
             <TR><td>Space</td>        <td>{{lang 'pagetitle.spaceShortcutTip'}}<BR><small>{{lang 'pagetitle.tipContinue'}}</small></td></TR>
             <TR><td>Ctrl + D</td>     <td>{{lang 'pagetitle.ctrlDShortcutTip'}}</td></TR>
             <TR><td>Shift + Space</td><td>{{lang 'pagetitle.shiftSpaceShortcutTip'}}</td></TR>
+            <TR><td>Right arrow</td><td>{{lang 'pagetitle.rightArrowShortcutTip'}}<BR><small>{{lang 'pagetitle.tipContinue'}}</small></td></TR>
+            <TR><td>Ctrl + Space<BR>(or) Left arrow</td><td>{{lang 'pagetitle.prevShortcutTip'}}<BR><small>{{lang 'pagetitle.tipPrevious'}}</small></td></TR>
             <TR><td>F5</td>           <td>{{lang 'pagetitle.f5ShortcutTip'}}<BR><small>{{lang 'pagetitle.supportUpdateCommandTip'}}</small></td></TR>
             <TR><td>Esc</td>          <td>{{lang 'pagetitle.escShortcutTip'}}</td></TR>
             <TR><td>CapsLock</td>     <td>{{lang 'pagetitle.capsShortcutTip'}}</td></TR>
@@ -983,12 +985,12 @@
             <div style="padding-top: 10px;">
 
 
-              {{!-- MASTER STOP / PLAY / UPDATE --}}
+              {{!-- MASTER STOP / PLAY / PREVIOUS / UPDATE --}}
               <div class="wide center" style="margin: 0; padding: 0;">
                 <button
                   id="MasterTOGGLE"
                   class="btn bg_green ripple disabled"
-                  style="width:45%;"
+                  style="width:40%;"
                   data-spx-graphic="name_left"
                   data-spx-playtext="{{lang 'button.playmaster'}}"
                   data-spx-stoptext="{{lang 'button.stopmaster'}}"
@@ -997,9 +999,17 @@
                   >{{lang 'button.playmaster'}}</button>
 
                 <button
+                  id="MasterPREVIOUS"
+                  class="btn bg_green ripple disabled"
+                  style="width:20%;"
+                  onClick="prevItem();"
+                  onmouseover="tip('{{lang 'hover.masterprevious'}}');"
+                  >{{lang 'button.previous'}}</button>
+
+                <button
                   id="MasterCONTINUE"
                   class="btn bg_green ripple disabled"
-                  style="width:45%;"
+                  style="width:25%;"
                   onClick="nextItem();"
                    onmouseover="tip('{{lang 'hover.mastercontinue'}}');"
                   >{{lang 'button.continue'}}</button>

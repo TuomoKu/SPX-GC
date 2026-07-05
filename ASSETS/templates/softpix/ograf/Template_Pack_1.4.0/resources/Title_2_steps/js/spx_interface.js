@@ -60,10 +60,20 @@ function stop() {
 // Continue handler
 function next(data) {
   console.log('----- Next handler called.')
-  if (typeof runAnimationNEXT === "function") { 
+  if (typeof runAnimationNEXT === "function") {
     runAnimationNEXT()
   } else {
     console.error('runAnimationNEXT() function missing from SPX template.')
+  }
+}
+
+// Previous handler
+function prev(data) {
+  console.log('----- Prev handler called.')
+  if (typeof runAnimationPREV === "function") {
+    runAnimationPREV()
+  } else {
+    console.error('runAnimationPREV() function missing from SPX template.')
   }
 }
 

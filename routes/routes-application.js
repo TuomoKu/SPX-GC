@@ -1568,6 +1568,19 @@ router.post('/gc/playout', spxAuth.CheckLogin, async (req, res) => {
 				}
 				break;
 
+			// == PREV / aka PREVIOUS  ======================================
+			case 'prev':
+
+				// Web renderer only — no CasparCG/AMCP equivalent exists for stepping backward.
+				if (dataOut.webplayout != '-') {
+					logger.verbose('Webplayout PREV: ' + dataOut.webplayout);
+					dataOut.spxcmd = 'prevTemplate';
+					PlayoutWEB.webPlayoutController(dataOut);
+				} else {
+					logger.verbose('No Webplayout playout');
+				}
+				break;
+
 			// == STOP ===================================================
 			case 'stop':
 				await playoutSTOP(dataOut);
