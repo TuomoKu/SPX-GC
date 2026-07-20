@@ -8,6 +8,7 @@
 **⚠ PLEASE UNDERSTAND:** Features and changes below may not fully work as the source code is constantly under development. For a stable and more tested version, please use the published binary releases.
 
 * Fixes a string/bool type error in server.js
+* Fixes renderer width and height query parameters being ignored
 
 
 # Published releases
