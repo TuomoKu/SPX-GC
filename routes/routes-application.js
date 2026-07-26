@@ -2283,8 +2283,6 @@ function getResolutionFromConfig(cfg, postRequest) {
 	let sizeID = cfg.general.resolution || 'HD';
 	let width = '1920px';
 	let height = '1080px';
-	if (postRequest.width) { width = postRequest.width }
-	if (postRequest.height) { height = postRequest.height }
 	switch (sizeID) {
 		case '4K':
 			width = '3840px'
@@ -2302,6 +2300,8 @@ function getResolutionFromConfig(cfg, postRequest) {
 			height = '1080px'
 			break;
 	};
+	if (postRequest.width) { width = postRequest.width }
+	if (postRequest.height) { height = postRequest.height }
 
 	return {
 		width: width,
