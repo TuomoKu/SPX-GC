@@ -24,6 +24,10 @@ Manual fields and link fallbacks are validated before persistence or playout, in
 
 Unsaved mapping previews resolve selectors without retaining bindings or updating last-good caches. Unused registered references expire after a 60-second grace period. Saved mappings/defaults, legacy source aliases, program, selected preview and pending disk-write descriptors retain their bindings; replacing a mapping still leaves the previous on-air selector live until an explicit Update/Play/Stop.
 
+### Template settings preservation
+
+Saving a template in Project Settings updates only the fields owned by that form. Other imported metadata, including display slots, preview-on-edit policy, steps, OGraf properties and custom extension properties, stays intact. Submitted unknown properties cannot replace that metadata. Existing rundown items are not rewritten by a template-settings save; new items inherit the preserved project definition. Previously lost properties require a separate, backed-up repair from a known-good definition; this save fix does not guess missing values.
+
 ### One shared ticker template
 
 All newly generated stage rundowns use `/ycs/ticker/ticker.html`. Each output still mounts its own iframe and commits its own fields and data bindings. The shared ticker loads neutral defaults only, with no broadcast identity, instance registry or stage-specific JSON fetch. Old saved hidden `f0` values remain compatibility metadata and cannot route or select another instance. Legacy numbered HTML files remain available for existing installations.

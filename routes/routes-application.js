@@ -511,32 +511,29 @@ router.post(
 		);
 		let profileData = await GetJsonData(ProfileFile);
 
-		// Save steps as otherwise they disappear when template is saved
-		let steps;
-		if (profileData.templates[TemplateIdx].steps) {
-			steps = profileData.templates[TemplateIdx].steps;
+		// This form owns only these settings. Preserve imported/custom metadata
+		// (including false/zero values) instead of rebuilding the definition.
+		const existing = profileData.templates?.[TemplateIdx];
+		if (!existing || !/^\d+$/.test(String(TemplateIdx))) {
+			return res.status(404).send('Template definition not found');
 		}
-
-		let newData = req.body.templateData || {};
-
-		if (profileData.projectFormat === 'OGRAF') {
-			let ografProps =
-				profileData.templates[TemplateIdx].ografProps || {};
-			newData.ografProps = ografProps;
+		const submitted = req.body.templateData || {};
+		const newData = structuredClone(existing);
+		for (const field of [
+			'relpath', 'description', 'playserver', 'playchannel', 'playlayer',
+			'webplayout', 'dataformat', 'out', 'uicolor',
+		]) {
+			if (Object.hasOwn(submitted, field)) newData[field] = submitted[field];
 		}
-
-		profileData.templates[TemplateIdx] = newData; // replace an item in array
-
-		// Save steps to new data
-		if (steps) {
-			profileData.templates[TemplateIdx].steps = steps;
+		if (Object.hasOwn(submitted, 'DataFields')) {
+			try {
+				newData.DataFields = JSON.parse(decodeURI(submitted.DataFields));
+				if (!Array.isArray(newData.DataFields)) throw new Error('Expected field array');
+			} catch (error) {
+				return res.status(400).send('Invalid template field definitions');
+			}
 		}
-
-		// get DataFields and replace that
-		let DataFieldArray = JSON.parse(
-			decodeURI(profileData.templates[TemplateIdx].DataFields),
-		);
-		profileData.templates[TemplateIdx].DataFields = DataFieldArray;
+		profileData.templates[TemplateIdx] = newData;
 		// spx.talk('Saving template changes.');
 		try {
 			await spx.writeFile(ProfileFile, profileData);
