@@ -1,5 +1,13 @@
 // DOM rendering and UI events only. Draft mutations and requests go through the workspace.
 window.YCSMappingView = class MappingView {
+  updateRundownLink() {
+    const link = this.$('back-rundown');
+    const stage = this.workspace.stages.find(stage => stage.id === this.workspace.stage);
+    const target = stage?.controller || (stage?.project && stage?.rundown ? '/gc/' + encodeURIComponent(stage.project) + '/' + encodeURIComponent(stage.rundown) : null);
+    if (target) link.setAttribute('href', target); else link.removeAttribute('href');
+    link.setAttribute('aria-disabled', String(!target));
+    link.title = target ? (stage.project || stage.title) + ' / ' + stage.rundown : 'Select a configured rundown';
+  }
   setProjects(stages, selected) {
     const target = this.$('mapping-project');
     target.replaceChildren();
@@ -55,6 +63,12 @@ window.YCSMappingView = class MappingView {
   constructor(workspace) {
     this.workspace = workspace;
     this.$ = workspace.$;
+    this.$('back-rundown').onclick = event => {
+      if (!this.$('back-rundown').hasAttribute('href')) { event.preventDefault(); return; }
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      if (workspace.saving) { event.preventDefault(); workspace.message('Wait for the mapping save to finish.'); return; }
+      if ([...workspace.models.values()].some(model => model.edits.size) && !window.confirm('Discard unsaved mapping changes and return to the selected rundown?')) event.preventDefault();
+    };
     this.$('mapping-project').onchange = () => this.workspace.selectProject();
     this.$('mapping-stage').onchange = () => this.workspace.selectStage();
     this.$('mapping-graphic').onchange = () => this.workspace.selectGraphic();

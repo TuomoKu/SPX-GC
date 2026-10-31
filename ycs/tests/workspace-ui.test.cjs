@@ -362,3 +362,19 @@ test('disposing the workspace detaches global listeners and ignores late preview
   assert.equal(workspace.model, null);
   assert.equal(r.$('mapping-preview').onload, null);
 });
+
+test('Back to rundown follows selection and guards drafts in other graphics/projects and in-flight saves',async t=>{
+ const r=await fixture(t),link=r.$('back-rundown');
+ assert.equal(link.getAttribute('href'),'/gc/ShowA/Main');
+ r.window.document.querySelector('.source-card').click();
+ r.$('mapping-project').value='ShowB';await r.workspace.selectProject();
+ assert.equal(link.getAttribute('href'),'/gc/ShowB/Main');
+ let prompts=0;r.window.confirm=()=>{prompts++;return false;};
+ const click=()=>{const event=new r.window.MouseEvent('click',{cancelable:true});link.onclick(event);return event;};
+ assert.equal(click().defaultPrevented,true);assert.equal(prompts,1);
+ assert.ok([...r.workspace.models.values()].some(model=>model.edits.size));
+ r.window.confirm=()=>true;assert.equal(click().defaultPrevented,false);
+ r.workspace.saving=true;assert.equal(click().defaultPrevented,true);
+ r.workspace.saving=false;for(const model of r.workspace.models.values())model.edits.clear();
+ r.window.confirm=()=>{throw Error('Clean drafts must not prompt');};assert.equal(click().defaultPrevented,false);
+});

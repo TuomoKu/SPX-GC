@@ -12,3 +12,5 @@ body:has(#mappings-tab[aria-selected=true])>header{display:none}body:has(#mappin
 .playlist-map-table{table-layout:fixed}.playlist-map-table th:nth-child(1){width:18%}.playlist-map-table th:nth-child(2){width:28%}.playlist-map-table th:nth-child(3){width:22%}.playlist-map-table th:nth-child(4){width:32%}.playlist-map-table td>input+input,.playlist-map-table td>select+input{margin-top:5px}
 
 #local-file-status { overflow-wrap: anywhere; }
+
+.mapping-back{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;text-decoration:none;color:var(--accent);border:1px solid #817444;border-radius:5px;background:#202b32;padding:9px 12px;font-size:12px}.mapping-back:hover{background:#2a3943}.mapping-back[aria-disabled="true"]{opacity:.5}

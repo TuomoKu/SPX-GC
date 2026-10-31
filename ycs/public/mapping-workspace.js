@@ -98,6 +98,7 @@ window.YCSMappingWorkspace = class MappingWorkspace {
     const sequence = this.beginSelection(),
       stage = this.$('mapping-stage').value;
     this.stage = stage;
+    this.view.updateRundownLink();
     this.graphics = [];
     this.view.clearGraphics();
     this.renderGraphics();
