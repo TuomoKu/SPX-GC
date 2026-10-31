@@ -365,7 +365,8 @@ router.get(
 		const outputSlots = config.ycs?.enabled && config.ycs.stages?.some(stage => stage.project === req.params.foldername) ? Object.entries(config.ycs.slots || {}).map(([id, slot]) => ({id, label: slot.label || id})) : null;
 		const displayProfile = structuredClone(fileDataAsJSON);
 		if (outputSlots) for (const template of displayProfile.templates || []) {
-			template.slotOptions = [{id:'',label:'Unassigned'}, ...outputSlots].map(slot => ({...slot, selected: slot.id === (template.ycsSlot || '')}));
+			template.slotLabel = outputSlots.find(slot=>slot.id===template.ycsSlot)?.label || 'Default';
+			template.slotOptions = [{id:'',label:'Default'}, ...outputSlots.filter(slot=>slot.id!=='default')].map(slot => ({...slot, selected: slot.id === (template.ycsSlot === 'default' ? '' : template.ycsSlot || '')}));
 		}
 		let disableConfigUI = config.general.disableConfigUI || false; // added in 1.1.1
 

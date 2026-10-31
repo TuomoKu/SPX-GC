@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const graphicsRoot = path.resolve(process.argv[2] || path.join(root, '../ycs-graphics/graphics/ticker'));
-const slots = { ticker: { order: 10, exitMs: 250 }, 'lower-third': { order: 20, exitMs: 250 } };
+const slots = {"default":{"label":"Default","order":0,"exitMs":250},"ticker":{"label":"BUG","order":10,"exitMs":250},"lower-third":{"label":"L3","order":20,"exitMs":250},"upper-third":{"label":"U3","order":30,"exitMs":250}};
 
 async function once(file, value) {
   try { await fs.access(file); }

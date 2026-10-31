@@ -14,17 +14,21 @@ test('slot edits preserve program, preview, content and identity, enforce revisi
  await p.command('stage-1','ticker','play');
  assert.deepEqual(p.snapshot('stage-1','program').graphics.map(g=>[g.id,g.slot]),[['ticker','lower-third']]);
 });
-test('template defaults and explicit unassignment work; missing slots allow Save and Stop but block Preview/Play',async t=>{
+test('template defaults and explicit unassignment work; unassigned graphics share Default while invalid slot IDs remain blocked',async t=>{
  const f=await fixture(t),p=f.playback;
  await profile(f,{ycsSlot:'lower-third',editorSections:[{title:'Names',fields:['f5']}]});
  await p.assignSlot('stage-1','ticker',null,0);
  let editor=await p.editor('stage-1','ticker');assert.equal(editor.slot,'lower-third');assert.equal(editor.slotOverride,null);assert.equal(editor.sections[0].title,'Names');
  await p.command('stage-1','ticker','play');
  await p.assignSlot('stage-1','ticker','',1);
- assert.equal((await p.editor('stage-1','ticker')).slotConfigured,false);
+ assert.equal((await p.editor('stage-1','ticker')).slotConfigured,true);
  p.sources={mapping:()=>null,holdReferences:()=>()=>{},retain(){}};
  await p.command('stage-1','ticker','save',[{field:'f5',value:'SAVED'}]);
- for(const action of ['preview','play'])await assert.rejects(p.command('stage-1','ticker',action),e=>e.status===422);
+ for(const action of ['preview','play'])await p.command('stage-1','ticker',action);
+ assert.equal(p.snapshot('stage-1','program').graphics.find(g=>g.id==='ticker').slot,'default');
+ await p.assignSlot('stage-1','lower-third','',0);await p.command('stage-1','lower-third','play');
+ assert.deepEqual(p.snapshot('stage-1','program').graphics.map(g=>g.id),['lower-third']);
+ await p.command('stage-1','lower-third','stop');
  await p.command('stage-1','ticker','stop');assert.equal(p.snapshot('stage-1','program').graphics.length,0);
  await p.command('stage-1','ticker','stop');
 });

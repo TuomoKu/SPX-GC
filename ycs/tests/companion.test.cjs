@@ -155,7 +155,7 @@ test('focus/select preview saved data and notify only matching controllers, with
   assert.equal(renderer, 0);
   assert.equal((await r.post('/api/Stage1/Show/missing/select')).status, 404);
   const unslotted = await r.repository.read('stage-1');
-  delete unslotted.templates[1].ycsSlot;
+  unslotted.templates[1].ycsSlot = 'unavailable-slot';
   await r.repository.write('stage-1', unslotted);
   const previous = r.playback.snapshot('stage-1', 'preview');
   assert.equal((await r.post('/api/Stage1/Show/lower-third/select')).status, 422);
@@ -260,7 +260,7 @@ test('failed Focus leaves preview and Program intact and never emits a controlle
   let focused = 0;
   r.playback.on('stage-1:focus', () => focused++);
   const show = await r.repository.read('stage-1');
-  delete show.templates[0].ycsSlot;
+  show.templates[0].ycsSlot = 'unavailable-slot';
   await r.repository.write('stage-1', show);
   assert.equal((await fetch(r.base + '/api/Stage1/Show/ticker/focus')).status, 422);
   assert.deepEqual(r.playback.snapshot('stage-1', 'preview'), before);

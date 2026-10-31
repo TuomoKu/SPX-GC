@@ -94,9 +94,9 @@ class Playback extends EventEmitter {
   constructor(repository, slots, sources) {
     super();
     this.repository = repository;
-    this.slots = slots;
+    this.slots = { default: { label: 'Default', order: 0, exitMs: 250 }, ...slots };
     this.sources = sources;
-    for (const [name, slot] of Object.entries(slots)) {
+    for (const [name, slot] of Object.entries(this.slots)) {
       if (!identifier.test(name) || !Number.isInteger(slot.order) || slot.order < 0 || slot.order > 9999) fail('Invalid display slot configuration');
     }
     this.states = new Map();
@@ -139,7 +139,8 @@ class Playback extends EventEmitter {
   }
   async routed(stageId, item) {
     const definition = await this.definition(stageId, item);
-    return { ...item, ycsSlot: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : definition.ycsSlot };
+    const assigned = Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : definition.ycsSlot;
+    return { ...item, ycsSlot: assigned || 'default' };
   }
   assignSlot(stageId, graphicId, slot, revision) {
     if (slot !== null && slot !== '' && !Object.hasOwn(this.slots, slot)) fail('Choose an available slot', 422);
@@ -173,7 +174,7 @@ class Playback extends EventEmitter {
       const saved = item.ycsLinks?.[field.field] || { mode: 'manual', manual: field.value ?? '' };
       links[field.field] = { ...saved, source: this.sources?.mapping(stageId, graphicId, field.field, item.relpath) || null };
     }
-    return { revision: item.ycsEditRevision || 0, title: item.ycsNickname || item.description || graphicId, nickname: item.ycsNickname || '', slot: effective.ycsSlot || null, slotOverride: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : null, defaultSlot: definition.ycsSlot || null, slots: Object.entries(this.slots).map(([id, slot]) => ({id, label: slot.label || id})), sections: clone(definition.editorSections || item.editorSections || []), slotConfigured: Object.hasOwn(this.slots, effective.ycsSlot), templateTitle: path.basename(item.relpath).replace(/\.html?$/i, ''), template: item.relpath, previewOnEdit: item.ycsPreviewOnEdit !== false, fields: clone(item.DataFields), links };
+    return { revision: item.ycsEditRevision || 0, title: item.ycsNickname || item.description || graphicId, nickname: item.ycsNickname || '', slot: effective.ycsSlot || null, slotOverride: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : null, defaultSlot: definition.ycsSlot || 'default', slots: Object.entries(this.slots).map(([id, slot]) => ({id, label: slot.label || id})), sections: clone(definition.editorSections || item.editorSections || []), slotConfigured: Object.hasOwn(this.slots, effective.ycsSlot), templateTitle: path.basename(item.relpath).replace(/\.html?$/i, ''), template: item.relpath, previewOnEdit: item.ycsPreviewOnEdit !== false, fields: clone(item.DataFields), links };
   }
   async mappingPreview(stageId,graphicId,edits=[]) {
     await this.sources?.ready;

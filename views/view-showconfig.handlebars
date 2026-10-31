@@ -102,7 +102,7 @@
             <div id="template{{@index}}">
             <button class="collapsible bg_grey15 row_accent{{uicolor}}" type="button" onmouseover="tip('{{lang 'hover.confitem'}}');">
                 {{{nameFromTemplatePath relpath }}}
-                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{#if @root.outputSlots}}{{#if ycsSlot}}{{ycsSlot}}{{else}}Unassigned{{/if}}{{else}}{{playlayer}} | {{{max5 webplayout}}}{{/if}}</SPAN>
+                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{#if @root.outputSlots}}{{slotLabel}}{{else}}{{playlayer}} | {{{max5 webplayout}}}{{/if}}</SPAN>
               </button>
             <div class="collapsiblecontent spxConfigHead" >
               <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">

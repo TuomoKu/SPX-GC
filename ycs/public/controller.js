@@ -100,11 +100,11 @@ if (stage) {
     const routing = document.createElement('div'); routing.className='ycs-slot-control';
     const slotLabel=document.createElement('label'); slotLabel.textContent='Slot';
     const slotSelect=document.createElement('select');slotSelect.setAttribute('aria-label','Display slot');
-    const defaultOption=document.createElement('option');defaultOption.value='__default';defaultOption.textContent='Template default'+(editor.defaultSlot?' ('+editor.defaultSlot+')':' · unassigned');slotSelect.append(defaultOption);
-    const emptyOption=document.createElement('option');emptyOption.value='';emptyOption.textContent='Unassigned';slotSelect.append(emptyOption);
-    for(const slot of editor.slots || []){const option=document.createElement('option');option.value=slot.id;option.textContent=slot.label;slotSelect.append(option);}
-    if(editor.slotOverride && ![...slotSelect.options].some(option=>option.value===editor.slotOverride)){const option=document.createElement('option');option.value=editor.slotOverride;option.textContent='Unavailable: '+editor.slotOverride;slotSelect.append(option);}
-    slotSelect.value=editor.slotOverride ?? '__default';
+    const defaultOption=document.createElement('option');defaultOption.value='__default';defaultOption.textContent='Template default'+' ('+((editor.slots || []).find(slot=>slot.id===editor.defaultSlot)?.label || 'Default')+')';slotSelect.append(defaultOption);
+    const emptyOption=document.createElement('option');emptyOption.value='';emptyOption.textContent='Default';slotSelect.append(emptyOption);
+    for(const slot of (editor.slots || []).filter(slot=>slot.id!=='default')){const option=document.createElement('option');option.value=slot.id;option.textContent=slot.label;slotSelect.append(option);}
+    if(editor.slotOverride && editor.slotOverride!=='default' && ![...slotSelect.options].some(option=>option.value===editor.slotOverride)){const option=document.createElement('option');option.value=editor.slotOverride;option.textContent='Unavailable: '+editor.slotOverride;slotSelect.append(option);}
+    slotSelect.value=editor.slotOverride==='default'?'':editor.slotOverride ?? '__default';
     const warning=document.createElement('span');warning.className='ycs-slot-warning';warning.setAttribute('role','status');
     const collapsedWarning=document.createElement('small');collapsedWarning.className='ycs-slot-warning';row.querySelector('.truncate')?.after(collapsedWarning);
     const paintSlot=valid=>{collapsedWarning.textContent=valid?'':'Assign a display slot';warning.textContent=valid?'':'Assign a slot before preview or playback';slotSelect.setAttribute('aria-invalid',String(!valid));};paintSlot(editor.slotConfigured !== false);
