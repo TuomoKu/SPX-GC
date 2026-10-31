@@ -134,7 +134,26 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     '/data',
     handlers(async (req, res) => {
       await sources.ready;
-      res.json(sources.snapshot());
+      const snapshot = sources.snapshot();
+      const inventories = new Map();
+      for (const stage of repository.stages.values()) {
+        try {
+          const rundown = await repository.read(stage.id);
+          let definitions = [];
+          try { definitions = JSON.parse(await require('node:fs/promises').readFile(path.resolve(stage.file, '../../profile.json'), 'utf8')).templates || []; } catch { /* Item labels still work if profile unavailable. */ }
+          inventories.set(stage.id, {items:rundown.templates, definitions});
+        } catch { /* A missing rundown must not prevent the source status page loading. */ }
+      }
+      for (const connection of Object.values(snapshot.connections)) for (const usage of connection.usages) {
+        const inventory = inventories.get(usage.stage);
+        const item = inventory?.items.find(item => item.itemID === usage.graphic);
+        const templatePath = item?.relpath || usage.template;
+        const definition = inventory?.definitions.find(item => item.relpath === templatePath);
+        usage.graphicTitle = item?.ycsNickname || definition?.description || (templatePath ? path.basename(templatePath).replace(/\.html?$/i, '') : 'Unavailable graphic');
+        if (usage.kind === 'default') usage.graphicTitle += ' (template default)';
+        usage.fieldTitle = (item?.DataFields || definition?.DataFields || []).find(field => field.field === usage.field)?.title || usage.field;
+      }
+      res.json(snapshot);
     })
   );
   router.post(

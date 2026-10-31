@@ -60,8 +60,12 @@ $('mappings-tab').onclick = () => showTab('mappings');
 function time(value) {
   return value ? new Date(value).toLocaleTimeString() : 'Waiting for first read';
 }
+const usageLabels = new Map();
 function usageText(usage) {
-  return `${stages.find((stage) => stage.id === usage.stage)?.title || usage.stage} · ${usage.graphic || 'Template default'} · ${usage.field}${usage.kind === 'on-air' ? ' · ON AIR' : ''}`;
+  const key = JSON.stringify([usage.stage, usage.graphic || usage.template, usage.field]);
+  if (usage.graphicTitle) usageLabels.set(key, {graphic:usage.graphicTitle, field:usage.fieldTitle || usage.field});
+  const names = usageLabels.get(key);
+  return `${stages.find((stage) => stage.id === usage.stage)?.title || usage.stage} · ${names?.graphic || usage.graphic || 'Template default'} · ${names?.field || usage.field}${usage.kind === 'on-air' ? ' · ON AIR' : ''}`;
 }
 function renderConnections() {
   const container = $('connections');
@@ -124,7 +128,7 @@ function renderConnections() {
       )
     );
     const list = node('ul');
-    for (const usage of connection.usages) list.append(node('li', usageText(usage)));
+    for (const usage of connection.usages) { const entry=node('li',usageText(usage));entry.title=[usage.stage,usage.graphic || usage.template,usage.field].join(' · ');list.append(entry); }
     if (!connection.usages.length) list.append(node('li', 'Ready to assign from Mappings.'));
     details.append(list);
     card.append(details);

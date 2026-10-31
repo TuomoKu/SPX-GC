@@ -285,3 +285,19 @@ test('rundown deletion rejects on-air items and removes persisted item mappings 
  assert.equal(r.playback.snapshot('stage-1','preview').selected,null);
  assert.ok(sources.snapshot().mappings.some(m=>m.stage==='stage-2'&&m.graphic==='ticker'));
 });
+
+test('source references display the current nickname and field label without changing stored bindings',async t=>{
+ const r=await setup(t),sources=r.playback.sources;await r.playback.reconcileMappings();
+ const show=await r.repository.read('stage-1');show.templates[1].DataFields[1].title='Current round';await r.repository.write('stage-1',show);
+ await sources.edit(sources.snapshot().revision,next=>{
+  next.connections['test.sheet']={type:'google-sheets',label:'Controls',settings:{url:'https://docs.google.com/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890/edit',worksheet:'0',range:'A1:B2',refreshSeconds:60}};
+  next.mappings.push({stage:'stage-1',graphic:'lower-third',field:'f5',binding:{connection:'test.sheet',selection:{kind:'cell',cell:'A1'}}});
+ });
+ await r.playback.rename('stage-1','lower-third','Desk hosts',0);
+ const before=JSON.stringify(sources.document.mappings);
+ let data=await(await fetch(r.base+'/api/ycs/data')).json();
+ let usage=data.connections['test.sheet'].usages[0];assert.equal(usage.graphicTitle,'Desk hosts');assert.equal(usage.fieldTitle,'Current round');assert.equal(usage.graphic,'lower-third');
+ await r.playback.rename('stage-1','lower-third','Interview guests',1);
+ data=await(await fetch(r.base+'/api/ycs/data')).json();assert.equal(data.connections['test.sheet'].usages[0].graphicTitle,'Interview guests');
+ assert.equal(JSON.stringify(sources.document.mappings),before);
+});

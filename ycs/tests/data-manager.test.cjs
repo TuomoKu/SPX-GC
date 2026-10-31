@@ -179,3 +179,9 @@ test('visual mapping keeps field drafts and local edits during polling and saves
   assert.equal(saved.body.revision, 1);
   assert.equal(saved.body.edits[0].binding.selection.kind, 'cell');
 });
+
+test('connection usage renders readable labels safely and keeps IDs in hover details',async t=>{
+ const r=await fixture(t);r.data.connections.demo={type:'google-sheets',label:'Controls',settings:{worksheet:'0',range:'A1:B2',refreshSeconds:5},health:'ok',usages:[{stage:'stage-1',graphic:'1234',field:'f3',kind:'mapping',graphicTitle:'<b>Desk hosts</b>',fieldTitle:'Rounds remaining'}]};
+ await r.poll();await flush();const li=r.window.document.querySelector('.connection li');
+ assert.equal(li.textContent,'Stage 1 · <b>Desk hosts</b> · Rounds remaining');assert.equal(li.querySelector('b'),null);assert.equal(li.title,'stage-1 · 1234 · f3');
+});
