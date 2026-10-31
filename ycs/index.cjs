@@ -411,20 +411,12 @@ module.exports = function registerYCS(app, config, hooks = {}) {
           if (req.path === '/gc/saveItemChanges') {
             await playback.command(stage.id, req.body.epoch, 'save', req.body.DataFields);
             const saved = repository.item(await repository.read(stage.id), req.body.epoch);
-            const summary = saved.DataFields.filter(
-              (field) => field.field && field.ftype !== 'hidden'
-            )
-              .slice(0, 2)
-              .map((field) =>
-                String(field.value ?? '').replace(
-                  /[&<>"']/g,
-                  (character) =>
-                    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
-                      character
-                    ]
-                )
-              )
-              .join(' | ');
+            const model = await playback.editor(stage.id, req.body.epoch);
+            const plain = require('./public/rundown-summary.js').text(saved.DataFields, field => {
+              const link = model.links[field.field];
+              return link?.mode === 'linked' ? sources.value(link.source) ?? link.manual : field.value;
+            });
+            const summary = plain.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
             return res.json(['Stage changes saved', summary]);
           }
           const action = req.body.command;

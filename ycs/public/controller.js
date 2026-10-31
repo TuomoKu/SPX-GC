@@ -50,6 +50,21 @@ if (stage) {
   }
   function showValue(input,value){if(input.type==='checkbox')input.checked=String(value)==='1';else{if(input.tagName==='SELECT'&&![...input.options].some(option=>option.value===String(value))){const option=document.createElement('option');option.value=String(value);option.textContent=String(value);option.dataset.ycsValue='true';input.append(option);}input.value=value;}}
   function manualValue(input){return input.type==='checkbox'?(input.checked?'1':'0'):input.value;}
+  function renderSummary(row, model) {
+    const target = row.querySelector('.truncate');
+    if (!target) return;
+    target.textContent = window.YCSRundownSummary.text(model.summaryFields, field => {
+      const link = model.summaryLinks?.[field.field];
+      if (!link || link.mode !== 'linked') return link?.manual ?? field.value;
+      const override = sourceState?.mappings.find(item => item.stage === stage && item.graphic === row.dataset.spxEpoch && item.field === field.field);
+      const fallback = sourceState?.defaults?.find(item => item.stage === stage && item.template === model.template && item.field === field.field);
+      const sourceId = sourceState ? (override || fallback)?.source : link.source;
+      if (link.source !== sourceId) { link.source = sourceId; delete link.lastValue; }
+      const source = sourceState?.sources[sourceId];
+      if (source?.value !== undefined && typeof source.value === 'string' && source.value.length <= 300) link.lastValue = source.value;
+      return link.lastValue ?? link.manual ?? field.value;
+    });
+  }
   function paintLink(row, model) {
     for (const [field, widget] of Object.entries(model.widgets || {})) {
       const link = model.links[field], { input, button, detail, title } = widget;
@@ -79,6 +94,7 @@ if (stage) {
       if (changed && row.classList.contains('inFocus')) schedulePreview(row);
     }
     pending(row, model);
+    renderSummary(row, model);
   }
   function organize(row, editor, model) {
     const cell = row.querySelector('#Expanded td[width="65%"]');
@@ -149,6 +165,7 @@ if (stage) {
   function initialize(row) {
     const id = row.dataset.spxEpoch, model = { links: {}, widgets: {}, revision: 0, queue: Promise.resolve() }; models.set(id, model);
     model.ready = request(`/api/ycs/stages/${stage}/graphics/${encodeURIComponent(id)}/editor`).then(editor => {
+      model.summaryFields = structuredClone(editor.fields || []); model.summaryLinks = structuredClone(editor.links || {});
       model.previewOnEdit = editor.previewOnEdit !== false; model.links = editor.links; model.revision = editor.revision; model.template = editor.template; model.nickname=editor.nickname || ''; organize(row, editor, model);
       window.YCSCompanionTools({ row, project, rundown, editor, copyIcon: stagePanel.icon('copy'), copyText: (...args) => stagePanel.copyText(...args) });
       for (const [field, link] of Object.entries(model.links)) {
@@ -201,8 +218,12 @@ if (stage) {
         notify(action === 'save' ? 'Saved. Program unchanged.' : `${row.dataset.spxEpoch}: ${action}`);
         if (['play', 'update', 'save'].includes(action)) { row.dataset.spxChanged = 'false'; pending(row, model); }
         if (action === 'save') {
-          const summary = row.querySelector('.truncate');
-          if (summary) summary.textContent = [...row.querySelectorAll('[data-update]')].filter(input => input.type !== 'hidden').slice(0, 2).map(input => input.type === 'checkbox' ? (input.checked ? '1' : '0') : input.value).join(' | ');
+          model.summaryLinks = structuredClone(model.links);
+          for (const field of model.summaryFields) {
+            const input = row.querySelector('[data-update="' + field.field + '"]');
+            if (input) field.value = model.links[field.field]?.manual ?? manualValue(input);
+          }
+          renderSummary(row, model);
           if (row.querySelector('#Expanded')?.style.display !== 'none') window.ToggleExpand?.(row);
         }
       }

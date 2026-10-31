@@ -30,9 +30,9 @@ Saving a template in Project Settings updates only the fields owned by that form
 
 ### One shared ticker template
 
-All newly generated stage rundowns use `/ycs/ticker/ticker.html`. Each output still mounts its own iframe and commits its own fields and data bindings. The shared ticker loads neutral defaults only, with no broadcast identity, instance registry or stage-specific JSON fetch. Old saved hidden `f0` values remain compatibility metadata and cannot route or select another instance. Legacy numbered HTML files remain available for existing installations.
+All newly generated stage rundowns use `/ycs/ticker/ticker.html`. Each output still mounts its own iframe and commits its own fields and data bindings. The shared ticker loads neutral defaults only, with no broadcast identity, instance registry or stage-specific JSON fetch. Old saved hidden `f0` values remain compatibility metadata and cannot route or select another instance. Numbered entry points have been removed.
 
-For existing imports: stop the runtime, run `node ycs/share-ticker.cjs .local/ycs-dev.json`, then start the runtime again. The migration plans every document first, updates only matching numbered ticker paths in configured project profiles/rundowns, increments edited item revisions and moves affected template-default keys to the shared path. Field values, story JSON, links, item IDs and explicit mappings are retained. Exact `.before-shared-ticker.json` backups are created; repeated runs make no changes. Conflicting defaults are rejected before writes. The command refuses to run while the configured loopback server is listening. Program restarts stopped; reload open rundown/mapping editors after migration.
+Numbered ticker templates and their instance data have been retired. Use the shared ticker.html entry point. The current test shows have no hidden broadcast identity field.
 
 ### Companion controls
 
@@ -300,3 +300,7 @@ The stock application settings form preserves the existing server-owned ycs conf
 ## Double-click launcher
 
 Run Start SPX.cmd from the repository root, or create a desktop shortcut to it. It starts the saved runtime only when needed and opens the SPX homepage after readiness. The server runs in the background; closing the browser does not stop it. Startup errors remain visible. No dependencies or new settings UI are added. The wrapper uses a process-only PowerShell execution-policy override; system policy is not changed. Advanced arguments: -Config PATH, -NodePath PATH, and -NoBrowser. Node is resolved from PATH or the last runtime's recorded executable.
+
+### Rundown labels and summaries
+
+Configured stage rundown descriptions come from the current project template definition, matched by path. Nicknames remain item-specific. Summaries use the first three nonempty text fields, excluding hidden fields, checkbox values, timing controls and story JSON. Linked fields show their current source value or retained/manual fallback; draft manual edits enter the summary after Save draft. Summaries describe saved editor content, not Program tally.

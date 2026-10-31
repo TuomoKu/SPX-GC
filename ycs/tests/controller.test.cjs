@@ -97,7 +97,7 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
                 ycsCollection: { version: 1, fields: [{ key: 'subtopic' }] }
               }
             ]
-          : []
+          : [{ field: 'f5', ftype: 'textfield', title: 'Current round', value: 'MANUAL ROUND' }]
       };
     else if (url.endsWith('/data'))
       payload = {
@@ -113,6 +113,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
     else payload = [];
     return { ok: true, json: async () => payload };
   };
+  window.structuredClone = structuredClone;
+  window.eval(await fs.readFile(path.join(__dirname, '../public/rundown-summary.js'), 'utf8'));
   await require('./helpers/browser.cjs').loadContract(window);
   window.eval(await fs.readFile(path.join(__dirname, '../public/companion-contract.js'), 'utf8'));
   window.eval(await fs.readFile(path.join(__dirname, '../public/companion-tools.js'), 'utf8'));

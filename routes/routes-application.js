@@ -833,6 +833,13 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
 
 	let showprofile = path.join(config.general.dataroot, req.params.foldername, 'profile.json');
 	const profileDataJSONobj = await GetJsonData(showprofile);
+	const displayData = structuredClone(fileDataAsJSON);
+	if (res.locals.ycsStage) {
+		const summary = require('../ycs/public/rundown-summary.js');
+		for (const item of displayData.templates || []) {
+			item.ycsDescription = summary.description(item.relpath, profileDataJSONobj?.templates);
+		}
+	}
 	let profileData = JSON.stringify(profileDataJSONobj);
 	let projectBackground = '';
 
@@ -868,7 +875,7 @@ router.get('/gc/:foldername/:filename/:mode?', cors(), spxAuth.CheckLogin, async
 	res.render(getPageTemplate(), {
 		layout: false,
 		globalExtras: config.globalExtras,
-		filedata: fileDataAsJSON,
+		filedata: displayData,
 		folder: req.params.foldername,
 		datafile: datafile,
 		filebasename: req.params.filename,
