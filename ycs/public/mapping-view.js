@@ -537,13 +537,27 @@ window.YCSMappingView = class MappingView {
     const target = this.$('mapping-cell-grid');
     target.replaceChildren();
     const table = this.node('table');
-    for (const cells of connection.rows || []) {
+    table.setAttribute('aria-label', 'Source cells');
+    const rows = connection.rows || [];
+    const head = this.node('thead'), headings = this.node('tr');
+    headings.append(this.node('th'));
+    for (const cell of rows[0] || []) {
+      const heading = this.node('th', cell.address.replace(/\d+$/, ''));
+      heading.scope = 'col'; headings.append(heading);
+    }
+    head.append(headings); table.append(head);
+    const body = this.node('tbody');
+    for (const cells of rows) {
       const tr = this.node('tr');
+      const rowHeading = this.node('th', cells[0]?.address.match(/\d+$/)?.[0] || '');
+      rowHeading.scope = 'row'; tr.append(rowHeading);
       for (const cell of cells) {
         const td = this.node('td'),
           button = this.node('button');
         button.type = 'button';
-        button.append(this.node('code', cell.address), this.node('span', cell.value || 'Empty'));
+        button.append(this.node('span', cell.value || 'Empty'));
+        button.title = cell.address + ': ' + (cell.value || 'Empty');
+        button.classList.toggle('empty-cell', !cell.value);
         button.setAttribute('aria-label', cell.address + ': ' + (cell.value || 'empty'));
         button.onclick = () => {
           this.workspace.assign({
@@ -555,8 +569,9 @@ window.YCSMappingView = class MappingView {
         td.append(button);
         tr.append(td);
       }
-      table.append(tr);
+      body.append(tr);
     }
+    table.append(body);
     target.append(table);
     this.$('cell-dialog').showModal();
   }
