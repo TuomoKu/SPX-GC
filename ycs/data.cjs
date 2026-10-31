@@ -576,6 +576,38 @@ class DataSources extends EventEmitter {
         result.push({ ...item, kind: 'on-air' });
     return result;
   }
+  reconcileMappings(repository, protectedItems = () => this.activeReferences()) {
+    return this.queue(async () => {
+      await this.ready;
+      await this.read();
+      if (this.error) return { removed: 0 };
+      const inventories = new Map();
+      for (const stage of repository.stages.values()) {
+        try {
+          const rundown = await repository.read(stage.id);
+          if (rundown.templates.some(item => typeof item.itemID !== 'string' || !Array.isArray(item.DataFields))) continue;
+          inventories.set(stage.id, new Map(rundown.templates.map(item => [item.itemID, new Set(item.DataFields.map(field => field.field))])));
+        } catch { /* Unavailable or invalid is not evidence of deletion. */ }
+      }
+      const protectedKeys = new Set(protectedItems().map(item => JSON.stringify([item.stage, item.graphic])));
+      const next = clone(this.document);
+      const before = next.mappings.length;
+      next.mappings = next.mappings.filter(item => {
+        if (!inventories.has(item.stage) || protectedKeys.has(JSON.stringify([item.stage, item.graphic]))) return true;
+        return inventories.get(item.stage).get(item.graphic)?.has(item.field) === true;
+      });
+      const removed = before - next.mappings.length;
+      if (!removed) return { removed: 0 };
+      validate(next);
+      next.revision++;
+      next.updatedAt = new Date().toISOString();
+      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
+      await fs.rename(this.file + '.tmp', this.file);
+      this.document = next;
+      this.syncRuntimes(); this.checkedAt = next.updatedAt; this.emit('change');
+      return { removed };
+    });
+  }
   edit(expectedRevision, operation) {
     return this.queue(async () => {
       await this.ready;

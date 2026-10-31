@@ -35,6 +35,12 @@ module.exports = function registerYCS(app, config, hooks = {}) {
           .map(([field, link]) => ({ stage, graphic: graphic.id, field, source: link.source }))
       )
     );
+  const protectedMappingItems = () => [...playback.states].flatMap(([stage, state]) =>
+    [...state.program, ...(state.draft ? [state.draft] : [])].map(graphic => ({stage, graphic: graphic.id})));
+  const reconcileMappings = () => sources.reconcileMappings(repository, protectedMappingItems);
+  playback.reconcileMappings = reconcileMappings;
+  sources.ready.then(reconcileMappings).catch(error => console.error('[YCS mapping cleanup]', error.message));
+  let lastReconciliation = 0;
   let closeSockets;
   playback.attachSockets = (io) => {
     closeSockets = require('./sockets.cjs')(io, playback, config);
@@ -50,6 +56,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       sources
         .refresh()
         .then(() => sources.pollSheets())
+        .then(async () => { if (Date.now() - lastReconciliation > 5000) { lastReconciliation = Date.now(); await reconcileMappings(); } })
         .catch((error) => console.error('[YCS data]', error.message)),
     1000
   );
@@ -403,6 +410,23 @@ module.exports = function registerYCS(app, config, hooks = {}) {
           rundown: stage.rundown,
           previewUrl: `/output/${stage.id}/preview`
         };
+    }
+    if (req.method === 'POST' && req.body?.command === 'removeItemFromRundown') {
+      const stage = repository.matchFile(req.body.datafile);
+      if (stage && req.path === '/gc/' + stage.project + '/' + stage.rundown) {
+        return sameOrigin(req, res, () => auth.CheckLogin(req, res, () => handlers(async () => {
+          await playback.queue(stage.id, async () => {
+            const state = playback.state(stage.id);
+            if (state.program.some(item => item.id === req.body.epoch)) { const error = new Error('Stop this graphic before deleting it'); error.status = 409; throw error; }
+            const rundown = await repository.read(stage.id);
+            rundown.templates = rundown.templates.filter(item => item.itemID !== req.body.epoch);
+            await repository.write(stage.id, rundown);
+            if (state.draft?.id === req.body.epoch) { state.draft = null; playback.publish(stage.id); }
+            await reconcileMappings();
+          });
+          res.json({removed: true});
+        })(req, res, next)));
+      }
     }
     if (req.method !== 'POST' || !['/gc/playout', '/gc/saveItemChanges'].includes(req.path))
       return next();

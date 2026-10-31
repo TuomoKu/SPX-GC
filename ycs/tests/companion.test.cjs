@@ -267,3 +267,21 @@ test('failed Focus leaves preview and Program intact and never emits a controlle
   assert.deepEqual(r.playback.snapshot('stage-1', 'program'), program);
   assert.equal(focused, 0);
 });
+
+test('rundown deletion rejects on-air items and removes persisted item mappings after Stop',async t=>{
+ const r=await setup(t),sources=r.playback.sources;
+ await r.playback.reconcileMappings();
+ const snapshot=sources.snapshot();
+ assert.ok(snapshot.mappings.some(m=>m.stage==='stage-1'&&m.graphic==='ticker'));
+ await r.playback.command('stage-1','ticker','play');
+ const body={command:'removeItemFromRundown',datafile:r.repository.stage('stage-1').file,epoch:'ticker'};
+ assert.equal((await r.post('/gc/Stage1/Show',body)).status,409);
+ assert.ok((await r.repository.read('stage-1')).templates.some(item=>item.itemID==='ticker'));
+ await r.playback.command('stage-1','ticker','stop');
+ await r.playback.focus('stage-1','ticker');
+ assert.equal((await r.post('/gc/Stage1/Show',body)).status,200);
+ assert.equal((await r.repository.read('stage-1')).templates.some(item=>item.itemID==='ticker'),false);
+ assert.equal(sources.snapshot().mappings.some(m=>m.stage==='stage-1'&&m.graphic==='ticker'),false);
+ assert.equal(r.playback.snapshot('stage-1','preview').selected,null);
+ assert.ok(sources.snapshot().mappings.some(m=>m.stage==='stage-2'&&m.graphic==='ticker'));
+});

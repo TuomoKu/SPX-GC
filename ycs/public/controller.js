@@ -333,6 +333,19 @@ if (stage) {
     catch (error) { notify(error.message, true); }
   }
   window.stopAll = clearStage;
+  const deleting = new Set();
+  window.removeItemFromRundown = async row => {
+    window.event?.stopPropagation();
+    const id = row?.dataset.spxEpoch;
+    if (!id || deleting.has(id)) return;
+    deleting.add(id);
+    try {
+      await request('/gc/' + encodeURIComponent(project) + '/' + encodeURIComponent(rundown), {command:'removeItemFromRundown', datafile:document.getElementById('datafile').value, epoch:id});
+      clearTimeout(timers.get(row));timers.delete(row);models.delete(id);row.remove();
+      window.updateFormIndexes?.();notify('Item and its mappings removed.');
+    } catch (error) { notify(error.message, true); }
+    finally { deleting.delete(id); }
+  };
   function syncButtons(snapshot) {
     active = new Set(snapshot.graphics.map(item => item.id));
     program = new Map(snapshot.graphics.map(item => [item.id, item]));
