@@ -125,30 +125,61 @@ class Playback extends EventEmitter {
     // mapping is replaced. They remain authoritative until Play/Update/Stop.
     this.sources?.retain?.(this, [...this.states.values()].flatMap(state =>
       [...state.program, ...(state.draft ? [state.draft] : [])].flatMap(graphic =>
-        Object.values(graphic.links || {}).filter(link => link.mode === 'linked').map(link => link.source))));
+        Object.values(graphic?.links || {}).filter(link => link.mode === 'linked').map(link => link.source))));
     this.state(stageId).revision++;
     for (const mode of ['program', 'preview']) this.emit(stageId + ':' + mode, this.snapshot(stageId, mode));
+  }
+  async definition(stageId, item) {
+    const file = path.resolve(this.repository.stage(stageId).file, '../../profile.json');
+    try {
+      const profile = JSON.parse(await fs.readFile(file, 'utf8'));
+      const matches = (profile.templates || []).filter(template => template.relpath === item.relpath);
+      return matches.length === 1 ? matches[0] : {};
+    } catch (error) { if (error.code === 'ENOENT') return {}; throw error; }
+  }
+  async routed(stageId, item) {
+    const definition = await this.definition(stageId, item);
+    return { ...item, ycsSlot: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : definition.ycsSlot };
+  }
+  assignSlot(stageId, graphicId, slot, revision) {
+    if (slot !== null && slot !== '' && !Object.hasOwn(this.slots, slot)) fail('Choose an available slot', 422);
+    if (!Number.isInteger(revision) || revision < 0) fail('An editor revision is required', 400);
+    return this.queue(stageId, async () => {
+      const rundown = await this.repository.read(stageId);
+      const item = this.repository.item(rundown, graphicId);
+      if (revision !== (item.ycsEditRevision || 0)) fail('This graphic was saved in another controller. Reload before continuing.', 409);
+      const before = JSON.stringify([Object.hasOwn(item, 'ycsSlot'), item.ycsSlot]);
+      if (slot === null) delete item.ycsSlot; else item.ycsSlot = slot;
+      if (before !== JSON.stringify([Object.hasOwn(item, 'ycsSlot'), item.ycsSlot])) {
+        item.ycsEditRevision = revision + 1;
+        await this.repository.write(stageId, rundown);
+      }
+      const effective = await this.routed(stageId, item);
+      return { slot: effective.ycsSlot || null, slotOverride: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : null, slotConfigured: Object.hasOwn(this.slots, effective.ycsSlot), editorRevision: item.ycsEditRevision || 0 };
+    });
   }
   async catalog(stageId) {
     await this.sources?.ready;
     const rundown = await this.repository.read(stageId);
-    return rundown.templates.map(item => ({ id:item.itemID,title:item.ycsNickname||item.description||item.itemID,slot:item.ycsSlot,template:item.relpath,fields:item.DataFields.filter(field=>linkable(item,field.field)).map(field=>({field:field.field,title:field.title||field.field,ftype:field.ftype,type:types[field.ftype],required:field.required===true,...(field.ycsCollection?{ycsCollection:field.ycsCollection,type:'Story list'}:{})})),mapped:item.DataFields.filter(field=>linkable(item,field.field)&&this.sources?.mapping(stageId,item.itemID,field.field,item.relpath)).length }));
+    return Promise.all(rundown.templates.map(async item => ({ id:item.itemID,title:item.ycsNickname||item.description||item.itemID,slot:(await this.routed(stageId,item)).ycsSlot,template:item.relpath,fields:item.DataFields.filter(field=>linkable(item,field.field)).map(field=>({field:field.field,title:field.title||field.field,ftype:field.ftype,type:types[field.ftype],required:field.required===true,...(field.ycsCollection?{ycsCollection:field.ycsCollection,type:'Story list'}:{})})),mapped:item.DataFields.filter(field=>linkable(item,field.field)&&this.sources?.mapping(stageId,item.itemID,field.field,item.relpath)).length })));
   }
   async editor(stageId, graphicId) {
     await this.sources?.ready;
     const item = this.repository.item(await this.repository.read(stageId), graphicId);
+    const definition = await this.definition(stageId, item);
+    const effective = await this.routed(stageId, item);
     const links = {};
     for (const field of item.DataFields) if (linkable(item, field.field)) {
       const saved = item.ycsLinks?.[field.field] || { mode: 'manual', manual: field.value ?? '' };
       links[field.field] = { ...saved, source: this.sources?.mapping(stageId, graphicId, field.field, item.relpath) || null };
     }
-    return { revision: item.ycsEditRevision || 0, title: item.ycsNickname || item.description || graphicId, nickname: item.ycsNickname || '', slot: item.ycsSlot || null, slotConfigured: Object.hasOwn(this.slots, item.ycsSlot), templateTitle: path.basename(item.relpath).replace(/\.html?$/i, ''), template: item.relpath, previewOnEdit: item.ycsPreviewOnEdit !== false, fields: clone(item.DataFields), links };
+    return { revision: item.ycsEditRevision || 0, title: item.ycsNickname || item.description || graphicId, nickname: item.ycsNickname || '', slot: effective.ycsSlot || null, slotOverride: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : null, defaultSlot: definition.ycsSlot || null, slots: Object.entries(this.slots).map(([id, slot]) => ({id, label: slot.label || id})), sections: clone(definition.editorSections || item.editorSections || []), slotConfigured: Object.hasOwn(this.slots, effective.ycsSlot), templateTitle: path.basename(item.relpath).replace(/\.html?$/i, ''), template: item.relpath, previewOnEdit: item.ycsPreviewOnEdit !== false, fields: clone(item.DataFields), links };
   }
   async mappingPreview(stageId,graphicId,edits=[]) {
     await this.sources?.ready;
     const item=this.repository.item(await this.repository.read(stageId),graphicId);
     edits=prepareEdits(item,edits);
-    const graphic=descriptor(item,this.slots);
+    const graphic=descriptor(await this.routed(stageId,item),this.slots);
     const fields=await Promise.all(item.DataFields.filter(field=>linkable(item,field.field)).map(async field=>{
       const draft=edits.find(edit=>edit.field===field.field);
       const effective=this.sources.effective(stageId,graphicId,field.field,item.relpath);
@@ -233,10 +264,12 @@ class Playback extends EventEmitter {
         for (const field of item.DataFields) if (linkable(item, field.field)) field.value = manualValue(field, field.value ?? '');
       }
       const contentChanged = originalContent !== JSON.stringify([item.DataFields, item.ycsLinks || {}]);
-      const graphic = descriptor({ ...item, ycsStage: stageId }, this.slots, this.sources);
+      const routed = await this.routed(stageId, item);
+      // Stop/Continue operate on the active snapshot even if routing is now invalid.
+      const graphic = ['stop', 'continue'].includes(action) ? clone(active || {links:{}}) : action === 'save' && !Object.hasOwn(this.slots, routed.ycsSlot) ? null : descriptor({ ...routed, ycsStage: stageId }, this.slots, this.sources);
       // A poll may prune while a rundown write awaits disk. Hold this descriptor
       // until its links have been installed in program/preview, or the write fails.
-      const release = this.sources?.holdReferences?.(Object.values(graphic.links || {}).filter(link => link.mode === 'linked').map(link => link.source));
+      const release = this.sources?.holdReferences?.(Object.values(graphic?.links || {}).filter(link => link.mode === 'linked').map(link => link.source));
       try {
         if (action === 'preview' || action === 'focus') {
           state.draft = graphic;
@@ -253,14 +286,14 @@ class Playback extends EventEmitter {
           let next = clone(state.program);
           if (action === 'play') {
             // Repeating Play for an active graphic updates it without an IN replay.
-            next = next.filter(current => current.slot !== graphic.slot);
+            next = next.filter(current => current.slot !== graphic.slot && current.id !== graphicId);
             if (active?.continuation) graphic.continuation = active.continuation;
             next.push(graphic);
           } else if (action === 'stop') {
             next = next.filter(current => current.id !== graphicId);
           } else if (active) {
             graphic.continuation = active.continuation;
-            next = next.map(current => current.id === graphicId ? graphic : current);
+            next = next.filter(current => current.id === graphicId || current.slot !== graphic.slot).map(current => current.id === graphicId ? graphic : current);
           }
           if (contentChanged) item.ycsEditRevision = (item.ycsEditRevision || 0) + 1;
           for (const candidate of rundown.templates) candidate.onair = String(next.some(current => current.id === candidate.itemID));

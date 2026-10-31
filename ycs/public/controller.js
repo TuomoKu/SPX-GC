@@ -96,6 +96,23 @@ if (stage) {
     pending(row, model);
     renderSummary(row, model);
   }
+  function slotControl(row, editor, model) {
+    const routing = document.createElement('div'); routing.className='ycs-slot-control';
+    const slotLabel=document.createElement('label'); slotLabel.textContent='Slot';
+    const slotSelect=document.createElement('select');slotSelect.setAttribute('aria-label','Display slot');
+    const defaultOption=document.createElement('option');defaultOption.value='__default';defaultOption.textContent='Template default'+(editor.defaultSlot?' ('+editor.defaultSlot+')':' · unassigned');slotSelect.append(defaultOption);
+    const emptyOption=document.createElement('option');emptyOption.value='';emptyOption.textContent='Unassigned';slotSelect.append(emptyOption);
+    for(const slot of editor.slots || []){const option=document.createElement('option');option.value=slot.id;option.textContent=slot.label;slotSelect.append(option);}
+    if(editor.slotOverride && ![...slotSelect.options].some(option=>option.value===editor.slotOverride)){const option=document.createElement('option');option.value=editor.slotOverride;option.textContent='Unavailable: '+editor.slotOverride;slotSelect.append(option);}
+    slotSelect.value=editor.slotOverride ?? '__default';
+    const warning=document.createElement('span');warning.className='ycs-slot-warning';warning.setAttribute('role','status');
+    const collapsedWarning=document.createElement('small');collapsedWarning.className='ycs-slot-warning';row.querySelector('.truncate')?.after(collapsedWarning);
+    const paintSlot=valid=>{collapsedWarning.textContent=valid?'':'Assign a display slot';warning.textContent=valid?'':'Assign a slot before preview or playback';slotSelect.setAttribute('aria-invalid',String(!valid));};paintSlot(editor.slotConfigured !== false);
+    slotSelect.addEventListener('click',event=>event.stopPropagation());
+    slotSelect.addEventListener('change',event=>{event.stopPropagation();const previous=model.slotSelection;const value=slotSelect.value;slotSelect.disabled=true;const operation=model.queue.then(async()=>{const result=await request('/api/ycs/stages/'+stage+'/graphics/'+encodeURIComponent(row.dataset.spxEpoch)+'/slot',{slot:value==='__default'?null:value,revision:model.revision});model.revision=result.editorRevision;model.slotSelection=value;paintSlot(result.slotConfigured);notify('Slot saved. Apply with Play or Update on air.');});model.queue=operation.catch(error=>{slotSelect.value=previous;notify(error.message,true);}).finally(()=>{slotSelect.disabled=false;});});
+    routing.addEventListener('keydown',event=>event.stopPropagation());model.slotSelection=slotSelect.value;slotLabel.append(slotSelect);routing.append(slotLabel,warning);return routing;
+
+  }
   function organize(row, editor, model) {
     const cell = row.querySelector('#Expanded td[width="65%"]');
     const supported = ['hidden', 'textfield', 'checkbox', 'number', 'filelist', 'textarea', 'dropdown', 'caption', 'instruction', 'spacer'];
@@ -143,19 +160,27 @@ if (stage) {
     renameForm.addEventListener('keydown',event=>{event.stopPropagation();if(event.key==='Enter'){event.preventDefault();if(!saveNickname.disabled)saveNickname.click();}else if(event.key==='Escape'){event.preventDefault();closeRename();}});
     renameForm.addEventListener('keyup',event=>event.stopPropagation());
     const toggles=document.createElement('div');toggles.className='ycs-editor-toggles';heading.append(headingTitle,toggles);content.append(heading);
-    const advanced = document.createElement('details'); advanced.className = 'ycs-advanced'; advanced.innerHTML = '<summary>Appearance & timing</summary>';
+    const destinations = new Map(), assigned = new Set();
+    for(const section of Array.isArray(editor.sections)?editor.sections:[]){
+      if(!section || !Array.isArray(section.fields) || section.fields.some(field=>typeof field!=='string'||assigned.has(field)))continue;
+      let container;
+      if(section.placement==='header') container=toggles;
+      else if(section.title){container=document.createElement('details');container.className='ycs-advanced';container.open=section.collapsed!==true;const title=document.createElement('summary');title.textContent=section.title;container.append(title);content.append(container);}
+      else {container=document.createElement('div');content.append(container);}
+      for(const field of section.fields){destinations.set(field,container);assigned.add(field);}
+    }
     const badge = document.createElement('span'); badge.className = 'ycs-pending'; badge.hidden = true; model.badge = badge;
     const manager = document.createElement('a'); manager.href = `/ycs/data-manager?stage=${stage}&graphic=${encodeURIComponent(row.dataset.spxEpoch)}`; manager.className = 'ycs-field-mappings'; manager.textContent = 'Manage field mappings ↗';
-    cell.append(content, advanced, manager, badge);
+    cell.append(content, manager, badge);
     for (const field of editor.fields) {
       const input = original.querySelector(`[data-update="${field.field}"]`); if (!input || field.ftype === 'hidden') continue;
       const wrapper = document.createElement('div'); wrapper.className = 'ycs-editor-field';
       const label = document.createElement('label'); input.id ||= `ycs-${row.dataset.spxEpoch}-${field.field}`; label.htmlFor = input.id; label.textContent = field.title==='Rounds remaining text'?'Remaining text':field.title || field.field;
-      if (field.ftype === 'checkbox') { input.classList.add('ycs-check');wrapper.classList.add('ycs-checkbox-field');wrapper.append(input, label);toggles.append(wrapper);continue; }
+      if (field.ftype === 'checkbox') { input.classList.add('ycs-check');wrapper.classList.add('ycs-checkbox-field');wrapper.append(input, label);(destinations.get(field.field) || content).append(wrapper);continue; }
       else wrapper.append(label, input);
-      if(field.ycsCollection){const group=document.createElement('details');group.className='ycs-advanced';const summary=document.createElement('summary');summary.textContent=field.title||'Stories';summary.title='Manual JSON fallback. Link this field to use its mapped story list.';group.append(summary,wrapper);content.append(group);}else (field.ycsPrimary !== true && ['number', 'filelist', 'textarea'].includes(field.ftype) ? advanced : content).append(wrapper);
+      (destinations.get(field.field) || content).append(wrapper);
     }
-    if (advanced.children.length === 1) advanced.hidden = true;
+
     for (const info of row.querySelectorAll('#Expanded td.aright.spxTableHeadsmall')) info.closest('tr').hidden = true;
     const save = row.querySelector('button[onclick*="saveTemplateItemChangesByElement"]'); if (save) { save.textContent = 'Save draft'; save.title = 'Save without changing program'; }
     const update = row.querySelector('[data-spx-name="updatebutton"]'); if (update) { update.textContent = 'Update on air'; update.title = 'Apply this draft and its field links to program'; }
@@ -167,6 +192,8 @@ if (stage) {
     model.ready = request(`/api/ycs/stages/${stage}/graphics/${encodeURIComponent(id)}/editor`).then(editor => {
       model.summaryFields = structuredClone(editor.fields || []); model.summaryLinks = structuredClone(editor.links || {});
       model.previewOnEdit = editor.previewOnEdit !== false; model.links = editor.links; model.revision = editor.revision; model.template = editor.template; model.nickname=editor.nickname || ''; organize(row, editor, model);
+      const routing=slotControl(row, editor, model),heading=row.querySelector('.ycs-editor-heading');
+      if(heading)heading.after(routing);else row.querySelector('#Expanded')?.prepend(routing);
       window.YCSCompanionTools({ row, project, rundown, editor, copyIcon: stagePanel.icon('copy'), copyText: (...args) => stagePanel.copyText(...args) });
       for (const [field, link] of Object.entries(model.links)) {
         const input = row.querySelector(`[data-update="${field}"]`); if (!input) continue;

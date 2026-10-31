@@ -268,6 +268,9 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       res.json(await playback.editor(req.params.stage, req.params.graphic))
     )
   );
+  router.post('/stages/:stage/graphics/:graphic/slot', handlers(async (req, res) => {
+    res.json(await playback.assignSlot(req.params.stage, req.params.graphic, req.body.slot, req.body.revision));
+  }));
   router.post(
     '/stages/:stage/graphics/:graphic/nickname',
     handlers(async (req, res) =>

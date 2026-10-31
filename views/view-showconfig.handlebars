@@ -102,7 +102,7 @@
             <div id="template{{@index}}">
             <button class="collapsible bg_grey15 row_accent{{uicolor}}" type="button" onmouseover="tip('{{lang 'hover.confitem'}}');">
                 {{{nameFromTemplatePath relpath }}}
-                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{playlayer}} | {{{max5 webplayout}}}</SPAN>
+                <SPAN style="background: #fff; padding: 0.1em 0.5em; border-radius: 0.5em; border: 0px solid yellow; float:right; opacity:0.3; color: #000">{{#if @root.outputSlots}}{{#if ycsSlot}}{{ycsSlot}}{{else}}Unassigned{{/if}}{{else}}{{playlayer}} | {{{max5 webplayout}}}{{/if}}</SPAN>
               </button>
             <div class="collapsiblecontent spxConfigHead" >
               <form name="config{{@index}}" id="config{{@index}}" method="post" action="config/saveTemplate">
@@ -151,6 +151,12 @@
                     </select>
                   </td>
                 </tr>
+                {{#if @root.outputSlots}}
+                <tr><td width="40%"><span class="spxConfigHead">Default display slot</span></td>
+                  <td><select class="wide drop bg_grey15" name="templateData[ycsSlot]" aria-label="Default display slot">
+                    {{#each slotOptions}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+                  </select></td></tr>
+                {{else}}
                 <tr>
                   <td width="40%"><span class="spxConfigHead">{{lang 'config.webplayout'}}</span></td>
                   <td>
@@ -159,6 +165,7 @@
                     </select>
                   </td>
                 </tr>
+                {{/if}}
                 <tr>
                   <td width="40%"><span class="spxConfigHead">{{lang 'config.stopmode'}}</span></td>
                   <td>

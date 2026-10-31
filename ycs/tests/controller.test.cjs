@@ -78,6 +78,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
     } else if (url.endsWith('/editor'))
       payload = {
         previewOnEdit,
+        slots:[{id:'ticker',label:'Ticker'},{id:'lower-third',label:'Lower third'}], slot:'ticker',slotOverride:'ticker',defaultSlot:'ticker',slotConfigured:true,
+        sections: compact && !primary ? [{placement:'header',fields:['f2']},{title:'Stories',collapsed:true,fields:['f14']},{title:'Appearance & timing',collapsed:true,fields:['f8']}] : [],
         revision,
         links: {
           f5: { mode: 'manual', manual: 'MANUAL ROUND' },
@@ -532,9 +534,17 @@ test('primary field metadata keeps match score and flag controls inline without 
   const r=await controller(t,true,true,true), content=r.row.querySelector('.ycs-editor-content');
   assert.equal(content.contains(r.row.querySelector('[data-update="f8"]')),true);
   assert.equal(content.contains(r.row.querySelector('[data-update="f7"]')),true);
-  assert.equal(r.row.querySelector('.ycs-compact-editor > .ycs-advanced').hidden,true);
+  assert.equal(r.row.querySelectorAll('.ycs-advanced').length,0);
   await r.window.saveTemplateItemChangesByElement(r.row);
   assert.equal(r.posts.at(-1).body.fields.find(field=>field.field==='f7').value,'./assets/us.png');
   const normal=await controller(t,true);
-  assert.equal(normal.row.querySelector('.ycs-compact-editor > .ycs-advanced').contains(normal.row.querySelector('[data-update="f8"]')),true);
+  assert.equal([...normal.row.querySelectorAll('.ycs-advanced')].find(group=>group.querySelector('summary').textContent==='Appearance & timing').contains(normal.row.querySelector('[data-update="f8"]')),true);
+});
+
+test('slot dropdown saves routing without preview/play and keeps unsaved content drafts',async t=>{
+ const r=await controller(t,true),select=r.row.querySelector('[aria-label="Display slot"]');
+ const input=r.row.querySelector('[data-update="f5"]');input.value='UNSAVED';
+ select.value='lower-third';select.dispatchEvent(new r.window.Event('change',{bubbles:true}));
+ for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(r.posts.length,1);assert.ok(r.posts[0].url.endsWith('/slot'));assert.equal(r.posts[0].body.slot,'lower-third');assert.equal(input.value,'UNSAVED');
 });

@@ -362,6 +362,11 @@ router.get(
 			'profile.json',
 		);
 		const fileDataAsJSON = await GetJsonData(datafile);
+		const outputSlots = config.ycs?.enabled && config.ycs.stages?.some(stage => stage.project === req.params.foldername) ? Object.entries(config.ycs.slots || {}).map(([id, slot]) => ({id, label: slot.label || id})) : null;
+		const displayProfile = structuredClone(fileDataAsJSON);
+		if (outputSlots) for (const template of displayProfile.templates || []) {
+			template.slotOptions = [{id:'',label:'Unassigned'}, ...outputSlots].map(slot => ({...slot, selected: slot.id === (template.ycsSlot || '')}));
+		}
 		let disableConfigUI = config.general.disableConfigUI || false; // added in 1.1.1
 
 		// a "previous folder" functionality
@@ -387,7 +392,8 @@ router.get(
 			layout: false,
 			TemplateFiles: treeData,
 			TemplateRootFolder: templateRootPath,
-			showconfig: fileDataAsJSON,
+			showconfig: displayProfile,
+			outputSlots,
 			folder: req.params.foldername,
 			messageCode: '',
 			errorCode: ERRCODE,
@@ -532,6 +538,10 @@ router.post(
 			} catch (error) {
 				return res.status(400).send('Invalid template field definitions');
 			}
+		}
+		if (Object.hasOwn(submitted, 'ycsSlot') && config.ycs?.enabled && config.ycs.stages?.some(stage => stage.project === showFolder)) {
+			if (submitted.ycsSlot !== '' && !Object.hasOwn(config.ycs.slots || {}, submitted.ycsSlot)) return res.status(400).send('Choose an available slot');
+			newData.ycsSlot = submitted.ycsSlot;
 		}
 		profileData.templates[TemplateIdx] = newData;
 		// spx.talk('Saving template changes.');

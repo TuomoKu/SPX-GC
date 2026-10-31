@@ -98,3 +98,5 @@
 @container(max-width:420px){.ycs-editor-field{grid-template-columns:92px minmax(0,1fr);gap:0 6px}.ycs-editor-field>label{font-size:11px}.ycs-editor-toggles{margin-left:0}.ycs-checkbox-field{display:flex}}
 @media(max-width:800px){.ycs-editor-field{grid-template-columns:92px minmax(0,1fr);gap:0 6px}.ycs-editor-toggles{margin-left:0}.ycs-checkbox-field{display:flex}}
 @media(pointer:coarse){.ycs-editor-field .gcinput{height:40px!important;font-size:16px!important}.ycs-link-toggle{height:40px;width:36px;flex-basis:36px}.ycs-editor-field{min-height:44px}.ycs-checkbox-field{min-height:40px}}
+
+.ycs-slot-control{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:5px 0 10px;font:12px Arial,sans-serif}.ycs-slot-control label{display:flex;align-items:center;gap:8px}.ycs-slot-control select{background:#263640;color:#e4ebef;border:1px solid #506572;border-radius:3px;padding:4px 8px;max-width:240px}.ycs-slot-warning{color:#ffd180}.ycs-slot-control select[aria-invalid="true"]{border-color:#ffd180}

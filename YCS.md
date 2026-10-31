@@ -113,7 +113,7 @@ Choose **This graphic** for a specific item or **Template default for this stage
 
 Mapping edits save together with an expected document revision. Background polling never replaces an unsaved mapping form or silently advances its revision. If another operator saves first, reload the saved mappings and reapply your edits. A connection editor similarly rejects stale saves.
 
-In the rundown, ordinary content fields have visible labels and a chain button. Hidden broadcast identity stays hidden. Ticker speed, timing, artwork and advanced JSON overrides are grouped under **Appearance & timing**. **Manage field mappings** opens Data Manager with this stage and graphic already selected.
+In the rundown, ordinary content fields have visible labels and a chain button. Hidden broadcast identity stays hidden. The ticker explicitly groups speed, timing, artwork and advanced JSON overrides under **Appearance & timing**. **Manage field mappings** opens Data Manager with this stage and graphic already selected.
 
 1. Type a manual value or click a field's chain to use its assigned data. A linked field is read-only; clicking again restores its saved manual text.
 2. Inspect **Preview**. Typing or toggling links does not change program.
@@ -304,3 +304,9 @@ Run Start SPX.cmd from the repository root, or create a desktop shortcut to it. 
 ### Rundown labels and summaries
 
 Configured stage rundown descriptions come from the current project template definition, matched by path. Nicknames remain item-specific. Summaries use the first three nonempty text fields, excluding hidden fields, checkbox values, timing controls and story JSON. Linked fields show their current source value or retained/manual fallback; draft manual edits enter the summary after Save draft. Summaries describe saved editor content, not Program tally.
+
+### Slot assignment and explicit editor sections
+
+Each rundown item's Slot picker saves a routing override independently of content drafts. Template default inherits the current project template's ycsSlot; Unassigned explicitly clears routing. Invalid or missing assignments show a warning and block Preview/Play/Update, while Save draft and Stop remain available. Slot changes leave Program and Preview snapshots untouched until the next explicit command. Play/Update replaces another graphic occupying the destination slot and removes the graphic from its previous slot. Revision conflicts preserve the operator's pending field edits. Project template settings expose Default display slot instead of the unused stock Web playout layer for configured outputs; ordinary SPX projects retain their stock settings.
+
+Templates optionally declare editorSections as an array of objects containing fields (field IDs), title (optional), collapsed (optional boolean) and placement (optional 'header'). For example: editorSections: [{placement:'header',fields:['f2']},{title:'Stories',collapsed:true,fields:['f14']}]. Sections follow declaration order. Unlisted controls stay visible in the plain editor. Templates without this metadata receive a flat layout; no field type automatically creates Appearance & timing or Stories sections. Project definitions supply current sections when available, so section edits do not require rewriting saved field values. Hidden fields remain hidden.

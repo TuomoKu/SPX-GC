@@ -24,7 +24,7 @@ function form(template = original) {
   };
 }
 
-async function harness(t, template = original, projectFormat = 'SPX') {
+async function harness(t, template = original, projectFormat = 'SPX', ycs) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'spx-template-save-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const project = path.join(root, 'Production');
@@ -46,7 +46,7 @@ async function harness(t, template = original, projectFormat = 'SPX') {
   vm.runInNewContext(source.slice(start, end + marker.length), {
     router: { post(url, auth, callback) { handler = callback; } },
     spxAuth: { CheckLogin() {} }, logger: { verbose() {}, error() {} },
-    config: { general: { dataroot: root } }, path, structuredClone,
+    config: { general: { dataroot: root }, ycs }, path, structuredClone,
     GetJsonData: async target => JSON.parse(await fs.readFile(target, 'utf8')),
     spx: { writeFile: async (target, data) => fs.writeFile(target, JSON.stringify(data)) }
   });
@@ -121,4 +121,14 @@ test('new items inherit retained metadata and play after repeated settings saves
     assert.equal(graphic.slot, 'lower-third');
     assert.equal((await playback.editor('stage-1', id)).previewOnEdit, false);
   }
+});
+
+test('configured projects can edit only available slot defaults while retaining section metadata',async t=>{
+ const sections=[{title:'Names',fields:['f4']}];
+ const h=await harness(t,{...original,editorSections:sections},'SPX',{enabled:true,stages:[{project:'Production'}],slots:{ticker:{order:10},'lower-third':{order:20}}});
+ let result=await h.save({...form(),ycsSlot:'ticker',editorSections:[]});
+ assert.equal(result.saved.templates[0].ycsSlot,'ticker');assert.deepEqual(result.saved.templates[0].editorSections,sections);
+ const before=await fs.readFile(h.file,'utf8');result=await h.save({...form(),ycsSlot:'unknown'});
+ assert.equal(result.response.code,400);assert.equal(await fs.readFile(h.file,'utf8'),before);
+ assert.equal(await fs.readFile(h.rundownFile,'utf8'),h.rundownBytes);
 });
