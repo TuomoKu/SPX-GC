@@ -145,6 +145,7 @@ window.YCSMappingWorkspace = class MappingWorkspace {
       this.loading = false;
       this.setBusy(false);
       this.model = model;
+      this.drafts.refresh(this.getState());
       this.previewData = null;
       this.view.clearPreviewError();
       this.selectedField =
@@ -283,6 +284,7 @@ window.YCSMappingWorkspace = class MappingWorkspace {
     try {
       const data = await this.api.save(stage, graphic, body);
       this.acceptRevision(body.revision, data.revision);
+      this.drafts.refresh(data);
       this.onSaved(data);
       if (this.current(model) && model.version === version) await this.selectGraphic(true);
       else if (model.version === version) this.drafts.discard(model);
@@ -300,6 +302,7 @@ window.YCSMappingWorkspace = class MappingWorkspace {
     this.drafts.acceptRevision(before, after);
   }
   update(state) {
+    this.drafts.refresh(state);
     if (!this.model) return;
     const fingerprint = JSON.stringify([
       state.revision,
@@ -315,6 +318,7 @@ window.YCSMappingWorkspace = class MappingWorkspace {
     if (this.sourceRevision !== state.revision) {
       this.sourceRevision = state.revision;
       this.renderSources();
+      this.renderFields();
     }
     this.renderSourceValues();
     this.schedulePreview();

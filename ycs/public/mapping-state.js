@@ -59,6 +59,21 @@ window.YCSMappingDrafts = class MappingDrafts {
     return { revision: model.revision, edits: structuredClone([...model.edits.values()]) };
   }
 
+  refresh(state) {
+    if (!Array.isArray(state.mappings) || !Array.isArray(state.defaults)) return;
+    for (const model of this.models.values()) {
+      if (state.revision < model.revision) continue;
+      for (const field of model.fields || []) {
+        const override = state.mappings.find(entry => entry.stage === model.stage && entry.graphic === model.graphic && entry.field === field.field);
+        const fallback = state.defaults.find(entry => entry.stage === model.stage && entry.template === model.template && entry.field === field.field);
+        const saved = override || fallback;
+        field.binding = saved?.source && !saved.binding ? { source: saved.source } : structuredClone(saved?.binding || null);
+        field.origin = override ? 'override' : fallback ? 'default' : 'unassigned';
+      }
+    }
+    // Keep edits and revisions: external changes must still cause save conflicts.
+  }
+
   discard(model) {
     this.models.delete(this.key(model.stage, model.graphic));
   }

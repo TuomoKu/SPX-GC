@@ -144,3 +144,21 @@ test('worksheet metadata requests are shared while callers retain independent dr
   complete({ worksheets: [{ id: '7', name: 'Stage 1' }] });
   assert.deepEqual(plain(await a), { 7: 'Stage 1' });
 });
+
+test('refresh updates inherited mappings and overrides across cached graphics without losing drafts, manual values or conflict revisions',()=>{
+ const api=modules(),d=new api.YCSMappingDrafts();
+ const inherited=d.load('s','a',{revision:3,template:'/t.html',fields:[{field:'f1',manual:'MANUAL',binding:{static:'old'},origin:'default'}]});
+ const overridden=d.load('s','b',{revision:2,template:'/t.html',fields:[{field:'f1',manual:'CUSTOM'}]});
+ d.edit(inherited,'f1',{static:'unsaved'},'override');d.changed(inherited);
+ const state={revision:4,defaults:[{stage:'s',template:'/t.html',field:'f1',binding:{static:'new'}}],mappings:[{stage:'s',graphic:'b',field:'f1',binding:{static:'override'}}]};
+ d.refresh(state);
+ assert.equal(inherited.fields[0].binding.static,'new');
+ assert.equal(d.binding(inherited,inherited.fields[0],state.defaults).static,'unsaved');
+ assert.equal(inherited.fields[0].manual,'MANUAL');assert.equal(inherited.revision,3);assert.equal(inherited.version,1);
+ assert.equal(overridden.fields[0].binding.static,'override');assert.equal(overridden.revision,2);
+ d.acceptRevision(3,4);assert.equal(inherited.revision,4);assert.equal(overridden.revision,2);
+ d.refresh({...state,revision:1,defaults:[],mappings:[]});assert.equal(inherited.fields[0].binding.static,'new');
+ d.edit(inherited,'f1',null,'inherit');assert.equal(d.binding(inherited,inherited.fields[0],state.defaults).static,'new');
+ state.defaults=[];d.refresh(state);assert.equal(inherited.fields[0].binding,null);assert.equal(inherited.fields[0].origin,'unassigned');
+ assert.equal(overridden.fields[0].binding.static,'override');assert.equal(overridden.fields[0].manual,'CUSTOM');
+});

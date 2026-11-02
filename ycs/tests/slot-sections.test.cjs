@@ -40,3 +40,18 @@ test('Update replaces an occupied destination slot without duplicating either gr
  assert.deepEqual(p.snapshot('stage-1','program').graphics.map(g=>g.id),['ticker']);
  assert.equal(p.snapshot('stage-2','program').graphics.length,0);
 });
+
+test('Focus after a slot change replaces only the preview identity and destination, preserving Program and other slots',async t=>{
+ const f=await fixture(t),p=f.playback;
+ await p.command('stage-1','ticker','play');await p.command('stage-1','lower-third','play');
+ const before=p.snapshot('stage-1','program').graphics;
+ await p.assignSlot('stage-1','ticker','default',0);await p.focus('stage-1','ticker');
+ const preview=p.snapshot('stage-1','preview').graphics;
+ assert.equal(preview.filter(g=>g.id==='ticker').length,1);
+ assert.equal(preview.find(g=>g.id==='ticker').slot,'default');
+ assert.deepEqual(preview.find(g=>g.id==='lower-third'),before.find(g=>g.id==='lower-third'));
+ assert.deepEqual(p.snapshot('stage-1','program').graphics,before);
+ await p.assignSlot('stage-1','ticker','lower-third',1);await p.focus('stage-1','ticker');
+ assert.deepEqual(p.snapshot('stage-1','preview').graphics.map(g=>g.id),['ticker']);
+ assert.deepEqual(p.snapshot('stage-1','program').graphics,before);
+});

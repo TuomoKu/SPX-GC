@@ -107,7 +107,7 @@ class Playback extends EventEmitter {
   snapshot(stageId, mode) {
     if (!['program', 'preview'].includes(mode)) fail('Unknown output mode', 404);
     const state = this.state(stageId);
-    const items = clone(state.program);
+    const items = clone(state.program).filter(item => mode !== 'preview' || !state.draft || item.id !== state.draft.id);
     if (mode === 'preview' && state.draft) {
       const index = items.findIndex(item => item.slot === state.draft.slot);
       if (index < 0) items.push(clone(state.draft)); else items[index] = clone(state.draft);
