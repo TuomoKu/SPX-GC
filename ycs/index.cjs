@@ -99,6 +99,8 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     res.sendFile(path.join(__dirname, 'public/data-manager.html'))
   );
   app.use('/ycs', express.static(path.join(__dirname, 'public')));
+  require('./decktype-assets.cjs')(app, settings.decktypeFolders);
+
   if (settings.graphicsRoot) {
     // The graphics repository/package keeps reusable helpers and templates beside ticker.
     const root = path.resolve(settings.graphicsRoot);

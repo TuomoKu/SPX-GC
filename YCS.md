@@ -314,3 +314,19 @@ Templates optionally declare editorSections as an array of objects containing fi
 ### Mapping lifecycle cleanup
 
 Deleting an item from a configured rundown removes its item-specific mappings after the rundown write succeeds. Active Program items must be stopped first; the controller keeps its row if deletion fails. A deleted preview selection is cleared. Startup reconciliation and a five-second background check remove mapping records only when a readable, structurally valid configured rundown proves the item or field no longer exists. Unavailable/invalid rundowns, unconfigured stages, template defaults, and Program/Preview item references are retained. Reconciliation is serialized with data edits, advances the saved revision only when it removes records, and uses atomic replacement. Interrupted cleanup is retried by reconciliation; connections themselves are never automatically deleted.
+
+## Decktype image folders
+
+Player chips accept a decktype name instead of an image URL. Set `ycs.decktypeFolders`
+to an ordered array of local or network directory paths, then restart SPX. The
+read-only `/decktypes/NAME.png` route searches each folder directly, first match
+wins; unavailable folders fall through. Only PNGs are served, without directory
+listing, and file symlinks escaping the folder are rejected. Names with spaces,
+@, + and other valid filename punctuation are URL-encoded by the template.
+
+Example: `"decktypeFolders": ["C:/YCS/Decktypes/Event", "H:/Shared drives/YCS 2024/CHARACTERWORKS/ASSETS/DECKTYPES"]`.
+Only the SPX computer needs those paths; remote browser outputs use HTTP. On
+Windows matching normally ignores filename case. Subfolders are not searched.
+Images are revalidated on subsequent requests. Missing images return 404 without
+changing graphic text or playback. The folder paths are deployment configuration,
+not per-template controls.
