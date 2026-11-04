@@ -914,8 +914,17 @@ class DataSources extends EventEmitter {
       const due = [...this.runtimes]
         .filter(([, value]) => value.nextAt <= this.now())
         .map(([id]) => id);
-      for (let index = 0; index < due.length && !this.closed; index += 4)
-        await Promise.allSettled(due.slice(index, index + 4).map((id) => this.refreshSheet(id)));
+      // API reads scheduled together are combined into one batch per workbook.
+      // Other adapters retain the existing four-connection concurrency bound.
+      const groups = this.sheets.batchSize
+        ? [
+            { ids: due.filter(id => this.document.connections[id]?.type === 'google-sheets'), size: this.sheets.batchSize },
+            { ids: due.filter(id => this.document.connections[id]?.type !== 'google-sheets'), size: 4 }
+          ]
+        : [{ ids: due, size: 4 }];
+      for (const { ids, size } of groups)
+        for (let index = 0; index < ids.length && !this.closed; index += size)
+          await Promise.allSettled(ids.slice(index, index + size).map(id => this.refreshSheet(id)));
     } finally {
       this.polling = false;
     }

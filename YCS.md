@@ -124,7 +124,33 @@ A mapping change does not rebind an active graphic until Update/Play. Its previo
 
 Native field types are supported, including the ticker's round, status, day/date, location and rounds-remaining text, and lower-third name/title. Checkboxes, numbers, image/file fields and choices can also be linked. Private Sheets, collection mapping and advanced transforms remain future extensions.
 
-## Public Google Sheets runtime
+## Google Sheets API v1 (public sheets)
+
+The official Sheets API is an optional server-side reader. Existing Google Sheets connections, worksheet gids, ranges, field bindings, ticker lists, manual overrides and last-good caches stay unchanged. No remapping or operator Google sign-in is needed. Without this configuration, the existing public query connector remains active.
+
+1. In a Google Cloud project, enable **Google Sheets API** and create an API key. Restrict the key to Google Sheets API; an IP restriction must use this server's public outbound IP (not its LAN address). The spreadsheet must still be shared **Anyone with the link → Viewer**. Private sheets/OAuth are outside v1.
+2. Set `YCS_GOOGLE_SHEETS_API_KEY` in the environment of the SPX server process. For a persistent Windows user variable, use Windows **Edit environment variables for your account**. Then reopen the launcher/terminal so the new process inherits it. Do not put the key in template fields, connection settings, the repository, or browser JavaScript.
+3. Add this property inside `ycs` in the server's active configuration (development: `.local/ycs-dev.json`), then restart SPX:
+
+   ```json
+   "sheetsAPI": {
+     "enabled": true,
+     "keyEnv": "YCS_GOOGLE_SHEETS_API_KEY"
+   }
+   ```
+
+If the key environment variable is missing, startup fails with a configuration error. API failures do not silently switch transports: connection cards show the error and linked graphics retain last-good values. Set `enabled` to `false` and restart to return to the compatibility reader. This switch does not change saved connections or mappings. Real keys are not included in event packages; configure the environment again on the event server.
+
+**Runtime:** Due Google Sheets connections are scheduled in groups of up to 32. Reads queued together for the same spreadsheet use `spreadsheets.values.batchGet`, with duplicate identical ranges requested once. Different spreadsheets use separate requests; connections with different refresh intervals only join a batch when due together. This is not a full-workbook download or a guarantee of one request per workbook per interval. At most four Google HTTP requests run simultaneously. Worksheet ids/titles come from `spreadsheets.get`, cached for five minutes; the worksheet picker refreshes that metadata. A renamed tab selected by gid recovers after metadata refresh (an invalid-range response clears its cache for the next attempt).
+
+Cells use formatted values, preserving displayed dates/numbers. Native checkbox booleans become `TRUE`/`FALSE`; mixed text/numeric columns retain their headers without extra header-row requests. Ragged/empty responses are padded to the requested addresses. Existing 200×32 range limits, 5–3600 second intervals, single-cell validation, backoff and restart cache behavior still apply. Each HTTP request has an eight-second timeout and an 8 MB response cap; first use normally needs one metadata request plus one values request. Requests are read-only, sent only to `sheets.googleapis.com`, without cookies or redirects. Keys travel in a request header, and upstream error bodies are not forwarded to clients.
+
+V1 uses polling, not subscriptions. One failing batch retains previous data for all its ranges until a successful retry; use valid, bounded ranges. API request quotas still apply across all servers using the same Cloud project. Live verification requires your own enabled project/key; mocked transport tests cover batching, mapping compatibility, outage retention and worksheet discovery.
+
+Official references: [batchGet](https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/batchGet), [API credentials](https://developers.google.com/workspace/guides/create-credentials), [quotas](https://developers.google.com/workspace/sheets/api/limits).
+
+
+## Public Google Sheets runtime (compatibility connector)
 
 The connector uses Google's documented [public spreadsheet query endpoint](https://developers.google.com/chart/interactive/docs/spreadsheets). Share the original sheet as **Anyone with the link → Viewer**; no Google sign-in, API key or service account is required. The server only reads it.
 
