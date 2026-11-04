@@ -4,6 +4,7 @@ const fs=require('node:fs/promises');
 const path=require('node:path');
 const os=require('node:os');
 const vm=require('node:vm');
+const configStore=require('../../utils/config-store.cjs');
 
 async function harness(t, existing, failure=false) {
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'ycs-config-save-'));
@@ -17,6 +18,7 @@ async function harness(t, existing, failure=false) {
   let handler;
   const context={
     config:structuredClone(existing),configfileref:file,structuredClone,
+    configStore: { update: failure ? async()=>{throw Error('Disk unavailable');} : configStore.update },
     router:{post(url,auth,callback){handler=callback;}},
     spxAuth:{CheckLogin(){}},logger:{debug(){},error(){}},
     spx:{async writeFile(target,data){if(failure)throw Error('Disk unavailable');await fs.writeFile(target,JSON.stringify(data));}},
@@ -25,6 +27,7 @@ async function harness(t, existing, failure=false) {
   context.global=context;
   vm.runInNewContext(source.slice(start,end+'}); // post /config end'.length),context);
   return {
+    file,
     async save(body){
       let rendered;
       await handler({body,session:{user:'operator'}},{render(view,data){rendered=JSON.parse(JSON.stringify(data));}});
@@ -66,4 +69,12 @@ test('rejected persistence renders an error without claiming a successful save',
   assert.equal(result.rendered.error,'Error saving config');
   assert.equal(result.rendered.message,undefined);
   assert.deepEqual(result.saved,original);
+});
+
+test('stock form preserves YCS settings saved after its in-memory configuration was loaded',async t=>{
+  const r=await harness(t,{general:{recents:['old']},ycs});
+  await configStore.update(r.file,current=>{current.ycs.graphicsRoot='C:/New graphics';current.general.recents=['Latest/Show'];});
+  const result=await r.save({general:{port:'5660'}});
+  assert.equal(result.saved.ycs.graphicsRoot,'C:/New graphics');
+  assert.deepEqual(result.saved.general.recents,['Latest/Show']);
 });

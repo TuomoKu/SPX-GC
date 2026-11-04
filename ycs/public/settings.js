@@ -38,7 +38,7 @@
     $('decktype-folders').value = data.values.decktypeFolders.join('\n');
     $('graphics-root').value = data.values.graphicsRoot;
     $('running-reader').textContent = 'Currently running: ' + data.runningReader;
-    $('key-status').textContent = 'Key: ' + data.key.source + (data.key.environment ? ` (${data.values.sheetsAPI.keyEnv})` : '');
+    $('key-status').textContent = 'Key: ' + data.key.source + (data.key.environment ? ` (${data.values.sheetsAPI.keyEnv})` : '') + (data.key.error ? ' · ' + data.key.error : '');
     $('pending').hidden = !data.restartRequired;
     $('config-file').textContent = data.configFile;
     $('outputs').replaceChildren();

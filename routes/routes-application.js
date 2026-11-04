@@ -12,6 +12,7 @@ const logger = require('../utils/logger');
 logger.debug('Application-route loading...');
 const spx = require('../utils/spx_server_functions.js');
 const cfg = require('../utils/spx_getconf.js');
+const configStore = require('../utils/config-store.cjs');
 const PlayoutCCG = require('../utils/playout_casparCG.js');
 const PlayoutWEB = require('../utils/playout_webplayer.js');
 const spxAuth = require('../utils/spx_auth.js');
@@ -119,7 +120,7 @@ router.post('/', spxAuth.CheckLogin, function (req, res) {
 	res.redirect('/');
 }); // post / end
 
-router.post('/saveauthpolicy', function (req, res) {
+router.post('/saveauthpolicy', async function (req, res) {
 	// save settings to config and move on
 	let configFile = global.configfileref; // './config.json';
 
@@ -141,17 +142,15 @@ router.post('/saveauthpolicy', function (req, res) {
 	try {
 		async function saveAndReadConfig() {
 			// console.log('Reading config');
-			configData = await GetJsonData(configFile);
-			// console.log('Changing values');
-			configData.general.username = user;
-			configData.general.password = pass;
-			// console.log('Writing config');
-			await spx.writeFile(configFile, configData);
+			configData = await configStore.update(configFile, current => {
+				current.general.username = user;
+				current.general.password = pass;
+			});
 			// console.log('Re-reading config');
 			await cfg.readConfig();
 			res.redirect('/');
 		};
-		saveAndReadConfig();
+		await saveAndReadConfig();
 	}
 	catch (error) {
 		logger.error('saveAndReadConfig() Error while saving file: ', error);
@@ -232,7 +231,13 @@ router.post('/config', spxAuth.CheckLogin, async (req, res) => {
 	try {
 		async function saveAndReadConfig() {
 			// console.log('*** WRITING ***');
-			await spx.writeFile(datafile, ConfigData);
+			ConfigData = await configStore.update(datafile, current => {
+				const next = { ...ConfigData };
+				if (Object.hasOwn(current, 'ycs')) next.ycs = structuredClone(current.ycs);
+				else delete next.ycs;
+				next.general.recents = current.general.recents || [];
+				return next;
+			});
 			// console.log('*** READING ***');
 			await cfg.readConfig();
 			// console.log('*** RENDERING ***');
@@ -289,7 +294,9 @@ router.post('/register', async (req, res) => {
 		} else {
 			config.registration.newsletter = false
 		}
-		await spx.writeFile(global.configfileref, config);
+		await configStore.update(global.configfileref, current => {
+			current.registration = structuredClone(config.registration);
+		});
 
 		config.registration.platform = req.body.platform;
 		config.registration.task = req.body.task;
@@ -1831,7 +1838,6 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
 	logger.verbose('Overwriting config with updated values.');
 	try {
 		var ConfigFile = global.configfileref;
-		var ConfigData = await GetJsonData(ConfigFile);
 
 		let key = req.body.key || null;
 		let val = req.body.val;
@@ -1841,9 +1847,7 @@ router.post('/gc/saveConfigChanges', spxAuth.CheckLogin, async (req, res) => {
 			throw 'Key [' + key + '] or a supported value [' + val + '] was missing from request, skipping config save.';
 		}
 
-		ConfigData.general[key] = val;
-		global.config = ConfigData; // update mem version also
-		await spx.writeFile(ConfigFile, ConfigData);
+		await configStore.update(ConfigFile, current => { current.general[key] = val; });
 		let response = ['Config changed']
 		res.status(200).send(response); // ok 200 AJAX RESPONSE
 	} catch (error) {

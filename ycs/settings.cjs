@@ -4,7 +4,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { GoogleSheetsAPI } = require('./google-sheets-api.cjs');
-const { credentialFile, readKey } = require('./sheets-key.cjs');
+const { credentialFile, readKey, inspectKey } = require('./sheets-key.cjs');
+const configStore = require('../utils/config-store.cjs');
 
 function fail(message, status = 422) {
   const error = new Error(message);
@@ -50,7 +51,7 @@ function validate(input) {
 
 class Settings {
   constructor({ configFile, config, playback, root = path.resolve(__dirname, '..'), env = process.env,
-    platform = process.platform, restart, fetcher = fetch, instance = `${process.pid}-${Date.now()}` }) {
+    platform = process.platform, restart, fetcher = fetch, instance = `${process.pid}-${Date.now()}`, restartTimeout = 5000 }) {
     Object.assign(this, { configFile, config, playback, root, env, platform, fetcher, instance });
     this.launchRestart = restart || (async (record, requestId) => {
       const logs = path.join(root, '.local/runtime-logs');
@@ -61,22 +62,49 @@ class Settings {
         // itself cannot reliably execute -File with DETACHED_PROCESS.
         const child = spawn(process.execPath, [path.join(root, 'ycs/restart-runtime.cjs'),
           String(process.pid), record.startTicks, requestId
-        ], { cwd: root, detached: true, windowsHide: true, stdio: ['ignore', output, output] });
-        await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
+        ], { cwd: root, detached: true, windowsHide: true, stdio: ['ignore', output, output, 'ipc'] });
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            // No permission to stop SPX was sent: it is safe to terminate this helper.
+            child.kill();
+            reject(new Error('Restart helper did not become ready'));
+          }, restartTimeout);
+          const ready = message => {
+            if (message?.type !== 'ready' || message.requestId !== requestId) return;
+            clearTimeout(timer);
+            resolve();
+          };
+          child.once('message', ready);
+          child.once('error', error => { clearTimeout(timer); reject(error); });
+          child.once('exit', () => {
+            clearTimeout(timer);
+            this.restartFailed(requestId);
+            reject(new Error('Restart helper exited before completing restart'));
+          });
+        });
+        child.send({ type: 'proceed', requestId }, error => { if (error) this.restartFailed(requestId); });
         child.unref();
       } finally { fs.closeSync(output); }
     });
     this.runningSettings = editable(config);
-    this.runningKey = configFile ? readKey(credentialFile(configFile)) : '';
+    this.runningKey = inspectKey(configFile ? credentialFile(configFile) : undefined).fingerprint;
     this.queued = null;
     this.serial = Promise.resolve();
   }
   read() {
     if (!this.configFile) fail('Settings are unavailable: no active configuration file', 503);
     const config = JSON.parse(fs.readFileSync(this.configFile, 'utf8'));
-    const key = readKey(credentialFile(this.configFile));
-    const revision = crypto.createHash('sha256').update(JSON.stringify({ config, key })).digest('hex');
-    return { config, key, revision };
+    const credentials = inspectKey(credentialFile(this.configFile));
+    const revision = crypto.createHash('sha256').update(JSON.stringify({ config, credential: credentials.fingerprint })).digest('hex');
+    return { config, key: credentials.key, credentials, revision };
+  }
+  restartFailed(requestId) {
+    if (this.queued !== requestId) return;
+    this.queued = null;
+    this.playback.restartPending = false;
+    try { atomic(path.join(this.root, '.local/restart-status.json'), {
+      requestId, state: 'failed', message: 'Restart failed. The server is still running and playback is available. Check .local/runtime-logs.'
+    }); } catch { /* Recovery must not depend on being able to write the status file. */ }
   }
   runtime() {
     const statusFile = path.join(this.root, '.local/restart-status.json');
@@ -96,13 +124,13 @@ class Settings {
     } catch { return { available: false, reason: 'Start SPX with its Windows launcher to enable browser restart.' }; }
   }
   snapshot() {
-    const { config, key, revision } = this.read();
+    const { config, key, credentials, revision } = this.read();
     const value = editable(config), runtime = this.runtime();
     const environmentKey = Boolean(this.env[value.sheetsAPI.keyEnv]);
     return {
       revision, instance: this.instance, configFile: this.configFile, values: value,
-      key: { saved: Boolean(key), environment: environmentKey, source: environmentKey ? 'Environment variable' : key ? 'Saved on this server' : 'Not configured' },
-      restartRequired: JSON.stringify(value) !== JSON.stringify(this.runningSettings) || key !== this.runningKey,
+      key: { saved: credentials.present, error: credentials.error, environment: environmentKey, source: environmentKey ? 'Environment variable' : credentials.error ? 'Saved key needs attention' : key ? 'Saved on this server' : 'Not configured' },
+      restartRequired: JSON.stringify(value) !== JSON.stringify(this.runningSettings) || credentials.fingerprint !== this.runningKey,
       runningReader: this.runningSettings.sheetsAPI.enabled ? 'Google Sheets API' : 'Public query connector',
       restart: { available: runtime.available, reason: runtime.reason || '', queued: Boolean(runtime.queued), error: runtime.error || '' },
       stages: (config.ycs?.stages || []).map(({ id, title, project, rundown }) => ({ id, title, project, rundown })),
@@ -110,7 +138,7 @@ class Settings {
     };
   }
   async save(input) {
-    const job = this.serial.then(() => {
+    const job = this.serial.then(() => configStore.transaction(this.configFile, async () => {
       if (this.queued || this.playback.restartPending) fail('Wait for the server restart to finish.', 409);
       const next = validate(input);
       const current = this.read();
@@ -121,16 +149,21 @@ class Settings {
       const config = structuredClone(current.config);
       config.ycs = { ...config.ycs, ...next, sheetsAPI: { ...config.ycs?.sheetsAPI, ...next.sheetsAPI, keyEnv: name } };
       const keyFile = credentialFile(this.configFile);
-      // Both writes complete synchronously before accepting another request. Roll back
-      // the credential if writing configuration fails, so a failed Save stays reviewable.
-      atomic(keyFile, { key });
-      try { atomic(this.configFile, config); }
-      catch (error) { atomic(keyFile, { key: current.key }); throw error; }
+      // Hold the configuration transaction across both writes. Restore the original
+      // credential bytes (including a damaged file) if configuration persistence fails.
+      const changeKey = Boolean(input.key || input.clearKey);
+      if (changeKey) await configStore.writeJSON(keyFile, { key });
+      try { await configStore.writeJSON(this.configFile, config); }
+      catch (error) {
+        if (changeKey && current.credentials.raw !== null) await configStore.writeText(keyFile, current.credentials.raw);
+        else if (changeKey) fs.rmSync(keyFile, { force: true });
+        throw error;
+      }
       // Legacy recents/settings writes use global.config. Replace its YCS object,
       // leaving the running services' captured settings unchanged until restart.
       if (global.configfileref === this.configFile && global.config) global.config.ycs = structuredClone(config.ycs);
       return this.snapshot();
-    });
+    }));
     this.serial = job.catch(() => {});
     return job;
   }
@@ -147,6 +180,7 @@ class Settings {
   async restart() {
     // Wait for a pending Save before restarting. A queued request blocks further saves.
     await this.serial;
+    await configStore.transaction(this.configFile, () => {});
     const runtime = this.runtime();
     if (!runtime.available) fail(runtime.reason, 409);
     if (this.playback.restartPending) fail('Restart already in progress.', 409);

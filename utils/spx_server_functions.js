@@ -3,6 +3,7 @@
 
 const logger = require('./logger.js');
 const fs = require('fs');
+const configStore = require('./config-store.cjs');
 const path = require('path');
 const moment = require('moment');
 const wavplayer = require('node-wav-player');
@@ -925,7 +926,8 @@ module.exports = {
       // request ..... string "folder/file" reference
       // return ...... nothing
       // Will manage up to 3 recents in global.config.general.recents[]
-      let recentsArray = config.general.recents || []; // ['FOLDER1/FILE1','FOLDER2/FILE2','FOLDER3/FILE3',];
+      return configStore.update(configfileref, current => {
+      let recentsArray = current.general.recents || [];
       recentsArray.forEach((item,index) => {
           if (item == rundownRef) {
               recentsArray.splice(index,1);
@@ -933,8 +935,8 @@ module.exports = {
       });
       recentsArray.unshift(rundownRef);
       if (recentsArray.length > 5 ) {recentsArray.length = 5}; // limit to 5
-      config.general.recents = recentsArray;
-      this.writeFile(configfileref,config);
+      current.general.recents = recentsArray;
+      }).catch(error => logger.error('Error saving recent rundowns: ' + error.message));
     } catch (error) {
       logger.error('ERROR in spx.setRecents (fileref: ' + rundownRef + '): ' + error);  
     }

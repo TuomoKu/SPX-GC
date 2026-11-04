@@ -9,6 +9,7 @@ const path = require('path');
 const logger = require('../utils/logger');
 logger.debug('Caspar-route loading...');
 const spx = require('../utils/spx_server_functions.js');
+const configStore = require('../utils/config-store.cjs');
 
 const ip = require('ip')
 const ipad = ip.address(); // my ip address
@@ -229,16 +230,15 @@ router.post('/disable', async (req, res) => {
   logger.verbose('CasparCG server ' + req.body.server + ' disabled to ' + req.body.disabled);
   try {
     var ConfigFile = global.configfileref;
-    var ConfigData = await spx.GetJsonData(ConfigFile);
-    if (ConfigData.casparcg.servers) {
+    await configStore.update(ConfigFile, ConfigData => {
+    if (ConfigData.casparcg?.servers) {
       ConfigData.casparcg.servers.forEach((serverItem,index) => {
         if (serverItem.name == req.body.server) {
           serverItem.disabled = req.body.disabled
         }
       });
     }
-    global.config = ConfigData; // update mem version also
-    await spx.writeFile(ConfigFile,ConfigData);
+    });
     let response = ['Config changed']
     res.status(200).send(response); // ok 200 AJAX RESPONSE
   } catch (error) {

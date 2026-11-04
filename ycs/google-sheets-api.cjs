@@ -184,9 +184,11 @@ function createSheets(options = {}, { env = process.env, fetcher = fetch, keyFil
   if (!options.enabled) return new PublicSheets(fetcher);
   const name = options.keyEnv || 'YCS_GOOGLE_SHEETS_API_KEY';
   if (!/^[A-Z_][A-Z0-9_]{0,99}$/.test(name)) fail('Invalid sheetsAPI.keyEnv environment variable name', 422);
-  const key = env[name] || readKey(keyFile);
+  let key, credentialError;
+  try { key = env[name] || readKey(keyFile); }
+  catch (error) { credentialError = error.message; }
   if (!key) {
-    const unavailable = async () => fail('Google Sheets API key is missing. Open YCS SPX Settings on the server to configure it.', 422);
+    const unavailable = async () => fail(credentialError || 'Google Sheets API key is missing. Open YCS SPX Settings on the server to configure it.', 422);
     // Keep the settings page available after deploying without this machine's key.
     // Do not silently read through the compatibility connector.
     return { batchSize: 32, read: unavailable, worksheets: unavailable };
