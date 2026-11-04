@@ -100,3 +100,25 @@
 @media(pointer:coarse){.ycs-editor-field .gcinput{height:40px!important;font-size:16px!important}.ycs-link-toggle{height:40px;width:36px;flex-basis:36px}.ycs-editor-field{min-height:44px}.ycs-checkbox-field{min-height:40px}}
 
 .ycs-slot-control{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:5px 0 10px;font:12px Arial,sans-serif}.ycs-slot-control label{display:flex;align-items:center;gap:8px}.ycs-slot-control select{background:#263640;color:#e4ebef;border:1px solid #506572;border-radius:3px;padding:4px 8px;max-width:240px}.ycs-slot-warning{color:#ffd180}.ycs-slot-control select[aria-invalid="true"]{border-color:#ffd180}
+/* Rundown presentation: density affects collapsed rows only. */
+html[data-ycs-stage] .ycs-rundown-toolbar{position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:8px 0 12px;background:#2a3641;font:12px/1.4 Arial,sans-serif;cursor:default}
+html[data-ycs-stage] .ycs-rundown-toolbar input,html[data-ycs-stage] .ycs-rundown-toolbar select,html[data-ycs-stage] .ycs-rundown-toolbar button{box-sizing:border-box;min-height:34px;margin:0;border:1px solid #526876;border-radius:4px;background:#1e2d37;color:#e2eaf0;font:13px/1.4 Arial,sans-serif;padding:6px 9px}
+html[data-ycs-stage] .ycs-rundown-toolbar input{flex:1;min-width:140px;width:140px}
+html[data-ycs-stage] .ycs-rundown-toolbar input::placeholder{color:#b7c5d0}
+html[data-ycs-stage] .ycs-rundown-toolbar button{cursor:pointer;min-width:32px}
+html[data-ycs-stage] .ycs-rundown-toolbar button:disabled{opacity:.4;cursor:default}
+html[data-ycs-stage] .ycs-rundown-toolbar :focus-visible{outline:2px solid #f4ca44;outline-offset:2px}
+.ycs-rundown-count{color:#b7c5d0;white-space:nowrap}
+html[data-ycs-stage] .ycs-rundown-empty{padding:20px 8px;text-align:center;color:#c5d7e3;font:14px/1.4 Arial,sans-serif}
+html[data-ycs-stage] #itemList .itemrow[hidden],html[data-ycs-stage] .ycs-rundown-empty[hidden]{display:none!important}
+html[data-ycs-stage][data-ycs-density] .itemrow{margin-bottom:6px}
+html[data-ycs-stage][data-ycs-density] .itemrow #Collapsed{box-sizing:border-box;min-height:60px;padding:7px 10px!important}
+html[data-ycs-stage][data-ycs-density] .itemrow #Collapsed table{margin-top:0!important;border-spacing:0!important}
+html[data-ycs-stage][data-ycs-density] .itemrow #Collapsed .spxTableHeadsmall{height:18px!important;font-size:12px;line-height:18px;padding:0}
+html[data-ycs-stage][data-ycs-density] .itemrow #Collapsed .truncate{display:block;max-width:calc(100% - 25px);margin:3px 0 0;font-size:14px;line-height:20px;opacity:.75}
+html[data-ycs-stage][data-ycs-density] .itemrow #Collapsed .deleteItem{font-size:13px;top:8px;right:8px}
+html[data-ycs-stage][data-ycs-density] .itemrow #Collapsed div:has(>[data-spx-name="icon"]){font-size:16px!important;top:9px!important}
+html[data-ycs-stage][data-ycs-density=comfortable] .itemrow #Collapsed{min-height:76px;padding:10px 12px!important}
+html[data-ycs-stage][data-ycs-density=comfortable] .itemrow #Collapsed .spxTableHeadsmall{font-size:14px;line-height:20px;height:20px!important}
+html[data-ycs-stage][data-ycs-density=comfortable] .itemrow #Collapsed .truncate{font-size:18px;line-height:24px;margin-top:4px}
+html[data-ycs-stage] .ycs-rundown-toolbar input::-webkit-search-cancel-button{display:none}

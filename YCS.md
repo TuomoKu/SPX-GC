@@ -330,3 +330,24 @@ Windows matching normally ignores filename case. Subfolders are not searched.
 Images are revalidated on subsequent requests. Missing images return 404 without
 changing graphic text or playback. The folder paths are deployment configuration,
 not per-template controls.
+
+## Rundown search and density
+
+Configured stage controllers include a search toolbar above the graphics list.
+Search matches nickname, template name/path and the saved or linked summary text;
+multiple words must all match. It filters locally and never changes playback or
+saved order. Hidden selected rows lose focus and master controls are disabled
+until a visible row is selected. Keyboard navigation skips hidden rows. Escape
+inside the toolbar clears search rather than stopping the stage. Explicit
+Companion Focus clears a filter when needed to reveal its selected item.
+
+Sorting is disabled while a search is active, including through SPX AppState
+changes; clearing the query restores sorting subject to normal editor rules.
+New items and updated summaries automatically participate in filtering. Field
+edit drafts are kept when an item is hidden.
+
+Compact is the default (60px collapsed content); Comfortable uses 76px.
+Density is saved in this browser's local storage and does not resize expanded
+editors or affect other operators. Summaries show up to three nonempty text
+values with middle-dot separators, excluding image/flag/logo fields and file
+paths. Stock unconfigured controllers retain their existing layout.

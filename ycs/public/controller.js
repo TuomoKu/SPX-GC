@@ -7,6 +7,7 @@ if (stage) {
   const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = '/ycs/controller.css'; document.head.append(css);
   const stagePanel = new window.YCSStagePanel({ stage, onStop: clearStage });
   const models = new Map(), timers = new Map();
+  const rundownTools = window.YCSRundownTools ? new window.YCSRundownTools() : null;
   let validationRow, previewGeneration = 0;
   const iconMarkup=name=>`<svg class="ycs-editor-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="/ycs/editor-icons.svg#${name}"></use></svg>`;
   let sourceState, active = new Set(), program = new Map(), disposed = false, polling = false;
@@ -226,7 +227,7 @@ if (stage) {
     return operation;
   }
   function send(row, action, automatic = false) {
-    if (!row) return Promise.resolve();
+    if (!row || row.hidden) return Promise.resolve();
     const model = models.get(row.dataset.spxEpoch); if (!model) return Promise.resolve();
     clearTimeout(timers.get(row));
     const generation = previewGeneration;
@@ -374,6 +375,7 @@ if (stage) {
     const row = [...document.querySelectorAll('.itemrow')].find(row => row.dataset.spxEpoch === selection.selected);
     if (!row) { notify('Selected item is missing. Reload the rundown.', true); return; }
     for (const item of document.querySelectorAll('.itemrow')) item.classList.toggle('inFocus', item === row);
+    rundownTools?.reveal(row);
     row.scrollIntoView?.({ block: 'nearest' });
     window.setMasterButtonStates?.(row);
     stagePanel.selectMonitor('preview');
@@ -408,7 +410,7 @@ if (stage) {
   poll(); const pollTimer = setInterval(poll, 1500);
   const options = document.getElementById('renderOptionsFoldable'); if (options) options.hidden = true;
   window.addEventListener('pagehide', () => {
-    disposed = true; stagePanel.dispose(); clearInterval(pollTimer); for (const timer of timers.values()) clearTimeout(timer);
+    disposed = true; rundownTools?.dispose(); stagePanel.dispose(); clearInterval(pollTimer); for (const timer of timers.values()) clearTimeout(timer);
     try { stageEvents.disconnect(); } catch { /* Transport may already be closed during navigation. */ }
   }, { once: true });
 }
