@@ -1,5 +1,6 @@
 'use strict';
 const { PublicSheets, normalizeSettings, parseRange, columnName, usable } = require('./public-sheets.cjs');
+const { readKey } = require('./sheets-key.cjs');
 
 function fail(message, status = 502) {
   const error = new Error(message);
@@ -179,11 +180,18 @@ class GoogleSheetsAPI {
   }
 }
 
-function createSheets(options = {}, { env = process.env, fetcher = fetch } = {}) {
+function createSheets(options = {}, { env = process.env, fetcher = fetch, keyFile } = {}) {
   if (!options.enabled) return new PublicSheets(fetcher);
   const name = options.keyEnv || 'YCS_GOOGLE_SHEETS_API_KEY';
   if (!/^[A-Z_][A-Z0-9_]{0,99}$/.test(name)) fail('Invalid sheetsAPI.keyEnv environment variable name', 422);
-  return new GoogleSheetsAPI({ key: env[name], fetcher });
+  const key = env[name] || readKey(keyFile);
+  if (!key) {
+    const unavailable = async () => fail('Google Sheets API key is missing. Open YCS SPX Settings on the server to configure it.', 422);
+    // Keep the settings page available after deploying without this machine's key.
+    // Do not silently read through the compatibility connector.
+    return { batchSize: 32, read: unavailable, worksheets: unavailable };
+  }
+  return new GoogleSheetsAPI({ key, fetcher });
 }
 
 module.exports = { GoogleSheetsAPI, createSheets, cells };

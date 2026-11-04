@@ -96,6 +96,8 @@ ASSETS/**
 
 # Local YCS runtime/configuration and generated demo rundowns.
 .local/
+*.sheets-key.json
+*.sheets-key.json.*.tmp
 dist/companion/
 !ycs/**/*.md
 !YCS.md

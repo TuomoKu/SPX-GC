@@ -124,6 +124,24 @@ A mapping change does not rebind an active graphic until Update/Play. Its previo
 
 Native field types are supported, including the ticker's round, status, day/date, location and rounds-remaining text, and lower-third name/title. Checkboxes, numbers, image/file fields and choices can also be linked. Private Sheets, collection mapping and advanced transforms remain future extensions.
 
+## YCS SPX settings page
+
+Open **Data Manager → Settings**, or `/ycs/settings`, on the SPX computer. This page manages the custom settings without hand-editing JSON:
+
+- Google Sheets reader (public query connector or official API), server API key and a public-sheet connection test.
+- Ordered decktype image folders and the optional graphics development source folder.
+- A read-only list of configured outputs/projects/rundowns and slot names. Output creation/routing is unchanged.
+- Save/Revert, a restart-required indicator and **Restart server**.
+
+Changes are saved to the active configuration and apply after restart. Other configuration properties and mappings are retained. Conflicting saves require Reload/Revert; the page keeps an unsuccessful draft. Remote computers can follow the link but cannot read/change these server settings: open it locally on the SPX machine. Normal operator/API authorization and same-origin protections also apply.
+
+The Google API key can now be entered on this page. It is stored in `<active-config-file>.sheets-key.json`, outside the static web folders, with restrictive permissions where the filesystem supports them. It is not encrypted; keep access to the server account/folder restricted. The key is never returned by settings responses, and its file is excluded from Git and event exports. Existing environment credentials take precedence; the page shows their status without revealing them. Leaving the field blank keeps the saved key; **Remove saved key** deletes its value. Testing an entered key does not save it or change the running reader. Enable Google Sheets API in the key's Cloud project and keep the sheet publicly viewable. Configure the key again on the event server.
+
+**Restart** is available for a Windows server started with the included launcher (`ycs/start-runtime.ps1`, including event launchers that call it). It uses a detached, hidden helper to verify the recorded process identity, stop only that process and start it again with the same configuration and Node executable. It requires confirmation and refuses while any custom output has Program graphics active. Playback commands are locked while restart is pending, so an operator cannot start a graphic between the check and shutdown. Preview/output connections briefly disconnect; the settings page waits for a new server instance. Program starts stopped. A startup failure is shown on the page when possible; otherwise use the launcher and inspect `.local/runtime-logs`.
+
+Servers started directly with `node server.js`, via an unrelated supervisor, or on non-Windows platforms show Restart as unavailable. No generic kill/respawn endpoint is exposed. Settings requests are read-only until Save/Test/Restart is explicitly pressed. Unsaved changes block Restart and prompt before leaving the page.
+
+
 ## Google Sheets API v1 (public sheets)
 
 The official Sheets API is an optional server-side reader. Existing Google Sheets connections, worksheet gids, ranges, field bindings, ticker lists, manual overrides and last-good caches stay unchanged. No remapping or operator Google sign-in is needed. Without this configuration, the existing public query connector remains active.
@@ -139,7 +157,7 @@ The official Sheets API is an optional server-side reader. Existing Google Sheet
    }
    ```
 
-If the key environment variable is missing, startup fails with a configuration error. API failures do not silently switch transports: connection cards show the error and linked graphics retain last-good values. Set `enabled` to `false` and restart to return to the compatibility reader. This switch does not change saved connections or mappings. Real keys are not included in event packages; configure the environment again on the event server.
+If neither the environment variable nor a saved server key is available, API connection reads show a configuration error while SPX and its settings page remain available. API failures do not silently switch transports: connection cards show the error and linked graphics retain last-good values. Set `enabled` to `false` and restart to return to the compatibility reader. This switch does not change saved connections or mappings. Real keys are not included in event packages; configure the environment again on the event server.
 
 **Runtime:** Due Google Sheets connections are scheduled in groups of up to 32. Reads queued together for the same spreadsheet use `spreadsheets.values.batchGet`, with duplicate identical ranges requested once. Different spreadsheets use separate requests; connections with different refresh intervals only join a batch when due together. This is not a full-workbook download or a guarantee of one request per workbook per interval. At most four Google HTTP requests run simultaneously. Worksheet ids/titles come from `spreadsheets.get`, cached for five minutes; the worksheet picker refreshes that metadata. A renamed tab selected by gid recovers after metadata refresh (an invalid-range response clears its cache for the next attempt).
 

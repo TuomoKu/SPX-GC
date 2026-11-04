@@ -11,12 +11,13 @@ const outputAccess = require('./output-access.cjs');
 module.exports = function registerYCS(app, config, hooks = {}) {
   if (!config.ycs?.enabled) return;
   const settings = config.ycs;
+  const configFile = hooks.configFile || global.configfileref;
   const repository = new RundownRepository(config.general.dataroot, settings.stages);
   const sources = new DataSources(
     settings.dataFile || path.resolve(config.general.dataroot, '../ycs-data.json'),
     settings.stages,
     {
-      sheets: hooks.sheets || createSheets(settings.sheetsAPI),
+      sheets: hooks.sheets || createSheets(settings.sheetsAPI, { keyFile: configFile ? require('./sheets-key.cjs').credentialFile(configFile) : undefined }),
       json: hooks.json,
       localFiles:
         hooks.localFiles ||
@@ -132,6 +133,14 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       res.sendStatus(204);
     })
   );
+  // Settings use the operator login rather than Companion credentials, and only
+  // accept local requests. Keep them separate from the external command API.
+  const settingsRouter = express.Router();
+  settingsRouter.use('/settings', sameOrigin, auth.CheckLogin);
+  require('./settings.cjs').registerSettings(app, settingsRouter, {
+    auth, handlers, config, playback, configFile, hooks: hooks.settings
+  });
+  app.use('/api/ycs', settingsRouter);
   router.use(sameOrigin, apiAccess);
   router.get(
     '/data',

@@ -116,7 +116,10 @@ class Playback extends EventEmitter {
   }
   queue(stageId, operation) {
     this.repository.stage(stageId);
-    const result = (this.queues.get(stageId) || Promise.resolve()).then(operation);
+    const result = (this.queues.get(stageId) || Promise.resolve()).then(() => {
+      if (this.restartPending) fail('Server restart in progress; try again after it reconnects', 503);
+      return operation();
+    });
     this.queues.set(stageId, result.catch(() => {}));
     return result;
   }

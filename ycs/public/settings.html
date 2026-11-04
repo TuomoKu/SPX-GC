@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>YCS SPX · Settings</title>
+  <link rel="stylesheet" href="/ycs/data-manager.css">
+  <link rel="stylesheet" href="/ycs/settings.css">
+  <script defer src="/ycs/settings.js"></script>
+</head>
+<body>
+  <header><a class="brand" href="/">SPX <span>/ YCS</span></a><h1>Settings</h1><nav><a href="/ycs/data-manager">Data Manager</a><a href="/">Projects</a></nav></header>
+  <main>
+    <div class="page-heading"><div><h2>YCS SPX settings</h2><p>Server settings for this installation.</p></div><span id="pending" class="status" hidden>Restart required</span></div>
+    <p id="message" role="status" aria-live="polite">Loading settings…</p>
+    <form id="settings-form">
+      <fieldset id="fields" disabled>
+        <section class="settings-card">
+          <h2>Google Sheets</h2>
+          <label>Reader<select id="sheets-enabled"><option value="false">Public query connector (existing)</option><option value="true">Google Sheets API</option></select></label>
+          <p id="running-reader" class="hint"></p>
+          <label>API key<input id="sheets-key" type="password" autocomplete="new-password" spellcheck="false" placeholder="Leave blank to keep the existing key" maxlength="256"></label>
+          <p id="key-status" class="hint"></p>
+          <label class="check"><input id="clear-key" type="checkbox">Remove saved key</label>
+          <p class="hint">The key is saved in a private server file and never sent back to this page. A configured environment variable takes priority. Sheets must be publicly viewable.</p>
+          <div class="test-row"><label>Public spreadsheet URL<input id="test-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/…/edit"></label><button id="test-sheets" type="button">Test API connection</button></div>
+          <p id="test-result" role="status" aria-live="polite" class="hint"></p>
+        </section>
+        <section class="settings-card">
+          <h2>Asset folders</h2>
+          <label>Decktype image folders<textarea id="decktype-folders" rows="3" spellcheck="false" placeholder="C:\YCS\Decktypes"></textarea></label>
+          <p class="hint">One server folder per line, in search order. Local paths and network shares are supported. Offline folders do not block saving.</p>
+          <label>Graphics source folder<input id="graphics-root" spellcheck="false" placeholder="C:\YCS\ycs-graphics\graphics\ticker"></label>
+          <p class="hint">Optional development source folder currently used for the ticker and shared graphics. Installed SPX templates stay in the templates folder.</p>
+        </section>
+        <div class="settings-actions"><button id="save" type="submit" class="primary" disabled>Save settings</button><button id="revert" type="button" disabled>Revert</button><span id="draft-status" class="hint"></span></div>
+      </fieldset>
+    </form>
+    <section class="settings-card">
+      <h2>Outputs</h2><div id="outputs"></div><p id="slots" class="hint"></p>
+    </section>
+    <section class="settings-card server-card">
+      <div><h2>Server</h2><p id="config-file" class="hint"></p><p id="restart-help" class="hint"></p></div>
+      <button id="restart" type="button" disabled>Restart server</button>
+    </section>
+  </main>
+  <dialog id="restart-dialog" aria-labelledby="restart-title">
+    <h2 id="restart-title">Restart SPX?</h2>
+    <p>Preview and output connections will briefly disconnect. Program starts stopped. Saved graphics and mappings are retained.</p>
+    <div class="dialog-actions"><button id="cancel-restart" type="button">Cancel</button><button id="confirm-restart" type="button" class="primary">Restart server</button></div>
+  </dialog>
+</body>
+</html>

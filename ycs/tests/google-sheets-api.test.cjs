@@ -34,10 +34,10 @@ function mock() {
   return { sheets, calls, fail: status => { failure = status; }, rename: value => { title = value; }, advance: ms => { clock += ms; } };
 }
 
-test('transport is opt-in; missing credentials fail clearly and never fall back silently', () => {
+test('transport is opt-in; missing credentials fail clearly and never fall back silently', async () => {
   assert.ok(createSheets() instanceof PublicSheets);
   assert.ok(createSheets({ enabled: false }) instanceof PublicSheets);
-  assert.throws(() => createSheets({ enabled: true }, { env: {} }), /environment variable/);
+  await assert.rejects(createSheets({ enabled: true }, { env: {} }).read(settings), /key is missing/);
   assert.throws(() => createSheets({ enabled: true, keyEnv: 'bad name' }), /Invalid sheetsAPI/);
   assert.ok(createSheets({ enabled: true, keyEnv: 'SHEETS_KEY' }, { env: { SHEETS_KEY: 'test-key' } }) instanceof GoogleSheetsAPI);
 });
