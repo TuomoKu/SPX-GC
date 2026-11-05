@@ -14,7 +14,7 @@ try {
     @{ id=$startedProcess.Id; executable=$nodeExecutable; startTicks=$startedProcess.StartTime.ToUniversalTime().Ticks.ToString() } | ConvertTo-Json | Set-Content '.local/process.json'
     $ready = $false
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
-        try { $null = Invoke-WebRequest "http://127.0.0.1:$portNumber/api/ycs/stages" -TimeoutSec 1; $ready = $true; break } catch { Start-Sleep -Milliseconds 250 }
+        try { $null = Invoke-WebRequest "http://127.0.0.1:$portNumber/api/ycs/stages" -TimeoutSec 1 -UseBasicParsing; $ready = $true; break } catch { Start-Sleep -Milliseconds 250 }
     }
     if (-not $ready) { throw 'The server did not become ready. Check .local/server-error.log.' }
     Write-Output "Stage 1: http://127.0.0.1:$portNumber/gc/YCS-Stage-1/Show"

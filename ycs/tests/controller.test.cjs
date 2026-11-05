@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
-async function controller(t, compact = false, previewOnEdit = true, primary = false, checkboxLinked = false) {
+async function controller(t, compact = false, previewOnEdit = true, primary = false, hooks = {}) {
   const dom = new JSDOM(
     `<html data-ycs-stage="stage-1" data-ycs-project="Stage1" data-ycs-rundown="Show"><head></head><body><div id="controllerPluginButtons"></div><iframe id="previewIF"></iframe>
     <div class="itemrow inFocus" data-spx-epoch="ticker"><div class="truncate"></div><div id="Expanded" style="display:block"></div>
@@ -55,7 +55,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
   window.io = () => ({
     on: (event, callback) => channels.set(event, callback),
     emit() {},
-    disconnect() {}
+    disconnect() {},
+    connect() { hooks.connects = (hooks.connects || 0) + 1; }
   });
   window.fetch = async (url, request) => {
     let payload;
@@ -75,7 +76,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
         editorRevision: action === 'stop' ? 99 : action === 'preview' ? revision : ++revision,
         ...(action === 'nickname' ? { nickname: body.nickname.trim() } : {})
       };
-    } else if (url.endsWith('/editor'))
+    } else if (url === '/gc/Stage1/Show' && hooks.page) return hooks.page();
+    else if (url.endsWith('/editor'))
       payload = {
         previewOnEdit,
         slots:[{id:'ticker',label:'Ticker'},{id:'lower-third',label:'Lower third'}], slot:'ticker',slotOverride:'ticker',defaultSlot:'ticker',slotConfigured:true,
@@ -83,7 +85,7 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
         revision,
         links: {
           f5: { mode: 'manual', manual: 'MANUAL ROUND' },
-          ...(compact ? { f2: { mode: checkboxLinked ? 'linked' : 'manual', manual: '1' } } : {})
+          ...(compact ? { f2: { mode: hooks.checkboxLinked ? 'linked' : 'manual', manual: '1' } } : {})
         },
         fields: compact
           ? [
@@ -101,14 +103,14 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
             ]
           : [{ field: 'f5', ftype: 'textfield', title: 'Current round', value: 'MANUAL ROUND' }]
       };
-    else if (url.endsWith('/data'))
+    else if (/\/data(?:\?.*)?$/.test(url))
       payload = {
         health: 'ok',
         sources: { 'test.round': { label: 'Test round', value: 'LINKED ROUND' } },
         mappings: [{ stage: 'stage-1', graphic: 'ticker', field: 'f5', source: 'test.round' }]
       };
     else if (url.endsWith('/health'))
-      payload = {
+      payload = hooks.health || {
         program: { connected: 0, ready: 0, errors: [] },
         preview: { connected: 0, ready: 0, errors: [] }
       };
@@ -141,6 +143,7 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
     preview: (selected) =>
       channels.get('state')({ stage: 'stage-1', mode: 'preview', selected, graphics: [] }),
     closed: () => closed,
+    connectError: () => channels.get('connect_error')(new Error('Stage connection not authorized')),
     rejectFields: (errors) => {
       validationError = errors;
     }
@@ -308,7 +311,7 @@ test('nickname editing changes only display metadata, preserves unsaved field ed
 });
 
 test('a linked checkbox with a cleared mapping keeps its unlink button visible and restores manual editing', async t => {
-  const r = await controller(t, true, true, false, true);
+  const r = await controller(t, true, true, false, { checkboxLinked: true });
   const style = r.window.document.createElement('style');
   style.textContent = await fs.readFile(path.join(__dirname, '../public/controller.css'), 'utf8');
   r.window.document.head.append(style);
@@ -568,4 +571,51 @@ test('slot dropdown saves routing without preview/play and keeps unsaved content
  select.value='lower-third';select.dispatchEvent(new r.window.Event('change',{bubbles:true}));
  for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));
  assert.equal(r.posts.length,1);assert.ok(r.posts[0].url.endsWith('/slot'));assert.equal(r.posts[0].body.slot,'lower-third');assert.equal(input.value,'UNSAVED');
+});
+
+test('the stage panel shows renderer errors from stage health so a failed slot is visible', async (t) => {
+  const health = {
+    program: { connected: 1, ready: 0, errors: ['lower-third: Template lifecycle timed out'] },
+    preview: { connected: 1, ready: 1, errors: [] }
+  };
+  const r = await controller(t, false, true, false, { health });
+  const status = r.window.document.querySelector('.ycs-output-health');
+  assert.equal(status.hidden, false);
+  assert.equal(status.textContent, 'Program output · lower-third: Template lifecycle timed out');
+});
+
+test('the stage panel shows a restored-program notice from stage health, and Dismiss clears it on the server', async (t) => {
+  const health = {
+    program: { connected: 1, ready: 1, errors: [] },
+    preview: { connected: 1, ready: 1, errors: [] },
+    restored: { graphics: 2, downtimeSeconds: 7 }
+  };
+  const r = await controller(t, false, true, false, { health });
+  const status = r.window.document.querySelector('.ycs-restored-status');
+  assert.equal(status.hidden, false);
+  assert.equal(status.querySelector('span').textContent, 'Restored 2 graphics after restart · server was down about 7 s');
+  status.querySelector('button').click();
+  assert.equal(status.hidden, true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(r.posts.map((post) => post.url), ['/api/ycs/stages/stage-1/restored/dismiss'], 'Dismiss sends no playout command');
+});
+
+test('the controller socket reconnects after an authorization rejection and reports a login redirect', async (t) => {
+  const hooks = { page: async () => ({ ok: true, redirected: false, url: 'http://localhost/gc/Stage1/Show' }) };
+  const r = await controller(t, false, true, false, hooks);
+  const timers = [];
+  const schedule = r.window.setTimeout;
+  r.window.setTimeout = (callback, ms) => (ms === 5000 ? timers.push(callback) : schedule(callback, ms));
+  const status = r.window.document.querySelector('.ycs-connection-status');
+  r.connectError();
+  assert.equal(status.hidden, false);
+  assert.equal(timers.length, 1, 'a rejected namespace connection schedules a renewal');
+  await timers.shift()();
+  assert.equal(hooks.connects, 1, 'the session is renewed through the page, then the socket reconnects');
+  hooks.page = async () => ({ ok: true, redirected: true, url: 'http://localhost/login' });
+  r.connectError();
+  await timers.shift()();
+  assert.equal(hooks.connects, 1);
+  assert.match(status.textContent, /signed out/);
+  assert.equal(timers.length, 1, 'keeps checking in case the operator signs in elsewhere');
 });

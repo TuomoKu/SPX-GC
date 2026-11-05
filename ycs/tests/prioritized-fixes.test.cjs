@@ -123,7 +123,8 @@ test('binding pruning protects a pending disk write and releases failed descript
   assert.equal(sources.snapshot().sources[ref], undefined);
   const failedRef = sources.mapping('stage-1', 'ticker', 'f5', '/test/graphic.html');
   repository.write = async () => { await save('AFTER FAILURE'); now += 60001; throw new Error('Disk failure'); };
-  await assert.rejects(playback.command('stage-1', 'ticker', 'play', undefined, { links: { f5: { mode: 'linked', manual: 'Manual' } } }), /Disk failure/);
+  // A changed manual fallback must be saved before Play, so this write is required.
+  await assert.rejects(playback.command('stage-1', 'ticker', 'play', undefined, { links: { f5: { mode: 'linked', manual: 'Changed manual' } } }), /Disk failure/);
   assert.equal(sources.snapshot().sources[failedRef], undefined);
   assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0);
 });

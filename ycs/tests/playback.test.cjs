@@ -6,9 +6,11 @@ const path = require('node:path');
 const os = require('node:os');
 const { RundownRepository, Playback } = require('../playback.cjs');
 
+const { testData } = require('./helpers/test-data.cjs');
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ycs-playback-'));
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  // A program-state write can still be finishing when a test ends.
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 20 }));
   const stages = [1, 2, 3].map(number => ({ id: `stage-${number}`, project: `Stage${number}`, rundown: 'Show' }));
   for (const [index, stage] of stages.entries()) {
     const folder = path.join(root, stage.project, 'data');
@@ -18,6 +20,8 @@ async function fixture(t) {
     ] });
     await fs.writeFile(path.join(folder, 'Show.json'), JSON.stringify({ templates: [make('ticker', 'ticker'), make('lower-third', 'lower-third'), make('other-name', 'lower-third')] }));
   }
+  // Test round sources at the conventional data path (see helpers/test-data.cjs).
+  await fs.writeFile(path.join(root, 'sources.json'), JSON.stringify(testData(stages), null, 2));
   const repository = new RundownRepository(root, stages);
   const playback = new Playback(repository, { ticker: { order: 10 }, 'lower-third': { order: 20 } });
   return { root, stages, repository, playback };
@@ -86,7 +90,7 @@ test('repeated Play is idempotent in content and simultaneous commands serialize
   assert.deepEqual(playback.snapshot('stage-1', 'program').graphics, initial);
 });
 
-test('invalid patches and failed disk writes preserve the active composition', async t => {
+test('invalid patches and failed content writes preserve the active composition; Stop never waits on disk', async t => {
   const { playback, repository } = await fixture(t);
   await playback.command('stage-1', 'ticker', 'play');
   const before = playback.snapshot('stage-1', 'program');
@@ -96,11 +100,14 @@ test('invalid patches and failed disk writes preserve the active composition', a
   }
   const write = repository.write;
   repository.write = async () => { throw new Error('Disk unavailable'); };
-  await assert.rejects(playback.command('stage-1', 'ticker', 'stop'));
+  // New field values must be saved before they go on air.
+  await assert.rejects(playback.command('stage-1', 'ticker', 'update', [{ field: 'f5', value: 'NEW ROUND' }]), /Disk unavailable/);
   assert.deepEqual(playback.snapshot('stage-1', 'program'), before);
-  repository.write = write;
+  // Stop takes the graphic off air even though its onair flag cannot be saved.
   await playback.command('stage-1', 'ticker', 'stop');
   assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0);
+  repository.write = write;
+  playback.close();
 });
 
 test('stage events are scoped and snapshots are detached from internal state', async t => {

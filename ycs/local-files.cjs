@@ -5,9 +5,19 @@ const { columnName, usable } = require('./public-sheets.cjs');
 
 const MAX_BYTES = 1048576;
 const TABLE_RANGE = 'A1:AF200';
+// A file modified more recently than this may still be mid-write by its producer.
+const SETTLE_MS = 2000;
 function fail(message, status = 400) {
   const error = new Error(message);
   error.status = status;
+  throw error;
+}
+// A read that may have seen a partly written file. Callers keep their last valid
+// data and retry soon; it is neither a source failure nor new data.
+function transient(message) {
+  const error = new Error(message);
+  error.status = 503;
+  error.transient = true;
   throw error;
 }
 function localFileType(name) {
@@ -142,10 +152,15 @@ function parseCSV(raw, delimiter = ',') {
 }
 
 class LocalFiles {
-  constructor(root, { locations = [], timeoutMs = 5000, io = fs } = {}) {
+  constructor(
+    root,
+    { locations = [], timeoutMs = 5000, io = fs, settleMs = SETTLE_MS, now = Date.now } = {}
+  ) {
     this.root = path.resolve(root);
     this.io = io;
     this.timeoutMs = timeoutMs;
+    this.settleMs = settleMs;
+    this.now = now;
     this.jobs = new Map();
     if (!Array.isArray(locations) || locations.length > 20)
       fail('Configure up to 20 additional server data locations');
@@ -233,7 +248,9 @@ class LocalFiles {
     signal.throwIfAborted();
     return { root, folder: resolved };
   }
-  async read(input, { signal, type } = {}) {
+  // `settle` (background polls) also rejects files modified within settleMs as
+  // transient. Explicit tests and saves only reject files that change mid-read.
+  async read(input, { signal, type, settle = false } = {}) {
     type ||= localFileType(path.basename(filePath(input?.file)));
     const settings = normalizeLocalSettings(input, type),
       location = path.isAbsolute(settings.file)
@@ -243,15 +260,15 @@ class LocalFiles {
       ? { ...settings, file: path.basename(settings.file) }
       : settings;
     return this.bounded(
-      'read:' + location.id + ':' + JSON.stringify(settings),
+      'read:' + (settle ? 'settled:' : '') + location.id + ':' + JSON.stringify(settings),
       async (signal) => ({
-        ...(await this.readFile(readSettings, type, location, signal)),
+        ...(await this.readFile(readSettings, type, location, signal, settle)),
         settings
       }),
       { signal }
     );
   }
-  async readFile(settings, type, location, signal) {
+  async readFile(settings, type, location, signal, settle = false) {
     let file;
     try {
       const parts = settings.file.split('/'),
@@ -288,6 +305,17 @@ class LocalFiles {
       }
       signal.throwIfAborted();
       if (size > MAX_BYTES) fail('Local files must be up to 1 MB');
+      // Producers that rewrite a file in place can be caught mid-write: a header
+      // only, a cut row or a cut cell all parse as valid data. Compare size and
+      // modification time around the read and wait for recent writes to settle.
+      const after = await file.stat();
+      signal.throwIfAborted();
+      if (after.size !== stat.size || after.mtimeMs !== stat.mtimeMs || size !== stat.size)
+        transient('File changed while it was being read; retaining the last valid data');
+      // A file server whose clock runs ahead makes every write look recent; callers
+      // stop asking to settle after repeated transient reads (see DataSources).
+      if (settle && this.settleMs > 0 && this.now() - after.mtimeMs < this.settleMs)
+        transient('File was modified moments ago; waiting for the write to finish');
       let raw;
       try {
         raw = new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(0, size));
@@ -322,6 +350,7 @@ module.exports = {
   parseCSV,
   localFileType,
   MAX_BYTES,
+  SETTLE_MS,
   TABLE_RANGE,
   relativePath,
   filePath

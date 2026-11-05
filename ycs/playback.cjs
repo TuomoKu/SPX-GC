@@ -11,6 +11,12 @@ const { writeJSON } = require('../utils/config-store.cjs');
 const clone = value => structuredClone(value);
 const identifier = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
 function fail(message, status = 400) { const error = new Error(message); error.status = status; throw error; }
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+function bounded(promise, ms, message) {
+  let timer;
+  const limit = new Promise((_, reject) => { timer = setTimeout(() => { const error = new Error(message); error.status = 503; reject(error); }, ms); });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
+}
 function manualValue(definition, value) {
   try { return normalizeField(definition, value, { manual: true }); }
   catch (cause) {
@@ -22,31 +28,89 @@ function manualValue(definition, value) {
 }
 
 class RundownRepository {
-  constructor(root, stages) {
+  constructor(root, stages, { readTimeout = 3000, writeTimeout = 5000 } = {}) {
     this.stages = new Map();
     for (const stage of stages) {
       if (!identifier.test(stage.id) || !identifier.test(stage.project) || !identifier.test(stage.rundown)) fail('Invalid stage configuration');
       if (this.stages.has(stage.id)) fail('Duplicate stage');
       this.stages.set(stage.id, { ...stage, file: path.resolve(root, stage.project, 'data', stage.rundown + '.json') });
     }
+    Object.assign(this, { readTimeout, writeTimeout });
+    // Parsed files keyed by path, reused while the file stamp is unchanged.
+    this.cache = new Map();
+    this.loading = new Map();
+    this.writing = new Map();
   }
   stage(id) { return this.stages.get(id) || fail('Unknown stage', 404); }
+  profileFile(id) { return path.resolve(this.stage(id).file, '../../profile.json'); }
   matchFile(file) {
     if (typeof file !== 'string') return;
     const target = path.resolve(file);
     return [...this.stages.values()].find(stage => process.platform === 'win32' ? stage.file.toLowerCase() === target.toLowerCase() : stage.file === target);
   }
-  async read(id) {
-    const stage = this.stage(id);
-    const rundown = JSON.parse(await fs.readFile(stage.file, 'utf8'));
-    if (!Array.isArray(rundown.templates)) fail('Invalid stage rundown', 500);
+  // One disk load per file at a time, however many callers ask. A stalled read
+  // (a hung SMB share) then holds one libuv thread rather than one per poll.
+  refresh(file, validate = value => value) {
+    let pending = this.loading.get(file);
+    if (pending) return pending;
+    pending = (async () => {
+      for (let attempt = 0; ; attempt++) {
+        const info = await fs.stat(file);
+        const stamp = [info.mtimeMs, info.size, info.ino].join(':');
+        const cached = this.cache.get(file);
+        if (cached?.stamp === stamp) return cached.value;
+        try {
+          const value = validate(JSON.parse(await fs.readFile(file, 'utf8')));
+          this.cache.set(file, { stamp, value });
+          return value;
+        } catch (error) {
+          // Stock SPX routes rewrite rundowns in place; a read can catch one half-written.
+          if (!(error instanceof SyntaxError) || attempt >= 3) throw error;
+          await pause(20);
+        }
+      }
+    })().catch(error => {
+      if (error.code === 'ENOENT') this.cache.delete(file);
+      throw error;
+    }).finally(() => this.loading.delete(file));
+    this.loading.set(file, pending);
+    return pending;
+  }
+  load(file, validate) {
+    return bounded(this.refresh(file, validate), this.readTimeout, 'Show files are not responding; try again');
+  }
+  validRundown(rundown) {
+    if (!Array.isArray(rundown?.templates)) fail('Invalid stage rundown', 500);
     const ids = rundown.templates.map(item => item.itemID);
     if (new Set(ids).size !== ids.length) fail('Rundown graphic IDs must be unique', 500);
     return rundown;
   }
+  async read(id) {
+    return clone(await this.load(this.stage(id).file, rundown => this.validRundown(rundown)));
+  }
+  async profile(id) {
+    try { return await this.load(this.profileFile(id)); }
+    catch (error) { if (error.code === 'ENOENT') return {}; throw error; }
+  }
+  // Last parsed copy, without touching disk. Read-only; may be stale or undefined.
+  peek(id) { return this.cache.get(this.stage(id).file)?.value; }
+  // Polls are answered from memory, refreshed in the background for at most `wait` ms.
+  async inventory(id, wait = 1000) {
+    const refreshes = [this.refresh(this.stage(id).file, rundown => this.validRundown(rundown)), this.refresh(this.profileFile(id))];
+    await Promise.race([Promise.allSettled(refreshes), pause(wait)]);
+    return { rundown: this.peek(id), profile: this.cache.get(this.profileFile(id))?.value };
+  }
   async write(id, rundown) {
     const file = this.stage(id).file;
-    await writeJSON(file, { ...rundown, updated: new Date().toISOString() });
+    // Writes for a stage are serialized by its queue, so one still pending here
+    // has timed out. Fail fast rather than racing it or tying up more threads.
+    if (this.writing.has(file)) fail('Show files are not responding; try again', 503);
+    const value = { ...rundown, updated: new Date().toISOString() };
+    const pending = writeJSON(file, value).finally(() => this.writing.delete(file));
+    this.writing.set(file, pending);
+    await bounded(pending, this.writeTimeout, 'Show files are not responding; try again');
+    // Re-stat on the next read; keep the written copy for memory-only callers.
+    this.cache.set(file, { stamp: null, value: clone(value) });
   }
   item(rundown, id) { return rundown.templates.find(item => item.itemID === id) || fail('Unknown graphic', 404); }
 }
@@ -84,7 +148,7 @@ function descriptor(item, slots, sources) {
     if (!linkable(item, field)) continue;
     const source = sources?.mapping(item.ycsStage, item.itemID, field, item.relpath);
     const definition=item.DataFields.find(item=>item.field===field);
-    links[field] = { ...link, source, definition:{ftype:definition.ftype,...(definition.ycsCollection?{ycsCollection:definition.ycsCollection}:{}),...(definition.items?{items:definition.items}:{})} };
+    links[field] = { ...link, source, definition:{ftype:definition.ftype,...(definition.ycsCollection?{ycsCollection:definition.ycsCollection}:{}),...(definition.items?{items:definition.items}:{}),...(definition.min!==undefined?{min:definition.min}:{}),...(definition.max!==undefined?{max:definition.max}:{}),...(definition.required!==undefined?{required:definition.required}:{})} };
     if (link.mode === 'linked' && sources?.value(source)!==undefined) {try {data[field]=normalizeField(definition,sources.value(source));}catch{/* Retain the manual fallback for incompatible source values. */}}
   }
   return { id: item.itemID, slot: item.ycsSlot, z: slot.order, exitMs: slot.exitMs ?? 250, template: '/templates' + item.relpath, data, ...(Object.keys(links).length ? { links } : {}) };
@@ -101,6 +165,14 @@ class Playback extends EventEmitter {
     }
     this.states = new Map();
     this.queues = new Map();
+    this.persistence = new Map();
+    this.presses = new Map();
+    this.now = Date.now;
+    this.repeatWindow = 400;
+    // Restart recovery: notices for stages whose program was put back, and a
+    // gate that holds commands and output subscriptions until that decision.
+    this.notices = new Map();
+    this.ready = Promise.resolve();
     for (const stage of repository.stages.values()) this.states.set(stage.id, { revision: 0, program: [], draft: null });
   }
   state(stageId) { this.repository.stage(stageId); return this.states.get(stageId); }
@@ -114,10 +186,10 @@ class Playback extends EventEmitter {
     }
     return { stage: stageId, mode, revision: state.revision, selected: state.draft?.id || null, graphics: items.sort((a, b) => a.z - b.z) };
   }
-  queue(stageId, operation) {
+  queue(stageId, operation, { duringRestart = false } = {}) {
     this.repository.stage(stageId);
-    const result = (this.queues.get(stageId) || Promise.resolve()).then(() => {
-      if (this.restartPending) fail('Server restart in progress; try again after it reconnects', 503);
+    const result = (this.queues.get(stageId) || this.ready).then(() => {
+      if (this.restartPending && !duringRestart) fail('Server restart in progress; try again after it reconnects', 503);
       return operation();
     });
     this.queues.set(stageId, result.catch(() => {}));
@@ -131,14 +203,73 @@ class Playback extends EventEmitter {
         Object.values(graphic?.links || {}).filter(link => link.mode === 'linked').map(link => link.source))));
     this.state(stageId).revision++;
     for (const mode of ['program', 'preview']) this.emit(stageId + ':' + mode, this.snapshot(stageId, mode));
+    this.emit('publish', stageId);
   }
+  // Put back a stage's saved program exactly as it was: same descriptors, data,
+  // continuation steps and a later revision. The rundown is not consulted, so a
+  // stale rundown cannot change what is on air; linked data updates follow
+  // through refreshLinks as usual.
+  restore(stageId, saved, downtimeMs) {
+    const state = this.state(stageId);
+    state.program = clone(saved.program);
+    state.draft = saved.draft ? clone(saved.draft) : null;
+    state.revision = saved.revision;
+    if (state.program.length) this.notices.set(stageId, { graphics: state.program.length, downtimeSeconds: Math.round(downtimeMs / 1000) });
+    this.publish(stageId);
+  }
+  // Shown in the stage panel until dismissed or the next Program command.
+  restored(stageId) { this.state(stageId); return this.notices.get(stageId) || null; }
+  dismissRestored(stageId) { this.state(stageId); this.notices.delete(stageId); }
   async definition(stageId, item) {
-    const file = path.resolve(this.repository.stage(stageId).file, '../../profile.json');
+    const profile = await this.repository.profile(stageId);
+    const matches = (profile.templates || []).filter(template => template.relpath === item.relpath);
+    return matches.length === 1 ? clone(matches[0]) : {};
+  }
+  // Mark rundown onair flags from a program composition. Returns true if any changed.
+  flag(rundown, program) {
+    let changed = false;
+    for (const candidate of rundown.templates) {
+      const onair = String(program.some(current => current.id === candidate.itemID));
+      if (candidate.onair !== onair) { candidate.onair = onair; changed = true; }
+    }
+    return changed;
+  }
+  // Save onair flags after the program has already changed and been published.
+  // Disk trouble must never keep a graphic on air, so this logs and retries
+  // later instead of failing the command. Call it inside the stage queue.
+  async persist(stageId) {
+    let entry = this.persistence.get(stageId);
+    if (!entry) this.persistence.set(stageId, entry = { failures: 0 });
+    clearTimeout(entry.timer);
+    entry.timer = null;
     try {
-      const profile = JSON.parse(await fs.readFile(file, 'utf8'));
-      const matches = (profile.templates || []).filter(template => template.relpath === item.relpath);
-      return matches.length === 1 ? matches[0] : {};
-    } catch (error) { if (error.code === 'ENOENT') return {}; throw error; }
+      const rundown = await this.repository.read(stageId);
+      if (this.flag(rundown, this.state(stageId).program)) await this.repository.write(stageId, rundown);
+      entry.failures = 0;
+    } catch (error) {
+      // A missing rundown has no flags to save; do not retry it forever.
+      if (error.code === 'ENOENT') { entry.failures = 0; return; }
+      const wait = Math.min(30000, 1000 * 2 ** entry.failures++);
+      console.warn(`[YCS playback] ${stageId}: could not save on-air flags (${error.message}); retrying in ${wait / 1000} s`);
+      entry.timer = setTimeout(() => this.queue(stageId, () => this.persist(stageId), { duringRestart: true }).catch(() => {}), wait);
+      entry.timer.unref?.();
+    }
+  }
+  editorRevision(stageId, graphicId) {
+    return this.repository.peek(stageId)?.templates.find(item => item.itemID === graphicId)?.ycsEditRevision || 0;
+  }
+  // Companion GET buttons retry, and operators double-press. A Toggle or
+  // Continue repeated for the same item within the window is ignored.
+  // Times are when each press arrived, so a slow save cannot make a later,
+  // intentional press look like a repeat of the one still being processed.
+  repeated(stageId, graphicId, action, arrived) {
+    const key = stageId + '\n' + graphicId + '\n' + action;
+    const last = this.presses.get(key);
+    return last !== undefined && arrived >= last && arrived - last < this.repeatWindow;
+  }
+  pressed(stageId, graphicId, action, arrived) {
+    for (const [key, at] of this.presses) if (arrived < at || arrived - at >= this.repeatWindow) this.presses.delete(key);
+    this.presses.set(stageId + '\n' + graphicId + '\n' + action, arrived);
   }
   async routed(stageId, item) {
     const definition = await this.definition(stageId, item);
@@ -156,6 +287,7 @@ class Playback extends EventEmitter {
       if (slot === null) delete item.ycsSlot; else item.ycsSlot = slot;
       if (before !== JSON.stringify([Object.hasOwn(item, 'ycsSlot'), item.ycsSlot])) {
         item.ycsEditRevision = revision + 1;
+        this.flag(rundown, this.state(stageId).program);
         await this.repository.write(stageId, rundown);
       }
       const effective = await this.routed(stageId, item);
@@ -215,6 +347,7 @@ class Playback extends EventEmitter {
       if ((item.ycsNickname || '') !== name) {
         if (name) item.ycsNickname = name; else delete item.ycsNickname;
         item.ycsEditRevision = revision + 1;
+        this.flag(rundown, this.state(stageId).program);
         await this.repository.write(stageId, rundown);
       }
       // Operator metadata only: preserve IDs, bindings, manual values and both
@@ -227,15 +360,36 @@ class Playback extends EventEmitter {
   command(stageId, graphicId, action, fields, options = {}) {
     if (!['play', 'stop', 'toggle', 'update', 'preview', 'save', 'continue', 'focus'].includes(action)) fail('Unknown command');
     if (action === 'focus' && (fields !== undefined || options.links !== undefined)) fail('Focus uses saved data', 400);
+    const requested = action, arrived = this.now();
     return this.queue(stageId, async () => {
-      const rundown = await this.repository.read(stageId);
-      const item = this.repository.item(rundown, graphicId);
-      await this.sources?.ready;
       const state = this.state(stageId);
+      if (['play', 'stop', 'toggle', 'update', 'continue'].includes(requested)) this.notices.delete(stageId);
       const active = state.program.find(current => current.id === graphicId);
+      if (['toggle', 'continue'].includes(requested) && this.repeated(stageId, graphicId, requested, arrived))
+        return { ...this.snapshot(stageId, 'program'), editorRevision: this.editorRevision(stageId, graphicId), repeated: true };
       // Resolve inside the stage queue, using actual program membership rather
       // than saved onair flags, preview selection or a Companion-local toggle.
       if (action === 'toggle') action = active ? 'stop' : 'play';
+      // Stop is always allowed: it only ever takes graphics off air.
+      if (this.restartPending && action !== 'stop') fail('Server restart in progress; try again after it reconnects', 503);
+      if (action === 'stop') {
+        // Act on the in-memory program first: an unreadable or locked rundown
+        // must never keep a graphic on air. Persist the onair flags afterwards.
+        if (!active) {
+          let known = this.repository.peek(stageId);
+          if (!known) known = await this.repository.read(stageId).catch(() => undefined);
+          if (known) this.repository.item(known, graphicId);
+        } else {
+          state.program = state.program.filter(current => current.id !== graphicId);
+        }
+        this.publish(stageId);
+        if (active) await this.persist(stageId);
+        if (requested === 'toggle') this.pressed(stageId, graphicId, requested, arrived);
+        return { ...this.snapshot(stageId, 'program'), editorRevision: this.editorRevision(stageId, graphicId) };
+      }
+      const rundown = await this.repository.read(stageId);
+      const item = this.repository.item(rundown, graphicId);
+      await this.sources?.ready;
       const changesData = ['play', 'update', 'save', 'preview', 'focus'].includes(action);
       const originalContent = JSON.stringify([item.DataFields, item.ycsLinks || {}]);
       if (changesData && options.revision !== undefined && options.revision !== (item.ycsEditRevision || 0)) fail('This graphic was saved in another controller. Reload before continuing.', 409);
@@ -272,22 +426,24 @@ class Playback extends EventEmitter {
       }
       const contentChanged = originalContent !== JSON.stringify([item.DataFields, item.ycsLinks || {}]);
       const routed = await this.routed(stageId, item);
-      // Stop/Continue operate on the active snapshot even if routing is now invalid.
-      const graphic = ['stop', 'continue'].includes(action) ? clone(active || {links:{}}) : action === 'save' && !Object.hasOwn(this.slots, routed.ycsSlot) ? null : descriptor({ ...routed, ycsStage: stageId }, this.slots, this.sources);
+      // Continue operates on the active snapshot even if routing is now invalid.
+      const graphic = action === 'continue' ? clone(active || {links:{}}) : action === 'save' && !Object.hasOwn(this.slots, routed.ycsSlot) ? null : descriptor({ ...routed, ycsStage: stageId }, this.slots, this.sources);
       // A poll may prune while a rundown write awaits disk. Hold this descriptor
       // until its links have been installed in program/preview, or the write fails.
       const release = this.sources?.holdReferences?.(Object.values(graphic?.links || {}).filter(link => link.mode === 'linked').map(link => link.source));
+      let deferred = false;
       try {
         if (action === 'preview' || action === 'focus') {
           state.draft = graphic;
         } else if (action === 'save') {
           if (contentChanged) item.ycsEditRevision = (item.ycsEditRevision || 0) + 1;
+          this.flag(rundown, state.program);
           await this.repository.write(stageId, rundown);
           if (state.draft?.id === graphicId) state.draft = graphic;
         } else if (action === 'continue') {
           if (!active) fail('Graphic is not active', 409);
           if (!(Number(item.steps) > 1)) fail('Graphic has no continuation step', 422);
-          // An explicit increment is replayed only within this connected session.
+          // An explicit increment is replayed after a remount or output reload.
           active.continuation = (active.continuation || 0) + 1;
         } else {
           let next = clone(state.program);
@@ -296,23 +452,26 @@ class Playback extends EventEmitter {
             next = next.filter(current => current.slot !== graphic.slot && current.id !== graphicId);
             if (active?.continuation) graphic.continuation = active.continuation;
             next.push(graphic);
-          } else if (action === 'stop') {
-            next = next.filter(current => current.id !== graphicId);
           } else if (active) {
             graphic.continuation = active.continuation;
             next = next.filter(current => current.id === graphicId || current.slot !== graphic.slot).map(current => current.id === graphicId ? graphic : current);
           }
-          if (contentChanged) item.ycsEditRevision = (item.ycsEditRevision || 0) + 1;
-          for (const candidate of rundown.templates) candidate.onair = String(next.some(current => current.id === candidate.itemID));
-          await this.repository.write(stageId, rundown);
+          if (contentChanged) {
+            // New field values must be saved before they go on air.
+            item.ycsEditRevision = (item.ycsEditRevision || 0) + 1;
+            this.flag(rundown, next);
+            await this.repository.write(stageId, rundown);
+          } else deferred = true; // Saved data only: onair flags follow best-effort.
           state.program = next;
-          if (state.draft?.id === graphicId && action !== 'stop') state.draft = graphic;
+          if (state.draft?.id === graphicId) state.draft = graphic;
         }
         this.publish(stageId);
+        if (deferred) await this.persist(stageId);
+        if (['toggle', 'continue'].includes(requested)) this.pressed(stageId, graphicId, requested, arrived);
         if (action === 'focus') this.emit(stageId + ':focus', { stage: stageId, selected: graphicId });
         return { ...this.snapshot(stageId, action === 'preview' || action === 'focus' || action === 'save' ? 'preview' : 'program'), editorRevision: item.ycsEditRevision || 0 };
       } finally { release?.(); }
-    });
+    }, { duringRestart: true });
   }
   refreshLinks(stageId) {
     return this.queue(stageId, async () => {
@@ -320,6 +479,7 @@ class Playback extends EventEmitter {
       let changed = false;
       for (const graphic of [...state.program, ...(state.draft ? [state.draft] : [])]) {
         for (const [field, link] of Object.entries(graphic.links || {})) {
+          if (link.mode === 'linked' && this.sources?.awaitingLiveRead?.(link.source)) continue;
           let value = this.sources?.value(link.source);
           if(value!==undefined){try{value=normalizeField(link.definition||{ftype:'textfield'},value);}catch{continue;}}
           if (link.mode === 'linked' && value !== undefined && value !== graphic.data[field]) {
@@ -332,16 +492,19 @@ class Playback extends EventEmitter {
     });
   }
   clear(stageId) {
+    // Stop stage acts on memory first, like Stop, and is allowed during a restart.
     return this.queue(stageId, async () => {
-      const rundown = await this.repository.read(stageId);
-      for (const item of rundown.templates) item.onair = 'false';
-      await this.repository.write(stageId, rundown);
       const state = this.state(stageId);
+      this.notices.delete(stageId);
       state.program = [];
       state.draft = null;
       this.publish(stageId);
+      await this.persist(stageId);
       return this.snapshot(stageId, 'program');
-    });
+    }, { duringRestart: true });
+  }
+  close() {
+    for (const entry of this.persistence.values()) clearTimeout(entry.timer);
   }
 }
 

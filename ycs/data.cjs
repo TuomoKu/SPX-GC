@@ -3,19 +3,100 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { randomUUID, createHash } = require('node:crypto');
-const { PublicSheets, normalizeSettings } = require('./public-sheets.cjs');
+const { PublicSheets, normalizeSettings, columnName, usable } = require('./public-sheets.cjs');
 const { JSONAPI, normalizeJSONSettings } = require('./json-api.cjs');
 const sourceTypes = require('./public/source-types.js');
 const { LocalFiles, normalizeLocalSettings } = require('./local-files.cjs');
 const { linkable } = require('./field-types.cjs');
 const { selection, resolve, transform, normalizeTransform } = require('./bindings.cjs');
+const { writeText } = require('../utils/config-store.cjs');
 const clone = (value) => structuredClone(value);
+const empty = () => ({ version: 2, revision: 0, sources: {}, connections: {}, mappings: [], defaults: [] });
 const keyPattern = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+// Restart cache bound. Writes drop the largest datasets to stay under it (resolved
+// field values are always kept); reads accept anything the writer can produce.
+const CACHE_LIMIT = 64 * 1048576;
+const CACHE_INTERVAL = 10000;
+const BACKOFF_CAP_SECONDS = 120;
+const TRANSIENT_RETRY_MS = 1000;
 function fail(message, status = 400) {
   const error = new Error(message);
   error.status = status;
   throw error;
+}
+// Bounded concurrency for one transport. A stalled request occupies one slot.
+class Pool {
+  constructor(size) {
+    this.size = size;
+    this.active = 0;
+    this.waiting = [];
+  }
+  run(task) {
+    return new Promise((resolve, reject) => {
+      this.waiting.push({ task, resolve, reject });
+      this.drain();
+    });
+  }
+  drain() {
+    while (this.active < this.size && this.waiting.length) {
+      const { task, resolve, reject } = this.waiting.shift();
+      this.active++;
+      Promise.resolve()
+        .then(task)
+        .then(resolve, reject)
+        .finally(() => {
+          this.active--;
+          this.drain();
+        });
+    }
+  }
+}
+// Tables are cached as a value grid plus the address of its first cell. Addresses
+// and the usable flag are derived again on restore, which keeps the file small.
+function packRows(rows) {
+  const first = rows?.[0]?.[0]?.address?.match(/^([A-Z]+)(\d+)$/);
+  if (!first) return { rows };
+  const column = [...first[1]].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0),
+    row = Number(first[2]);
+  const packed = rows.every(
+    (cells, i) =>
+      cells.length === rows[0].length &&
+      cells.every(
+        (cell, j) =>
+          cell.address === columnName(column + j) + (row + i) &&
+          typeof cell.value === 'string' &&
+          cell.usable === usable(cell.value)
+      )
+  );
+  return packed
+    ? { origin: first[0], values: rows.map((cells) => cells.map((cell) => cell.value)) }
+    : { rows };
+}
+function unpackRows(saved) {
+  if (!saved?.origin) return saved?.rows;
+  const first = String(saved.origin).match(/^([A-Z]{1,3})(\d{1,7})$/);
+  if (!first || !Array.isArray(saved.values)) return undefined;
+  const column = [...first[1]].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0),
+    row = Number(first[2]);
+  return saved.values.map((cells, i) =>
+    Array.isArray(cells)
+      ? cells.map((value, j) => ({
+          address: columnName(column + j) + (row + i),
+          value,
+          usable: usable(value)
+        }))
+      : cells
+  );
+}
+const datasetHash = (rows, data, headerRows) => hash([rows, data, headerRows]).slice(0, 16);
+function nonEmptyList(value) {
+  try {
+    const items = JSON.parse(value);
+    return Array.isArray(items) && items.length > 0;
+  } catch {
+    return false;
+  }
 }
 function cachedValue(value) {
   if (typeof value !== 'string' || value.length > 65536) return false;
@@ -179,7 +260,8 @@ class DataSources extends EventEmitter {
       sheets = new PublicSheets(),
       json = new JSONAPI(),
       localFiles = new LocalFiles(path.join(path.dirname(file), 'data-sources')),
-      now = Date.now
+      now = Date.now,
+      cacheLimit = CACHE_LIMIT
     } = {}
   ) {
     super();
@@ -190,6 +272,7 @@ class DataSources extends EventEmitter {
       json,
       localFiles,
       now,
+      cacheLimit,
       error: '',
       document: null,
       checkedAt: null,
@@ -205,6 +288,10 @@ class DataSources extends EventEmitter {
     this.createdAt = now();
     this.cacheFile = this.file.replace(/\.json$/i, '') + '.sheets-cache.json';
     this.cache = {};
+    this.cacheWarning = '';
+    this.pools = new Map();
+    this.emptySeen = new Map();
+    this.cacheWrittenAt = -Infinity;
     this.serial = Promise.resolve();
     this.cacheSerial = Promise.resolve();
     this.activeReferences = () => [];
@@ -213,34 +300,27 @@ class DataSources extends EventEmitter {
     });
   }
   async initialize() {
-    const initial = {
-      version: 2,
-      revision: 0,
-      sources: {},
-      connections: {},
-      mappings: [],
-      defaults: []
-    };
-    for (const stage of this.stages) {
-      const id = `test.${stage.id}.currentRound`;
-      initial.sources[id] = {
-        label: `${stage.title || stage.id} · Current round`,
-        value: 'SWISS ROUND 11 OF 15'
-      };
-      initial.mappings.push({ stage: stage.id, graphic: 'ticker', field: 'f5', source: id });
-    }
-    await fs.mkdir(path.dirname(this.file), { recursive: true });
+    // A missing data file is never recreated here: seeding demo sources at
+    // startup put demo values on air. Linked fields use manual values until the
+    // file is available; setup/demo/rehearsal scripts write their own data.
     try {
-      await fs.writeFile(this.file, JSON.stringify(initial, null, 2), { flag: 'wx' });
-    } catch (error) {
-      if (error.code !== 'EEXIST') throw error;
-    }
-    try {
-      const raw = await fs.readFile(this.cacheFile, 'utf8');
-      if (raw.length < 4194304) {
-        const cache = JSON.parse(raw);
-        if (cache.version === 2) {
-          this.cache = cache.connections || {};
+      const { size } = await fs.stat(this.cacheFile);
+      // The writer stays under cacheLimit; allow headroom for its size estimate.
+      if (size > this.cacheLimit + 1048576) {
+        this.cacheWarning =
+          'Restart cache was too large to load; linked fields use manual text until sources respond';
+        console.error(
+          `[YCS data] Ignoring restart cache ${this.cacheFile}: ${size} bytes exceeds ${this.cacheLimit + 1048576}`
+        );
+      } else {
+        const cache = JSON.parse(await fs.readFile(this.cacheFile, 'utf8'));
+        if (cache.version === 2 || cache.version === 3) {
+          this.cache = Object.fromEntries(
+            Object.entries(cache.connections || {}).map(([id, saved]) => [
+              id,
+              { ...saved, rows: unpackRows(saved) }
+            ])
+          );
           this.good = Object.fromEntries(
             Object.entries(cache.good || {}).filter(
               ([key, value]) => key.startsWith('bind.') && cachedValue(value)
@@ -248,19 +328,26 @@ class DataSources extends EventEmitter {
           );
         } else this.legacyCache = cache.values;
       }
-    } catch {
+    } catch (error) {
       /* Cache is optional; manual fields remain usable. */
+      if (error.code !== 'ENOENT') {
+        this.cacheWarning =
+          'Restart cache could not be read; linked fields use manual text until sources respond';
+        console.error('[YCS data] Restart cache unreadable:', error.message);
+      }
     }
-    const original = await fs.readFile(this.file, 'utf8');
-    const parsed = JSON.parse(original.replace(/^\uFEFF/, ''));
-    if (parsed.version === 1) {
+    const original = await fs.readFile(this.file, 'utf8').catch((error) => {
+      if (error.code !== 'ENOENT') throw error;
+      console.error(`[YCS data] DATA FILE NOT FOUND: ${this.file}. Linked fields use their manual values until it is available.`);
+    });
+    const parsed = original === undefined ? null : JSON.parse(original.replace(/^\uFEFF/, ''));
+    if (parsed?.version === 1) {
       const next = migrate(parsed);
       this.document = next;
       await fs.writeFile(this.file + '.v1-backup.json', original, { flag: 'wx' }).catch((error) => {
         if (error.code !== 'EEXIST') throw error;
       });
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       for (const [id, source] of Object.entries(parsed.sources)) {
         const saved = this.legacyCache?.[id];
         if (
@@ -278,7 +365,7 @@ class DataSources extends EventEmitter {
     this.serial = result.catch(() => {});
     return result;
   }
-  async read() {
+  async read(snapshotOptions) {
     const previous = JSON.stringify([this.document, this.error]);
     try {
       const raw = await fs.readFile(this.file, 'utf8');
@@ -294,17 +381,21 @@ class DataSources extends EventEmitter {
       this.document = next;
       this.syncRuntimes();
       this.error = '';
-    } catch {
-      this.error = 'Local JSON source unavailable or invalid; retaining last valid values';
+      this.missing = false;
+    } catch (error) {
+      this.missing = !this.document && error.code === 'ENOENT';
+      this.error = this.missing
+        ? 'Data file not found; linked fields use their manual values'
+        : 'Local JSON source unavailable or invalid; retaining last valid values';
     }
     this.checkedAt = new Date().toISOString();
     if (previous !== JSON.stringify([this.document, this.error])) this.emit('change');
-    return this.snapshot();
+    return this.snapshot(snapshotOptions);
   }
-  refresh() {
+  refresh(snapshotOptions) {
     return this.queue(async () => {
       await this.ready;
-      return this.read();
+      return this.read(snapshotOptions);
     });
   }
   syncRuntimes() {
@@ -327,17 +418,31 @@ class DataSources extends EventEmitter {
           ))
       )
         saved = undefined;
+      const restored = saved?.fingerprint === fingerprint,
+        rows = restored ? saved.rows : undefined,
+        data = restored ? saved.data : undefined,
+        headerRows = saved?.headerRows || [
+          parseInt(connection.settings.range?.match(/\d+/)?.[0])
+        ];
       this.runtimes.set(id, {
         fingerprint,
-        rows: saved?.fingerprint === fingerprint ? saved.rows : undefined,
-        data: saved?.fingerprint === fingerprint ? saved.data : undefined,
-        headerRows: saved?.headerRows || [parseInt(connection.settings.range?.match(/\d+/)?.[0])],
-        lastSuccess: saved?.fingerprint === fingerprint ? saved.lastSuccess : null,
+        rows,
+        data,
+        headerRows,
+        datasetHash: rows || data !== undefined ? datasetHash(rows, data, headerRows) : '',
+        lastSuccess: restored ? saved.lastSuccess : null,
+        cacheOnly: true,
         lastAttempt: null,
         nextAt: 0,
         failures: 0,
+        reads: 0,
+        transient: 0,
         health: 'loading',
-        error: ''
+        error: '',
+        restoreWarning:
+          rows || data !== undefined
+            ? ''
+            : 'No cached data from before restart; linked fields keep their manual text until the first successful read'
       });
     }
     for (const id of this.runtimes.keys())
@@ -395,6 +500,7 @@ class DataSources extends EventEmitter {
       }
     for (const id of Object.keys(this.good))
       if (id.startsWith('bind.') && expired(id)) delete this.good[id];
+    for (const id of this.emptySeen.keys()) if (!this.bindings.has(id)) this.emptySeen.delete(id);
   }
   effective(stage, graphic, field, template) {
     const override = this.document?.mappings.find(
@@ -436,6 +542,7 @@ class DataSources extends EventEmitter {
       runtime = this.runtimes.get(input.connection),
       connection = this.document?.connections[input.connection];
     let error = '',
+      notice = '',
       collection,
       resolved;
     try {
@@ -452,6 +559,18 @@ class DataSources extends EventEmitter {
         );
         if (collection.invalid) throw new Error(collection.error);
         value = collection.value;
+        // Staff clearing a range to retype it must not drain an on-air ticker.
+        // A non-empty list becomes empty only after two consecutive empty reads.
+        if (!previewRecord && !collection.items.length && nonEmptyList(this.good[ref])) {
+          const reads = runtime?.reads || 0;
+          if (!this.emptySeen.has(ref)) this.emptySeen.set(ref, reads);
+          if (reads <= this.emptySeen.get(ref)) {
+            if (runtime) runtime.pendingEmpty = true;
+            notice =
+              'Story list is empty; holding the previous list until the next read confirms it';
+            value = undefined;
+          } else this.emptySeen.delete(ref);
+        } else if (!previewRecord) this.emptySeen.delete(ref);
       } else {
         value = transform(
           resolve(sourceTypes.isJSON(connection) ? runtime?.data : runtime?.rows, input.selection),
@@ -460,7 +579,7 @@ class DataSources extends EventEmitter {
         if (!text(value)) throw new Error('Transformed value is empty or exceeds 300 characters');
       }
       resolved = value;
-      if (!previewRecord) this.good[ref] = value;
+      if (!previewRecord && value !== undefined) this.good[ref] = value;
     } catch (problem) {
       error = problem.message;
     }
@@ -479,21 +598,27 @@ class DataSources extends EventEmitter {
       lastSuccess: status.lastSuccess,
       lastAttempt: status.lastAttempt,
       nextRefresh: status.nextRefresh,
-      warning: status.warning
+      warning: notice || status.warning
     };
   }
   value(id) {
     return id ? this.resolveSnapshot(id).value : undefined;
   }
-  connectionSnapshot(id, connection) {
+  // `omitDataset` leaves out rows/data, which callers already hold (same hash).
+  connectionSnapshot(id, connection, { omitDataset = false } = {}) {
     const runtime = this.runtimes.get(id),
       stale =
         !runtime?.lastSuccess ||
         this.now() - Date.parse(runtime.lastSuccess) > connection.settings.refreshSeconds * 2000;
     return {
       ...connection,
-      rows: runtime?.rows || [],
-      ...(sourceTypes.isJSON(connection) ? { data: runtime?.data } : {}),
+      ...(omitDataset
+        ? { datasetUnchanged: true }
+        : {
+            rows: runtime?.rows || [],
+            ...(sourceTypes.isJSON(connection) ? { data: runtime?.data } : {})
+          }),
+      datasetHash: runtime?.datasetHash || '',
       health: this.error
         ? 'error'
         : runtime?.health === 'ok' && stale
@@ -504,11 +629,18 @@ class DataSources extends EventEmitter {
       lastAttempt: runtime?.lastAttempt || null,
       nextRefresh: runtime?.nextAt ? new Date(runtime.nextAt).toISOString() : null,
       error: runtime?.error || '',
-      warning: runtime?.cacheError || ''
+      warning: runtime?.cacheError || runtime?.restoreWarning || runtime?.readWarning || ''
     };
   }
-  snapshot() {
+  // `datasets`: 'all' (default), 'none', or a Map of connection id → datasetHash the
+  // caller already holds; matching connections omit their rows/data.
+  snapshot({ datasets = 'all' } = {}) {
     this.pruneBindings();
+    const omit = (id) =>
+      datasets === 'none' ||
+      (datasets instanceof Map &&
+        Boolean(this.runtimes.get(id)?.datasetHash) &&
+        datasets.get(id) === this.runtimes.get(id).datasetHash);
     const document = this.document || {
       version: 2,
       revision: 0,
@@ -540,11 +672,15 @@ class DataSources extends EventEmitter {
       connections: Object.fromEntries(
         Object.entries(document.connections).map(([id, value]) => [
           id,
-          { ...this.connectionSnapshot(id, value), usages: this.usages(id) }
+          {
+            ...this.connectionSnapshot(id, value, { omitDataset: omit(id) }),
+            usages: this.usages(id)
+          }
         ])
       ),
       health: this.error ? 'unavailable' : 'ok',
       error: this.error,
+      warning: this.cacheWarning,
       checkedAt: this.checkedAt
     });
   }
@@ -604,8 +740,7 @@ class DataSources extends EventEmitter {
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       this.document = next;
       this.syncRuntimes(); this.checkedAt = next.updatedAt; this.emit('change');
       return { removed };
@@ -615,15 +750,20 @@ class DataSources extends EventEmitter {
     return this.queue(async () => {
       await this.ready;
       await this.read();
-      if (this.error) fail('Repair the local JSON source before saving changes', 503);
-      if (!Number.isSafeInteger(expectedRevision) || expectedRevision !== this.document.revision)
+      // An explicit save may create a missing data file, but never its folder:
+      // an unmounted share must not be replaced by a new local folder.
+      if (this.missing) await fs.stat(path.dirname(this.file)).catch(() =>
+        fail(`Data folder not found: ${path.dirname(this.file)}. Connect the drive or restore the folder, then retry.`, 503));
+      else if (this.error) fail('Repair the local JSON source before saving changes', 503);
+      const current = this.document || empty();
+      if (!Number.isSafeInteger(expectedRevision) || expectedRevision !== current.revision)
         fail('Data changed elsewhere. Reload saved data before saving.', 409);
-      const next = clone(this.document);
+      const next = clone(current);
       operation(next);
-      const changed = Object.keys(this.document.connections).filter(id =>
-        JSON.stringify({...this.document.connections[id].settings, refreshSeconds:0}) !== JSON.stringify({...next.connections[id]?.settings, refreshSeconds:0}) ||
-        this.document.connections[id].type !== next.connections[id]?.type ||
-        this.document.connections[id].project !== next.connections[id]?.project);
+      const changed = Object.keys(current.connections).filter(id =>
+        JSON.stringify({...current.connections[id].settings, refreshSeconds:0}) !== JSON.stringify({...next.connections[id]?.settings, refreshSeconds:0}) ||
+        current.connections[id].type !== next.connections[id]?.type ||
+        current.connections[id].project !== next.connections[id]?.project);
       const used = changed.filter(id => this.usages(id).length);
       if (used.length && confirmed !== true) throw Object.assign(new Error('This change affects linked graphics. Compatible mappings keep their cells or selectors. Removed or incompatible mappings use manual fallback. Existing Program graphics retain their committed values until Play or Update.'), {status:409, confirmationRequired:true});
       if (changed.length) {
@@ -644,9 +784,10 @@ class DataSources extends EventEmitter {
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       this.document = next;
+      this.error = '';
+      this.missing = false;
       this.syncRuntimes();
       this.checkedAt = next.updatedAt;
       this.emit('change');
@@ -712,35 +853,85 @@ class DataSources extends EventEmitter {
     });
   }
   async persistCache() {
+    clearTimeout(this.cacheTimer);
+    this.cacheTimer = null;
+    this.cacheDirty = false;
+    this.cacheWrittenAt = this.now();
     this.pruneBindings();
     // Resolve all registered bindings before saving the restart fallback.
     for (const id of [...Object.keys(this.document.sources), ...this.bindings.keys()])
       this.value(id);
-    const connections = Object.fromEntries(
-      [...this.runtimes]
-        .filter(
-          ([, runtime]) => (runtime.rows || runtime.data !== undefined) && runtime.lastSuccess
-        )
-        .map(([id, runtime]) => [
-          id,
-          {
-            fingerprint: runtime.fingerprint,
-            rows: runtime.rows,
-            data: runtime.data,
-            headerRows: runtime.headerRows,
-            lastSuccess: runtime.lastSuccess
-          }
-        ])
-    );
-    const raw = JSON.stringify({ version: 2, connections, good: this.good });
+    const entries = [...this.runtimes]
+      .filter(([, runtime]) => (runtime.rows || runtime.data !== undefined) && runtime.lastSuccess)
+      .map(([id, runtime]) => {
+        const entry = {
+          fingerprint: runtime.fingerprint,
+          ...(runtime.rows ? packRows(runtime.rows) : {}),
+          data: runtime.data,
+          headerRows: runtime.headerRows,
+          lastSuccess: runtime.lastSuccess
+        };
+        const raw = JSON.stringify(entry);
+        return { id, entry, raw, bytes: Buffer.byteLength(raw), runtime };
+      });
+    const good = JSON.stringify(this.good);
+    // Resolved field values always fit; the largest datasets are dropped first.
+    let total = Buffer.byteLength(good) + entries.reduce((sum, item) => sum + item.bytes + 100, 0);
+    const dropped = [];
+    for (const item of [...entries].sort((a, b) => b.bytes - a.bytes)) {
+      if (total <= this.cacheLimit) break;
+      total -= item.bytes + 100;
+      dropped.push(item);
+    }
+    for (const item of entries)
+      item.runtime.cacheError = dropped.includes(item)
+        ? 'Restart cache is full; after a restart this connection keeps only its resolved field values'
+        : '';
+    if (dropped.length && !this.cacheFull)
+      console.error(
+        `[YCS data] Restart cache exceeds ${this.cacheLimit} bytes; omitting datasets for`,
+        dropped.map((item) => item.id).join(', ')
+      );
+    this.cacheFull = dropped.length > 0;
+    const kept = entries.filter((item) => !dropped.includes(item));
+    const raw = `{"version":3,"connections":{${kept
+      .map((item) => JSON.stringify(item.id) + ':' + item.raw)
+      .join(',')}},"good":${good}}`;
     this.cacheSerial = this.cacheSerial
       .catch(() => {})
       .then(async () => {
         await fs.writeFile(this.cacheFile + '.tmp', raw);
         await fs.rename(this.cacheFile + '.tmp', this.cacheFile);
       });
-    await this.cacheSerial;
-    this.cache = connections;
+    try {
+      await this.cacheSerial;
+    } catch (error) {
+      this.cacheDirty = true;
+      throw error;
+    }
+    this.cache = Object.fromEntries(
+      kept.map((item) => [item.id, { ...item.entry, rows: item.runtime.rows }])
+    );
+  }
+  // Background reads write the restart cache at most once per CACHE_INTERVAL. The
+  // first change after a quiet period is written at once; close() flushes the rest.
+  scheduleCacheWrite() {
+    this.cacheDirty = true;
+    if (this.cacheTimer || this.closed) return;
+    const write = () => {
+      this.cacheTimer = null;
+      if (!this.cacheDirty || !this.document) return;
+      this.persistCache().catch(() => {
+        for (const runtime of this.runtimes.values())
+          runtime.cacheError = 'Live data is available, but its restart cache could not be saved';
+        // Try again after the normal interval rather than waiting for new data.
+        this.scheduleCacheWrite();
+      });
+    };
+    const wait = this.cacheWrittenAt + CACHE_INTERVAL - this.now();
+    if (wait <= 0) return write();
+    this.cacheTimer = setTimeout(write, wait);
+    this.cacheTimer.unref?.();
   }
   readConnection(type, settings, options) {
     if (sourceTypes.isLocal(type)) return this.localFiles.read(settings, { ...options, type });
@@ -766,7 +957,7 @@ class DataSources extends EventEmitter {
         ...(project ? { project } : {})
       };
     }, confirmed);
-    this.acceptRead(id, result.rows, result.data, result.headerRows);
+    this.acceptRead(id, result.rows, result.data, result.headerRows, result.warning);
     await this.persistCache().catch(() => {
       this.runtimes.get(id).cacheError =
         'Live data is available, but its restart cache could not be saved';
@@ -800,23 +991,36 @@ class DataSources extends EventEmitter {
     await this.persistCache();
     return { sourceId, snapshot: this.snapshot() };
   }
-  acceptRead(id, rows, data, headerRows) {
+  // True until a connection restored from the restart cache has been read live.
+  // That cache can be older than a restored Program, so on-air links wait for live data.
+  awaitingLiveRead(id) {
+    const input = this.document?.sources[id]?.binding || this.bindings.get(id);
+    const connection = input?.source ? this.document?.sources[input.source]?.binding?.connection : input?.connection;
+    return Boolean(this.runtimes.get(connection)?.cacheOnly);
+  }
+  // Returns whether the dataset differs from the one already held.
+  acceptRead(id, rows, data, headerRows, warning = '') {
     const runtime = this.runtimes.get(id),
       now = this.now();
+    headerRows ||= [parseInt(this.document.connections[id].settings.range?.match(/\d+/)?.[0])];
+    const digest = datasetHash(rows, data, headerRows),
+      changed = digest !== runtime.datasetHash;
+    if (changed) Object.assign(runtime, { rows, data, headerRows, datasetHash: digest });
     Object.assign(runtime, {
-      rows,
-      data,
-      headerRows: headerRows || [
-        parseInt(this.document.connections[id].settings.range?.match(/\d+/)?.[0])
-      ],
       lastSuccess: new Date(now).toISOString(),
       lastAttempt: new Date(now).toISOString(),
       failures: 0,
+      transient: 0,
+      reads: (runtime.reads || 0) + 1,
       health: 'ok',
       error: '',
       cacheError: '',
+      cacheOnly: false,
+      restoreWarning: '',
+      readWarning: warning || '',
       nextAt: Math.min(8640000000000000, now + this.document.connections[id].settings.refreshSeconds * 1000)
     });
+    return changed;
   }
   async ensureCollectionHeaders(input) {
     const pick = input?.selection;
@@ -832,10 +1036,10 @@ class DataSources extends EventEmitter {
       return runtime?.rows && !runtime.headerRows?.includes(input.selection.headerRow);
     };
     if (needsHeader())
-      await this.refreshSheet(input.connection, { headerRows: [input.selection.headerRow] });
+      await this.refreshConnection(input.connection, { headerRows: [input.selection.headerRow] });
     // An existing coalesced poll may not have requested this draft header.
     if (needsHeader())
-      await this.refreshSheet(input.connection, { headerRows: [input.selection.headerRow] });
+      await this.refreshConnection(input.connection, { headerRows: [input.selection.headerRow] });
   }
   headerRows(id) {
     return [
@@ -856,7 +1060,30 @@ class DataSources extends EventEmitter {
       )
     ];
   }
-  async refreshSheet(id, { headerRows = [] } = {}) {
+  async refreshSheet(id, options) {
+    await this.refreshConnection(id, options);
+    return this.snapshot();
+  }
+  // Transport budget for scheduled reads: local files never queue behind internet
+  // requests, and each local root (drive or share) has its own slots.
+  transport(connection) {
+    if (sourceTypes.isLocal(connection)) {
+      const file = connection.settings.file;
+      return (
+        'local:' +
+        (path.isAbsolute(file)
+          ? path.parse(file).root.toLowerCase()
+          : connection.settings.location || 'default')
+      );
+    }
+    return connection.type === 'json-api' ? 'json-api' : 'google-sheets';
+  }
+  pool(key) {
+    if (!this.pools.has(key))
+      this.pools.set(key, new Pool(key === 'google-sheets' ? this.sheets.batchSize || 4 : 4));
+    return this.pools.get(key);
+  }
+  async refreshConnection(id, { headerRows = [] } = {}) {
     await this.ready;
     if (this.closed) return;
     id = this.document?.sources[id]?.binding?.connection || id;
@@ -868,38 +1095,74 @@ class DataSources extends EventEmitter {
     this.controllers.add(controller);
     const job = (async () => {
       runtime.lastAttempt = new Date(this.now()).toISOString();
+      const before = runtime.health + '\n' + runtime.error,
+        wasCacheOnly = runtime.cacheOnly;
+      let changed = false;
       try {
         const configuredHeader = connection.sheetRange?.headerRow;
         const result = await this.readConnection(connection.type, connection.settings, {
           signal: controller.signal,
-          headerRows: [...new Set([...this.headerRows(id), ...headerRows, ...(Number.isInteger(configuredHeader) ? [configuredHeader] : [])])]
+          headerRows: [...new Set([...this.headerRows(id), ...headerRows, ...(Number.isInteger(configuredHeader) ? [configuredHeader] : [])])],
+          // After repeated transient reads (a file rewritten every second), accept
+          // any read that stayed consistent from start to finish.
+          settle: runtime.transient < 3
         });
         if (this.closed || this.runtimes.get(id) !== runtime) return;
         if (sourceTypes.isTable(connection) && !Array.isArray(result.rows))
           fail('Connection returned invalid rows', 502);
-        this.acceptRead(id, result.rows, result.data, result.headerRows);
-        try {
-          await this.persistCache();
-        } catch {
-          runtime.cacheError = 'Live data is available, but its restart cache could not be saved';
+        const recovered = runtime.failures > 0;
+        changed = this.acceptRead(id, result.rows, result.data, result.headerRows, result.warning);
+        if (changed) this.scheduleCacheWrite();
+        if (recovered) {
+          // This connection was failing and now works, so the transport is back: retry
+          // the others waiting out a backoff. A permanently bad source never triggers this.
+          const transport = this.transport(connection);
+          for (const [other, value] of this.runtimes)
+            if (
+              other !== id &&
+              value.failures > 0 &&
+              this.document.connections[other] &&
+              this.transport(this.document.connections[other]) === transport
+            )
+              value.nextAt = Math.min(value.nextAt, this.now());
+          if (transport === 'google-sheets')
+            for (const value of this.workbookRuntimes?.values() || [])
+              if (value.failures > 0) value.nextAt = Math.min(value.nextAt, this.now());
         }
       } catch (error) {
         if (this.closed || this.runtimes.get(id) !== runtime) return;
-        runtime.failures++;
-        runtime.health = 'error';
-        runtime.error = error.message;
-        runtime.nextAt =
-          this.now() +
-          Math.min(
-            3600,
-            connection.settings.refreshSeconds * 2 ** Math.min(runtime.failures - 1, 6)
-          ) *
-            1000;
+        if (error.transient) {
+          // A file possibly mid-write, or sheet content waiting for its worksheet
+          // check: keep the last valid data and look again shortly.
+          runtime.transient++;
+          runtime.nextAt = this.now() + (error.retryAfterMs ?? TRANSIENT_RETRY_MS);
+        } else {
+          runtime.failures++;
+          runtime.transient = 0;
+          runtime.health = 'error';
+          runtime.error = error.message;
+          runtime.nextAt =
+            this.now() +
+            Math.min(
+              BACKOFF_CAP_SECONDS,
+              connection.settings.refreshSeconds * 2 ** Math.min(runtime.failures - 1, 6)
+            ) *
+              1000;
+        }
       } finally {
         this.controllers.delete(controller);
       }
-      if (!this.closed && this.runtimes.get(id) === runtime) this.emit('change');
-      return this.snapshot();
+      // Unchanged data neither rebuilds snapshots nor refreshes on-air links, except
+      // to confirm an empty story list held from the previous read.
+      const pendingEmpty = runtime.pendingEmpty;
+      runtime.pendingEmpty = false;
+      if (pendingEmpty && !this.closed && this.runtimes.get(id) === runtime) this.scheduleCacheWrite();
+      if (
+        !this.closed &&
+        this.runtimes.get(id) === runtime &&
+        (changed || pendingEmpty || (wasCacheOnly && !runtime.cacheOnly) || before !== runtime.health + '\n' + runtime.error)
+      )
+        this.emit('change');
     })();
     this.inFlight.set(id, job);
     try {
@@ -908,34 +1171,43 @@ class DataSources extends EventEmitter {
       if (this.inFlight.get(id) === job) this.inFlight.delete(id);
     }
   }
+  // Each due connection is scheduled independently through its transport's pool.
+  // A connection is never queued twice, so its reads cannot overlap. Resolves when
+  // the reads started by this call settle; later calls do not wait for them.
   async pollSheets() {
     await this.ready;
-    if (this.polling || this.closed || this.error) return;
-    this.polling = true;
-    try {
-      await this.pollWorkbooks();
-      const due = [...this.runtimes]
-        .filter(([id, value]) => !this.document.connections[id]?.sheetRange && value.nextAt <= this.now())
-        .map(([id]) => id);
-      // API reads scheduled together are combined into one batch per workbook.
-      // Other adapters retain the existing four-connection concurrency bound.
-      const groups = this.sheets.batchSize
-        ? [
-            { ids: due.filter(id => this.document.connections[id]?.type === 'google-sheets'), size: this.sheets.batchSize },
-            { ids: due.filter(id => this.document.connections[id]?.type !== 'google-sheets'), size: 4 }
-          ]
-        : [{ ids: due, size: 4 }];
-      for (const { ids, size } of groups)
-        for (let index = 0; index < ids.length && !this.closed; index += size)
-          await Promise.allSettled(ids.slice(index, index + size).map(id => this.refreshSheet(id)));
-    } finally {
-      this.polling = false;
+    // An invalid external edit keeps polling from the last valid configuration.
+    if (this.closed || !this.document) return;
+    const now = this.now(),
+      jobs = [this.pollWorkbooks()];
+    for (const [id, runtime] of this.runtimes) {
+      const connection = this.document.connections[id];
+      // Named ranges are read together by their spreadsheet (workbooks.cjs).
+      if (!connection || connection.sheetRange || runtime.queued || runtime.nextAt > now) continue;
+      runtime.queued = true;
+      jobs.push(
+        this.pool(this.transport(connection))
+          .run(() => this.refreshConnection(id))
+          .catch(() => {})
+          .finally(() => {
+            runtime.queued = false;
+          })
+      );
     }
+    await Promise.all(jobs);
   }
+  // Writes a throttled restart-cache update now, if one is pending.
+  flushCache() {
+    clearTimeout(this.cacheTimer);
+    this.cacheTimer = null;
+    return this.cacheDirty && this.document ? this.persistCache() : this.cacheSerial;
+  }
+  // Returns a promise that settles once a pending restart-cache write is flushed.
   close() {
     this.closed = true;
     this.retained.clear();
     for (const controller of this.controllers) controller.abort();
+    return this.flushCache().catch(() => {});
   }
 }
 require('./workbooks.cjs').attach(DataSources);

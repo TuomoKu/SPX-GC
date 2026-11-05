@@ -152,14 +152,41 @@ document.querySelector('#run').addEventListener('click', () => task(async () => 
   status.textContent = 'Playback checks passed. All three test outputs are running. Test server restart next, or use the stage controls.';
 }));
 document.querySelector('#restart').addEventListener('click', () => task(async () => {
-  await check('Real server restart reconnects all outputs and starts program stopped', async () => {
-    const previous = await request('/rehearsal/info'); await request('/rehearsal/restart', {});
+  // crash: SIGKILL, restores. graceful: normal stop, starts clean.
+  // expired: heartbeat backdated past the window, then SIGKILL; starts clean.
+  async function restart(mode) {
+    const previous = await request('/rehearsal/info'); await request('/rehearsal/restart', { mode });
     await until(async () => (await request('/rehearsal/info')).pid !== previous.pid, 'new rehearsal worker', 30000);
+  }
+  async function onAir() {
+    await Promise.all(stages.map(async stage => { await command(stage, 'ticker', 'play'); await command(stage, 'lower-third', 'play'); }));
+    await Promise.all(stages.map(stage => rendered(stage, 2)));
+  }
+  await check('Crash restart keeps every output on air: same frames, no replayed entrance', async () => {
+    await onAir();
+    const before = await Promise.all(stages.map(state)), frames = stages.map(stage => [graphicFrame(stage), graphicFrame(stage, 'lower-third')]);
+    await restart('crash');
+    await Promise.all(stages.map(stage => rendered(stage, 2)));
+    const after = await Promise.all(stages.map(state));
+    stages.forEach((stage, i) => {
+      assert(JSON.stringify(after[i].graphics) === JSON.stringify(before[i].graphics), `${stage} restored a different program`);
+      assert(graphicFrame(stage) === frames[i][0] && graphicFrame(stage, 'lower-third') === frames[i][1], `${stage} remounted a graphic after the restart`);
+    });
+    const health = await Promise.all(stages.map(stage => request(`/api/ycs/stages/${stage}/health`)));
+    assert(health.every(item => item.restored?.graphics === 2), 'A stage is missing its restored notice');
+  });
+  await check('Graceful restart reconnects all outputs and starts program stopped', async () => {
+    await restart('graceful');
     await Promise.all(stages.map(stage => rendered(stage, 0)));
     const data = await request('/api/ycs/data'); assert(data.mappings.length === 6, 'Saved rehearsal mappings were lost');
     assert(data.sources['test.stage-2.currentRound'].value !== undefined, 'Saved source values were lost');
   });
-  status.textContent = 'Restart passed. All three outputs reconnected and are stopped. Saved rehearsal data is available for the next Play.';
+  await check('Restart after the restore window starts program stopped', async () => {
+    await onAir();
+    await restart('expired');
+    await Promise.all(stages.map(stage => rendered(stage, 0)));
+  });
+  status.textContent = 'Restart passed. A crash restart kept every graphic on air; a graceful stop and a restart after the window started stopped.';
 }));
 await refresh(); status.textContent = 'Ready. These outputs start stopped. Run playback checks to rehearse all three stages.';
 setInterval(() => { if (!busy) refresh(); }, 1500);

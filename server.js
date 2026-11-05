@@ -802,7 +802,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 
 // Middleware
-app.use(bodyParser.json());
+// Linkable fields allow 65,536 characters and Save/Play send them twice; the
+// 100 kB default rejected large tickers with 413.
+app.use(bodyParser.json({ limit: '1mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 const spxSession = session({
@@ -921,6 +923,16 @@ global.io = require('socket.io')(server);
 if (ycsPlayback) {
   io.engine.use(spxSession);
   ycsPlayback.attachSockets(io);
+  // A deliberate stop (Ctrl+C, closing the console window, a service stop)
+  // records a clean shutdown, so the next start does not restore the program.
+  // A crash, kill or power loss leaves no record and restores within the window.
+  let stopping = false;
+  const stop = () => {
+    if (stopping) return;
+    stopping = true;
+    ycsPlayback.shutdown().catch(() => {}).finally(() => process.exit(0));
+  };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) process.on(signal, stop);
 }
 var clients = {}
 

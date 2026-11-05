@@ -50,6 +50,8 @@ router.get('/requestInfo', async (req, res) => {
   });
 });
 
+const RESTART_REFUSED = 'This SPX server runs under the YCS launcher, which does not restart a killed server. ' +
+  'Open /ycs/settings on the SPX computer and use Restart server.';
 router.get('/system/:data', (req, res) => {
   // same principle as with /control/:data
   // do OpSys level stuff, open folders etc..
@@ -61,6 +63,12 @@ router.get('/system/:data', (req, res) => {
   data = JSON.parse(req.params.data);
   let directoryPath = "";
   logger.verbose('System utilities / ' + JSON.stringify(data));
+  if (data.command === 'RESTARTSERVER' && global.config?.ycs?.enabled) {
+    // The YCS launcher does not supervise SPX like pm2: process.exit would stop
+    // the server for the rest of the show. Restart through YCS settings instead.
+    logger.warn('Refused RESTARTSERVER: YCS runs without a process manager. Use Restart server in YCS settings.');
+    return res.status(409).type('text/plain').send(RESTART_REFUSED);
+  }
   res.sendStatus(200);
   switch (data.command) {
 

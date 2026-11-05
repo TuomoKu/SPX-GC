@@ -2,6 +2,8 @@
 const { randomUUID } = require('node:crypto');
 const { normalizeSettings, parseRange } = require('./public-sheets.cjs');
 const pattern = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
+// Matches the connection backoff cap in data.cjs: sources recover soon after an outage.
+const BACKOFF_CAP_SECONDS = 120;
 function fail(message, status = 422) { throw Object.assign(new Error(message), { status }); }
 function label(value) {
   if (typeof value !== 'string' || !value.trim() || value.length > 300) fail('Enter a name.');
@@ -48,7 +50,7 @@ function attach(DataSources) {
   Object.assign(DataSources.prototype, {
     workbookRuntime(id) {
       this.workbookRuntimes ||= new Map();
-      const workbook = this.document.workbooks?.[id];
+      const workbook = this.document?.workbooks?.[id];
       if (!workbook) fail('Unknown spreadsheet.', 404);
       const fingerprint = JSON.stringify(workbook.settings);
       if (this.workbookRuntimes.get(id)?.fingerprint !== fingerprint) this.workbookRuntimes.set(id, { fingerprint, nextAt: 0, lastSuccess: null, failures: 0 });
@@ -89,7 +91,7 @@ function attach(DataSources) {
     },
     async saveNamedRange(workbookId, groupId, input) {
       await this.ready;
-      const book = this.document.workbooks?.[workbookId];
+      const book = this.document?.workbooks?.[workbookId];
       if (!book?.groups[groupId]) fail('Unknown group.', 404);
       const normalized = normalizeSettings({ ...input.settings, ...book.settings });
       const metadata = rangeMetadata({ workbook: workbookId, group: groupId, headerRow: input.headerRow, dataRow: input.dataRow }, normalized);
@@ -103,9 +105,12 @@ function attach(DataSources) {
         if (input.id && (!old || old.sheetRange?.workbook !== workbookId || old.sheetRange.group !== groupId)) fail('Unknown named range.', 404);
         next.connections[id] = { type: 'google-sheets', label: name, settings: normalized, sheetRange: metadata };
       }, input.confirmed);
-      this.acceptRead(id, result.rows, result.data, result.headerRows);
+      if (this.acceptRead(id, result.rows, result.data, result.headerRows)) this.emit('change');
       this.workbookRuntime(workbookId).nextAt = 0;
-      await this.persistCache();
+      // The range is already saved, so a cache failure must not report a failed save.
+      await this.persistCache().catch(() => {
+        this.runtimes.get(id).cacheError = 'Live data is available, but its restart cache could not be saved';
+      });
       return { connectionId: id, snapshot: this.snapshot() };
     },
     async removeWorkbookItem(workbookId, groupId, revision, confirmed = false) {
@@ -118,27 +123,45 @@ function attach(DataSources) {
       }, confirmed);
       return this.snapshot();
     },
-    async refreshWorkbook(id) {
-      await this.ready;
+    // Reads the named ranges together, so API reads form one batch per spreadsheet.
+    // A failing range waits out its own backoff instead of slowing the healthy ones.
+    readWorkbook(id, { all = false } = {}) {
       const runtime = this.workbookRuntime(id);
       if (runtime.pending) return runtime.pending;
       const ids = Object.keys(this.document.connections).filter(key => this.document.connections[key].sheetRange?.workbook === id);
+      const started = this.now();
+      const due = all ? ids : ids.filter(key => { const value = this.runtimes.get(key); return !value?.failures || value.nextAt <= started; });
       runtime.pending = (async () => {
-        const results = await Promise.allSettled(ids.map(key => this.refreshSheet(key)));
-        const okay = ids.length && results.every((result, index) => result.status === 'fulfilled' && this.runtimes.get(ids[index])?.health === 'ok');
+        await Promise.allSettled(due.map(key => this.refreshConnection(key)));
+        const ranges = ids.map(key => this.runtimes.get(key));
+        const okay = due.some(key => this.runtimes.get(key)?.health === 'ok');
         if (okay) { runtime.lastSuccess = new Date(this.now()).toISOString(); runtime.failures = 0; }
-        else runtime.failures++;
-        const seconds = this.document.workbooks?.[id]?.settings.refreshSeconds || 5;
-        runtime.nextAt = Math.min(8640000000000000, this.now() + seconds * 1000 * (okay || !ids.length ? 1 : Math.min(64, 2 ** Math.min(runtime.failures, 6))));
-      })();
-      try { await runtime.pending; } finally { runtime.pending = null; }
+        else if (due.length || !ids.length) runtime.failures++;
+        const seconds = this.document?.workbooks?.[id]?.settings.refreshSeconds || 5;
+        const wait = okay || !ids.length ? seconds : Math.min(BACKOFF_CAP_SECONDS, seconds * 2 ** Math.min(runtime.failures, 6));
+        // A range caught mid-check asks to be read again sooner than the interval.
+        const soonest = Math.min(...ranges.filter(value => value?.transient > 0).map(value => value.nextAt));
+        // With every range backing off, wake when the first of them is due.
+        const nextRange = due.length ? Infinity : Math.min(...ranges.map(value => value?.nextAt ?? Infinity));
+        runtime.nextAt = Math.min(8640000000000000, this.now() + wait * 1000, soonest, nextRange);
+      })().finally(() => { runtime.pending = null; });
+      return runtime.pending;
+    },
+    async refreshWorkbook(id) {
+      await this.ready;
+      await this.readWorkbook(id, { all: true });
       return this.snapshot();
     },
-    async pollWorkbooks() {
+    // Each spreadsheet runs independently, so a stalled one cannot delay another.
+    // Polling also skips the full snapshot, which only the refresh route returns.
+    pollWorkbooks() {
+      const jobs = [];
       for (const id of Object.keys(this.document?.workbooks || {})) {
         const runtime = this.workbookRuntime(id);
-        if (runtime.nextAt <= this.now()) await this.refreshWorkbook(id);
+        if (!runtime.pending && runtime.nextAt <= this.now())
+          jobs.push(this.readWorkbook(id).catch(error => console.error('[YCS Sheets]', error.message)));
       }
+      return Promise.all(jobs);
     }
   });
 }

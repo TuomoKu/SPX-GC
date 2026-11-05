@@ -7,9 +7,10 @@ window.YCSStagePanel = class StagePanel {
     if (address) url.host = address;
     return url.href;
   }
-  constructor({ stage, onStop }) {
+  constructor({ stage, onStop, onDismissRestored }) {
     this.stage = stage;
     this.onStop = onStop;
+    this.onDismissRestored = onDismissRestored;
     this.title = stage.toUpperCase().replaceAll('-', ' ');
     this.frame = document.getElementById('previewIF');
     this.element = document.createElement('section');
@@ -34,6 +35,8 @@ window.YCSStagePanel = class StagePanel {
       <div class="ycs-copy-status" role="status" aria-live="polite"></div>
       <input class="ycs-copy-fallback" aria-label="Output URL to copy" readonly hidden>
       <div class="ycs-connection-status" role="status" hidden></div>
+      <div class="ycs-connection-status ycs-output-health" role="status" hidden></div>
+      <div class="ycs-connection-status ycs-restored-status" role="status" hidden><span></span> <button type="button" class="ycs-restored-dismiss">Dismiss</button></div>
       <div class="ycs-panel-footer">
         <button type="button" class="ycs-clear">${this.icon('stop')}Stop stage</button>
         <a class="ycs-manager-link" href="/ycs/data-manager">Data Manager ↗</a>
@@ -70,6 +73,10 @@ window.YCSStagePanel = class StagePanel {
       } finally {
         button.disabled = false;
       }
+    });
+    this.element.querySelector('.ycs-restored-dismiss').addEventListener('click', () => {
+      this.setRestored(null);
+      this.onDismissRestored?.();
     });
     const current = this.frame?.getAttribute('src');
     this.selectMonitor(current === this.outputPath('program') ? 'program' : 'preview', false);
@@ -165,10 +172,30 @@ window.YCSStagePanel = class StagePanel {
       : 'Monitor preview · Follows program';
     this.setConnected(true);
   }
-  setConnected(connected) {
+  setConnected(connected, text = 'Controller reconnecting · Program state unconfirmed') {
     const status = this.element.querySelector('.ycs-connection-status');
     status.hidden = connected;
-    status.textContent = connected ? '' : 'Controller reconnecting · Program state unconfirmed';
+    status.textContent = connected ? '' : text;
+  }
+  // Renderer reports from /api/ycs/stages/:stage/health. A failed slot keeps its
+  // previous frame on air and retries, so show the error rather than guess.
+  setOutputHealth(health) {
+    const status = this.element.querySelector('.ycs-output-health');
+    const problems = ['program', 'preview'].flatMap((mode) =>
+      [...new Set(health?.[mode]?.errors || [])].map((error) => this.modeTitle(mode) + ' output · ' + error)
+    );
+    status.hidden = !problems.length;
+    status.textContent = problems.join('; ');
+  }
+  // Set by stage health after a restart restored this stage's program. Shown
+  // until dismissed or the next Program command on this stage.
+  setRestored(notice) {
+    const status = this.element.querySelector('.ycs-restored-status');
+    const count = notice?.graphics || 0;
+    status.hidden = !count;
+    status.querySelector('span').textContent = count
+      ? `Restored ${count} graphic${count === 1 ? '' : 's'} after restart · server was down about ${notice.downtimeSeconds} s`
+      : '';
   }
   setDataAvailable(available) {
     const link = this.element.querySelector('.ycs-manager-link');

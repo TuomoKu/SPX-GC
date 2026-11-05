@@ -48,6 +48,9 @@ async function setup(t, { apiKey, duplicate = false, allowUnauthenticatedCompani
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body)
     });
+  // Presses in these tests are deliberate; space them past the repeat window.
+  let now = 0;
+  playback.now = () => (now += 1000);
   return { ...f, playback, base, post };
 }
 test('token-free Companion permits GET and POST controls without opening internal APIs', async (t) => {

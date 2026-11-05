@@ -51,8 +51,8 @@ function validate(input) {
 
 class Settings {
   constructor({ configFile, config, playback, root = path.resolve(__dirname, '..'), env = process.env,
-    platform = process.platform, restart, fetcher = fetch, instance = `${process.pid}-${Date.now()}`, restartTimeout = 5000 }) {
-    Object.assign(this, { configFile, config, playback, root, env, platform, fetcher, instance });
+    platform = process.platform, restart, fetcher = fetch, instance = `${process.pid}-${Date.now()}`, restartTimeout = 5000, busyTimeout = 3000 }) {
+    Object.assign(this, { configFile, config, playback, root, env, platform, fetcher, instance, busyTimeout });
     this.launchRestart = restart || (async (record, requestId) => {
       const logs = path.join(root, '.local/runtime-logs');
       fs.mkdirSync(logs, { recursive: true });
@@ -153,7 +153,7 @@ class Settings {
       // credential bytes (including a damaged file) if configuration persistence fails.
       const changeKey = Boolean(input.key || input.clearKey);
       if (changeKey) await configStore.writeJSON(keyFile, { key });
-      try { await configStore.writeJSON(this.configFile, config); }
+      try { await configStore.replaceConfig(this.configFile, config); }
       catch (error) {
         if (changeKey && current.credentials.raw !== null) await configStore.writeText(keyFile, current.credentials.raw);
         else if (changeKey) fs.rmSync(keyFile, { force: true });
@@ -185,7 +185,18 @@ class Settings {
     if (!runtime.available) fail(runtime.reason, 409);
     if (this.playback.restartPending) fail('Restart already in progress.', 409);
     this.playback.restartPending = true;
-    await Promise.allSettled([...(this.playback.queues?.values() || [])]);
+    // One stuck stage (a stalled share) must not hold every stage's commands
+    // behind the restart gate. Give up and release the gate after busyTimeout.
+    let timer;
+    const idle = await Promise.race([
+      Promise.allSettled([...(this.playback.queues?.values() || [])]).then(() => true),
+      new Promise(resolve => { timer = setTimeout(resolve, this.busyTimeout, false); })
+    ]);
+    clearTimeout(timer);
+    if (!idle) {
+      this.playback.restartPending = false;
+      fail('A stage is busy. Try the restart again in a moment.', 409);
+    }
     if ([...this.playback.states.values()].some(state => state.program.length)) {
       this.playback.restartPending = false;
       fail('Stop all Program graphics before restarting the server.', 409);

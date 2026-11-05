@@ -5,7 +5,13 @@ const frames = new Map(),
   jobs = new Map(),
   provisional = new Set(),
   retired = new Set();
-const retryDelays = [250, 1000, 3000];
+// Quick retries cover a template blip; after that a failed slot keeps retrying
+// at the heartbeat interval so it recovers without another operator command.
+const retryDelays = [250, 1000, 3000],
+  retryCap = 5000,
+  // A template that fails after it was shown replays its entrance on each attempt.
+  // Keep trying, so a temporary fault cannot leave a permanent hole, but rarely.
+  shownRetry = 30000;
 let disposed = false,
   revision = -1,
   latest,
@@ -85,16 +91,21 @@ async function mount(graphic, signal) {
   provisional.add(entry);
   signal.addEventListener('abort', remove, { once: true });
   root.append(frame);
+  let shown = false;
   try {
     await bounded(loaded, 8000, signal);
     await invoke(entry, 'update', [JSON.stringify(graphic.data)], signal);
     if (signal.aborted || disposed) throw superseded();
     frame.style.visibility = '';
+    shown = true;
     await invoke(entry, 'play', [], signal);
     entry.data = JSON.stringify(graphic.data);
+    // A reload or remount of a stepped graphic returns to the step on air.
+    for (let step = 0; step < entry.continuation; step++) await invoke(entry, 'next', [], signal);
     return entry;
   } catch (error) {
     frame.remove();
+    if (shown && error?.name !== 'AbortError') throw Object.assign(new Error(error?.message || String(error)), { afterShown: true });
     throw error;
   } finally {
     provisional.delete(entry);
@@ -175,6 +186,11 @@ function kick(job) {
     generation = epoch;
   const controller = new AbortController();
   job.running = true;
+  // A superseded run can leave the slot anywhere between the old and new goal
+  // (for example an aborted exit still removes its frame), so nothing counts as
+  // applied until this run completes.
+  job.applied = undefined;
+  job.target = graphic;
   job.controller = controller;
   apply(job, graphic, controller.signal)
     .then(() => {
@@ -182,22 +198,26 @@ function kick(job) {
       job.applied = key;
       job.error = '';
       job.failures = 0;
+      job.shownFailures = 0;
     })
     .catch((error) => {
-      if (error.name === 'AbortError' || disposed || generation !== epoch || job.key !== key)
-        return;
+      if (error.name === 'AbortError' || disposed || generation !== epoch) return;
+      // New data for the same graphic must not skip the retry limit below.
+      if (job.key !== key && !(error.afterShown && sameTemplate(job.goal, graphic))) return;
       job.error = error.message;
       console.error('[YCS output]', job.slot, error);
-      if (job.failures < retryDelays.length) {
-        job.timer = setTimeout(() => {
-          job.timer = null;
-          kick(job);
-        }, retryDelays[job.failures++]);
-      }
+      const wait = error.afterShown
+        ? retryDelays[job.shownFailures++] ?? shownRetry
+        : retryDelays[job.failures++] ?? retryCap;
+      job.timer = setTimeout(() => {
+        job.timer = null;
+        kick(job);
+      }, wait);
     })
     .finally(() => {
       job.running = false;
       job.controller = null;
+      job.target = undefined;
       if (disposed) return;
       health();
       if (job.key !== key || generation !== epoch) kick(job);
@@ -216,6 +236,7 @@ events.on('connect', () => {
     job.controller?.abort();
     clearTimeout(job.timer);
     job.timer = null;
+    job.shownFailures = 0;
   }
   events.emit('subscribe', { stage, modes: [mode] });
 });
@@ -235,15 +256,30 @@ events.on('state', (snapshot) => {
   for (const slot of new Set([...jobs.keys(), ...wanted.keys()])) {
     let job = jobs.get(slot);
     if (!job) {
-      job = { slot, applied: keyOf(null), failures: 0, error: '' };
+      job = { slot, applied: keyOf(null), failures: 0, shownFailures: 0, error: '' };
       jobs.set(slot, job);
     }
     const goal = wanted.get(slot) || null,
       key = keyOf(goal);
+    // Every publish carries all of a stage's slots. Updates, including this graphic's
+    // own data, must not retry a shown failure early and replay its entrance. Stop,
+    // a different graphic or a reconnect clears this.
+    if (job.shownFailures && goal && sameTemplate(job.goal, goal)) {
+      job.goal = goal;
+      job.key = key;
+      continue;
+    }
+    job.shownFailures = 0;
     if (key !== job.key) {
       // Keep active data updates serial. Pending mounts and removed/replaced
       // identities are cancellable so Stop never waits for a stale Play.
-      if (!sameTemplate(frames.get(slot)?.graphic, goal)) job.controller?.abort();
+      // Compare with the in-flight target too: reverting a replacement that is
+      // still loading must cancel it rather than briefly showing it.
+      if (
+        !sameTemplate(frames.get(slot)?.graphic, goal) ||
+        (job.running && !sameTemplate(job.target, goal))
+      )
+        job.controller?.abort();
       clearTimeout(job.timer);
       job.timer = null;
       job.failures = 0;
@@ -285,7 +321,15 @@ async function renewViewerSession() {
       cache: 'no-store',
       signal: AbortSignal.timeout(3000)
     });
-    if (!disposed && response.ok) {
+    // CheckLogin answers an expired login-mode session with a redirect to the
+    // login page, which also returns 200. That is not a renewed output grant.
+    const final = response.url ? new URL(response.url, location.href).pathname : location.pathname;
+    if (!disposed && (response.redirected || final !== location.pathname)) {
+      connectionError = 'Output needs login; retaining current graphics';
+      renderingError = connectionError;
+      root.dataset.error = renderingError;
+      report();
+    } else if (!disposed && response.ok) {
       events.disconnect(); // Reopen the transport with the renewed session cookie.
       events.connect?.();
     }

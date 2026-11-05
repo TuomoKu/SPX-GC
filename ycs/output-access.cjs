@@ -14,12 +14,13 @@ function grant(request, stage, mode) {
     -40
   );
 }
-function allowed(request, config, stage, mode) {
+// SPX CheckLogin stores the configured user, or 'default' when login is off.
+function operator(request, config) {
   const user = request.session?.user;
-  const authenticated = config.general.username
-    ? user === config.general.username
-    : user === 'default';
-  const key = scope(stage, mode);
-  return Boolean(authenticated && key && request.session?.ycsOutputs?.includes(key));
+  return Boolean(user) && user === (config.general.username || 'default');
 }
-module.exports = { scope, grant, allowed };
+function allowed(request, config, stage, mode) {
+  const key = scope(stage, mode);
+  return Boolean(operator(request, config) && key && request.session?.ycsOutputs?.includes(key));
+}
+module.exports = { scope, grant, allowed, operator };

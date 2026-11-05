@@ -41,7 +41,12 @@
                 {{/ifValue}}
 
                 <HR class="menuDivider">
+                {{#if @root.ycsEnabled}}
+                {{!-- YCS runs without pm2: Kill would stop SPX for good. Managed restart lives in YCS settings. --}}
+                <A HREF="/ycs/settings"><i class="fas fa-power-off"></i>&nbsp; Restart SPX-server (YCS settings)</A>
+                {{else}}
                 <A HREF="" onClick="spx_system('restartServer');return false;"><i class="fas fa-power-off"></i>&nbsp; Kill (restart SPX-server)</A>
+                {{/if}}
 
                 <HR class="menuDivider">
                 <A HREF="https://html.graphics" target="_new"><i class="fas fa-shopping-cart"></i>&nbsp; html.graphics/store</A><BR>

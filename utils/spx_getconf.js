@@ -39,8 +39,9 @@ module.exports = {
                     CONFIG_FILE = path.join(CURRENT_FOLDER, ConfigArg);
                 }
                 
-                // check if config file exists
-                if (!fs.existsSync(CONFIG_FILE)) {
+                // check if config file exists. A missing file with a backup is restored
+                // from the backup below rather than replaced by defaults.
+                if (!fs.existsSync(CONFIG_FILE) && !fs.existsSync(CONFIG_FILE + '.bak')) {
                     // config file not found, let's create the default one
                     console.log('  Config file not found, generating defaults.\n');
                     global.generatingDefaultConfig = true;
@@ -101,8 +102,8 @@ module.exports = {
                         }
                     });
                 } else {
-                    let configFileStr = fs.readFileSync(CONFIG_FILE);
-                    global.config = JSON.parse(configFileStr);
+                    // Falls back to CONFIG_FILE.bak, with a loud log, when the file is damaged or missing.
+                    global.config = require('./config-store.cjs').loadConfigSync(CONFIG_FILE).config;
                 }
 
                 // folderchecks (improved in 1.0.15)
@@ -114,8 +115,8 @@ module.exports = {
                 resolve()
             }
             catch (error) {
-                let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING SPX CONFIG, CANNOT CONTINUE. You can remove config.json and SPX will recreate one with defaults at startup.' + error;
-                console.log(msg);  // note, LOGGER is not necessarily initialized yet.
+                let msg = 'CATASTROPHIC FAILURE WHILE INITIALIZING SPX CONFIG, CANNOT CONTINUE. ' + error;
+                console.error(msg);  // note, LOGGER is not necessarily initialized yet.
                 global.configfileref = "";
                 return
             }

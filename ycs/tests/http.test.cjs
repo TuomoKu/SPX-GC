@@ -10,7 +10,7 @@ test('Companion commands and native SPX controls share stage-scoped playback wit
   const { root, stages, repository } = await fixture(t);
   const app = express();
   app.use(express.json());
-  const config = { general: { dataroot: root, username: '' }, ycs: { enabled: true, dataFile: path.join(root, 'data-source.json'), stages, slots: { ticker: { order: 10 }, 'lower-third': { order: 20 } } } };
+  const config = { general: { dataroot: root, username: '' }, ycs: { enabled: true, dataFile: path.join(root, 'sources.json'), stages, slots: { ticker: { order: 10 }, 'lower-third': { order: 20 } } } };
   const playback = register(app, config, { auth: { CheckLogin: (req, res, next) => next() } });
   t.after(() => playback.close());
   const server = await new Promise(resolve => { const server = app.listen(0, '127.0.0.1', () => resolve(server)); });
