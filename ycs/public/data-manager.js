@@ -50,8 +50,17 @@ function confirmSourceChange(message) {
     document.body.append(dialog); dialog.showModal(); cancel.focus();
   });
 }
+// A server restart loses the in-memory sessions, so a page left open is refused
+// until it opens its own route again. Callers waiting together share one attempt.
+let renewing = null;
+function renewSession() {
+  renewing ||= fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(3000) })
+    .then((response) => response.ok && !response.redirected, () => false)
+    .finally(() => { renewing = null; });
+  return renewing;
+}
 async function request(url, body) {
-  const response = await fetch(
+  const send = () => fetch(
     '/api/ycs' + url,
     body === undefined
       ? { cache: 'no-store' }
@@ -61,6 +70,8 @@ async function request(url, body) {
           body: JSON.stringify(body)
         }
   );
+  let response = await send();
+  if (response.status === 403 && (await renewSession())) response = await send();
   const result = await response.json();
   if (!response.ok && result.confirmationRequired && body && !body.confirmed) {
     if (await confirmSourceChange(result.error)) return request(url, { ...body, confirmed: true });

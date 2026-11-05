@@ -52,17 +52,26 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
     closed++;
     row.querySelector('#Expanded').style.display = 'none';
   };
+  // Matches the bundled Socket.IO 4.0.0 client: active stays true after a refused
+  // namespace connection, and connected is false until it is accepted.
   window.io = () => ({
-    on: (event, callback) => channels.set(event, callback),
+    active: true,
+    connected: false,
+    on: (event, callback) => {
+      const handlers = channels.get(event);
+      channels.set(event, handlers ? (...args) => { handlers(...args); callback(...args); } : callback);
+    },
     emit() {},
-    disconnect() {},
-    connect() { hooks.connects = (hooks.connects || 0) + 1; }
+    disconnect() { (hooks.calls ||= []).push('disconnect'); },
+    connect() { (hooks.calls ||= []).push('connect'); hooks.connects = (hooks.connects || 0) + 1; }
   });
   window.fetch = async (url, request) => {
     let payload;
     if (request?.method === 'POST') {
       const body = JSON.parse(request.body);
       posts.push({ url, body });
+      if (hooks.refuse?.(url))
+        return { ok: false, status: 403, json: async () => ({ error: 'Remote API requires a configured token or operator login' }) };
       if (validationError)
         return {
           ok: false,
@@ -144,6 +153,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
       channels.get('state')({ stage: 'stage-1', mode: 'preview', selected, graphics: [] }),
     closed: () => closed,
     connectError: () => channels.get('connect_error')(new Error('Stage connection not authorized')),
+    socketLost: () => channels.get('disconnect')('transport close'),
+    socketConnected: () => channels.get('connect')(),
     rejectFields: (errors) => {
       validationError = errors;
     }
@@ -605,17 +616,61 @@ test('the controller socket reconnects after an authorization rejection and repo
   const r = await controller(t, false, true, false, hooks);
   const timers = [];
   const schedule = r.window.setTimeout;
-  r.window.setTimeout = (callback, ms) => (ms === 5000 ? timers.push(callback) : schedule(callback, ms));
+  r.window.setTimeout = (callback, ms) => ([0, 1000, 5000].includes(ms) ? timers.push({ callback, ms }) : schedule(callback, ms));
   const status = r.window.document.querySelector('.ycs-connection-status');
   r.connectError();
   assert.equal(status.hidden, false);
-  assert.equal(timers.length, 1, 'a rejected namespace connection schedules a renewal');
-  await timers.shift()();
+  assert.deepEqual(timers.map((timer) => timer.ms), [0], 'a rejected connection renews at once, even though the client still reports active');
+  await timers.shift().callback();
   assert.equal(hooks.connects, 1, 'the session is renewed through the page, then the socket reconnects');
+  assert.deepEqual(hooks.calls, ['disconnect', 'connect'], 'the transport reopens so its handshake carries the renewed session');
+  assert.deepEqual(timers.map((timer) => timer.ms), [5000], 'gives the new handshake time to finish');
   hooks.page = async () => ({ ok: true, redirected: true, url: 'http://localhost/login' });
-  r.connectError();
-  await timers.shift()();
+  await timers.shift().callback();
   assert.equal(hooks.connects, 1);
   assert.match(status.textContent, /signed out/);
   assert.equal(timers.length, 1, 'keeps checking in case the operator signs in elsewhere');
+});
+
+test('losing the server starts renewal, retries quickly while it is down and stops once connected', async (t) => {
+  const hooks = { page: async () => { throw new Error('connection refused'); } };
+  const r = await controller(t, false, true, false, hooks);
+  const timers = [];
+  const schedule = r.window.setTimeout;
+  r.window.setTimeout = (callback, ms) => ([0, 1000, 5000].includes(ms) ? timers.push({ callback, ms }) : schedule(callback, ms));
+  r.socketLost();
+  assert.deepEqual(timers.map((timer) => timer.ms), [0]);
+  await timers.shift().callback();
+  assert.equal(hooks.connects, undefined, 'nothing reopens while the server is down');
+  assert.deepEqual(timers.map((timer) => timer.ms), [1000]);
+  hooks.page = async () => ({ ok: true, redirected: false, url: 'http://localhost/gc/Stage1/Show' });
+  await timers.shift().callback();
+  assert.equal(hooks.connects, 1, 'reopens as soon as the server answers');
+  r.socketConnected();
+  r.socketLost();
+  assert.deepEqual(timers.map((timer) => timer.ms), [5000], 'one timer at a time');
+});
+
+test('Stop refused after a restart renews the session and is sent again', async (t) => {
+  let pages = 0, refused = true;
+  const clear = '/api/ycs/stages/stage-1/clear';
+  const hooks = {
+    page: async () => { pages++; refused = false; return { ok: true, redirected: false, url: 'http://localhost/gc/Stage1/Show' }; },
+    refuse: (url) => url === clear && refused
+  };
+  const r = await controller(t, false, true, false, hooks);
+  await r.window.stopAll();
+  assert.equal(pages, 1);
+  assert.equal(r.posts.filter((post) => post.url === clear).length, 2, 'the refused Stop is sent once more');
+  assert.match(r.window.document.querySelector('.ycs-command-status').textContent, /Stage stopped/);
+  assert.doesNotMatch(r.window.document.querySelector('.ycs-command-status').textContent, /operator login/);
+});
+
+test('Stop is refused only once when the session cannot be renewed, and says so', async (t) => {
+  const clear = '/api/ycs/stages/stage-1/clear';
+  const hooks = { page: async () => { throw new Error('connection refused'); }, refuse: (url) => url === clear };
+  const r = await controller(t, false, true, false, hooks);
+  await r.window.stopAll();
+  assert.equal(r.posts.filter((post) => post.url === clear).length, 1);
+  assert.match(r.window.document.querySelector('.ycs-command-status').textContent, /operator login/);
 });

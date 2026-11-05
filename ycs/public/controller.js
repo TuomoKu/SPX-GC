@@ -11,8 +11,26 @@ if (stage) {
   let validationRow, previewGeneration = 0;
   const iconMarkup=name=>`<svg class="ycs-editor-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="/ycs/editor-icons.svg#${name}"></use></svg>`;
   let sourceState, active = new Set(), program = new Map(), disposed = false, polling = false;
+  // A server restart loses the in-memory sessions, so a page left open is refused
+  // until it opens its own route again. Callers waiting together share one attempt.
+  let renewing = null;
+  function renewSession() {
+    renewing ||= (async () => {
+      try {
+        const response = await fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
+        const final = response.url ? new URL(response.url, location.href).pathname : location.pathname;
+        if (response.redirected || final !== location.pathname) { stagePanel.setConnected(false, 'Controller signed out · Reload to sign in'); return false; }
+        return response.ok;
+      } catch { return false; /* Server still down. */ }
+      finally { renewing = null; }
+    })();
+    return renewing;
+  }
   async function request(url, body) {
-    const response = await fetch(url, body === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const send = () => fetch(url, body === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    let response = await send();
+    // A refused command did not run, so Stop can be sent again once access is back.
+    if (response.status === 403 && await renewSession()) response = await send();
     const payload = await response.json();
     if (!response.ok) { const error = new Error(payload.error || 'Stage request failed'); error.fields = payload.fields; throw error; }
     return payload;
@@ -396,25 +414,25 @@ if (stage) {
     if (disposed) return;
     stagePanel.setConnected(false);
   }
-  // Socket.IO does not retry after a namespace authorization error, which is
-  // what a server restart (lost sessions) produces. Renew the session through
-  // this page's own route, then reconnect. A login redirect means signed out.
-  let reconnectTimer = null;
+  // Socket.IO does not retry after a namespace authorization error, which is what a
+  // server restart produces. Do not test stageEvents.active here: the bundled 4.0.0
+  // client keeps it true after that rejection. Renew the session through this page's
+  // own route, then reopen the transport so its handshake carries the renewed session.
+  let reconnectTimer = null, reconnectDelay = 0;
   function reconnectLater() {
-    if (disposed || stageEvents.active || reconnectTimer) return;
+    if (disposed || stageEvents.connected || reconnectTimer) return;
     reconnectTimer = setTimeout(async () => {
       reconnectTimer = null;
       if (disposed || stageEvents.connected) return;
-      try {
-        const response = await fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
-        const final = response.url ? new URL(response.url, location.href).pathname : location.pathname;
-        if (response.redirected || final !== location.pathname) stagePanel.setConnected(false, 'Controller signed out · Reload to sign in');
-        else if (!disposed && response.ok) stageEvents.connect();
-      } catch { /* Server still down; try again. */ }
+      const renewed = await renewSession();
+      if (renewed && !disposed && !stageEvents.connected) { stageEvents.disconnect(); stageEvents.connect(); }
+      // Quick while the server is down; slower once it answers, so a handshake can finish.
+      reconnectDelay = renewed ? 5000 : 1000;
       reconnectLater();
-    }, 5000);
+    }, reconnectDelay);
   }
-  stageEvents.on('disconnect', disconnected);
+  stageEvents.on('connect', () => { reconnectDelay = 0; });
+  stageEvents.on('disconnect', () => { disconnected(); reconnectLater(); });
   stageEvents.on('connect_error', () => { disconnected(); reconnectLater(); });
   stageEvents.on('stage-error', error => notify(error.error, true));
   async function poll() {
