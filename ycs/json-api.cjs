@@ -51,7 +51,13 @@ class JSONAPI {
           if(!/^application\/(?:[\w.-]+\+)?json(?:\s*;|$)/i.test(response.headers['content-type']||'')) {response.resume();return reject(new Error('API must return application/json'));}
           let size=0; const chunks=[];
           response.on('data',chunk=>{size+=chunk.length;if(size>1048576) response.destroy(new Error('API response exceeds 1 MB'));else chunks.push(chunk);});
-          response.on('error',reject); response.on('end',()=>{try {resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));} catch {reject(new Error('API returned invalid JSON'));}});
+          response.on('error',reject); response.on('end',()=>{try {
+            const body=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+            // Linked values missing from a report show blank, so a report with no data at
+            // all must count as a failed read and leave the last values on air.
+            if(body===null||typeof body!=='object'||!Object.keys(body).length) return reject(new Error('API returned no data'));
+            resolve(body);
+          } catch {reject(new Error('API returned invalid JSON'));}});
         }); request.on('error',reject);
         // Explicit IP hosts do not invoke DNS lookup.
         request.end();

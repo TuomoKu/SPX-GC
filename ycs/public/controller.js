@@ -68,6 +68,10 @@ if (stage) {
     model.badge.hidden = !changed; model.badge.textContent = current ? 'Pending · Update on air to apply' : 'Unsaved draft';
   }
   function editorValue(input,value) {
+    // A source's missing value. Mirrors normalizeLinked: these fields keep their last value.
+    if(value===''&&(input.required||input.type==='color'||(input.tagName==='SELECT'&&![...input.options].some(option=>option.value==='')))) throw new Error('Field cannot be blank');
+    if(value===''&&input.type==='number') return '';
+    if(value===''&&input.type==='checkbox') return '0';
     if(input.type==='checkbox') return YCSDataContract.checkboxValue(value);
     if(input.type==='number') return String(YCSDataContract.finiteNumber(value));
     return String(value);
@@ -259,7 +263,10 @@ if (stage) {
       if (automatic && model.previewOnEdit === false) return;
       if (action === 'preview' && generation !== previewGeneration) return;
       const body = ['stop', 'continue'].includes(action) ? {} : {
-        fields: fields(row), links: Object.fromEntries(Object.entries(model.links).map(([field, link]) => [field, { mode: link.mode, manual: link.manual }])), revision: model.revision
+        // A linked input only displays its source. Send its typed fallback, which is what
+        // gets saved, because a blank source value is not valid as a typed value.
+        fields: fields(row).map(entry => model.links?.[entry.field]?.mode === 'linked' ? { ...entry, value: model.links[entry.field].manual } : entry),
+        links: Object.fromEntries(Object.entries(model.links).map(([field, link]) => [field, { mode: link.mode, manual: link.manual }])), revision: model.revision
       };
       const result = await request(`/api/ycs/stages/${stage}/graphics/${encodeURIComponent(row.dataset.spxEpoch)}/${action}`, body);
       if (!['stop', 'continue'].includes(action)) fieldErrors(row);

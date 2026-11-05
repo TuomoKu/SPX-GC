@@ -1,5 +1,5 @@
 'use strict';
-const {test}=require('node:test');const assert=require('node:assert/strict');const path=require('node:path');const {EventEmitter}=require('node:events');const {PassThrough}=require('node:stream');const {JSONAPI,normalizeJSONSettings,publicAddress}=require('../json-api.cjs');const {DataSources}=require('../data.cjs');const {normalizeField}=require('../field-types.cjs');const {fixture}=require('./playback.test.cjs');
+const {test}=require('node:test');const assert=require('node:assert/strict');const path=require('node:path');const {EventEmitter}=require('node:events');const {PassThrough}=require('node:stream');const {JSONAPI,normalizeJSONSettings,publicAddress}=require('../json-api.cjs');const {DataSources}=require('../data.cjs');const {normalizeField,normalizeLinked}=require('../field-types.cjs');const {fixture}=require('./playback.test.cjs');
 const settings={url:'https://api.example.com/event',refreshSeconds:5};
 function adapter({body='{"event":{"name":"Finals","round":15,"active":true}}',status=200,type='application/json',address='93.184.216.34',env={}}={}){
   let calls=0,headers;const json=new JSONAPI({env,lookup:(host,options,callback)=>callback(null,[{address,family:4}]),request:(url,options,receive)=>{calls++;headers=options.headers;const request=new EventEmitter();request.end=()=>options.lookup(url.hostname,{all:true},(error)=>{if(error){queueMicrotask(()=>request.emit('error',error));return;}const response=new PassThrough();response.statusCode=status;response.headers={'content-type':type};receive(response);queueMicrotask(()=>response.end(body));});return request;}});return {json,calls:()=>calls,headers:()=>headers};
@@ -57,9 +57,51 @@ test('JSON mappings, static values and transforms resolve in an isolated preview
   const staticPreview=await base.playback.mappingPreview('stage-1','ticker',[{field:'f5',scope:'override',binding:{static:'hale.png',transform:{kind:'prefix',value:'media/guests/'}}}]);assert.equal(staticPreview.graphic.data.f5,'media/guests/hale.png');assert.equal(base.playback.snapshot('stage-1','program').graphics[0].data.f5,'SEMI FINAL');
   await assert.rejects(sources.saveMappings('stage-2','ticker','/test/graphic.html',edits,sources.snapshot().revision),{status:422});
 });
+test('a JSON value that is missing, null or empty shows blank, never an earlier value',async t=>{
+  const base=await fixture(t);let data={blue:{name:'Player A',deck:'Deck A',wins:1,ready:true}},failing=false;
+  const sources=new DataSources(path.join(base.root,'sources.json'),base.stages,{json:{read:async()=>{if(failing)throw Object.assign(new Error('down'),{status:502});return {data};}}});await sources.ready;t.after(()=>sources.close());base.playback.sources=sources;
+  const rundown=await base.repository.read('stage-1');rundown.templates[0].DataFields.push({field:'f6',title:'Name',ftype:'textfield',value:'typed name'},{field:'f7',title:'Deck',ftype:'textfield',value:'typed deck'},{field:'f8',title:'Wins',ftype:'number',value:'9'},{field:'f2',title:'Ready',ftype:'checkbox',value:'1'},{field:'f9',title:'Must have',ftype:'textfield',required:true,value:'typed'});await base.repository.write('stage-1',rundown);
+  const {connectionId:connection}=await sources.saveConnection(null,'API',settings,0,'json-api');
+  const link=(field,pointer,transform)=>({field,scope:'override',binding:{connection,selection:{kind:'json',pointer},...(transform?{transform}:{})}});
+  await sources.saveMappings('stage-1','ticker','/test/graphic.html',[link('f6','/blue/name'),link('f7','/blue/deck',{kind:'uppercase'}),link('f8','/blue/wins'),link('f2','/blue/ready'),link('f9','/blue/name')],sources.snapshot().revision);
+  const links=Object.fromEntries(['f6','f7','f8','f2','f9'].map(field=>[field,{mode:'linked',manual:field==='f8'?'9':field==='f2'?'1':'typed'}]));
+  await base.playback.command('stage-1','ticker','play',undefined,{links});
+  const onAir=async()=>{await sources.refreshSheet(connection).catch(()=>{});await base.playback.refreshLinks('stage-1');const {f6,f7,f8,f2,f9}=base.playback.snapshot('stage-1','program').graphics[0].data;return {f6,f7,f8,f2,f9};};
+  assert.deepEqual(await onAir(),{f6:'Player A',f7:'DECK A',f8:'1',f2:'1',f9:'Player A'});
+  for(const deck of [undefined,null,'','   ']){
+    data={blue:{name:'Player B',wins:2,ready:true,...(deck===undefined?{}:{deck})}};
+    assert.deepEqual(await onAir(),{f6:'Player B',f7:'',f8:'2',f2:'1',f9:'Player B'},JSON.stringify(deck));
+    data={blue:{name:'Player A',deck:'Deck A',wins:1,ready:true}};await onAir();
+  }
+  data={stageNumber:2};assert.deepEqual(await onAir(),{f6:'',f7:'',f8:'',f2:'0',f9:'Player A'},'a whole player missing is blank; a required field keeps its value');
+  data={blue:{name:'Player C',deck:'Deck C',wins:0,ready:false}};assert.deepEqual(await onAir(),{f6:'Player C',f7:'DECK C',f8:'0',f2:'0',f9:'Player C'},'values come straight back, and zero and false are real values');
+  failing=true;assert.deepEqual(await onAir(),{f6:'Player C',f7:'DECK C',f8:'0',f2:'0',f9:'Player C'},'an unreachable API keeps the last values');failing=false;
+  data={blue:{name:'Player D',wins:1,ready:true}};await sources.refreshSheet(connection);await base.playback.command('stage-1','ticker','stop',undefined,{});await base.playback.command('stage-1','ticker','play',undefined,{links});
+  const fresh=base.playback.snapshot('stage-1','program').graphics[0].data;assert.equal(fresh.f6,'Player D');assert.equal(fresh.f7,'','a fresh Play is blank too, not the typed fallback');
+  data={blue:{name:'Player E'}};await sources.refreshSheet(connection);await base.playback.command('stage-1','ticker','stop',undefined,{});await base.playback.command('stage-1','ticker','play',undefined,{links});
+  const fields=base.playback.snapshot('stage-1','program').graphics[0].data;assert.equal(fields.f8,'','a fresh Play blanks a number');assert.equal(fields.f2,'0','a fresh Play unticks a checkbox');
+  data={blue:{name:{first:'Not text'}}};await sources.refreshSheet(connection);const status=sources.resolveSnapshot(sources.reference(link('f6','/blue/name').binding));assert.equal(status.health,'error','a value of the wrong kind is still reported');
+});
+test('a report with no data counts as a failed read, so the last values stay',async()=>{
+  for(const body of ['null','{}','[]','5','"text"','true'])await assert.rejects(adapter({body}).json.read(settings),{status:502},body);
+  assert.deepEqual((await adapter({body:'[{"a":1}]'}).json.read(settings)).data,[{a:1}],'a list with entries is still data');
+});
+test('linked blanks reach only the fields that can show them',()=>{
+  assert.equal(normalizeLinked({ftype:'textfield'},''),'');
+  assert.equal(normalizeLinked({ftype:'filelist'},''),'');
+  assert.equal(normalizeLinked({ftype:'number',min:1,max:3},''),'');
+  assert.equal(normalizeLinked({ftype:'checkbox'},''),'0');
+  assert.equal(normalizeLinked({ftype:'number',min:1,max:3},'2'),'2');
+  assert.throws(()=>normalizeLinked({ftype:'number',min:1,max:3},'4'),'an out-of-range number is still refused');
+  assert.throws(()=>normalizeLinked({ftype:'dropdown',items:[{value:'1'},{value:'2'}]},''));
+  assert.equal(normalizeLinked({ftype:'dropdown',items:[{value:''},{value:'2'}]},''),'');
+  assert.throws(()=>normalizeLinked({ftype:'color'},''));
+  assert.throws(()=>normalizeLinked({ftype:'textfield',required:true},''));
+  assert.throws(()=>normalizeLinked({ftype:'number',required:true},''));
+});
 test('JSON pointer escaping, empty static values and native field validation are explicit',async t=>{
   const base=await fixture(t),sources=new DataSources(path.join(base.root,'sources.json'),base.stages,{json:{read:async()=>({data:{'a/b':{'~key':'Value'},arr:[{name:'First'}],nil:null}})}});await sources.ready;t.after(()=>sources.close());
   const {connectionId}=await sources.saveConnection(null,'API',settings,0,'json-api');const ref=pointer=>sources.reference({connection:connectionId,selection:{kind:'json',pointer}});
-  assert.equal(sources.value(ref('/a~1b/~0key')),'Value');assert.equal(sources.value(ref('/arr/0/name')),'First');assert.equal(sources.value(ref('/nil')),undefined);assert.equal(sources.value(sources.reference({static:''})), '');
+  assert.equal(sources.value(ref('/a~1b/~0key')),'Value');assert.equal(sources.value(ref('/arr/0/name')),'First');assert.equal(sources.value(ref('/nil')),'','a successful read with no value is blank');assert.equal(sources.value(sources.reference({static:''})), '');
   assert.throws(()=>normalizeField({ftype:'checkbox'},'maybe'));assert.throws(()=>normalizeField({ftype:'number'},''));assert.throws(()=>normalizeField({ftype:'color'},'#12345'));assert.throws(()=>normalizeField({ftype:'filelist'},'javascript:alert(1)'));
 });
