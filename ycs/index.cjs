@@ -4,6 +4,7 @@ const path = require('node:path');
 const { Playback, RundownRepository, prepareEdits } = require('./playback.cjs');
 const { DataSources, linkable } = require('./data.cjs');
 const { LocalFiles } = require('./local-files.cjs');
+const { JSONAPI } = require('./json-api.cjs');
 const { createSheets } = require('./google-sheets-api.cjs');
 const { Renderers } = require('./renderers.cjs');
 const outputAccess = require('./output-access.cjs');
@@ -27,7 +28,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     settings.stages,
     {
       sheets: hooks.sheets || createSheets(settings.sheetsAPI, { keyFile: configFile ? require('./sheets-key.cjs').credentialFile(configFile) : undefined }),
-      json: hooks.json,
+      json: hooks.json || new JSONAPI({ localHosts: settings.localJsonHosts }),
       localFiles:
         hooks.localFiles ||
         new LocalFiles(

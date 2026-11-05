@@ -4,6 +4,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const express = require('express');
+const http = require('node:http');
+const { EventEmitter } = require('node:events');
+const { PassThrough } = require('node:stream');
 const { JSDOM } = require('jsdom');
 const register = require('../index.cjs');
 const { fixture } = require('./playback.test.cjs');
@@ -19,7 +22,7 @@ async function until(fn) {
   }
   assert.fail('Expected UI state did not arrive');
 }
-async function setup(t, { apiKey } = {}) {
+async function setup(t, { apiKey, localJsonHosts } = {}) {
   const f = await fixture(t),
     localRoot = path.join(f.root, 'local-files');
   await fs.mkdir(localRoot);
@@ -50,6 +53,7 @@ async function setup(t, { apiKey } = {}) {
         localDataRoot: localRoot,
         localDataLocations: [{ id: 'production', label: 'Production data', path: sharedRoot }],
         ...(apiKey ? { apiKey } : {}),
+        ...(localJsonHosts ? { localJsonHosts } : {}),
         slots: { ticker: { order: 10 } }
       }
     },
@@ -70,6 +74,38 @@ async function setup(t, { apiKey } = {}) {
     });
   return { ...f, playback, base, post, localRoot };
 }
+
+test('ycs.localJsonHosts reaches the JSON connector behind the test route', async (t) => {
+  const realRequest = http.request,
+    asked = [];
+  http.request = (url, options, receive) => {
+    asked.push(url.href);
+    const request = new EventEmitter();
+    request.end = () => {
+      const response = new PassThrough();
+      response.statusCode = 200;
+      response.headers = { 'content-type': 'application/json' };
+      receive(response);
+      queueMicrotask(() => response.end('{"ok":true}'));
+    };
+    return request;
+  };
+  t.after(() => {
+    http.request = realRequest;
+  });
+  const r = await setup(t, { localJsonHosts: ['192.168.1.55:8080'] });
+  const listed = await r.post('/data/json/test', {
+    settings: { url: 'http://192.168.1.55:8080/api/stages/1', refreshSeconds: 1 }
+  });
+  assert.equal(listed.status, 200);
+  assert.equal((await listed.json()).data.ok, true);
+  const other = await r.post('/data/json/test', {
+    settings: { url: 'http://192.168.1.55:8081/api/stages/1', refreshSeconds: 1 }
+  });
+  assert.equal(other.status, 422);
+  assert.match((await other.json()).error, /localJsonHosts/);
+  assert.deepEqual(asked, ['http://192.168.1.55:8080/api/stages/1']);
+});
 
 test('local file HTTP routes enforce origin and path validation, test without saving and accept mapped CSV/JSON sources', async (t) => {
   const r = await setup(t),
