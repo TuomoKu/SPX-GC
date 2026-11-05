@@ -8,7 +8,10 @@ const frames = new Map(),
 // Quick retries cover a template blip; after that a failed slot keeps retrying
 // at the heartbeat interval so it recovers without another operator command.
 const retryDelays = [250, 1000, 3000],
-  retryCap = 5000;
+  retryCap = 5000,
+  // A template that fails after it was shown replays its entrance on each attempt.
+  // Keep trying, so a temporary fault cannot leave a permanent hole, but rarely.
+  shownRetry = 30000;
 let disposed = false,
   revision = -1,
   latest,
@@ -195,16 +198,17 @@ function kick(job) {
       job.applied = key;
       job.error = '';
       job.failures = 0;
+      job.shownFailures = 0;
     })
     .catch((error) => {
-      if (error.name === 'AbortError' || disposed || generation !== epoch || job.key !== key)
-        return;
+      if (error.name === 'AbortError' || disposed || generation !== epoch) return;
+      // New data for the same graphic must not skip the retry limit below.
+      if (job.key !== key && !(error.afterShown && sameTemplate(job.goal, graphic))) return;
       job.error = error.message;
       console.error('[YCS output]', job.slot, error);
-      // Retry a template that could not load for as long as it takes. One that failed
-      // after being shown would replay its entrance each time, so its retries are limited.
-      const wait = retryDelays[job.failures++] ?? (error.afterShown ? undefined : retryCap);
-      if (wait === undefined) return;
+      const wait = error.afterShown
+        ? retryDelays[job.shownFailures++] ?? shownRetry
+        : retryDelays[job.failures++] ?? retryCap;
       job.timer = setTimeout(() => {
         job.timer = null;
         kick(job);
@@ -232,6 +236,7 @@ events.on('connect', () => {
     job.controller?.abort();
     clearTimeout(job.timer);
     job.timer = null;
+    job.shownFailures = 0;
   }
   events.emit('subscribe', { stage, modes: [mode] });
 });
@@ -251,11 +256,20 @@ events.on('state', (snapshot) => {
   for (const slot of new Set([...jobs.keys(), ...wanted.keys()])) {
     let job = jobs.get(slot);
     if (!job) {
-      job = { slot, applied: keyOf(null), failures: 0, error: '' };
+      job = { slot, applied: keyOf(null), failures: 0, shownFailures: 0, error: '' };
       jobs.set(slot, job);
     }
     const goal = wanted.get(slot) || null,
       key = keyOf(goal);
+    // Every publish carries all of a stage's slots. Updates, including this graphic's
+    // own data, must not retry a shown failure early and replay its entrance. Stop,
+    // a different graphic or a reconnect clears this.
+    if (job.shownFailures && goal && sameTemplate(job.goal, goal)) {
+      job.goal = goal;
+      job.key = key;
+      continue;
+    }
+    job.shownFailures = 0;
     if (key !== job.key) {
       // Keep active data updates serial. Pending mounts and removed/replaced
       // identities are cancellable so Stop never waits for a stale Play.

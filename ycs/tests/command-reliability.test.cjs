@@ -221,6 +221,19 @@ test('the repeat window runs from command arrival, so a slow save cannot swallow
   assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0, 'the second press takes it off air');
 });
 
+test('link refreshes apply the same field limits as Play, so an out-of-range value cannot reach air', async (t) => {
+  const { playback, repository } = await fixture(t);
+  const show = await repository.read('stage-1');
+  const field = { field: 'score', ftype: 'number', title: 'Score', value: '1', min: '0', max: '3', ycsLinkable: true };
+  show.templates.find((item) => item.itemID === 'ticker').DataFields.push(field);
+  await repository.write('stage-1', show);
+  playback.sources = { ready: Promise.resolve(), value: () => '99', mapping: () => 'bind.score', awaitingLiveRead: () => false };
+  const state = playback.state('stage-1');
+  state.program = [{ id: 'ticker', slot: 'ticker', z: 10, template: '/templates/x.html', data: { score: '1' }, links: { score: { mode: 'linked', source: 'bind.score', definition: { ftype: 'number', min: '0', max: '3' } } } }];
+  await playback.refreshLinks('stage-1');
+  assert.equal(state.program[0].data.score, '1');
+});
+
 test('a clock moved backwards does not make a later press look like a repeat', async (t) => {
   const { playback } = await fixture(t);
   let now = 200000;

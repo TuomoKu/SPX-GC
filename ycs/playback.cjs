@@ -148,7 +148,7 @@ function descriptor(item, slots, sources) {
     if (!linkable(item, field)) continue;
     const source = sources?.mapping(item.ycsStage, item.itemID, field, item.relpath);
     const definition=item.DataFields.find(item=>item.field===field);
-    links[field] = { ...link, source, definition:{ftype:definition.ftype,...(definition.ycsCollection?{ycsCollection:definition.ycsCollection}:{}),...(definition.items?{items:definition.items}:{})} };
+    links[field] = { ...link, source, definition:{ftype:definition.ftype,...(definition.ycsCollection?{ycsCollection:definition.ycsCollection}:{}),...(definition.items?{items:definition.items}:{}),...(definition.min!==undefined?{min:definition.min}:{}),...(definition.max!==undefined?{max:definition.max}:{}),...(definition.required!==undefined?{required:definition.required}:{})} };
     if (link.mode === 'linked' && sources?.value(source)!==undefined) {try {data[field]=normalizeField(definition,sources.value(source));}catch{/* Retain the manual fallback for incompatible source values. */}}
   }
   return { id: item.itemID, slot: item.ycsSlot, z: slot.order, exitMs: slot.exitMs ?? 250, template: '/templates' + item.relpath, data, ...(Object.keys(links).length ? { links } : {}) };

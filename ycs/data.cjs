@@ -431,7 +431,7 @@ class DataSources extends EventEmitter {
         headerRows,
         datasetHash: rows || data !== undefined ? datasetHash(rows, data, headerRows) : '',
         lastSuccess: restored ? saved.lastSuccess : null,
-        cacheOnly: restored,
+        cacheOnly: true,
         lastAttempt: null,
         nextAt: 0,
         failures: 0,

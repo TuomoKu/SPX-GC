@@ -253,6 +253,30 @@ test('a restored linked graphic keeps its value until a live read, even when the
   assert.equal(state.program[0].data.f5, 'ROUND 4');
 });
 
+test('a restored connection whose dataset was not cached still waits for a live read', async (t) => {
+  capture(t);
+  const f = await fixture(t);
+  const sheets = { read: async () => ({ rows: [[{ address: 'A1', value: 'OLD', usable: true }]] }) };
+  const { DataSources } = require('../data.cjs');
+  const file = path.join(f.root, 'dropped.json');
+  const seed = new DataSources(file, f.stages, { sheets });
+  await seed.ready;
+  const { connectionId } = await seed.saveConnection(null, 'C', { url: 'https://docs.google.com/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890/edit', worksheet: '0', range: 'A1:A1', refreshSeconds: 5 }, 0);
+  const binding = { connection: connectionId, selection: { kind: 'cell', cell: 'A1' } };
+  const source = seed.reference(binding);
+  seed.retain('t', [source]);
+  await seed.persistCache();
+  await seed.close();
+  const cache = await readJSON(seed.cacheFile);
+  delete cache.connections[connectionId]; // As when a full cache drops the largest datasets.
+  await fs.writeFile(seed.cacheFile, JSON.stringify(cache));
+  const restored = new DataSources(file, f.stages, { sheets: { read: async () => { throw Object.assign(new Error('offline'), { status: 502 }); } } });
+  t.after(() => restored.close());
+  await restored.ready;
+  restored.reference(binding);
+  assert.equal(restored.awaitingLiveRead(source), true);
+});
+
 test('restoreProgramWithinSeconds 0 disables restoration', async (t) => {
   const logs = capture(t);
   const f = await fixture(t);

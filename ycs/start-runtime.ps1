@@ -9,7 +9,7 @@ if (-not $Config) {
         try {
             $lastConfiguration = (Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json).configuration
             # A record copied from another folder can name a configuration outside this checkout.
-            if ($lastConfiguration -and $lastConfiguration.StartsWith($projectRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $lastConfiguration -PathType Leaf)) { $Config = $lastConfiguration }
+            if ($lastConfiguration -and $lastConfiguration.StartsWith($projectRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -and ((Test-Path -LiteralPath $lastConfiguration -PathType Leaf) -or (Test-Path -LiteralPath ($lastConfiguration + '.bak') -PathType Leaf))) { $Config = $lastConfiguration }
         } catch { }
     }
 }

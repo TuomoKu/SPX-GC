@@ -5,8 +5,8 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const { randomUUID } = require('node:crypto');
-async function eventually(condition) {
-  for (let index = 0; index < 100; index++) {
+async function eventually(condition, label, tries = 100) {
+  for (let index = 0; index < tries; index++) {
     if (condition()) return;
     await new Promise((resolve) => setTimeout(resolve, 2));
   }
@@ -311,7 +311,7 @@ test('a failed slot keeps retrying at a capped interval and recovers without ano
   assert.equal(r.reports.at(-1).state, 'ready');
 });
 
-test('a template that fails after being shown stops retrying, so its entrance cannot loop on air', async (t) => {
+test('a template that fails after being shown cannot loop its entrance, even on a busy stage, and still recovers', async (t) => {
   const r = await renderer(t, { speed: 20 });
   r.send(1, [r.graphic('healthy')]);
   await eventually(() => r.root.dataset.revision === '1');
@@ -321,9 +321,46 @@ test('a template that fails after being shown stops retrying, so its entrance ca
   for (let index = 0; index < 400 && plays() < 4; index++)
     await new Promise((resolve) => setTimeout(resolve, 5));
   assert.equal(plays(), 4, 'the first attempt plus three short retries');
-  await new Promise((resolve) => setTimeout(resolve, 600)); // Several retry caps, scaled 20x.
-  assert.equal(plays(), 4, 'no further entrance replays');
+  // Live updates to another slot and to this graphic's own data must not retry it.
+  for (let index = 0; index < 10; index++) {
+    r.send(3 + index, [r.graphic('replacement', 'replacement', 'ROUND ' + index), r.graphic('healthy', 'healthy', 'SCORE ' + index)]);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  assert.equal(plays(), 4, 'no entrance replays from unrelated updates');
   assert.equal(r.reports.at(-1).state, 'error');
+  // The slow retry (30 s, scaled 20x) recovers it with the latest data.
+  r.recover();
+  await eventually(() => r.root.querySelectorAll('iframe').length === 2, 'the slot recovers without a command', 2000);
+  assert.equal(plays(), 5);
+  assert.equal(r.calls.filter((c) => c.id === 'replacement' && c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 9' }));
+});
+
+test('Stop then Play retries a failed graphic at once', async (t) => {
+  const r = await renderer(t, { speed: 20 });
+  r.fail('play');
+  r.send(1, [r.graphic('replacement')]);
+  const plays = () => r.calls.filter((c) => c.id === 'replacement' && c.name === 'play').length;
+  for (let index = 0; index < 400 && plays() < 2; index++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  r.recover();
+  r.send(2, []);
+  r.send(3, [r.graphic('replacement')]);
+  await eventually(() => r.root.querySelectorAll('iframe').length === 1, 'Play after Stop mounts straight away', 2000);
+});
+
+test('a slot that outlasted a load failure and then fails after being shown still recovers', async (t) => {
+  const r = await renderer(t, { speed: 20 });
+  r.fail('update');
+  r.send(1, [r.graphic('replacement')]);
+  const count = (name) => r.calls.filter((c) => c.id === 'replacement' && c.name === name).length;
+  for (let index = 0; index < 800 && count('update') < 5; index++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  r.fail('play');
+  for (let index = 0; index < 800 && !count('play'); index++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  r.recover();
+  await eventually(() => r.root.querySelectorAll('iframe').length === 1, 'the slot recovers without a command', 2000);
+  await eventually(() => r.reports.at(-1).state === 'ready', 'reported ready', 2000);
 });
 
 test('Stop then Play of the same graphic during its exit leaves it on air', async (t) => {

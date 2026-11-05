@@ -129,7 +129,7 @@ function loadConfigSync(file, log = console.error) {
     catch { throw new Error(`Configuration ${file} is damaged (${problem.message}) and no usable backup exists at ${backupFile(file)}`); }
     const damaged = raw === undefined ? null : file + '.damaged-' + new Date().toISOString().replace(/[:.]/g, '-');
     if (damaged) { try { fsSync.copyFileSync(file, damaged); } catch { /* Recovery must not depend on the copy. */ } }
-    try { writeTextSync(file, backup); }
+    try { writeTextSync(file, stripBom(backup)); }
     catch (error) { log('Could not restore ' + file + ' (' + error.message + '); running from ' + backupFile(file) + ' for now.'); }
     log([
       '',

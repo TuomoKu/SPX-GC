@@ -141,6 +141,15 @@ test('a missing configuration with a backup is restored from it instead of being
   assert.deepEqual(JSON.parse(output.trim().split('\n').pop()), { port: 7778, defaults: false });
 });
 
+test('a backup carrying a BOM is restored without it', async t => {
+  const root = await directory(t, 'ycs-config-bak-bom-');
+  const file = path.join(root, 'cfg.json');
+  await fs.writeFile(file, Buffer.alloc(32));
+  await fs.writeFile(file + '.bak', '\uFEFF' + JSON.stringify({ general: { port: 7777 } }));
+  store.loadConfigSync(file, () => {});
+  assert.equal(JSON.parse(await fs.readFile(file, 'utf8')).general.port, 7777);
+});
+
 test('the backup still loads when the restored configuration cannot be written', async t => {
   const root = await directory(t, 'ycs-config-readonly-');
   const file = path.join(root, 'cfg.json');

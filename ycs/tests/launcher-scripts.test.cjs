@@ -39,7 +39,7 @@ test('stop waits for the process to exit and start sets UV_THREADPOOL_SIZE for t
 test('without -Config the launchers default to the configuration launched last', async () => {
   for (const name of ['launch.ps1', 'start-runtime.ps1'])
     assert.match((await read(name)).split('\n')[0], /\[string\]\$Config = ''/, name);
-  assert.match(await read('start-runtime.ps1'), /\$lastConfiguration -and .*\(Test-Path -LiteralPath \$lastConfiguration -PathType Leaf\)/);
+  assert.match(await read('start-runtime.ps1'), /\$lastConfiguration -and .*\(Test-Path -LiteralPath \$lastConfiguration -PathType Leaf\) -or \(Test-Path -LiteralPath \(\$lastConfiguration \+ '\.bak'\)/);
 });
 
 test('launcher scripts survive an unreadable runtime record and a record naming another folder', async () => {
