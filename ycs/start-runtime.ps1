@@ -1,6 +1,17 @@
-param([string]$Config = '.local/ycs-dev.json', [string]$NodePath = 'node')
+param([string]$Config = '', [string]$NodePath = 'node')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot
+$recordFile = Join-Path $projectRoot '.local/runtime-process.json'
+if (-not $Config) {
+    # Default to the configuration launched last, then to the development configuration.
+    $Config = '.local/ycs-dev.json'
+    if (Test-Path -LiteralPath $recordFile) {
+        try {
+            $lastConfiguration = (Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json).configuration
+            if ($lastConfiguration -and (Test-Path -LiteralPath $lastConfiguration -PathType Leaf)) { $Config = $lastConfiguration }
+        } catch { }
+    }
+}
 $configurationFile = if ([IO.Path]::IsPathRooted($Config)) { [IO.Path]::GetFullPath($Config) } else { [IO.Path]::GetFullPath((Join-Path $projectRoot $Config)) }
 if (-not $configurationFile.StartsWith($projectRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Store the runtime configuration inside this checkout; SPX resolves configuration paths relative to server.js.' }
 $configurationArgument = $configurationFile.Substring($projectRoot.Length + 1).Replace('\', '/')
@@ -12,7 +23,11 @@ $readinessHeaders = @{}
 if ($configuration.ycs.apiKey) { $readinessHeaders.Authorization = 'Bearer ' + $configuration.ycs.apiKey }
 $portNumber = [int]$configuration.general.port
 if ($portNumber -lt 1 -or $portNumber -gt 65535) { throw 'Invalid configured port.' }
-$recordFile = Join-Path $projectRoot '.local/runtime-process.json'
+# Probe the address SPX listens on. A LAN-only listenHost does not answer on 127.0.0.1.
+$listenHost = [string]$configuration.ycs.listenHost
+$probeHost = if (-not $listenHost -or $listenHost -eq '0.0.0.0' -or $listenHost -eq '::') { '127.0.0.1' } elseif ($listenHost.Contains(':')) { "[$listenHost]" } else { $listenHost }
+$baseUrl = "http://${probeHost}:$portNumber"
+$readinessUrl = "$baseUrl/api/ycs/stages"
 $mutexName = 'Local\YCS-SPX-' + $portNumber
 $startupMutex = New-Object Threading.Mutex($false, $mutexName)
 $ownsMutex = $false
@@ -27,10 +42,15 @@ try {
         if ($runtimeProcess -and $runtimeProcess.Path -eq $record.executable -and $runtimeProcess.StartTime.ToUniversalTime().Ticks.ToString() -eq $record.startTicks) {
             if ($record.configuration -ne $configurationFile) { throw 'This checkout already runs a different configuration. Stop it first.' }
             if (-not ($listener | Where-Object OwningProcess -eq $runtimeProcess.Id)) { throw 'The recorded runtime is running but not listening. Check its logs.' }
-            $null = Invoke-WebRequest "http://127.0.0.1:$portNumber/api/ycs/stages" -Headers $readinessHeaders -TimeoutSec 3
-            Write-Output "YCS already running (PID $($runtimeProcess.Id)). http://127.0.0.1:$portNumber/ycs/data-manager"
+            $null = Invoke-WebRequest $readinessUrl -Headers $readinessHeaders -TimeoutSec 3 -UseBasicParsing
+            Write-Output "YCS already running (PID $($runtimeProcess.Id)). $baseUrl/ycs/data-manager"
             return
         }
+    }
+    # A server that is still shutting down can hold the port for a moment.
+    for ($attempt = 0; $listener -and $attempt -lt 20; $attempt++) {
+        Start-Sleep -Milliseconds 250
+        $listener = Get-NetTCPConnection -LocalPort $portNumber -State Listen -ErrorAction SilentlyContinue
     }
     if ($listener) { throw "Port $portNumber belongs to another process. No server was changed." }
     if (-not (Test-Path -LiteralPath (Join-Path $projectRoot 'node_modules/express'))) { throw 'Install dependencies with npm ci first.' }
@@ -39,18 +59,23 @@ try {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
     $stdout = Join-Path $logFolder "$stamp.log"
     $stderr = Join-Path $logFolder "$stamp-error.log"
-    $startedProcess = Start-Process -FilePath $nodeExecutable -ArgumentList @('server.js', ('"{0}"' -f $configurationArgument)) -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    $record = @{ id=$startedProcess.Id; executable=$nodeExecutable; startTicks=$startedProcess.StartTime.ToUniversalTime().Ticks.ToString(); configuration=$configurationFile; port=$portNumber; stdout=$stdout; stderr=$stderr }
+    # More libuv file-I/O threads, so one hung SMB read cannot block all file access.
+    $previousThreadPool = $env:UV_THREADPOOL_SIZE
+    if (-not $env:UV_THREADPOOL_SIZE) { $env:UV_THREADPOOL_SIZE = '16' }
+    try {
+        $startedProcess = Start-Process -FilePath $nodeExecutable -ArgumentList @('server.js', ('"{0}"' -f $configurationArgument)) -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+    } finally { $env:UV_THREADPOOL_SIZE = $previousThreadPool }
+    $record = @{ id=$startedProcess.Id; executable=$nodeExecutable; startTicks=$startedProcess.StartTime.ToUniversalTime().Ticks.ToString(); configuration=$configurationFile; port=$portNumber; url=$baseUrl; stdout=$stdout; stderr=$stderr }
     $temporaryRecord = $recordFile + '.tmp'
     $record | ConvertTo-Json | Set-Content -LiteralPath $temporaryRecord
     Move-Item -LiteralPath $temporaryRecord -Destination $recordFile -Force
     $ready = $false
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
         if ($startedProcess.HasExited) { throw "Runtime exited. Check $stderr" }
-        try { $null = Invoke-WebRequest "http://127.0.0.1:$portNumber/api/ycs/stages" -Headers $readinessHeaders -TimeoutSec 1; $ready = $true; break } catch { Start-Sleep -Milliseconds 250 }
+        try { $null = Invoke-WebRequest $readinessUrl -Headers $readinessHeaders -TimeoutSec 1 -UseBasicParsing; $ready = $true; break } catch { Start-Sleep -Milliseconds 250 }
     }
-    if (-not $ready) { throw "Runtime did not become ready. Check $stderr" }
-    Write-Output "YCS runtime ready (PID $($startedProcess.Id)). http://127.0.0.1:$portNumber/ycs/data-manager"
+    if (-not $ready) { throw "Runtime did not become ready at $readinessUrl. Check $stderr" }
+    Write-Output "YCS runtime ready (PID $($startedProcess.Id)). $baseUrl/ycs/data-manager"
     Write-Output 'Saved connections refresh in the background. Program starts stopped.'
 } catch {
     if ($startedProcess -and -not $startedProcess.HasExited) { Stop-Process -Id $startedProcess.Id }
