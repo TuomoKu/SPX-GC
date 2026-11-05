@@ -8,9 +8,11 @@ Use the standard **Generic: HTTP Requests** connection in Companion. No custom S
 2. Open the item in the SPX rundown. In its **Companion** row, choose an action and click the copy icon.
 3. Add a **GET** action to the Companion button's **Press** actions and paste the copied URL. No body or Content Type is needed. Leave Release empty. Existing POST actions with JSON body **{}** still work at the same URL.
 
-The copied URL is complete, so Generic HTTP ignores its optional Base URL. Open SPX using the central computer's LAN hostname/IP before copying for another PC. A localhost address always refers to the machine running Companion. See the module's [official guide](https://github.com/bitfocus/companion-module-generic-http/blob/master/companion/HELP.md).
+The copied URL is complete, so Generic HTTP ignores its optional Base URL. The controller's Preview, Program and Companion copy buttons use the SPX server's detected network IP and configured port, including when the controller is opened through localhost. Reload the controller after the server's network address changes. See the module's [official guide](https://github.com/bitfocus/companion-module-generic-http/blob/master/companion/HELP.md).
 
-On the server, remote Companion requests require the existing `ycs.apiKey` setting and an `Authorization: Bearer YOUR_KEY` action header unless authenticated as an operator. The server must listen on the reachable LAN address. This UI change does not change binding, firewall or authorization settings. Do not put private tokens in URLs.
+For token-free LAN control, set `ycs.allowUnauthenticatedCompanion` to `true` in the server configuration and restart SPX. Copied item command URLs then accept GET or POST without a key, login or Authorization header. This setting applies only to the public item commands below; operator login and internal API authentication remain unchanged. The server must listen on a reachable LAN address and its port must be allowed through the firewall.
+
+When this option is absent or false, remote Companion requests require the existing `ycs.apiKey` setting and an `Authorization: Bearer YOUR_KEY` action header unless authenticated as an operator. Do not put private tokens in URLs.
 
 ## Item API
 

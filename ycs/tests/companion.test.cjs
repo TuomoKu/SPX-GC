@@ -12,7 +12,7 @@ const client = require(
 const register = require('../index.cjs'),
   { fixture } = require('./playback.test.cjs'),
   contract = require('../public/companion-contract.js');
-async function setup(t, { apiKey, duplicate = false } = {}) {
+async function setup(t, { apiKey, duplicate = false, allowUnauthenticatedCompanion = false } = {}) {
   const f = await fixture(t),
     app = express();
   app.use(express.json());
@@ -21,6 +21,7 @@ async function setup(t, { apiKey, duplicate = false } = {}) {
     general: { dataroot: f.root, username: '' },
     ycs: {
       enabled: true,
+      allowUnauthenticatedCompanion,
       dataFile: path.join(f.root, 'sources.json'),
       stages: f.stages,
       slots: { ticker: { order: 10 }, 'lower-third': { order: 20 } },
@@ -49,6 +50,19 @@ async function setup(t, { apiKey, duplicate = false } = {}) {
     });
   return { ...f, playback, base, post };
 }
+test('token-free Companion permits GET and POST controls without opening internal APIs', async (t) => {
+  const r = await setup(t, { apiKey: 'internal-test-key', allowUnauthenticatedCompanion: true });
+  const url = r.base + '/api/Stage1/Show/ticker/toggle';
+  assert.equal((await fetch(url)).status, 200);
+  assert.equal(r.playback.snapshot('stage-1', 'program').graphics.length, 1);
+  assert.equal((await r.post('/api/Stage1/Show/ticker/toggle')).status, 200);
+  assert.equal(r.playback.snapshot('stage-1', 'program').graphics.length, 0);
+  assert.equal((await fetch(r.base + '/api/ycs/stages')).status, 401);
+  assert.equal((await fetch(url, { headers: { Origin: 'https://foreign.invalid' } })).status, 403);
+  assert.equal((await fetch(url, { method: 'HEAD' })).status, 405);
+  assert.equal(r.playback.snapshot('stage-1', 'program').graphics.length, 0);
+});
+
 test('project/rundown item commands use saved values and isolate outputs without guessed IDs', async (t) => {
   const r = await setup(t),
     show = await r.repository.read('stage-1');

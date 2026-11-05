@@ -71,3 +71,35 @@ test('actual metadata and batched requests count over a rolling minute, includin
   assert.equal(r.sources.snapshot().connections[Object.keys(r.sources.document.connections)[0]].rows[1][1].value, 'IN PROGRESS');
   r.advance(61); assert.equal(r.sources.snapshot().workbooks[r.book].requestsPerMinute, 0);
 });
+
+test('confirmed worksheet changes preserve cell mappings and confirmed deletion removes mappings', async t => {
+  const r = await setup(t), groupId = await group(r, 1), connection = await range(r, groupId);
+  const pick = { connection, selection: { kind: 'cell', cell: 'B2' } };
+  await r.sources.saveMappings('stage-1', 'ticker', '/test/graphic.html', [
+    {field:'f5', scope:'override', binding:pick}
+  ], r.sources.document.revision);
+  const revision = r.sources.document.revision;
+  const update = {id:connection, settings:{worksheet:'STAGE 2', range:'A1:B3'}};
+  await assert.rejects(range(r, groupId, 'Match', update), {status:409, confirmationRequired:true});
+  assert.equal(r.sources.document.revision, revision);
+  await range(r, groupId, 'Match', {...update, confirmed:true});
+  assert.equal(r.sources.document.connections[connection].settings.worksheet, 'STAGE 2');
+  assert.deepEqual(r.sources.document.mappings.find(m=>m.stage==='stage-1' && m.graphic==='ticker').binding, pick);
+  await assert.rejects(r.sources.removeConnection(connection, r.sources.document.revision), {status:409, confirmationRequired:true});
+  await r.sources.removeConnection(connection, r.sources.document.revision, true);
+  assert.equal(r.sources.document.connections[connection], undefined);
+  assert.equal(r.sources.mapping('stage-1','ticker','f5','/test/graphic.html'), undefined);
+});
+
+test('confirmed group deletion clears dependent aliases and mappings atomically', async t => {
+  const r = await setup(t), groupId = await group(r, 1), connection = await range(r, groupId);
+  await r.sources.edit(r.sources.document.revision, next => {
+    next.sources.alias = {type:'connection-value',label:'Alias',binding:{connection,selection:{kind:'cell',cell:'B2'}}};
+    next.mappings.push({stage:'stage-1',graphic:'other',field:'f5',source:'alias'});
+  });
+  await assert.rejects(r.sources.removeWorkbookItem(r.book, groupId, r.sources.document.revision), {confirmationRequired:true});
+  await r.sources.removeWorkbookItem(r.book, groupId, r.sources.document.revision, true);
+  assert.equal(r.sources.document.sources.alias, undefined);
+  assert.equal(r.sources.document.connections[connection], undefined);
+  assert.equal(r.sources.mapping('stage-1','other','f5','/test/graphic.html'), undefined);
+});

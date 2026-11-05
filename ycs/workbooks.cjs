@@ -69,10 +69,9 @@ function attach(DataSources) {
         if (Object.entries(next.workbooks).some(([key, book]) => key !== id && book.settings.url === normalized.url)) fail('This spreadsheet already has a source.');
         const previous = next.workbooks[id];
         const ranges = Object.entries(next.connections).filter(([, connection]) => connection.sheetRange?.workbook === id);
-        if (previous && previous.settings.url !== normalized.url && ranges.length) fail('Remove its named ranges before changing spreadsheets.', 409);
         next.workbooks[id] = { label: name, settings: normalized, groups: previous?.groups || {} };
-        for (const [, connection] of ranges) connection.settings.refreshSeconds = normalized.refreshSeconds;
-      });
+        for (const [, connection] of ranges) Object.assign(connection.settings, normalized);
+      }, input.confirmed);
       return { workbookId: id, snapshot: this.snapshot() };
     },
     async saveWorkbookGroup(workbookId, input) {
@@ -102,24 +101,21 @@ function attach(DataSources) {
         if (!currentBook?.groups[groupId] || JSON.stringify(currentBook.settings) !== JSON.stringify(book.settings)) fail('Spreadsheet changed. Reload before saving.', 409);
         const old = next.connections[id];
         if (input.id && (!old || old.sheetRange?.workbook !== workbookId || old.sheetRange.group !== groupId)) fail('Unknown named range.', 404);
-        if (old && this.usages(id).length && (old.settings.worksheet !== normalized.worksheet || old.settings.range !== normalized.range)) fail('Unmap this range before changing its cells.', 409);
         next.connections[id] = { type: 'google-sheets', label: name, settings: normalized, sheetRange: metadata };
-      });
+      }, input.confirmed);
       this.acceptRead(id, result.rows, result.data, result.headerRows);
       this.workbookRuntime(workbookId).nextAt = 0;
       await this.persistCache();
       return { connectionId: id, snapshot: this.snapshot() };
     },
-    async removeWorkbookItem(workbookId, groupId, revision) {
+    async removeWorkbookItem(workbookId, groupId, revision, confirmed = false) {
       await this.edit(revision, next => {
         const book = next.workbooks?.[workbookId];
         if (!book || (groupId && !book.groups[groupId])) fail('Unknown spreadsheet or group.', 404);
         const ids = Object.keys(next.connections).filter(id => next.connections[id].sheetRange?.workbook === workbookId && (!groupId || next.connections[id].sheetRange.group === groupId));
-        if (ids.some(id => this.usages(id).length)) fail('Remove field mappings and stop linked graphics first.', 409);
         for (const id of ids) delete next.connections[id];
-        for (const [key, source] of Object.entries(next.sources)) if (ids.includes(source.binding?.connection)) delete next.sources[key];
         if (groupId) delete book.groups[groupId]; else delete next.workbooks[workbookId];
-      });
+      }, confirmed);
       return this.snapshot();
     },
     async refreshWorkbook(id) {

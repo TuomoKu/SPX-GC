@@ -323,7 +323,7 @@ if (stage) {
   // Keep the native Caps Lock overlay's copy shortcuts on the same stage API.
   window.copyItemID = (item, action = '') => {
     try {
-      const text = action ? new URL(window.YCSCompanion.command(project, rundown, item, action.toLowerCase()).path, location.href).href : item;
+      const text = action ? window.YCSStagePanel.shareURL(window.YCSCompanion.command(project, rundown, item, action.toLowerCase()).path) : item;
       const copied = stagePanel.copyText(text, action ? 'Companion ' + action + ' URL' : 'Item ID');
       window.showItemIDs?.(false);
       return copied;

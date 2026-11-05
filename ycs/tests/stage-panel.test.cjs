@@ -72,6 +72,7 @@ test('monitor selection preserves the native renderer, labels its mode and never
 test('copy buttons use the respective absolute stage output URL without changing the monitor or invoking panic', async (t) => {
   const r = await panel(t, 'http://localhost:5660'),
     copied = [];
+  r.window.document.documentElement.dataset.ycsServerAddress = '192.0.2.7:5660';
   Object.defineProperty(r.window.navigator, 'clipboard', {
     value: { writeText: async (value) => copied.push(value) }
   });
@@ -80,8 +81,8 @@ test('copy buttons use the respective absolute stage output URL without changing
     await new Promise((resolve) => setImmediate(resolve));
   }
   assert.deepEqual(copied, [
-    'http://localhost:5660/output/stage-2/program',
-    'http://localhost:5660/output/stage-2/preview'
+    'http://192.0.2.7:5660/output/stage-2/program',
+    'http://192.0.2.7:5660/output/stage-2/preview'
   ]);
   assert.equal(
     r.window.document.getElementById('previewIF').getAttribute('src'),

@@ -611,7 +611,7 @@ class DataSources extends EventEmitter {
       return { removed };
     });
   }
-  edit(expectedRevision, operation) {
+  edit(expectedRevision, operation, confirmed = false) {
     return this.queue(async () => {
       await this.ready;
       await this.read();
@@ -620,6 +620,27 @@ class DataSources extends EventEmitter {
         fail('Data changed elsewhere. Reload saved data before saving.', 409);
       const next = clone(this.document);
       operation(next);
+      const changed = Object.keys(this.document.connections).filter(id =>
+        JSON.stringify({...this.document.connections[id].settings, refreshSeconds:0}) !== JSON.stringify({...next.connections[id]?.settings, refreshSeconds:0}) ||
+        this.document.connections[id].type !== next.connections[id]?.type ||
+        this.document.connections[id].project !== next.connections[id]?.project);
+      const used = changed.filter(id => this.usages(id).length);
+      if (used.length && confirmed !== true) throw Object.assign(new Error('This change affects linked graphics. Compatible mappings keep their cells or selectors. Removed or incompatible mappings use manual fallback. Existing Program graphics retain their committed values until Play or Update.'), {status:409, confirmationRequired:true});
+      if (changed.length) {
+        const affected = entry => changed.includes(entry.binding?.connection || next.sources[entry.source || entry.binding?.source]?.binding?.connection);
+        for (const list of [next.mappings, next.defaults]) for (const entry of list) if (affected(entry)) {
+          try {
+            const pick = entry.binding || next.sources[entry.source]?.binding;
+            const resolvedPick = pick?.source ? next.sources[pick.source]?.binding || pick : pick;
+            const checked = binding(next, resolvedPick);
+            const connection = next.connections[checked.connection || next.sources[checked.source]?.binding?.connection];
+            if (connection?.project && connection.project !== this.stages.find(stage => stage.id === entry.stage)?.project) throw new Error();
+          } catch { delete entry.source; entry.binding = null; }
+        }
+        for (const [id, source] of Object.entries(next.sources)) if (changed.includes(source.binding?.connection)) {
+          try { binding(next, source.binding); } catch { delete next.sources[id]; }
+        }
+      }
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
@@ -728,7 +749,7 @@ class DataSources extends EventEmitter {
   testSheet(settings) {
     return this.sheets.read(connectionSettings(settings));
   }
-  async saveConnection(id, label, input, revision, type = 'google-sheets', project) {
+  async saveConnection(id, label, input, revision, type = 'google-sheets', project, confirmed = false) {
     if (!text(label)) fail('Enter a connection name, up to 300 characters');
     if (!sourceTypes.supported(type)) fail('Unsupported source type');
     if (project && !this.stages.some((stage) => stage.project === project)) fail('Unknown project');
@@ -738,29 +759,13 @@ class DataSources extends EventEmitter {
       fail('Connection returned invalid rows', 502);
     id ||= 'sheet.' + randomUUID();
     await this.edit(revision, (next) => {
-      if (
-        next.connections[id] &&
-        (next.connections[id].type !== type || next.connections[id].project !== project) &&
-        this.usages(id).length
-      )
-        fail('This connection is in use; create another source to change its type or project', 409);
-      if (
-        next.connections[id] &&
-        JSON.stringify({ ...next.connections[id].settings, refreshSeconds: 0 }) !==
-          JSON.stringify({ ...settings, refreshSeconds: 0 }) &&
-        this.usages(id).length
-      )
-        fail(
-          'This connection is in use. Add a new connection and remap its fields before changing its target.',
-          409
-        );
       next.connections[id] = {
         type,
         label: label.trim(),
         settings,
         ...(project ? { project } : {})
       };
-    });
+    }, confirmed);
     this.acceptRead(id, result.rows, result.data, result.headerRows);
     await this.persistCache().catch(() => {
       this.runtimes.get(id).cacheError =
@@ -769,18 +774,11 @@ class DataSources extends EventEmitter {
     this.emit('change');
     return { connectionId: id, snapshot: this.snapshot() };
   }
-  removeConnection(id, revision) {
+  removeConnection(id, revision, confirmed = false) {
     return this.edit(revision, (next) => {
       if (!next.connections[id]) fail('Unknown connection', 404);
-      if (this.usages(id).length)
-        fail(
-          'Remove saved field mappings and stop linked on-air graphics before removing this connection',
-          409
-        );
-      for (const [key, source] of Object.entries(next.sources))
-        if (source.binding?.connection === id) delete next.sources[key];
       delete next.connections[id];
-    });
+    }, confirmed);
   }
   // Compatibility endpoint for existing cell-source integrations. New UI saves
   // connections once and stores field selectors directly on each mapping.

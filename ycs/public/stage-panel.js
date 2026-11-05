@@ -1,6 +1,12 @@
 // Operator-only monitor controls. Selecting or copying an output never sends
 // a playback command; the panic callback is the only playout action here.
 window.YCSStagePanel = class StagePanel {
+  static shareURL(path) {
+    const url = new URL(path, window.location.href);
+    const address = document.documentElement.dataset.ycsServerAddress;
+    if (address) url.host = address;
+    return url.href;
+  }
   constructor({ stage, onStop }) {
     this.stage = stage;
     this.onStop = onStop;
@@ -85,7 +91,7 @@ window.YCSStagePanel = class StagePanel {
     return '/output/' + encodeURIComponent(this.stage) + '/' + mode;
   }
   outputURL(mode) {
-    return new URL(this.outputPath(mode), window.location.href).href;
+    return window.YCSStagePanel.shareURL(this.outputPath(mode));
   }
   selectMonitor(mode, navigate = true) {
     if (!['preview', 'program'].includes(mode)) return;

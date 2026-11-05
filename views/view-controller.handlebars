@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 {{>copyright }}
 
-<html lang="en" {{#if ycsStage}}data-ycs-stage="{{ycsStage.id}}" data-ycs-project="{{ycsStage.project}}" data-ycs-rundown="{{ycsStage.rundown}}"{{/if}}>
+<html lang="en" {{#if ycsStage}}data-ycs-stage="{{ycsStage.id}}" data-ycs-project="{{ycsStage.project}}" data-ycs-rundown="{{ycsStage.rundown}}" data-ycs-server-address="{{getServerAddress}}"{{/if}}>
 
 <head>
   <meta charset="UTF-8">
@@ -608,13 +608,7 @@
                       <table class="wide" style="border-spacing: 2px; margin-top: 2px;">
                         <TR>
                           <TD colspan="2" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
-                            <span><span data-ycs-item-title>{{#if ycsNickname}}{{ycsNickname}}{{else}}{{{ nameFromTemplatePath relpath }}}{{/if}}</span>
-                              {{#if @root.ycsStage}}
-                                {{#if ycsDescription}}<span class="delim"></span> <span style="opacity:0.5;">{{ycsDescription}}</span>{{/if}}
-                              {{else}}
-                                {{#if description}}<span class="delim"></span> <span style="opacity:0.5;">{{description}}</span>{{/if}}
-                              {{/if}}
-                              </span>
+                            <span class="spx-template-identity"><span data-ycs-item-title>{{#if ycsNickname}}{{ycsNickname}}{{else}}{{#if ycsDescription}}{{ycsDescription}}{{else}}{{#if description}}{{description}}{{else}}{{nameFromTemplatePath relpath}}{{/if}}{{/if}}{{/if}}</span></span>
                           </TD>
                           <!--
                           <TD class="vtop aright spxTableHeadsmall">
@@ -635,7 +629,7 @@
                       <table class="wide" style="border-spacing: 2px; margin-top:2px;">
                         <TR>
                           <TD colspan="3" class="vmid spxTableHeadsmall" style="height: 1.6em; text-transform:uppercase;">
-                            <span data-ycs-item-title>{{#if ycsNickname}}{{ycsNickname}}{{else}}{{{nameFromTemplatePath relpath}}}{{/if}}</span>&nbsp;&nbsp;
+                            <span class="spx-template-identity"><span data-ycs-item-title>{{#if ycsNickname}}{{ycsNickname}}{{else}}{{#if ycsDescription}}{{ycsDescription}}{{else}}{{#if description}}{{description}}{{else}}{{nameFromTemplatePath relpath}}{{/if}}{{/if}}{{/if}}</span></span>
 
                             <!-- disabled by default, enable with config -->
                             <i class="l-icon fas fa-edit {{{allowOpeningFolder}}}" onClick="openRelpathFolder(this.closest('.itemrow'));"  onmouseover="tip('{{lang 'button.edit'}}');"></i>

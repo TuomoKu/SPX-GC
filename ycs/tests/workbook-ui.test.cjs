@@ -24,7 +24,7 @@ test('spreadsheet, group and named-range dialogs feed the existing mapping panel
   const w = dom.window, $ = id => w.document.getElementById(id), requests = [];
   w.structuredClone = structuredClone;
   w.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
-  w.HTMLDialogElement.prototype.close = function () { this.open = false; this.dispatchEvent(new w.Event('close')); };
+  w.HTMLDialogElement.prototype.close = function (value = '') { this.returnValue = value; this.open = false; this.dispatchEvent(new w.Event('close')); };
   w.fetch = (target, options) => { requests.push(target); return fetch(base + target, options); };
   w.setInterval = () => 1; w.clearInterval = () => {};
   t.after(async () => { w.dispatchEvent(new w.Event('pagehide')); w.close(); playback.close(); await new Promise(resolve => server.close(resolve)); });
@@ -49,7 +49,7 @@ test('spreadsheet, group and named-range dialogs feed the existing mapping panel
   const interval = w.document.querySelector('.workbook-toolbar input');
   interval.value = '0.75'; interval.dispatchEvent(new w.Event('input'));
   interval.closest('form').dispatchEvent(new w.Event('submit', { cancelable: true }));
-  await until(() => Object.values(playback.sources.document.workbooks)[0].settings.refreshSeconds === 0.75);
+  await until(() => Object.values(playback.sources.document.workbooks)[0].settings.refreshSeconds === 0.75 && !interval.isConnected);
   [...w.document.querySelectorAll('.workbook-groups button')].find(b => b.textContent === '+ Add group').click();
   await until(() => $('group-worksheet').value === 'STAGE 1');
   $('group-label').value = 'Stage 1'; $('group-form').dispatchEvent(new w.Event('submit', { cancelable: true }));
@@ -113,6 +113,21 @@ test('spreadsheet, group and named-range dialogs feed the existing mapping panel
   assert.equal($('connection-type').value, 'local-csv');
   assert.equal($('local-file-fields').hidden, false);
   assert.equal($('sheet-url-label').hidden, true);
+  $('cancel-connection').click();
+  const linkedId = mapping.binding.connection;
+  const removeRequest = () => w.eval(`request('/data/connections/${linkedId}/remove', {revision:${playback.sources.document.revision}})`);
+  const cancelled = removeRequest().catch(error => error);
+  await until(() => $('source-change-confirmation')?.open);
+  assert.ok(playback.sources.document.connections[linkedId]);
+  [...$('source-change-confirmation').querySelectorAll('button')].find(button => button.textContent === 'Cancel').click();
+  assert.match((await cancelled).message, /cancelled/);
+  assert.ok(playback.sources.document.connections[linkedId]);
+  const confirmed = removeRequest();
+  await until(() => $('source-change-confirmation')?.open);
+  [...$('source-change-confirmation').querySelectorAll('button')].find(button => button.textContent === 'Confirm change').click();
+  await confirmed;
+  assert.equal(playback.sources.document.connections[linkedId], undefined);
+  assert.equal(playback.sources.mapping('stage-1','ticker', mapping.field, '/test/graphic.html'), undefined);
 });
 
 

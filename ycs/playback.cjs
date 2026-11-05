@@ -177,7 +177,7 @@ class Playback extends EventEmitter {
       const saved = item.ycsLinks?.[field.field] || { mode: 'manual', manual: field.value ?? '' };
       links[field.field] = { ...saved, source: this.sources?.mapping(stageId, graphicId, field.field, item.relpath) || null };
     }
-    return { revision: item.ycsEditRevision || 0, title: item.ycsNickname || item.description || graphicId, nickname: item.ycsNickname || '', slot: effective.ycsSlot || null, slotOverride: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : null, defaultSlot: definition.ycsSlot || 'default', slots: Object.entries(this.slots).map(([id, slot]) => ({id, label: slot.label || id})), sections: clone(definition.editorSections || item.editorSections || []), slotConfigured: Object.hasOwn(this.slots, effective.ycsSlot), templateTitle: path.basename(item.relpath).replace(/\.html?$/i, ''), template: item.relpath, previewOnEdit: item.ycsPreviewOnEdit !== false, fields: clone(item.DataFields), links };
+    return { revision: item.ycsEditRevision || 0, title: item.ycsNickname || item.description || graphicId, nickname: item.ycsNickname || '', slot: effective.ycsSlot || null, slotOverride: Object.hasOwn(item, 'ycsSlot') ? item.ycsSlot : null, defaultSlot: definition.ycsSlot || 'default', slots: Object.entries(this.slots).map(([id, slot]) => ({id, label: slot.label || id})), sections: clone(definition.editorSections || item.editorSections || []), slotConfigured: Object.hasOwn(this.slots, effective.ycsSlot), templateTitle: definition.description || item.description || path.basename(item.relpath).replace(/\.html?$/i, ''), template: item.relpath, previewOnEdit: item.ycsPreviewOnEdit !== false, fields: clone(item.DataFields), links };
   }
   async mappingPreview(stageId,graphicId,edits=[]) {
     await this.sources?.ready;
@@ -247,7 +247,10 @@ class Playback extends EventEmitter {
         const links = clone(item.ycsLinks || {});
         for (const [field, link] of Object.entries(options.links || {})) {
           if (!linkable(item, field) || !link || !['manual', 'linked'].includes(link.mode) || typeof link.manual !== 'string') fail('Invalid field link');
-          if (link.mode === 'linked' && !this.sources?.mapping(stageId, graphicId, field, item.relpath)) fail('Assign a source in Data Manager before linking this field', 422);
+          // Removing a mapping must not make an already-linked graphic unplayable.
+          // Its saved manual fallback remains valid until a source is assigned again.
+          const alreadyLinked = item.ycsLinks?.[field]?.mode === 'linked';
+          if (link.mode === 'linked' && !alreadyLinked && !this.sources?.mapping(stageId, graphicId, field, item.relpath)) fail('Assign a source in Data Manager before linking this field', 422);
           links[field] = { mode: link.mode, manual: manualValue(item.DataFields.find(def => def.field === field), link.manual) };
         }
         for (const field of item.DataFields) {

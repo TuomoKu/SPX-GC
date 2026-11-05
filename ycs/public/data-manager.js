@@ -35,6 +35,21 @@ function message(text, error = false) {
   $('message').textContent = text;
   $('message').classList.toggle('error', error);
 }
+function confirmSourceChange(message) {
+  return new Promise(resolve => {
+    const dialog = document.createElement('dialog'); dialog.id = 'source-change-confirmation';
+    dialog.setAttribute('aria-labelledby', 'source-change-title');
+    const title = node('h2', 'Change linked source?'); title.id = 'source-change-title';
+    const description = node('p', message);
+    const actions = node('div'); actions.className = 'actions';
+    const cancel = button('Cancel', () => dialog.close('cancel'));
+    const confirm = button('Confirm change', () => dialog.close('confirm')); confirm.className = 'primary';
+    actions.append(cancel, confirm); dialog.append(title, description, actions);
+    dialog.style.maxWidth = '480px';
+    dialog.addEventListener('close', () => { const accepted = dialog.returnValue === 'confirm'; dialog.remove(); resolve(accepted); }, {once:true});
+    document.body.append(dialog); dialog.showModal(); cancel.focus();
+  });
+}
 async function request(url, body) {
   const response = await fetch(
     '/api/ycs' + url,
@@ -47,6 +62,10 @@ async function request(url, body) {
         }
   );
   const result = await response.json();
+  if (!response.ok && result.confirmationRequired && body && !body.confirmed) {
+    if (await confirmSourceChange(result.error)) return request(url, { ...body, confirmed: true });
+    throw new Error('Change cancelled.');
+  }
   if (!response.ok) throw new Error(result.error || 'Request failed');
   return result;
 }
@@ -104,10 +123,10 @@ function renderConnections() {
       renderConnections();
       message('Connection removed.');
     });
-    remove.disabled = connection.usages.length > 0;
+    remove.disabled = false;
     remove.title = remove.disabled
       ? 'Remove its field mappings and stop linked on-air graphics first'
-      : 'Remove unused connection';
+      : 'Remove source';
     actions.append(remove);
     top.append(actions);
     card.append(
@@ -217,9 +236,9 @@ function connectionType() {
   $('local-file-fields').hidden = !local;
   $('csv-delimiter-field').hidden = type !== 'local-csv';
   $('local-file').required = local;
-  $('local-file').disabled = !local || Boolean(state.connections[editingId]?.usages.length);
+  $('local-file').disabled = !local;
   $('csv-delimiter').disabled =
-    type !== 'local-csv' || Boolean(state.connections[editingId]?.usages.length);
+    type !== 'local-csv';
   $('sheet-url-label').hidden = local;
   $('sheet-url').disabled = local;
   $('connection-help').textContent = local
@@ -257,9 +276,9 @@ function openConnection(id = null, owner = null) {
   $('connection-form').reset();
   $('connection-type').value = connection?.type || (owner ? 'google-sheets' : 'json-api');
   $('connection-type').querySelector('[value="google-sheets"]').disabled = !owner && !connection;
-  $('connection-type').disabled = Boolean(owner || connection?.usages.length);
+  $('connection-type').disabled = Boolean(owner);
   $('connection-project').value = connection?.project || '';
-  $('connection-project').disabled = Boolean(connection?.usages.length);
+  $('connection-project').disabled = false;
   $('json-token').value = connection?.settings.tokenEnv || '';
   $('sheet-label').value = connection?.label || '';
   $('sheet-url').value = connection?.settings.url || '';
@@ -279,23 +298,23 @@ function openConnection(id = null, owner = null) {
   $('sheet-test-status').textContent = '';
   $('save-sheet').disabled = !owner;
   $('connection-usage').textContent = connection?.usages.length
-    ? `Used by ${connection.usages.length} field references. You can change its name or refresh interval. Add a new connection to change its location, file, delimiter, sheet, tab or range.`
+    ? `Used by ${connection.usages.length} field references. Changes to linked sources require confirmation.`
     : '';
   for (const key of ['sheet-url', 'sheet-range'])
-    $(key).readOnly = Boolean(connection?.usages.length);
+    $(key).readOnly = false;
   if (owner) { $('sheet-url').readOnly = true; $('sheet-refresh').disabled = true; }
   else $('sheet-refresh').disabled = false;
   $('connection-dialog').showModal();
   sheetPicker.reset({
     worksheet: connection?.settings.worksheet || (owner ? state.workbooks[owner.workbook].groups[owner.group].worksheet : ''),
-    locked: Boolean(connection?.usages.length),
+    locked: false,
     enabled: !connection || connection.type === 'google-sheets'
   });
   connectionType();
   localFile.reset({
     file: connection?.settings.file || '',
     location: connection?.settings.location,
-    locked: Boolean(connection?.usages.length)
+    locked: false
   });
   $('sheet-label').focus();
 }

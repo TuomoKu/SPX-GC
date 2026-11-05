@@ -340,8 +340,7 @@ app.engine('handlebars', exphbs.engine({
       showProfileData.templates.forEach((template,i) => {
         html += '<div onClick="addSelectedTemplate(' + i + ');" class="addTemplateItem row_accent' + template.uicolor + '">\n';
         html += '<button type="button" class="addbtn bg_blue ripple" onClick="addSelectedTemplate(' + i + ');" style="float:right;">+</button>\n';
-        html += '<span class="templateName">' + spx.prettifyName(template.relpath) + '</span><BR>\n';
-        html += '<span class="templateDesc">' + template.description + '&nbsp;</span>\n';
+        html += '<span class="templateName">' + require('handlebars').escapeExpression(template.description || spx.prettifyName(template.relpath)) + '</span><BR>\n';
         html += '</div>\n';
       });
       return html
@@ -362,8 +361,7 @@ app.engine('handlebars', exphbs.engine({
       showProfileData.templates.forEach((template,i) => {
         html += '<div onClick="addSelectedTemplate(' + i + ');" class="addTemplateItem row_accent' + template.uicolor + '">\n';
         html += '<button type="button" class="addbtn bg_blue ripple" onClick="event.stopPropagation(); addSelectedTemplate(' + i + ');" style="float:right;">+</button>\n';
-        html += '<span class="templateName">' + spx.prettifyName(template.relpath) + '</span><BR>\n';
-        html += '<span class="templateDesc">' + template.description + '&nbsp;</span>\n';
+        html += '<span class="templateName">' + require('handlebars').escapeExpression(template.description || spx.prettifyName(template.relpath)) + '</span><BR>\n';
         html += '</div>\n';
       });
       return html

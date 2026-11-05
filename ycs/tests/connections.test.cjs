@@ -82,3 +82,22 @@ test('multiple ordinary text fields link independently while hidden identity and
   const data = r.playback.snapshot('stage-1', 'program').graphics[0].data; assert.equal(data.f4, 'CUSTOM'); assert.equal(data.f5, 'NEW ROUND');
   for (const field of ['f0']) await assert.rejects(r.playback.command('stage-1', 'ticker', 'preview', undefined, { links: { [field]: { mode: 'linked', manual: 'x' } } }), { status: 400 });
 });
+
+test('confirmed source target changes wait for explicit Update before replacing on-air values', async t => {
+  const r = await setup(t), {connectionId:id} = await r.sources.saveConnection(null, 'Show', settings, 0);
+  await r.sources.saveMappings('stage-1','ticker','/test/graphic.html',[
+    {field:'f5',scope:'override',binding:{connection:id,selection:{kind:'cell',cell:'B2'}}}
+  ],r.sources.document.revision);
+  await r.playback.command('stage-1','ticker','play',undefined,{links:{f5:{mode:'linked',manual:'FALLBACK'}}});
+  const changed = table(); changed[1][1].value = 'NEW TAB'; r.set(changed);
+  await r.sources.saveConnection(id,'Show',{...settings,worksheet:'43'},r.sources.document.revision,'google-sheets',undefined,true);
+  await r.playback.refreshLinks('stage-1');
+  assert.equal(r.playback.snapshot('stage-1','program').graphics[0].data.f5,'ROUND 1');
+  await r.playback.command('stage-1','ticker','update');
+  assert.equal(r.playback.snapshot('stage-1','program').graphics[0].data.f5,'NEW TAB');
+  await r.sources.removeConnection(id,r.sources.document.revision,true);
+  await r.playback.refreshLinks('stage-1');
+  assert.equal(r.playback.snapshot('stage-1','program').graphics[0].data.f5,'NEW TAB');
+  await r.playback.command('stage-1','ticker','update');
+  assert.equal(r.playback.snapshot('stage-1','program').graphics[0].data.f5,'FALLBACK');
+});

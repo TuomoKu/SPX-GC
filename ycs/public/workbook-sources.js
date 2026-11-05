@@ -56,7 +56,7 @@ window.YCSWorkbookSources = class WorkbookSources {
   async submit(event, operation, errorId) { event.preventDefault(); const button = event.target.querySelector('[type=submit]'); button.disabled = true; this.$(errorId).textContent = ''; try { await operation(); } catch (error) { this.$(errorId).textContent = error.message; } finally { button.disabled = false; } }
   openWorkbook(id = null) {
     const book = this.getState().workbooks?.[id]; this.editBook = id; this.revision = this.getState().revision;
-    this.$('workbook-label').value = book?.label || ''; this.$('workbook-url').value = book?.settings.url || ''; this.$('workbook-url').readOnly = Boolean(book && Object.values(this.getState().connections).some(c => c.sheetRange?.workbook === id));
+    this.$('workbook-label').value = book?.label || ''; this.$('workbook-url').value = book?.settings.url || ''; this.$('workbook-url').readOnly = false;
     this.$('workbook-refresh').value = book?.settings.refreshSeconds ?? 5; this.$('workbook-error').textContent = '';
     this.$('workbook-title').textContent = book ? 'Edit spreadsheet' : 'Add spreadsheet'; this.$('workbook-dialog').showModal();
   }

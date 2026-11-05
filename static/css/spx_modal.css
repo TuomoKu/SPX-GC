@@ -208,6 +208,8 @@
   opacity: 0.6;
 }
 
+.spx-template-identity{display:inline-flex;flex-direction:column;vertical-align:middle;max-width:calc(100% - 80px);line-height:1.4}
+
 .collapsible {
     box-sizing: border-box;
     color: white;

@@ -77,7 +77,7 @@
 .ycs-checkbox-field{display:flex;align-items:center;gap:6px;margin:0;min-height:24px;white-space:nowrap}
 .ycs-checkbox-field>label{font-size:12px;cursor:pointer}
 .ycs-checkbox-field .ycs-link-field{width:auto;flex:0 0 auto}
-.ycs-checkbox-field .ycs-link-toggle.is-unassigned{display:none}
+.ycs-checkbox-field .ycs-link-toggle.is-unassigned:not(.is-linked){display:none}
 .ycs-editor-field .ycs-check{position:static!important;opacity:1!important;width:14px!important;height:14px!important;display:inline-block!important;appearance:auto!important;margin:0!important;accent-color:#66e675;cursor:pointer}
 .ycs-checkbox-field .ycs-link-detail.is-warning{max-width:200px;margin:0;font-size:11px}
 .ycs-advanced{border-top:1px solid #43525d;margin:8px 0 0;padding-top:6px;font:12px/1.4 Arial,sans-serif;color:#b6c7d3}

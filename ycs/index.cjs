@@ -213,7 +213,8 @@ module.exports = function registerYCS(app, config, hooks = {}) {
           req.body.settings,
           req.body.revision,
           req.body.type,
-          req.body.project
+          req.body.project,
+          req.body.confirmed
         )
       )
     )
@@ -242,7 +243,8 @@ module.exports = function registerYCS(app, config, hooks = {}) {
           req.body.settings,
           req.body.revision,
           req.body.type,
-          req.body.project
+          req.body.project,
+          req.body.confirmed
         )
       )
     )
@@ -251,8 +253,8 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   router.post('/data/workbooks/:id/groups', handlers(async (req, res) => res.json(await sources.saveWorkbookGroup(req.params.id, req.body))));
   router.post('/data/workbooks/:id/groups/:group/ranges', handlers(async (req, res) => res.json(await sources.saveNamedRange(req.params.id, req.params.group, req.body))));
   router.post('/data/workbooks/:id/refresh', handlers(async (req, res) => res.json(await sources.refreshWorkbook(req.params.id))));
-  router.post('/data/workbooks/:id/remove', handlers(async (req, res) => res.json(await sources.removeWorkbookItem(req.params.id, null, req.body.revision))));
-  router.post('/data/workbooks/:id/groups/:group/remove', handlers(async (req, res) => res.json(await sources.removeWorkbookItem(req.params.id, req.params.group, req.body.revision))));
+  router.post('/data/workbooks/:id/remove', handlers(async (req, res) => res.json(await sources.removeWorkbookItem(req.params.id, null, req.body.revision, req.body.confirmed))));
+  router.post('/data/workbooks/:id/groups/:group/remove', handlers(async (req, res) => res.json(await sources.removeWorkbookItem(req.params.id, req.params.group, req.body.revision, req.body.confirmed))));
   router.post(
     '/data/connections/:id/refresh',
     handlers(async (req, res) => res.json(await sources.refreshSheet(req.params.id)))
@@ -260,7 +262,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   router.post(
     '/data/connections/:id/remove',
     handlers(async (req, res) =>
-      res.json(await sources.removeConnection(req.params.id, req.body.revision))
+      res.json(await sources.removeConnection(req.params.id, req.body.revision, req.body.confirmed))
     )
   );
   router.get(
@@ -410,7 +412,9 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       next();
     },
     sameOrigin,
-    apiAccess,
+    (req, res, next) => settings.allowUnauthenticatedCompanion === true
+      ? next()
+      : apiAccess(req, res, next),
     handlers(async (req, res) => {
       const { project, rundown, graphic, action } = req.params;
       const allowed = require('./public/companion-contract.js').actions;
@@ -516,6 +520,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     if (res.headersSent) return next(error);
     res.status(error.status || 500).json({
       error: error.status ? error.message : 'Stage operation failed; program state retained',
+      ...(error.confirmationRequired ? { confirmationRequired: true } : {}),
       ...(error.fields ? { fields: error.fields } : {})
     });
   });

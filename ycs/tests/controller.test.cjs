@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
-async function controller(t, compact = false, previewOnEdit = true, primary = false) {
+async function controller(t, compact = false, previewOnEdit = true, primary = false, checkboxLinked = false) {
   const dom = new JSDOM(
     `<html data-ycs-stage="stage-1" data-ycs-project="Stage1" data-ycs-rundown="Show"><head></head><body><div id="controllerPluginButtons"></div><iframe id="previewIF"></iframe>
     <div class="itemrow inFocus" data-spx-epoch="ticker"><div class="truncate"></div><div id="Expanded" style="display:block"></div>
@@ -83,7 +83,7 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
         revision,
         links: {
           f5: { mode: 'manual', manual: 'MANUAL ROUND' },
-          ...(compact ? { f2: { mode: 'manual', manual: '1' } } : {})
+          ...(compact ? { f2: { mode: checkboxLinked ? 'linked' : 'manual', manual: '1' } } : {})
         },
         fields: compact
           ? [
@@ -201,6 +201,7 @@ test('native Save closes the editor; Stop does not silently refresh a stale edit
 test('compact action picker copies exact project/rundown/item URLs without requests or draft changes', async (t) => {
   const r = await controller(t, true),
     copied = [];
+  r.window.document.documentElement.dataset.ycsServerAddress = '192.0.2.7:5660';
   Object.defineProperty(r.window.navigator, 'clipboard', {
     value: { writeText: async (value) => copied.push(value) }
   });
@@ -222,13 +223,13 @@ test('compact action picker copies exact project/rundown/item URLs without reque
     select.dispatchEvent(new r.window.Event('change', { bubbles: true }));
     button.click();
     await new Promise((resolve) => setImmediate(resolve));
-    assert.equal(copied.at(-1), 'http://localhost/api/Stage1/Show/ticker/' + action);
+    assert.equal(copied.at(-1), 'http://192.0.2.7:5660/api/Stage1/Show/ticker/' + action);
   }
   assert.equal(r.posts.length, 0);
   assert.equal(input.value, 'UNSAVED DRAFT');
   assert.equal(r.row.querySelector('#Expanded').style.display, 'block');
   await r.window.copyItemID('ticker', 'play');
-  assert.equal(copied.at(-1), 'http://localhost/api/Stage1/Show/ticker/play');
+  assert.equal(copied.at(-1), 'http://192.0.2.7:5660/api/Stage1/Show/ticker/play');
 });
 
 test('remote focus selects Preview monitor and preserves drafts without sending another preview or playout', async (t) => {
@@ -304,6 +305,26 @@ test('nickname editing changes only display metadata, preserves unsaved field ed
         !post.url.endsWith('/preview')
     )
   );
+});
+
+test('a linked checkbox with a cleared mapping keeps its unlink button visible and restores manual editing', async t => {
+  const r = await controller(t, true, true, false, true);
+  const style = r.window.document.createElement('style');
+  style.textContent = await fs.readFile(path.join(__dirname, '../public/controller.css'), 'utf8');
+  r.window.document.head.append(style);
+  assert.ok(style.sheet, 'the actual controller stylesheet must load');
+  const checkbox = r.row.querySelector('[data-update="f2"]');
+  const button = checkbox.closest('.ycs-link-field').querySelector('button');
+  assert.equal(checkbox.disabled, true);
+  assert.equal(button.classList.contains('is-unassigned'), true);
+  assert.equal(button.classList.contains('is-linked'), true);
+  assert.notEqual(r.window.getComputedStyle(button).display, 'none');
+  button.click();
+  await r.window.previewItem(r.row);
+  assert.equal(checkbox.disabled, false);
+  assert.equal(checkbox.checked, true);
+  assert.equal(r.posts.at(-1).body.links.f2.mode, 'manual');
+  assert.ok(r.posts.every(post => post.url.endsWith('/preview')));
 });
 
 test('compact native editor preserves field nodes and values, keeps checkbox editing and link changes off air, and saves all advanced fields', async (t) => {

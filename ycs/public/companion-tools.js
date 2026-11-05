@@ -36,10 +36,9 @@ window.YCSCompanionTools = function ({ row, project, rundown, editor, copyIcon, 
   let url;
   function update() {
     try {
-      url = new URL(
-        window.YCSCompanion.command(project, rundown, item, select.value).path,
-        location.href
-      ).href;
+      url = window.YCSStagePanel.shareURL(
+        window.YCSCompanion.command(project, rundown, item, select.value).path
+      );
       button.disabled = editor.slotConfigured === false;
       button.title = button.disabled
         ? 'Assign an output slot to this item first'
