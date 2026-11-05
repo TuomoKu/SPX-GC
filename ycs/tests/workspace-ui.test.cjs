@@ -175,6 +175,27 @@ test('mapping workspace scopes sources to projects and retains separate graphic 
   await r.workspace.selectProject();
   assert.equal(r.workspace.model.edits.size, 1);
 });
+test('changing a source keeps ordinary transforms but clears Completed game', async (t) => {
+  const r = await fixture(t);
+  r.workspace.tableMode = true;
+  r.workspace.renderSourceContext();
+  r.workspace.autoMap();
+  const choose = (kind) => {
+    const select = r.window.document.querySelector('[aria-label="Name transform"]');
+    select.value = kind;
+    assert.equal(select.value, kind, kind + ' is offered');
+    select.dispatchEvent(new r.window.Event('change'));
+  };
+  const transform = () => r.workspace.model.edits.get('f0').binding.transform;
+  choose('uppercase');
+  r.workspace.assign({ static: 'Kept' });
+  assert.equal(transform().kind, 'uppercase');
+  choose('completed-game');
+  assert.equal(transform().kind, 'completed-game');
+  r.workspace.assign({ static: 'Cleared' });
+  assert.equal(transform(), undefined);
+});
+
 test('table-row auto-map is explicit, transforms preserve edits, Revert discards only the selected draft, and conflicts retain it', async (t) => {
   const r = await fixture(t);
   r.workspace.tableMode = true;

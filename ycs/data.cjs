@@ -527,19 +527,26 @@ class DataSources extends EventEmitter {
       return { ...source, type: 'local', health: this.error ? 'error' : 'ok' };
     const input = previewRecord || source?.binding || this.bindings.get(id);
     if (!input) return { health: 'error', error: 'Source unavailable' };
-    if (Object.hasOwn(input, 'static'))
-      return {
-        value: transform(input.static, input.transform),
-        label: 'Static value',
-        type: 'static',
-        health: 'ok'
-      };
+    // A transform can refuse its value. One link must report that, never break the
+    // snapshot every controller reads or stop the other links refreshing.
+    if (Object.hasOwn(input, 'static')) {
+      const shown = { label: 'Static value', type: 'static' };
+      try {
+        return { ...shown, value: transform(input.static, input.transform), health: 'ok' };
+      } catch (problem) {
+        return { ...shown, health: 'error', error: problem.message };
+      }
+    }
     if (input.source) {
       const nested = this.resolveSnapshot(input.source);
-      return {
-        ...nested,
-        value: nested.value === undefined || nested.value === '' ? nested.value : transform(nested.value, input.transform)
-      };
+      try {
+        return {
+          ...nested,
+          value: nested.value === undefined || nested.value === '' ? nested.value : transform(nested.value, input.transform)
+        };
+      } catch (problem) {
+        return { ...nested, value: undefined, health: 'error', error: problem.message };
+      }
     }
     const ref = source ? this.reference(input) : id,
       runtime = this.runtimes.get(input.connection),
