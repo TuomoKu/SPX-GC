@@ -1,6 +1,13 @@
 'use strict';
+const { createHash } = require('node:crypto');
 const MAX_BODY = 262144;
+// Worksheet lists come from the public HTML viewer, shared by every connection on
+// a spreadsheet. Google's query endpoint answers an unknown gid or sheet name with
+// the first tab and status "ok", so each read is checked against this list.
+const TAB_TTL = 300000, TAB_RECHECK = 5000, TAB_RETRY = 60000;
 function fail(message, status = 400) { const error = new Error(message); error.status = status; throw error; }
+// Not a source failure: the caller keeps its last valid data and retries later.
+function transient(message, retryAfterMs) { const error = new Error(message); error.status = 503; error.transient = true; error.retryAfterMs = retryAfterMs; throw error; }
 function columnNumber(name) { return [...name].reduce((value, letter) => value * 26 + letter.charCodeAt(0) - 64, 0); }
 function columnName(number) { let name = ''; while (number) { number--; name = String.fromCharCode(65 + number % 26) + name; number = Math.floor(number / 26); } return name; }
 function parseRange(value) {
@@ -85,8 +92,30 @@ async function readLimited(response, limit = MAX_BODY) {
     return raw + decoder.decode();
   } catch (error) { await reader.cancel().catch(() => {}); throw error; }
 }
+function findTab(tabs, worksheet) {
+  if (/^\d+$/.test(worksheet)) return tabs.find((tab) => tab.id === worksheet);
+  const exact = tabs.find((tab) => tab.name === worksheet);
+  if (exact) return exact;
+  const loose = tabs.filter((tab) => tab.name.toLowerCase() === worksheet.toLowerCase());
+  return loose.length === 1 ? loose[0] : undefined;
+}
+// A header cell left blank above data in its column is the signature of Google's
+// per-column type inference dropping a text header. Only such rows need a re-read.
+function headerGaps(rows, index) {
+  const header = rows[index];
+  if (!header) return false;
+  return header.some(
+    (cell, column) =>
+      !cell.value.trim() && rows.slice(index + 1).some((row) => row[column]?.value.trim())
+  );
+}
 class PublicSheets {
-  constructor(fetcher = fetch) { this.fetcher = fetcher; }
+  constructor(fetcher = fetch, { now = Date.now } = {}) {
+    this.fetcher = fetcher;
+    this.now = now;
+    this.tabCache = new Map();
+    this.verified = new Map();
+  }
   async worksheets(input, { signal } = {}) {
     const settings = normalizeSettings({ url: input?.url, range: 'A1', refreshSeconds: 5 });
     const timeout = new AbortController(), timer = setTimeout(() => timeout.abort(), 8000); timer.unref?.();
@@ -96,16 +125,49 @@ class PublicSheets {
         redirect: 'manual', credentials: 'omit', referrerPolicy: 'no-referrer', headers: { Accept: 'text/html' }
       });
       if (response.status !== 200) fail('Could not list worksheets. Check public sharing or enter a tab name/gid manually.', 502);
-      return { worksheets: parseWorksheets(await readLimited(response, 2097152)), selected: settings.worksheet };
+      const worksheets = parseWorksheets(await readLimited(response, 2097152));
+      this.rememberTabs(settings, worksheets);
+      return { worksheets, selected: settings.worksheet };
     } catch (error) {
       if (error.status) throw error;
       fail('Could not list worksheets. Retry or enter a tab name/gid manually.', 502);
     } finally { clearTimeout(timer); }
   }
-  async read(input, { singleCell = false, signal, headerRows = [] } = {}) {
+  rememberTabs(settings, tabs) {
+    const id = settings.url.split('/')[5];
+    const entry = { tabs, fetchedAt: this.now(), failedAt: undefined };
+    for (const [key, value] of this.tabCache) {
+      if (this.tabCache.size < 100) break;
+      if (!value.pending) this.tabCache.delete(key);
+    }
+    this.tabCache.set(id, { ...this.tabCache.get(id), ...entry });
+    return entry;
+  }
+  // Cached worksheet list, refreshed when older than maxAge. A failed refresh keeps
+  // the previous list and is not retried for a minute, so a broken viewer page
+  // never costs an extra request per poll.
+  tabList(settings, maxAge) {
+    const id = settings.url.split('/')[5], entry = this.tabCache.get(id), now = this.now();
+    if (entry?.pending) return entry.pending;
+    if (entry && (now - entry.fetchedAt < maxAge || now - (entry.failedAt ?? -Infinity) < TAB_RETRY))
+      return Promise.resolve(entry);
+    const pending = this.worksheets({ url: settings.url }).then(
+      () => this.tabCache.get(id),
+      () => {
+        const failed = { tabs: entry?.tabs, fetchedAt: entry?.fetchedAt ?? -Infinity, failedAt: this.now() };
+        this.tabCache.set(id, failed);
+        return failed;
+      }
+    ).then((result) => { delete result.pending; return result; });
+    this.tabCache.set(id, { ...entry, fetchedAt: entry?.fetchedAt ?? -Infinity, pending });
+    return pending;
+  }
+  // `settle` (background polls) holds new content until a fresh worksheet list
+  // confirms its tab. Explicit tests and saves accept a list fetched moments ago.
+  async read(input, { singleCell = false, signal, headerRows = [], settle = false } = {}) {
     const settings = normalizeSettings(input), range = singleCell ? settings.cell : settings.range;
     if (!range) fail('Choose a cell before saving the source');
-    const timeout = new AbortController();
+    const timeout = new AbortController(), started = this.now();
     const timer = setTimeout(() => timeout.abort(), 8000); timer.unref?.();
     try {
       const combined = signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal;
@@ -115,26 +177,62 @@ class PublicSheets {
           headers: { Accept: 'application/javascript, application/json', 'Cache-Control': 'no-cache' }
         });
         if (!response.ok || response.status !== 200 || /text\/html/i.test(response.headers.get('content-type') || '')) fail('Sheet is unavailable or requires sign-in. Check Anyone with the link → Viewer, the URL and worksheet.', 502);
-        return parseResponse(await readLimited(response), selected);
+        const raw = await readLimited(response);
+        return { rows: parseResponse(raw, selected), raw };
       };
-      const rows=await readRange(range),bounds=parseRange(range);
+      const main = await readRange(range), rows = main.rows, bounds = parseRange(range);
       const headers=singleCell?[]:[...new Set([bounds.firstRow,...headerRows])];
       if(headers.length>16||headers.some(row=>!Number.isInteger(row)||row<bounds.firstRow||row>bounds.lastRow))fail('Use at most 16 header rows within the connection range');
       // The query endpoint infers a type per column and can return a text header
-      // as null above checkboxes/numbers. Read each requested header on its own
-      // and overlay it at its original address. Data stays in one shared poll.
-      if(bounds.firstRow!==bounds.lastRow)for(let offset=0;offset<headers.length;offset+=4){
-        await Promise.all(headers.slice(offset,offset+4).map(async row=>{
+      // as null above checkboxes/numbers. Re-read only header rows that show such a
+      // gap, each on its own, and overlay them at their original addresses.
+      const gaps = bounds.firstRow === bounds.lastRow ? [] : headers.filter((row) => headerGaps(rows, row - bounds.firstRow));
+      for(let offset=0;offset<gaps.length;offset+=4){
+        await Promise.all(gaps.slice(offset,offset+4).map(async row=>{
           const selected=columnName(bounds.firstColumn)+row+':'+columnName(bounds.lastColumn)+row;
-          rows[row-bounds.firstRow]=(await readRange(selected))[0];
+          rows[row-bounds.firstRow]=(await readRange(selected)).rows[0];
         }));
       }
+      const warning = await this.verifyTab(settings, range, main.raw, started, combined, settle);
       if (singleCell && !rows[0][0].usable) fail('Selected cell is empty or exceeds 300 characters; retaining the last valid value', 502);
-      return { settings, rows, headerRows:headers, ...(singleCell ? { value: rows[0][0].value } : {}) };
+      return { settings, rows, headerRows:headers, ...(warning ? { warning } : {}), ...(singleCell ? { value: rows[0][0].value } : {}) };
     } catch (error) {
       if (error.status) throw error;
       fail(timeout.signal.aborted ? 'Google Sheets request timed out; retaining the last valid value' : 'Could not reach Google Sheets; retaining the last valid value', 502);
     } finally { clearTimeout(timer); }
+  }
+  // Fails when the configured tab no longer exists. Unchanged content needs only
+  // the cached list (five minutes). New content, or a missing tab, needs a list
+  // fetched after this read began; lists are refreshed at most every five seconds
+  // per spreadsheet, and new content arriving sooner is held until then.
+  async verifyTab(settings, range, raw, started, signal, settle) {
+    const key = settings.url + '\n' + settings.worksheet + '\n' + range;
+    const digest = createHash('sha1').update(raw).digest('base64');
+    // The shared list request is not cancelled with this read; stop waiting for it.
+    const wait = (promise) => new Promise((resolve, reject) => {
+      const abort = () => reject(signal.reason || new Error('Sheet read cancelled'));
+      if (signal.aborted) return abort();
+      signal.addEventListener('abort', abort, { once: true });
+      promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+    });
+    let list = await wait(this.tabList(settings, TAB_TTL));
+    const fresh = () => list.fetchedAt >= started;
+    if (list.tabs && !fresh() && (this.verified.get(key) !== digest || !findTab(list.tabs, settings.worksheet)))
+      list = await wait(this.tabList(settings, TAB_RECHECK));
+    if (!list.tabs) return 'Worksheet list unavailable; the selected tab could not be verified';
+    if (!findTab(list.tabs, settings.worksheet)) {
+      this.verified.delete(key);
+      fail('Worksheet not found in this spreadsheet; it may have been renamed or deleted. Retaining the last valid data.', 502);
+    }
+    if (fresh() || this.verified.get(key) === digest) {
+      if (this.verified.size >= 1000) this.verified.clear();
+      this.verified.set(key, digest);
+      return '';
+    }
+    // The viewer page is failing: rely on the last list rather than hold all data.
+    if (list.failedAt > list.fetchedAt) return 'Worksheet list unavailable; the selected tab was checked against an older list';
+    if (!settle) return '';
+    transient('Checking that the worksheet still exists; retaining the last valid data', Math.max(500, list.fetchedAt + TAB_RECHECK - this.now()));
   }
 }
 function parseWorksheets(raw) {
@@ -154,4 +252,4 @@ function parseWorksheets(raw) {
   if (!worksheets.length) fail('Worksheet list unavailable. Check public sharing or enter a tab name/gid manually.', 502);
   return worksheets;
 }
-module.exports = { PublicSheets, normalizeSettings, parseRange, parseResponse, parseWorksheets, endpoint, usable, columnName };
+module.exports = { PublicSheets, findTab, normalizeSettings, parseRange, parseResponse, parseWorksheets, endpoint, usable, columnName };
