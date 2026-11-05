@@ -342,7 +342,12 @@ async function renewViewerSession() {
     scheduleRenewal();
   }
 }
-events.on('disconnect', disconnected);
+events.on('disconnect', (reason) => {
+  disconnected();
+  // A server shutting down disconnects its sockets deliberately, and Socket.IO does not
+  // retry that. Without this, the last graphics stay on screen until the page is reloaded.
+  if (reason === 'io server disconnect') scheduleRenewal();
+});
 events.on('connect_error', () => {
   disconnected();
   scheduleRenewal();

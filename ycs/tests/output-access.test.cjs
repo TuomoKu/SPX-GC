@@ -172,3 +172,23 @@ test('socket auth follows the live login settings and rejects logout, foreign or
   assert.equal(await check({}, signedIn), undefined);
   assert.equal(await check({ token: 'test-key' }, { ...request, session: undefined }), undefined);
 });
+
+test('the session route grants operator access and sends no page', async (t) => {
+  const f = await fixture(t),
+    app = express();
+  app.use(express.json());
+  app.use(session({ secret: 'isolated-test-session-secret', resave: false, saveUninitialized: false }));
+  register(app, {
+    general: { dataroot: f.root, username: '' },
+    ycs: { enabled: true, apiKey: 'private-command-key', dataFile: path.join(f.root, 'sources.json'), stages: f.stages, slots: { ticker: { order: 10 }, 'lower-third': { order: 20 } } }
+  }, { auth: { CheckLogin: (req, res, next) => { req.session.user = 'default'; next(); } } });
+  const server = http.createServer(app);
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const base = 'http://127.0.0.1:' + server.address().port;
+  assert.equal((await fetch(base + '/api/ycs/stages')).status, 401, 'refused without a session');
+  const renewed = await fetch(base + '/ycs/session');
+  assert.equal(renewed.status, 204);
+  const cookie = renewed.headers.get('set-cookie').split(';')[0];
+  assert.equal((await fetch(base + '/api/ycs/stages', { headers: { Cookie: cookie } })).status, 200);
+});

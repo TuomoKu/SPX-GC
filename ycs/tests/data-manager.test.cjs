@@ -195,7 +195,7 @@ test('a Data Manager left open renews its session after a server restart', async
   const original = r.window.fetch;
   let refused = true, pages = 0;
   r.window.fetch = async (target, options) => {
-    if (target === '/ycs/data-manager') { pages++; refused = false; return { ok: true, redirected: false }; }
+    if (target === '/ycs/session') { pages++; refused = false; return { ok: true, redirected: false }; }
     if (refused) return { ok: false, status: 403, json: async () => ({ error: 'Remote API requires a configured token or operator login' }) };
     return original(target, options);
   };
@@ -203,6 +203,25 @@ test('a Data Manager left open renews its session after a server restart', async
   await flush();
   assert.equal(pages, 1);
   assert.notEqual(r.window.document.getElementById('health').textContent, 'Server disconnected');
+});
+
+test('a Data Manager that cannot renew does not send again', async (t) => {
+  for (const session of [
+    async () => ({ ok: true, redirected: true }),
+    async () => { throw new Error('connection refused'); }
+  ]) {
+    const r = await fixture(t);
+    let sends = 0;
+    r.window.fetch = async (target) => {
+      if (target === '/ycs/session') return session();
+      sends++;
+      return { ok: false, status: 403, json: async () => ({ error: 'Remote API requires a configured token or operator login' }) };
+    };
+    await r.poll();
+    await flush();
+    assert.equal(sends, 1);
+    assert.equal(r.window.document.getElementById('health').textContent, 'Server disconnected');
+  }
 });
 
 test('the Data Manager still reports a server it cannot reach', async (t) => {

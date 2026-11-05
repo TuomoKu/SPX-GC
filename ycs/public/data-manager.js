@@ -51,10 +51,10 @@ function confirmSourceChange(message) {
   });
 }
 // A server restart loses the in-memory sessions, so a page left open is refused
-// until it opens its own route again. Callers waiting together share one attempt.
+// until it renews its session. Callers waiting together share one attempt.
 let renewing = null;
 function renewSession() {
-  renewing ||= fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(3000) })
+  renewing ||= fetch('/ycs/session', { cache: 'no-store', signal: AbortSignal.timeout(3000) })
     .then((response) => response.ok && !response.redirected, () => false)
     .finally(() => { renewing = null; });
   return renewing;
