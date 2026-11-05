@@ -48,6 +48,10 @@ test('SPX runs in a visible window that shares its console but never writes to i
   assert.match(launch, /-NoNewWindow/);
   assert.match(launch, /-RedirectStandardOutput \$Stdout -RedirectStandardError \$Stderr/);
   assert.match(window, /id=\$node\.Id;/, 'the runtime record names Node, which Settings and stop-runtime act on');
+  assert.match(window, /\[Console\]::TreatControlCAsInput = \$true/, 'Ctrl+C while copying a message must not stop the show');
+  assert.match(window, /Write-RuntimeRecord \$record/);
+  assert.match(window, /SPX is still running/, 'a failure in the window does not claim the server failed');
+  assert.match(start, /\$window\.CloseMainWindow\(\)/, 'a launch that times out does not leave a window starting');
 });
 
 test('the stock welcome splash stays removed', async () => {

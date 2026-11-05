@@ -272,7 +272,7 @@ Additional API routes use the same origin/auth rules as stage commands:
 
 The earlier `/data/source`, `/data/mapping`, `/data/sheets` and `/data/sheets/:id/refresh` endpoints remain available for existing integrations. New clients should use connection and mapping APIs rather than create one source per cell.
 
-## Background runtime on Windows
+## Runtime window on Windows
 
 After initial `npm ci` and demo/configuration setup, run from this checkout:
 
@@ -283,7 +283,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ycs/start-runtime.ps1 -Confi
 powershell -NoProfile -ExecutionPolicy Bypass -File ycs/stop-runtime.ps1
 ```
 
-Without `-Config`, the launcher uses the configuration it launched last (recorded in `.local/runtime-process.json`), falling back to `.local/ycs-dev.json`. It opens a visible SPX window (`ycs/runtime-window.ps1`). Closing that window stops SPX as a deliberate stop. The window starts Node with `UV_THREADPOOL_SIZE=16` (unless already set), so one hung network-share read cannot block all file access, loads saved connections/rundowns without regenerating demo content, and checks readiness. Starting the same recorded configuration again reuses its healthy process. A per-port startup mutex prevents duplicate launches; an unrelated occupied port is rejected. Stop verifies the recorded executable and process start time before stopping anything, and records the stop as deliberate so the next start does not restore Program (see [Restart recovery](#restart-recovery)). Logs and process identity are saved under ignored `.local/runtime-logs/` and `.local/runtime-process.json`. `-NodePath` supports an absolute Node executable. Store configuration files inside this checkout because upstream SPX resolves their paths relative to server.js. Readiness requests use the saved API token when configured, without logging it. `general.launchBrowser` must be false. Stop waits up to 10 seconds for the process to exit and for its port to be released, and reports an error if it does not exit.
+Without `-Config`, the launcher uses the configuration it launched last (recorded in `.local/runtime-process.json`), falling back to `.local/ycs-dev.json`. It opens a visible SPX window (`ycs/runtime-window.ps1`). Closing that window stops SPX as a deliberate stop; anything on air stays on screen in the outputs until SPX starts again. Ctrl+C does nothing in that window, so copying a message cannot stop the show. The window starts Node with `UV_THREADPOOL_SIZE=16` (unless already set), so one hung network-share read cannot block all file access. SPX loads saved connections/rundowns without regenerating demo content, and the launcher waits until it responds. Starting the same recorded configuration again reuses its healthy process. A per-port startup mutex prevents duplicate launches; an unrelated occupied port is rejected. Stop verifies the recorded executable and process start time before stopping anything, and records the stop as deliberate so the next start does not restore Program (see [Restart recovery](#restart-recovery)). Logs and process identity are saved under ignored `.local/runtime-logs/` and `.local/runtime-process.json`. `-NodePath` supports an absolute Node executable. Store configuration files inside this checkout because upstream SPX resolves their paths relative to server.js. Readiness requests use the saved API token when configured, without logging it. `general.launchBrowser` must be false. Stop waits up to 10 seconds for the process to exit and for its port to be released, and reports an error if it does not exit.
 
 `ycs.listenHost` sets the address SPX listens on. Use `127.0.0.1` for this computer only, `0.0.0.0` (or leave it unset) for every network interface, or one LAN address to listen only there. The launcher's readiness check and the browser it opens use that address, or `127.0.0.1` when it is unset, `0.0.0.0` or `::`. The settings page only accepts connections from `127.0.0.1`, so with a single LAN address it cannot be used; choose `0.0.0.0` when remote outputs and local settings are both needed.
 
@@ -313,7 +313,7 @@ After a brief server outage, each stage's Program is put back exactly as it was,
 | --- | --- |
 | Crash, kill, power loss or hung process, back within the window | Program and Preview draft restored |
 | Same, but down longer than the window | Program stopped, as before |
-| Ctrl+C, closing the console window, SIGTERM/SIGHUP, `ycs/stop-runtime.ps1`, **Restart server** in Settings | Program stopped, however quickly it returns |
+| Closing the SPX window, Ctrl+C in a console started by hand, SIGTERM/SIGHUP, `ycs/stop-runtime.ps1`, **Restart server** in Settings | Program stopped, however quickly it returns |
 | Stock SPX `RESTARTSERVER` (`process.exit(2)`) | Refused while YCS is enabled |
 
 - **Window:** `ycs.restoreProgramWithinSeconds`, default `120`. `0` disables restoration. Any other non-number or negative value logs a warning and uses 120.

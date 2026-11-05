@@ -82,7 +82,8 @@ try {
         '-NodeExecutable', (& $quote $nodeExecutable), '-ConfigurationFile', (& $quote $configurationFile), '-ConfigurationArgument', (& $quote $configurationArgument),
         '-Port', $portNumber, '-BaseUrl', (& $quote $baseUrl), '-Stdout', (& $quote $stdout), '-Stderr', (& $quote $stderr))
     $window = Start-Process -FilePath 'powershell.exe' -ArgumentList $windowArguments -WorkingDirectory $projectRoot -WindowStyle Normal -PassThru
-    for ($attempt = 0; -not $startedProcess -and $attempt -lt 40; $attempt++) {
+    # A busy PC can take a while to open a window, just after boot for example.
+    for ($attempt = 0; -not $startedProcess -and $attempt -lt 120; $attempt++) {
         try {
             $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
             # A record from an earlier run names different log files.
@@ -93,7 +94,14 @@ try {
             Start-Sleep -Milliseconds 250
         }
     }
-    if (-not $startedProcess) { throw 'The server did not start. See the SPX window.' }
+    if (-not $startedProcess) {
+        # Do not leave it starting: a second Start would then open another copy.
+        if (-not $window.HasExited) {
+            $null = $window.CloseMainWindow()
+            if (-not $window.WaitForExit(5000)) { Stop-Process -Id $window.Id -Force -ErrorAction SilentlyContinue }
+        }
+        throw 'The server did not start in time. Run Start SPX again.'
+    }
     $ready = $false
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
         if ($startedProcess.HasExited) { throw "Runtime exited. See the SPX window, or $stderr" }

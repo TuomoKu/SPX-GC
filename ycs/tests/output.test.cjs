@@ -368,10 +368,13 @@ test('new data while a graphic loads does not start it again', async (t) => {
   r.block('ticker', 'update');
   r.send(1, [r.graphic('ticker')]);
   await eventually(() => r.calls.some((c) => c.name === 'update'));
+  const frame = r.root.querySelector('iframe');
   r.send(2, [r.graphic('ticker', 'ticker', 'ROUND 12')]);
   await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(r.root.querySelector('iframe'), frame, 'the load in progress carries on');
   r.release('ticker', 'update');
   await eventually(() => r.root.dataset.revision === '2');
+  assert.equal(r.root.querySelector('iframe'), frame);
   assert.equal(r.root.querySelectorAll('iframe').length, 1);
   assert.equal(r.calls.filter((c) => c.name === 'play').length, 1);
   assert.equal(r.calls.filter((c) => c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 12' }));
@@ -395,6 +398,20 @@ test('new data for a replacement mid-entrance keeps the old graphic until it has
   assert.equal(r.calls.filter((c) => c.id === 'new' && c.name === 'play').length, 1);
   assert.equal(r.root.querySelector('iframe[data-graphic="old"]'), null);
   assert.equal(r.calls.filter((c) => c.id === 'new' && c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 12' }));
+});
+
+test('every Continue press during an entrance is applied', async (t) => {
+  const r = await renderer(t);
+  const stepped = (continuation) => ({ ...r.graphic('ticker'), continuation });
+  r.block('ticker', 'play');
+  r.send(1, [stepped(0)]);
+  await eventually(() => r.calls.some((c) => c.name === 'play'));
+  r.send(2, [stepped(1)]);
+  r.send(3, [stepped(2)]);
+  r.release('ticker', 'play');
+  await eventually(() => r.root.dataset.revision === '3');
+  assert.equal(r.calls.filter((c) => c.name === 'next').length, 2);
+  assert.equal(r.calls.filter((c) => c.name === 'play').length, 1);
 });
 
 test('Stop and a different graphic still cancel an entrance straight away', async (t) => {

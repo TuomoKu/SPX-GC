@@ -172,9 +172,14 @@ async function apply(job, graphic, signal) {
     await invoke(entry, 'update', [data], signal);
     entry.data = data;
   }
-  if ((graphic.continuation || 0) !== entry.continuation) {
-    await invoke(entry, 'next', [], signal);
-    entry.continuation = graphic.continuation || 0;
+  // Several Continue presses can land while an entrance finishes; apply each of them.
+  const steps = graphic.continuation || 0;
+  if (steps !== entry.continuation) {
+    do {
+      await invoke(entry, 'next', [], signal);
+      entry.continuation++;
+    } while (entry.continuation < steps);
+    entry.continuation = steps;
   }
   entry.graphic = graphic;
 }
