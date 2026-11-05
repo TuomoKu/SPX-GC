@@ -396,12 +396,33 @@ if (stage) {
     if (disposed) return;
     stagePanel.setConnected(false);
   }
-  stageEvents.on('disconnect', disconnected); stageEvents.on('connect_error', disconnected);
+  // Socket.IO does not retry after a namespace authorization error, which is
+  // what a server restart (lost sessions) produces. Renew the session through
+  // this page's own route, then reconnect. A login redirect means signed out.
+  let reconnectTimer = null;
+  function reconnectLater() {
+    if (disposed || stageEvents.active || reconnectTimer) return;
+    reconnectTimer = setTimeout(async () => {
+      reconnectTimer = null;
+      if (disposed || stageEvents.connected) return;
+      try {
+        const response = await fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
+        const final = response.url ? new URL(response.url, location.href).pathname : location.pathname;
+        if (response.redirected || final !== location.pathname) stagePanel.setConnected(false, 'Controller signed out · Reload to sign in');
+        else if (!disposed && response.ok) stageEvents.connect();
+      } catch { /* Server still down; try again. */ }
+      reconnectLater();
+    }, 5000);
+  }
+  stageEvents.on('disconnect', disconnected);
+  stageEvents.on('connect_error', () => { disconnected(); reconnectLater(); });
   stageEvents.on('stage-error', error => notify(error.error, true));
   async function poll() {
     if (polling || disposed) return; polling = true;
     try {
+      const health = request('/api/ycs/stages/' + encodeURIComponent(stage) + '/health').then(value => stagePanel.setOutputHealth(value), () => {});
       sourceState = await request('/api/ycs/data');
+      await health;
       stagePanel.setDataAvailable(sourceState.health === 'ok');
       for (const row of document.querySelectorAll('.itemrow')) { const model = models.get(row.dataset.spxEpoch); if (model?.widgets) paintLink(row, model); }
     } catch { stagePanel.setDataAvailable(false); }
@@ -410,7 +431,7 @@ if (stage) {
   poll(); const pollTimer = setInterval(poll, 1500);
   const options = document.getElementById('renderOptionsFoldable'); if (options) options.hidden = true;
   window.addEventListener('pagehide', () => {
-    disposed = true; rundownTools?.dispose(); stagePanel.dispose(); clearInterval(pollTimer); for (const timer of timers.values()) clearTimeout(timer);
+    disposed = true; rundownTools?.dispose(); stagePanel.dispose(); clearInterval(pollTimer); clearTimeout(reconnectTimer); for (const timer of timers.values()) clearTimeout(timer);
     try { stageEvents.disconnect(); } catch { /* Transport may already be closed during navigation. */ }
   }, { once: true });
 }

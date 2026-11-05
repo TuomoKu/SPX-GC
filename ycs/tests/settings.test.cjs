@@ -282,3 +282,31 @@ test('stock settings and recents transactions preserve a concurrent YCS save', a
   assert.deepEqual(config.general.recents, ['Project/Show']);
   assert.equal(config.ycs.apiKey, 'existing-companion-secret');
 });
+
+test('settings restart reports a login redirect from the restarted server instead of waiting for it', async t => {
+  const r = setup(t), html = fs.readFileSync(path.join(__dirname, '../public/settings.html'), 'utf8');
+  r.managed();
+  const dom = new JSDOM(html, { url: 'http://localhost/ycs/settings', runScripts: 'outside-only' });
+  t.after(() => dom.window.close());
+  const window = dom.window;
+  window.AbortSignal = AbortSignal;
+  window.HTMLDialogElement.prototype.showModal = function () {};
+  window.HTMLDialogElement.prototype.close = function () {};
+  const schedule = window.setTimeout.bind(window);
+  window.setTimeout = (callback, ms) => schedule(callback, ms / 100);
+  let restarted = false;
+  window.fetch = async (url, options) => {
+    if (options?.method === 'POST') { restarted = true; return new Response(JSON.stringify({ accepted: true, instance: r.service.instance }), { status: 202 }); }
+    // The new server has no session: CheckLogin redirects to the login page (200 HTML).
+    if (restarted) return { ok: true, status: 200, redirected: true, url: 'http://localhost/login', json: async () => { throw new SyntaxError('Unexpected token <'); } };
+    return new Response(JSON.stringify(r.service.snapshot()));
+  };
+  window.eval(fs.readFileSync(path.join(__dirname, '../public/settings.js'), 'utf8'));
+  await new Promise(resolve => setImmediate(resolve));
+  const $ = id => window.document.getElementById(id);
+  $('confirm-restart').click();
+  for (let index = 0; index < 100 && !/Sign in/.test($('message').textContent); index++)
+    await new Promise(resolve => setTimeout(resolve, 20));
+  assert.match($('message').textContent, /SPX restarted\. Sign in again/);
+  assert.equal($('message').classList.contains('error'), true);
+});

@@ -17,6 +17,12 @@
       ...(body !== undefined ? { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-YCS-Settings': '1' }, body: JSON.stringify(body) } : {}),
       signal: AbortSignal.timeout(timeout), cache: 'no-store'
     });
+    // With SPX login on, an expired session is redirected to the login page.
+    if (response.redirected) {
+      const error = new Error('Sign in to SPX again to continue.');
+      error.login = true;
+      throw error;
+    }
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Settings request failed');
     return data;
@@ -101,6 +107,8 @@
           if (next.instance !== result.instance) { render(next); returned = true; break; }
           if (next.restart.error) throw new Error(next.restart.error);
         } catch (error) {
+          // The new server has no session for this page: it is back, but needs login.
+          if (error.login) throw new Error('SPX restarted. Sign in again to continue.');
           if (error.message.includes('Restart failed')) throw error;
           // A refused/reset connection is expected while the server restarts.
         }
