@@ -3,6 +3,24 @@ window.YCSWorkbookSources = class WorkbookSources {
     Object.assign(this, { request, getState, accept, openRange, openOther });
     this.$ = id => document.getElementById(id);
     this.groups = new Map(); this.openBooks = new Set();
+    this.sheetNames = new Map(); this.sheetRequests = new Map();
+    this.onDocumentClick = event => {
+      const menu = event.target.closest?.('.workbook-menu');
+      this.closeMenus(menu && !event.target.closest('button') ? menu : null);
+    };
+    this.onDocumentFocus = event => this.closeMenus(event.target.closest?.('.workbook-menu'));
+    this.onDocumentKey = event => {
+      if (event.key !== 'Escape') return;
+      const open = document.querySelector('.workbook-menu[open]');
+      if (open) { event.preventDefault(); this.closeMenus(); open.querySelector('summary').focus(); }
+    };
+    this.onMenuToggle = event => {
+      if (event.target.matches?.('.workbook-menu') && event.target.open) this.closeMenus(event.target);
+    };
+    document.addEventListener('click', this.onDocumentClick);
+    document.addEventListener('focusin', this.onDocumentFocus);
+    document.addEventListener('keydown', this.onDocumentKey);
+    document.addEventListener('toggle', this.onMenuToggle, true);
     this.$('add-connection').onclick = () => this.$('source-choice-dialog').showModal();
     this.$('close-source-choice').onclick = () => this.$('source-choice-dialog').close();
     for (const button of document.querySelectorAll('[data-create-source]')) {
@@ -66,6 +84,37 @@ window.YCSWorkbookSources = class WorkbookSources {
       if (book) element.textContent = `Last sync: ${book.lastSync ? new Date(book.lastSync).toLocaleTimeString() : '—'} · Requests/min: ${book.requestsPerMinute}`;
     }
   }
+  closeMenus(except = null) {
+    for (const menu of document.querySelectorAll('.workbook-menu[open]')) if (menu !== except) menu.open = false;
+  }
+  async worksheetNames(url) {
+    const cached = this.sheetNames.get(url);
+    if (cached && cached.expires > Date.now()) return cached.names;
+    if (this.sheetRequests.has(url)) return this.sheetRequests.get(url);
+    const request = this.request('/data/sheets/worksheets', { url }).then(result => {
+      const names = Object.fromEntries(result.worksheets.flatMap(tab => [[tab.id, tab.name], [tab.name, tab.name]]));
+      this.sheetNames.set(url, { names, expires: Date.now() + 300000 }); return names;
+    }).catch(() => {
+      // Avoid repeatedly requesting unavailable metadata during status polling.
+      this.sheetNames.set(url, { names: cached?.names || {}, expires: Date.now() + 30000 });
+      return cached?.names || {};
+    }).finally(() => this.sheetRequests.delete(url));
+    this.sheetRequests.set(url, request); return request;
+  }
+  worksheetText(element, url, worksheet, { prefix = '', suffix = '' } = {}) {
+    const cached = this.sheetNames.get(url)?.names || {};
+    const fallback = /^\d+$/.test(worksheet) ? 'Worksheet' : worksheet;
+    element.textContent = prefix + (cached[worksheet] || fallback) + suffix;
+    if (/^\d+$/.test(worksheet)) this.worksheetNames(url).then(names => {
+      if (element.isConnected) element.textContent = prefix + (names[worksheet] || fallback) + suffix;
+    });
+  }
+  dispose() {
+    document.removeEventListener('click', this.onDocumentClick);
+    document.removeEventListener('focusin', this.onDocumentFocus);
+    document.removeEventListener('keydown', this.onDocumentKey);
+    document.removeEventListener('toggle', this.onMenuToggle, true);
+  }
   render(container) {
     const state = this.getState();
     for (const [id, book] of Object.entries(state.workbooks || {})) {
@@ -84,6 +133,7 @@ window.YCSWorkbookSources = class WorkbookSources {
       ]));
       card.append(header);
       const toolbar = this.node('form', undefined, 'workbook-toolbar'), interval = this.node('input');
+      toolbar.hidden = !this.openBooks.has(id);
       interval.type = 'number'; interval.min = '0'; interval.step = 'any'; interval.required = true;
       interval.value = book.settings.refreshSeconds; interval.setAttribute('aria-label', 'Refresh interval in seconds');
       const intervalLabel = this.node('label', 'Refresh interval (seconds)'); intervalLabel.append(interval);
@@ -113,11 +163,17 @@ window.YCSWorkbookSources = class WorkbookSources {
         const group = book.groups[groupId], heading = this.node('div', undefined, 'section-heading'), controls = this.node('div', undefined, 'connection-actions');
         const add = this.button('+ Add range', () => this.openRange(id, groupId)); add.className = 'primary';
         controls.append(add, this.menu('Group actions', [this.button('Edit group', () => this.openGroup(id, groupId)), this.button('Remove group', async () => this.accept(await this.request(`/data/workbooks/${id}/groups/${groupId}/remove`, { revision: this.getState().revision })))]));
-        const groupTitle = this.node('div'); groupTitle.append(this.node('h3', group.label), this.node('p', 'Default worksheet: ' + group.worksheet, 'meta'));
+        heading.classList.add('workbook-group-heading');
+        const groupTitle = this.node('div', undefined, 'workbook-group-title'), groupName = this.node('h3', group.label, 'workbook-group-name'), worksheet = this.node('span', '', 'meta');
+        this.worksheetText(worksheet, book.settings.url, group.worksheet, { prefix: 'Worksheet · ' });
+        groupTitle.append(groupName, worksheet);
         heading.append(groupTitle, controls); content.append(heading);
         for (const [rangeId, range] of Object.entries(state.connections).filter(([, range]) => range.sheetRange?.workbook === id && range.sheetRange.group === groupId)) {
           const row = this.node('div', undefined, 'named-range-row'), text = this.node('div'), buttons = this.node('div', undefined, 'connection-actions');
-          text.append(this.node('strong', range.label), this.node('p', range.settings.worksheet + ' · ' + range.settings.range, 'meta'));
+          text.className = 'named-range-identity';
+          const location = this.node('span', '', 'meta');
+          this.worksheetText(location, book.settings.url, range.settings.worksheet, { suffix: ' · ' + range.settings.range });
+          text.append(this.node('strong', range.label), location);
           buttons.append(this.button('Edit range', () => this.openRange(id, groupId, rangeId)), this.menu('Range actions', [this.button('Remove range', async () => this.accept(await this.request(`/data/connections/${rangeId}/remove`, { revision: this.getState().revision })))]));
           row.append(text, buttons); content.append(row);
         }

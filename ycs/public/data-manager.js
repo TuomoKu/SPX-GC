@@ -475,6 +475,7 @@ window.addEventListener(
     disposed = true;
     sheetPicker.dispose();
     localFile.dispose();
+    workbookSources.dispose();
     workspace.dispose();
     clearInterval(timer);
   },

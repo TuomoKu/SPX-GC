@@ -14,6 +14,12 @@ The spreadsheet card has a group sidebar, per-group range counts, an inline nume
 refresh interval and a Refresh all action. Source/group/range maintenance actions
 are in their overflow menus. The same Add source chooser also opens JSON API,
 CSV file and JSON file editors.
+Only one overflow menu stays open; outside clicks, focus changes and Escape dismiss
+it. Collapsing a spreadsheet hides its refresh controls and groups while keeping
+sync statistics visible. Group headings use compact section styling, and named
+range rows show the human-readable worksheet name and cell address. Worksheet
+metadata is cached for five minutes and reads for the same spreadsheet are coalesced;
+the stored worksheet IDs and mapping targets remain unchanged.
 
 The named-range dialog shows only its name, worksheet, cell range and optional
 header settings; source type, URL, project and refresh interval are inherited and
