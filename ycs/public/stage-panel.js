@@ -34,6 +34,7 @@ window.YCSStagePanel = class StagePanel {
       <div class="ycs-copy-status" role="status" aria-live="polite"></div>
       <input class="ycs-copy-fallback" aria-label="Output URL to copy" readonly hidden>
       <div class="ycs-connection-status" role="status" hidden></div>
+      <div class="ycs-connection-status ycs-output-health" role="status" hidden></div>
       <div class="ycs-panel-footer">
         <button type="button" class="ycs-clear">${this.icon('stop')}Stop stage</button>
         <a class="ycs-manager-link" href="/ycs/data-manager">Data Manager ↗</a>
@@ -165,10 +166,20 @@ window.YCSStagePanel = class StagePanel {
       : 'Monitor preview · Follows program';
     this.setConnected(true);
   }
-  setConnected(connected) {
+  setConnected(connected, text = 'Controller reconnecting · Program state unconfirmed') {
     const status = this.element.querySelector('.ycs-connection-status');
     status.hidden = connected;
-    status.textContent = connected ? '' : 'Controller reconnecting · Program state unconfirmed';
+    status.textContent = connected ? '' : text;
+  }
+  // Renderer reports from /api/ycs/stages/:stage/health. A failed slot keeps its
+  // previous frame on air and retries, so show the error rather than guess.
+  setOutputHealth(health) {
+    const status = this.element.querySelector('.ycs-output-health');
+    const problems = ['program', 'preview'].flatMap((mode) =>
+      [...new Set(health?.[mode]?.errors || [])].map((error) => this.modeTitle(mode) + ' output · ' + error)
+    );
+    status.hidden = !problems.length;
+    status.textContent = problems.join('; ');
   }
   setDataAvailable(available) {
     const link = this.element.querySelector('.ycs-manager-link');

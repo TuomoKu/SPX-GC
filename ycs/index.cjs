@@ -12,6 +12,10 @@ const operatorAccess = require('./operator-access.cjs');
 module.exports = function registerYCS(app, config, hooks = {}) {
   if (!config.ycs?.enabled) return;
   const settings = config.ycs;
+  // Stock SPX replaces global.config when the login policy is saved. Read login
+  // settings from it per request; YCS settings stay as started until restart.
+  const followGlobal = global.config === config;
+  const live = () => (followGlobal && global.config?.general ? global.config : config);
   const configFile = hooks.configFile || global.configfileref;
   const repository = new RundownRepository(config.general.dataroot, settings.stages);
   const sources = new DataSources(
@@ -46,7 +50,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   let lastReconciliation = 0;
   let closeSockets;
   playback.attachSockets = (io) => {
-    closeSockets = require('./sockets.cjs')(io, playback, config);
+    closeSockets = require('./sockets.cjs')(io, playback, config, live);
   };
   const updateLinks = () => {
     for (const stage of settings.stages)
@@ -69,7 +73,9 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       sources.pollSheets().catch(error => console.error('[YCS Sheets]', error.message));
   }, 100);
   workbookTimer.unref();
+  const closePlayback = playback.close.bind(playback);
   playback.close = () => {
+    closePlayback();
     clearInterval(sourceTimer);
     clearInterval(workbookTimer);
     sources.off('change', updateLinks);
@@ -91,7 +97,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   }
   function apiAccess(req, res, next) {
     // Browser operator sessions use normal SPX login. Companion can use a header.
-    const operator = operatorAccess.allowed(req, config);
+    const operator = operatorAccess.allowed(req, live());
     if (operator) return next();
     if (settings.apiKey) {
       if (req.get('authorization') !== `Bearer ${settings.apiKey}`)
@@ -132,7 +138,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     '/stages/:stage/:mode/report',
     sameOrigin,
     (req, res, next) =>
-      outputAccess.allowed(req, config, req.params.stage, req.params.mode)
+      outputAccess.allowed(req, live(), req.params.stage, req.params.mode)
         ? next()
         : apiAccess(req, res, next),
     handlers(async (req, res) => {
@@ -155,15 +161,13 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     handlers(async (req, res) => {
       await sources.ready;
       const snapshot = sources.snapshot();
+      // Controllers and Data Manager poll this every few seconds. Serve labels
+      // from the parsed-file cache; a stalled share only delays its own refresh.
       const inventories = new Map();
-      for (const stage of repository.stages.values()) {
-        try {
-          const rundown = await repository.read(stage.id);
-          let definitions = [];
-          try { definitions = JSON.parse(await require('node:fs/promises').readFile(path.resolve(stage.file, '../../profile.json'), 'utf8')).templates || []; } catch { /* Item labels still work if profile unavailable. */ }
-          inventories.set(stage.id, {items:rundown.templates, definitions});
-        } catch { /* A missing rundown must not prevent the source status page loading. */ }
-      }
+      await Promise.all([...repository.stages.values()].map(async stage => {
+        const { rundown, profile } = await repository.inventory(stage.id);
+        if (rundown) inventories.set(stage.id, { items: rundown.templates, definitions: profile?.templates || [] });
+      }));
       for (const connection of Object.values(snapshot.connections)) for (const usage of connection.usages) {
         const inventory = inventories.get(usage.stage);
         const item = inventory?.items.find(item => item.itemID === usage.graphic);
@@ -404,6 +408,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     // endpoints that must remain 404 rather than becoming item commands.
     (req, res, next) => (['ycs', 'v1'].includes(req.params.project) ? next('route') : next()),
     (req, res, next) => {
+      res.locals.ycsJSON = true; // Errors are JSON for Companion, never an HTML stack trace.
       res.set('Cache-Control', 'no-store');
       // Express normally runs GET handlers for HEAD too. Control URLs must
       // execute only explicit GET/POST requests, never probes or preflights.
@@ -514,6 +519,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     if (
       !req.path.startsWith('/api/ycs') &&
       !req.path.startsWith('/output') &&
+      !res.locals.ycsJSON &&
       !repository.matchFile(req.body?.datafile || req.body?.rundownfile)
     )
       return next(error);

@@ -86,7 +86,7 @@ test('repeated Play is idempotent in content and simultaneous commands serialize
   assert.deepEqual(playback.snapshot('stage-1', 'program').graphics, initial);
 });
 
-test('invalid patches and failed disk writes preserve the active composition', async t => {
+test('invalid patches and failed content writes preserve the active composition; Stop never waits on disk', async t => {
   const { playback, repository } = await fixture(t);
   await playback.command('stage-1', 'ticker', 'play');
   const before = playback.snapshot('stage-1', 'program');
@@ -96,11 +96,14 @@ test('invalid patches and failed disk writes preserve the active composition', a
   }
   const write = repository.write;
   repository.write = async () => { throw new Error('Disk unavailable'); };
-  await assert.rejects(playback.command('stage-1', 'ticker', 'stop'));
+  // New field values must be saved before they go on air.
+  await assert.rejects(playback.command('stage-1', 'ticker', 'update', [{ field: 'f5', value: 'NEW ROUND' }]), /Disk unavailable/);
   assert.deepEqual(playback.snapshot('stage-1', 'program'), before);
-  repository.write = write;
+  // Stop takes the graphic off air even though its onair flag cannot be saved.
   await playback.command('stage-1', 'ticker', 'stop');
   assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0);
+  repository.write = write;
+  playback.close();
 });
 
 test('stage events are scoped and snapshots are detached from internal state', async t => {

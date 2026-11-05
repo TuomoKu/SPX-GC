@@ -5,7 +5,10 @@ const frames = new Map(),
   jobs = new Map(),
   provisional = new Set(),
   retired = new Set();
-const retryDelays = [250, 1000, 3000];
+// Quick retries cover a template blip; after that a failed slot keeps retrying
+// at the heartbeat interval so it recovers without another operator command.
+const retryDelays = [250, 1000, 3000],
+  retryCap = 5000;
 let disposed = false,
   revision = -1,
   latest,
@@ -92,6 +95,8 @@ async function mount(graphic, signal) {
     frame.style.visibility = '';
     await invoke(entry, 'play', [], signal);
     entry.data = JSON.stringify(graphic.data);
+    // A reload or remount of a stepped graphic returns to the step on air.
+    for (let step = 0; step < entry.continuation; step++) await invoke(entry, 'next', [], signal);
     return entry;
   } catch (error) {
     frame.remove();
@@ -175,6 +180,11 @@ function kick(job) {
     generation = epoch;
   const controller = new AbortController();
   job.running = true;
+  // A superseded run can leave the slot anywhere between the old and new goal
+  // (for example an aborted exit still removes its frame), so nothing counts as
+  // applied until this run completes.
+  job.applied = undefined;
+  job.target = graphic;
   job.controller = controller;
   apply(job, graphic, controller.signal)
     .then(() => {
@@ -188,16 +198,15 @@ function kick(job) {
         return;
       job.error = error.message;
       console.error('[YCS output]', job.slot, error);
-      if (job.failures < retryDelays.length) {
-        job.timer = setTimeout(() => {
-          job.timer = null;
-          kick(job);
-        }, retryDelays[job.failures++]);
-      }
+      job.timer = setTimeout(() => {
+        job.timer = null;
+        kick(job);
+      }, retryDelays[job.failures++] ?? retryCap);
     })
     .finally(() => {
       job.running = false;
       job.controller = null;
+      job.target = undefined;
       if (disposed) return;
       health();
       if (job.key !== key || generation !== epoch) kick(job);
@@ -243,7 +252,13 @@ events.on('state', (snapshot) => {
     if (key !== job.key) {
       // Keep active data updates serial. Pending mounts and removed/replaced
       // identities are cancellable so Stop never waits for a stale Play.
-      if (!sameTemplate(frames.get(slot)?.graphic, goal)) job.controller?.abort();
+      // Compare with the in-flight target too: reverting a replacement that is
+      // still loading must cancel it rather than briefly showing it.
+      if (
+        !sameTemplate(frames.get(slot)?.graphic, goal) ||
+        (job.running && !sameTemplate(job.target, goal))
+      )
+        job.controller?.abort();
       clearTimeout(job.timer);
       job.timer = null;
       job.failures = 0;
@@ -285,7 +300,15 @@ async function renewViewerSession() {
       cache: 'no-store',
       signal: AbortSignal.timeout(3000)
     });
-    if (!disposed && response.ok) {
+    // CheckLogin answers an expired login-mode session with a redirect to the
+    // login page, which also returns 200. That is not a renewed output grant.
+    const final = response.url ? new URL(response.url, location.href).pathname : location.pathname;
+    if (!disposed && (response.redirected || final !== location.pathname)) {
+      connectionError = 'Output needs login; retaining current graphics';
+      renderingError = connectionError;
+      root.dataset.error = renderingError;
+      report();
+    } else if (!disposed && response.ok) {
       events.disconnect(); // Reopen the transport with the renewed session cookie.
       events.connect?.();
     }

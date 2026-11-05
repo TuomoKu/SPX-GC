@@ -130,3 +130,23 @@ test('LAN HTTP copying falls back to selected text, reports browser denial and i
   assert.equal(r.element.querySelector('.ycs-copy-status').textContent, status);
   assert.equal(fallback.value, 'http://192.0.2.7:5660/output/stage-2/preview');
 });
+
+test('output health shows each mode\'s renderer errors and hides once outputs recover', async (t) => {
+  const r = await panel(t);
+  const status = r.element.querySelector('.ycs-output-health');
+  assert.equal(status.hidden, true);
+  r.controller.setOutputHealth({
+    program: { connected: 2, ready: 1, errors: ['ticker: Template failed', 'ticker: Template failed'] },
+    preview: { connected: 1, ready: 0, errors: ['Output needs login; retaining current graphics'] }
+  });
+  assert.equal(status.hidden, false);
+  assert.equal(
+    status.textContent,
+    'Program output · ticker: Template failed; Preview output · Output needs login; retaining current graphics'
+  );
+  r.controller.setConnected(false);
+  assert.equal(r.element.querySelector('.ycs-connection-status').hidden, false, 'connection line is separate');
+  r.controller.setOutputHealth({ program: { errors: [] }, preview: { errors: [] } });
+  assert.equal(status.hidden, true);
+  assert.equal(status.textContent, '');
+});
