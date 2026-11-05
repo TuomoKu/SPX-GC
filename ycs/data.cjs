@@ -5,6 +5,7 @@ const { EventEmitter } = require('node:events');
 const { randomUUID, createHash } = require('node:crypto');
 const { PublicSheets, normalizeSettings, columnName, usable } = require('./public-sheets.cjs');
 const { JSONAPI, normalizeJSONSettings } = require('./json-api.cjs');
+const { readJsonPointer } = require('./data-contract.cjs');
 const sourceTypes = require('./public/source-types.js');
 const { LocalFiles, normalizeLocalSettings } = require('./local-files.cjs');
 const { linkable } = require('./field-types.cjs');
@@ -110,6 +111,8 @@ function cachedValue(value) {
 function text(value) {
   return typeof value === 'string' && value.trim().length > 0 && value.length <= 300;
 }
+const blankJSON = (value) =>
+  value === undefined || value === null || (typeof value === 'string' && !value.trim());
 function connectionSettings(input) {
   const settings = normalizeSettings(input);
   delete settings.cell;
@@ -535,7 +538,7 @@ class DataSources extends EventEmitter {
       const nested = this.resolveSnapshot(input.source);
       return {
         ...nested,
-        value: nested.value === undefined ? undefined : transform(nested.value, input.transform)
+        value: nested.value === undefined || nested.value === '' ? nested.value : transform(nested.value, input.transform)
       };
     }
     const ref = source ? this.reference(input) : id,
@@ -571,6 +574,16 @@ class DataSources extends EventEmitter {
             value = undefined;
           } else this.emptySeen.delete(ref);
         } else if (!previewRecord) this.emptySeen.delete(ref);
+      } else if (
+        // A JSON API leaves out or nulls what it does not have, so a successful read
+        // without the value means blank. Holding the earlier value would show one
+        // player's details beside another's name. A failed read keeps runtime.data.
+        connection?.type === 'json-api' &&
+        input.selection.kind === 'json' &&
+        runtime?.data !== undefined &&
+        blankJSON(readJsonPointer(runtime.data, input.selection.pointer))
+      ) {
+        value = '';
       } else {
         value = transform(
           resolve(sourceTypes.isJSON(connection) ? runtime?.data : runtime?.rows, input.selection),

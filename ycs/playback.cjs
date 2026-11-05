@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { linkable } = require('./data.cjs');
-const {types,normalizeField}=require('./field-types.cjs');
+const {types,normalizeField,normalizeLinked}=require('./field-types.cjs');
 const { writeJSON } = require('../utils/config-store.cjs');
 
 const clone = value => structuredClone(value);
@@ -149,7 +149,7 @@ function descriptor(item, slots, sources) {
     const source = sources?.mapping(item.ycsStage, item.itemID, field, item.relpath);
     const definition=item.DataFields.find(item=>item.field===field);
     links[field] = { ...link, source, definition:{ftype:definition.ftype,...(definition.ycsCollection?{ycsCollection:definition.ycsCollection}:{}),...(definition.items?{items:definition.items}:{}),...(definition.min!==undefined?{min:definition.min}:{}),...(definition.max!==undefined?{max:definition.max}:{}),...(definition.required!==undefined?{required:definition.required}:{})} };
-    if (link.mode === 'linked' && sources?.value(source)!==undefined) {try {data[field]=normalizeField(definition,sources.value(source));}catch{/* Retain the manual fallback for incompatible source values. */}}
+    if (link.mode === 'linked' && sources?.value(source)!==undefined) {try {data[field]=normalizeLinked(definition,sources.value(source));}catch{/* Retain the manual fallback for incompatible source values. */}}
   }
   return { id: item.itemID, slot: item.ycsSlot, z: slot.order, exitMs: slot.exitMs ?? 250, template: '/templates' + item.relpath, data, ...(Object.keys(links).length ? { links } : {}) };
 }
@@ -328,7 +328,7 @@ class Playback extends EventEmitter {
           if(connection?.project&&connection.project!==this.repository.stage(stageId).project)fail('This source belongs to another project',422);
           await this.sources.ensureCollectionHeaders(checked);const source=this.sources.previewBinding(checked);collection=source.collection;
           if(source.value===undefined)throw new Error(source.error||'Waiting for a valid source value');
-          value=normalizeField(field,source.value);health=source.health;error=source.error||'';
+          value=normalizeLinked(field,source.value);health=source.health;error=source.error||'';
         }catch(problem){health='error';error=problem.message;}
       }
       graphic.data[field.field]=value;
@@ -481,7 +481,7 @@ class Playback extends EventEmitter {
         for (const [field, link] of Object.entries(graphic.links || {})) {
           if (link.mode === 'linked' && this.sources?.awaitingLiveRead?.(link.source)) continue;
           let value = this.sources?.value(link.source);
-          if(value!==undefined){try{value=normalizeField(link.definition||{ftype:'textfield'},value);}catch{continue;}}
+          if(value!==undefined){try{value=normalizeLinked(link.definition||{ftype:'textfield'},value);}catch{continue;}}
           if (link.mode === 'linked' && value !== undefined && value !== graphic.data[field]) {
             graphic.data[field] = value;
             changed = true;

@@ -44,4 +44,14 @@ function normalizeField(field, value, { manual = false } = {}) {
     throw new Error('Value is not in the template choices');
   return text;
 }
-module.exports = { types, linkable, normalizeField };
+// A source sends '' for a value it does not have. Number and checkbox fields show that as
+// blank and unticked although they reject blank when typed. Dropdown, colour and required
+// fields still refuse it, so they keep their last value and the graphic is not rejected.
+function normalizeLinked(field, value) {
+  if (value === '' && !schema(field) && field.required !== true) {
+    if (field.ftype === 'number') return '';
+    if (field.ftype === 'checkbox') return '0';
+  }
+  return normalizeField(field, value);
+}
+module.exports = { types, linkable, normalizeField, normalizeLinked };

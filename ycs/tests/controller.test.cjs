@@ -96,7 +96,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
         revision,
         links: {
           f5: { mode: 'manual', manual: 'MANUAL ROUND' },
-          ...(compact ? { f2: { mode: hooks.checkboxLinked ? 'linked' : 'manual', manual: '1' } } : {})
+          ...(compact ? { f2: { mode: hooks.checkboxLinked ? 'linked' : 'manual', manual: '1' } } : {}),
+          ...(hooks.blankSource ? { f2: { mode: 'linked', manual: '1' }, f8: { mode: 'linked', manual: '145' } } : {})
         },
         fields: compact
           ? [
@@ -117,8 +118,8 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
     else if (/\/data(?:\?.*)?$/.test(url))
       payload = {
         health: 'ok',
-        sources: { 'test.round': { label: 'Test round', value: 'LINKED ROUND' } },
-        mappings: [{ stage: 'stage-1', graphic: 'ticker', field: 'f5', source: 'test.round' }]
+        sources: { 'test.round': { label: 'Test round', value: 'LINKED ROUND' }, ...(hooks.blankSource ? { 'test.blank': { label: 'Report', value: '', health: 'ok' } } : {}) },
+        mappings: [{ stage: 'stage-1', graphic: 'ticker', field: 'f5', source: 'test.round' }, ...(hooks.blankSource ? ['f2', 'f8'].map(field => ({ stage: 'stage-1', graphic: 'ticker', field, source: 'test.blank' })) : [])]
       };
     else if (url.endsWith('/health'))
       payload = hooks.health || {
@@ -323,6 +324,21 @@ test('nickname editing changes only display metadata, preserves unsaved field ed
         !post.url.endsWith('/preview')
     )
   );
+});
+
+test('a blank source shows blank on linked number and checkbox fields, and Play sends their typed values', async t => {
+  const r = await controller(t, true, true, false, { blankSource: true });
+  const number = r.row.querySelector('[data-update="f8"]'),
+    checkbox = r.row.querySelector('[data-update="f2"]');
+  for (let i = 0; i < 100 && (number.value !== '' || checkbox.checked); i++) await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(number.value, '', 'the number shows blank');
+  assert.equal(checkbox.checked, false, 'the checkbox shows unticked');
+  const detail = number.closest('.ycs-link-field').querySelector('button');
+  assert.equal(detail.classList.contains('is-warning'), false, 'a blank is not reported as holding a value');
+  await r.window.previewItem(r.row);
+  const sent = Object.fromEntries(r.posts.at(-1).body.fields.map(entry => [entry.field, entry.value]));
+  assert.equal(sent.f8, '145', 'the typed fallback is sent, not the blank display');
+  assert.equal(sent.f2, '1');
 });
 
 test('a linked checkbox with a cleared mapping keeps its unlink button visible and restores manual editing', async t => {
