@@ -563,6 +563,22 @@ test('the stage panel shows renderer errors from stage health so a failed slot i
   assert.equal(status.textContent, 'Program output · lower-third: Template lifecycle timed out');
 });
 
+test('the stage panel shows a restored-program notice from stage health, and Dismiss clears it on the server', async (t) => {
+  const health = {
+    program: { connected: 1, ready: 1, errors: [] },
+    preview: { connected: 1, ready: 1, errors: [] },
+    restored: { graphics: 2, downtimeSeconds: 7 }
+  };
+  const r = await controller(t, false, true, false, { health });
+  const status = r.window.document.querySelector('.ycs-restored-status');
+  assert.equal(status.hidden, false);
+  assert.equal(status.querySelector('span').textContent, 'Restored 2 graphics after restart · server was down about 7 s');
+  status.querySelector('button').click();
+  assert.equal(status.hidden, true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(r.posts.map((post) => post.url), ['/api/ycs/stages/stage-1/restored/dismiss'], 'Dismiss sends no playout command');
+});
+
 test('the controller socket reconnects after an authorization rejection and reports a login redirect', async (t) => {
   const hooks = { page: async () => ({ ok: true, redirected: false, url: 'http://localhost/gc/Stage1/Show' }) };
   const r = await controller(t, false, true, false, hooks);

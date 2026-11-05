@@ -40,6 +40,7 @@
 .ycs-error,.ycs-connection-status{color:#ffd180!important}
 .ycs-copy-fallback{width:100%;box-sizing:border-box;margin-top:7px;padding:7px;background:#1e2d37;color:#e2eaf0;border:1px solid #8095a3;border-radius:3px;font:12px/1.4 monospace}
 .ycs-stage-panel [hidden]{display:none!important}
+.ycs-restored-dismiss{margin:0 0 0 4px;padding:0;background:none;border:0;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
 @media(max-width:420px){.ycs-stage-panel{padding:14px 12px}.ycs-output-options{gap:7px}.ycs-output-select{padding:9px!important;gap:7px}.ycs-copy-output{flex-basis:36px}}
 /* Compact inline labels in the native rundown editor. */
 .ycs-companion-tools{border-top:1px solid #43525d;margin-top:10px;padding-top:8px;font:12px/1.4 Arial,sans-serif;color:#c1cfda}

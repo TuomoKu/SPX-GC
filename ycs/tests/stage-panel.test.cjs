@@ -149,3 +149,24 @@ test('output health shows each mode\'s renderer errors and hides once outputs re
   assert.equal(status.hidden, true);
   assert.equal(status.textContent, '');
 });
+
+test('a restored stage shows one notice line until it is dismissed or health clears it', async (t) => {
+  const r = await panel(t);
+  let dismissed = 0;
+  r.controller.onDismissRestored = () => dismissed++;
+  const status = r.element.querySelector('.ycs-restored-status');
+  assert.equal(status.hidden, true);
+  assert.ok(status.classList.contains('ycs-connection-status'), 'reuses the existing status line markup');
+  r.controller.setRestored({ graphics: 2, downtimeSeconds: 7 });
+  assert.equal(status.hidden, false);
+  assert.equal(status.querySelector('span').textContent, 'Restored 2 graphics after restart · server was down about 7 s');
+  r.controller.setRestored({ graphics: 1, downtimeSeconds: 0 });
+  assert.equal(status.querySelector('span').textContent, 'Restored 1 graphic after restart · server was down about 0 s');
+  status.querySelector('button').click();
+  assert.equal(status.hidden, true);
+  assert.equal(dismissed, 1);
+  assert.equal(r.stops(), 0, 'dismiss never sends a playout command');
+  r.controller.setRestored({ graphics: 1, downtimeSeconds: 3 });
+  r.controller.setRestored(null);
+  assert.equal(status.hidden, true, 'the next command clears it through stage health');
+});
