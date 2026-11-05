@@ -166,6 +166,12 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     operatorAccess.grant(req);
     res.sendFile(path.join(__dirname, 'public/data-manager.html'));
   });
+  // Renews the operator session of a page left open across a server restart, without
+  // the file reads and configuration writes of loading a whole controller page.
+  app.get('/ycs/session', auth.CheckLogin, (req, res) => {
+    operatorAccess.grant(req);
+    res.set('Cache-Control', 'no-store').sendStatus(204);
+  });
   app.use('/ycs', express.static(path.join(__dirname, 'public')));
   require('./decktype-assets.cjs')(app, settings.decktypeFolders);
 

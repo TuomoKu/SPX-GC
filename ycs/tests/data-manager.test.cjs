@@ -189,3 +189,45 @@ test('connection usage renders readable labels safely and keeps IDs in hover det
  await r.poll();await flush();const li=r.window.document.querySelector('.connection li');
  assert.equal(li.textContent,'Stage 1 · <b>Desk hosts</b> · Rounds remaining');assert.equal(li.querySelector('b'),null);assert.equal(li.title,'stage-1 · 1234 · f3');
 });
+
+test('a Data Manager left open renews its session after a server restart', async (t) => {
+  const r = await fixture(t);
+  const original = r.window.fetch;
+  let refused = true, pages = 0;
+  r.window.fetch = async (target, options) => {
+    if (target === '/ycs/session') { pages++; refused = false; return { ok: true, redirected: false }; }
+    if (refused) return { ok: false, status: 403, json: async () => ({ error: 'Remote API requires a configured token or operator login' }) };
+    return original(target, options);
+  };
+  await r.poll();
+  await flush();
+  assert.equal(pages, 1);
+  assert.notEqual(r.window.document.getElementById('health').textContent, 'Server disconnected');
+});
+
+test('a Data Manager that cannot renew does not send again', async (t) => {
+  for (const session of [
+    async () => ({ ok: true, redirected: true }),
+    async () => { throw new Error('connection refused'); }
+  ]) {
+    const r = await fixture(t);
+    let sends = 0;
+    r.window.fetch = async (target) => {
+      if (target === '/ycs/session') return session();
+      sends++;
+      return { ok: false, status: 403, json: async () => ({ error: 'Remote API requires a configured token or operator login' }) };
+    };
+    await r.poll();
+    await flush();
+    assert.equal(sends, 1);
+    assert.equal(r.window.document.getElementById('health').textContent, 'Server disconnected');
+  }
+});
+
+test('the Data Manager still reports a server it cannot reach', async (t) => {
+  const r = await fixture(t);
+  r.window.fetch = async () => { throw new Error('connection refused'); };
+  await r.poll();
+  await flush();
+  assert.equal(r.window.document.getElementById('health').textContent, 'Server disconnected');
+});

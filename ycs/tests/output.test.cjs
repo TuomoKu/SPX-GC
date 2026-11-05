@@ -31,7 +31,12 @@ async function renderer(t, { lan = false, speed = 1 } = {}) {
     window.setTimeout = (callback, ms = 0, ...args) => schedule(callback, ms / speed, ...args);
   }
   window.crypto.randomUUID = lan ? undefined : randomUUID;
+  const pages = [];
   window.fetch = async (url, request) => {
+    if (!request?.body) {
+      pages.push(url);
+      return { ok: true, url };
+    }
     reports.push(JSON.parse(request.body));
     return { ok: true };
   };
@@ -79,6 +84,7 @@ async function renderer(t, { lan = false, speed = 1 } = {}) {
     root,
     calls,
     reports,
+    pages,
     events: () => events,
     send,
     graphic,
@@ -188,6 +194,49 @@ test('navigating an output closes health cleanly even when the browser transport
     'closed',
     'a disposed output must not re-register as an error renderer'
   );
+});
+
+test('a server shutting down deliberately does not strand the output with its last graphics', async (t) => {
+  const r = await renderer(t);
+  let reconnects = 0;
+  r.events().connect();
+  const connect = r.events().connect;
+  r.events().connect = () => {
+    reconnects++;
+    connect();
+  };
+  r.send(5, [r.graphic('ticker')]);
+  await eventually(() => r.root.dataset.revision === '5');
+  r.events().disconnect('io server disconnect');
+  assert.equal(r.root.querySelectorAll('iframe').length, 1, 'held until the server answers');
+  await eventually(() => reconnects === 1, 'the output reopens by itself', 500);
+  assert.deepEqual(r.pages, ['/output/stage-1/program'], 'renewing its session first');
+  r.send(0, []);
+  await eventually(() => r.root.querySelectorAll('iframe').length === 0, 'a clean start clears it', 500);
+});
+
+test('a socket that connects while the session renews is left alone', async (t) => {
+  const r = await renderer(t);
+  let reconnects = 0;
+  r.events().connect();
+  const fetchPage = r.window.fetch;
+  r.window.fetch = async (url, request) => {
+    if (!request?.body) r.events().connected = true;
+    return fetchPage(url, request);
+  };
+  r.events().connect = () => reconnects++;
+  r.events().disconnect('io server disconnect');
+  await eventually(() => r.pages.length === 1, 'the session renews', 500);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(reconnects, 0);
+});
+
+test('a lost transport is left to Socket.IO without renewing', async (t) => {
+  const r = await renderer(t);
+  r.events().connect();
+  r.events().disconnect('transport close');
+  await new Promise((resolve) => setTimeout(resolve, 30));
+  assert.deepEqual(r.pages, []);
 });
 
 test('reconnecting retains frames for the same composition and accepts revision zero after a server restart', async (t) => {

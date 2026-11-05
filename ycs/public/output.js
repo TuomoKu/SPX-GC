@@ -331,7 +331,8 @@ async function renewViewerSession() {
       renderingError = connectionError;
       root.dataset.error = renderingError;
       report();
-    } else if (!disposed && response.ok) {
+    } else if (!disposed && response.ok && !events.connected) {
+      // It may have connected during that request; leave a healthy socket alone.
       events.disconnect(); // Reopen the transport with the renewed session cookie.
       events.connect?.();
     }
@@ -342,7 +343,12 @@ async function renewViewerSession() {
     scheduleRenewal();
   }
 }
-events.on('disconnect', disconnected);
+events.on('disconnect', (reason) => {
+  disconnected();
+  // A server shutting down disconnects its sockets deliberately, and Socket.IO does not
+  // retry that. Without this, the last graphics stay on screen until the page is reloaded.
+  if (reason === 'io server disconnect') scheduleRenewal();
+});
 events.on('connect_error', () => {
   disconnected();
   scheduleRenewal();

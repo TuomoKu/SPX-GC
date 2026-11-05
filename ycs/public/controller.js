@@ -11,8 +11,31 @@ if (stage) {
   let validationRow, previewGeneration = 0;
   const iconMarkup=name=>`<svg class="ycs-editor-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="/ycs/editor-icons.svg#${name}"></use></svg>`;
   let sourceState, active = new Set(), program = new Map(), disposed = false, polling = false;
+  // A server restart loses the in-memory sessions, so a page left open is refused
+  // until it renews its session. Callers waiting together share one attempt.
+  let renewing = null, signedOut = false;
+  function renewSession() {
+    renewing ||= (async () => {
+      try {
+        const response = await fetch('/ycs/session', { cache: 'no-store', signal: AbortSignal.timeout(3000) });
+        const final = response.url ? new URL(response.url, location.href).pathname : '/ycs/session';
+        signedOut = response.redirected || final !== '/ycs/session';
+        if (signedOut) { stagePanel.setConnected(false, 'Controller signed out · Reload to sign in'); return false; }
+        return response.ok;
+      } catch { return false; /* Server still down. */ }
+      finally { renewing = null; }
+    })();
+    return renewing;
+  }
   async function request(url, body) {
-    const response = await fetch(url, body === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const send = () => fetch(url, body === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    let response = await send();
+    if (response.status === 403 && await renewSession()) {
+      // A refused command did not run. Only Stop goes out again: a Play held up by the
+      // renewal could land after something else has stopped the stage.
+      if (body !== undefined && !/\/(stop|clear)$/.test(url)) throw new Error('SPX restarted, so that did not go through. Press it again.');
+      response = await send();
+    }
     const payload = await response.json();
     if (!response.ok) { const error = new Error(payload.error || 'Stage request failed'); error.fields = payload.fields; throw error; }
     return payload;
@@ -396,26 +419,28 @@ if (stage) {
     if (disposed) return;
     stagePanel.setConnected(false);
   }
-  // Socket.IO does not retry after a namespace authorization error, which is
-  // what a server restart (lost sessions) produces. Renew the session through
-  // this page's own route, then reconnect. A login redirect means signed out.
-  let reconnectTimer = null;
-  function reconnectLater() {
-    if (disposed || stageEvents.active || reconnectTimer) return;
+  // Socket.IO retries a lost transport by itself, but not an authorization refusal, which
+  // is what a server restart produces, or a deliberate disconnect from a server shutting
+  // down. Renew the session, then reopen the transport so its handshake carries it.
+  // Do not test stageEvents.active: the bundled 4.0.0 client keeps it true after a
+  // refusal. Do not reopen on a timer either: that would abandon a slow handshake.
+  let reconnectTimer = null, refusals = 0;
+  function reopenLater(delay) {
+    if (disposed || stageEvents.connected || reconnectTimer) return;
     reconnectTimer = setTimeout(async () => {
       reconnectTimer = null;
       if (disposed || stageEvents.connected) return;
-      try {
-        const response = await fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
-        const final = response.url ? new URL(response.url, location.href).pathname : location.pathname;
-        if (response.redirected || final !== location.pathname) stagePanel.setConnected(false, 'Controller signed out · Reload to sign in');
-        else if (!disposed && response.ok) stageEvents.connect();
-      } catch { /* Server still down; try again. */ }
-      reconnectLater();
-    }, 5000);
+      if (!await renewSession()) return reopenLater(signedOut ? 5000 : 1000);
+      // The answer arrives as connect, or as another refusal.
+      if (!disposed && !stageEvents.connected) { stageEvents.disconnect(); stageEvents.connect(); }
+    }, delay);
   }
-  stageEvents.on('disconnect', disconnected);
-  stageEvents.on('connect_error', () => { disconnected(); reconnectLater(); });
+  stageEvents.on('connect', () => { refusals = 0; });
+  stageEvents.on('disconnect', reason => { disconnected(); if (reason === 'io server disconnect') reopenLater(0); });
+  stageEvents.on('connect_error', error => {
+    disconnected();
+    if (error?.message === 'Stage connection not authorized') reopenLater(refusals++ ? 5000 : 0);
+  });
   stageEvents.on('stage-error', error => notify(error.error, true));
   async function poll() {
     if (polling || disposed) return; polling = true;

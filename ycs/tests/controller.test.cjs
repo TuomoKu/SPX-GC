@@ -52,17 +52,28 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
     closed++;
     row.querySelector('#Expanded').style.display = 'none';
   };
-  window.io = () => ({
-    on: (event, callback) => channels.set(event, callback),
+  // Matches the bundled Socket.IO 4.0.0 client: active stays true after a refused
+  // namespace connection, and connected is false until it is accepted.
+  const socket = {
+    active: true,
+    connected: false,
+    on: (event, callback) => {
+      const handlers = channels.get(event);
+      channels.set(event, handlers ? (...args) => { handlers(...args); callback(...args); } : callback);
+    },
     emit() {},
-    disconnect() {},
-    connect() { hooks.connects = (hooks.connects || 0) + 1; }
-  });
+    disconnect() { (hooks.calls ||= []).push('disconnect'); },
+    connect() { (hooks.calls ||= []).push('connect'); hooks.connects = (hooks.connects || 0) + 1; }
+  };
+  window.io = () => socket;
   window.fetch = async (url, request) => {
     let payload;
     if (request?.method === 'POST') {
       const body = JSON.parse(request.body);
       posts.push({ url, body });
+      const refusal = hooks.refuse?.(url);
+      if (refusal)
+        return { ok: false, status: refusal, json: async () => ({ error: 'Remote API requires a configured token or operator login' }) };
       if (validationError)
         return {
           ok: false,
@@ -76,7 +87,7 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
         editorRevision: action === 'stop' ? 99 : action === 'preview' ? revision : ++revision,
         ...(action === 'nickname' ? { nickname: body.nickname.trim() } : {})
       };
-    } else if (url === '/gc/Stage1/Show' && hooks.page) return hooks.page();
+    } else if (url === '/ycs/session' && hooks.page) return hooks.page();
     else if (url.endsWith('/editor'))
       payload = {
         previewOnEdit,
@@ -144,6 +155,10 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
       channels.get('state')({ stage: 'stage-1', mode: 'preview', selected, graphics: [] }),
     closed: () => closed,
     connectError: () => channels.get('connect_error')(new Error('Stage connection not authorized')),
+    socket,
+    transportError: () => channels.get('connect_error')(new Error('websocket error')),
+    socketLost: (reason = 'transport close') => channels.get('disconnect')(reason),
+    socketConnected: () => channels.get('connect')(),
     rejectFields: (errors) => {
       validationError = errors;
     }
@@ -600,22 +615,111 @@ test('the stage panel shows a restored-program notice from stage health, and Dis
   assert.deepEqual(r.posts.map((post) => post.url), ['/api/ycs/stages/stage-1/restored/dismiss'], 'Dismiss sends no playout command');
 });
 
-test('the controller socket reconnects after an authorization rejection and reports a login redirect', async (t) => {
-  const hooks = { page: async () => ({ ok: true, redirected: false, url: 'http://localhost/gc/Stage1/Show' }) };
-  const r = await controller(t, false, true, false, hooks);
-  const timers = [];
-  const schedule = r.window.setTimeout;
-  r.window.setTimeout = (callback, ms) => (ms === 5000 ? timers.push(callback) : schedule(callback, ms));
+const sessionOk = async () => ({ ok: true, redirected: false, url: 'http://localhost/ycs/session' });
+function capture(r) {
+  const timers = [], schedule = r.window.setTimeout;
+  r.window.setTimeout = (callback, ms) => ([0, 1000, 5000].includes(ms) ? timers.push({ callback, ms }) : schedule(callback, ms));
+  return timers;
+}
+
+test('a refused socket renews at once, reopens its transport and backs off if refused again', async (t) => {
+  const hooks = { page: sessionOk };
+  const r = await controller(t, false, true, false, hooks), timers = capture(r);
   const status = r.window.document.querySelector('.ycs-connection-status');
   r.connectError();
   assert.equal(status.hidden, false);
-  assert.equal(timers.length, 1, 'a rejected namespace connection schedules a renewal');
-  await timers.shift()();
-  assert.equal(hooks.connects, 1, 'the session is renewed through the page, then the socket reconnects');
-  hooks.page = async () => ({ ok: true, redirected: true, url: 'http://localhost/login' });
+  assert.deepEqual(timers.map((timer) => timer.ms), [0], 'even though the client still reports active');
+  await timers.shift().callback();
+  assert.deepEqual(hooks.calls, ['disconnect', 'connect'], 'the handshake must carry the renewed session');
+  assert.equal(timers.length, 0, 'the answer arrives as connect or another refusal');
   r.connectError();
-  await timers.shift()();
-  assert.equal(hooks.connects, 1);
-  assert.match(status.textContent, /signed out/);
-  assert.equal(timers.length, 1, 'keeps checking in case the operator signs in elsewhere');
+  assert.deepEqual(timers.map((timer) => timer.ms), [5000]);
+  await timers.shift().callback();
+  r.socketConnected();
+  r.connectError();
+  assert.deepEqual(timers.map((timer) => timer.ms), [0], 'connecting clears the back-off');
+});
+
+test('a signed-out controller says so and keeps checking slowly', async (t) => {
+  const hooks = { page: async () => ({ ok: true, redirected: true, url: 'http://localhost/login' }) };
+  const r = await controller(t, false, true, false, hooks), timers = capture(r);
+  r.connectError();
+  await timers.shift().callback();
+  assert.equal(hooks.connects, undefined);
+  assert.match(r.window.document.querySelector('.ycs-connection-status').textContent, /signed out/);
+  assert.deepEqual(timers.map((timer) => timer.ms), [5000]);
+});
+
+test('a lost transport or a slow handshake is left to Socket.IO, so it is never abandoned', async (t) => {
+  const hooks = { page: sessionOk };
+  const r = await controller(t, false, true, false, hooks), timers = capture(r);
+  r.socketLost();
+  r.transportError();
+  assert.equal(timers.length, 0);
+  assert.equal(hooks.calls, undefined);
+  assert.equal(r.window.document.querySelector('.ycs-connection-status').hidden, false);
+});
+
+test('a server shutting down deliberately still gets a reopen, retried while it is away', async (t) => {
+  let up = false;
+  const hooks = { page: async () => { if (!up) throw new Error('connection refused'); return sessionOk(); } };
+  const r = await controller(t, false, true, false, hooks), timers = capture(r);
+  r.socketLost('io server disconnect');
+  assert.deepEqual(timers.map((timer) => timer.ms), [0]);
+  await timers.shift().callback();
+  assert.equal(hooks.connects, undefined, 'nothing reopens while the server is down');
+  assert.deepEqual(timers.map((timer) => timer.ms), [1000]);
+  up = true;
+  await timers.shift().callback();
+  assert.deepEqual(hooks.calls, ['disconnect', 'connect']);
+});
+
+test('a socket that connects during the renewal is not torn down', async (t) => {
+  const hooks = {};
+  const r = await controller(t, false, true, false, hooks), timers = capture(r);
+  hooks.page = async () => { r.socket.connected = true; return sessionOk(); };
+  r.connectError();
+  await timers.shift().callback();
+  assert.equal(hooks.calls, undefined);
+  assert.equal(timers.length, 0);
+});
+
+test('Stop refused after a restart renews the session and is sent again', async (t) => {
+  let pages = 0, refused = true;
+  const clear = '/api/ycs/stages/stage-1/clear';
+  const hooks = {
+    page: async () => { pages++; refused = false; return sessionOk(); },
+    refuse: (url) => url === clear && refused && 403
+  };
+  const r = await controller(t, false, true, false, hooks);
+  await Promise.all([r.window.stopAll(), r.window.stopAll()]);
+  assert.equal(pages, 1, 'callers waiting together share one renewal');
+  assert.equal(r.posts.filter((post) => post.url === clear).length, 4, 'each refused Stop goes out once more');
+  assert.match(r.window.document.querySelector('.ycs-command-status').textContent, /Stage stopped/);
+});
+
+test('only a 403 is sent again, and only once', async (t) => {
+  const clear = '/api/ycs/stages/stage-1/clear';
+  for (const [status, page, sends, text] of [
+    [500, sessionOk, 1, /operator login/],
+    [409, sessionOk, 1, /operator login/],
+    [403, async () => { throw new Error('connection refused'); }, 1, /operator login/],
+    [403, sessionOk, 2, /operator login/]
+  ]) {
+    const r = await controller(t, false, true, false, { page, refuse: (url) => url === clear && status });
+    await r.window.stopAll();
+    assert.equal(r.posts.filter((post) => post.url === clear).length, sends, `status ${status}`);
+    assert.match(r.window.document.querySelector('.ycs-command-status').textContent, text);
+  }
+});
+
+test('a refused Play is not sent again, so it cannot land after a Stop from elsewhere', async (t) => {
+  const refusing = (name) => (url) => url.endsWith('/' + name) && 403;
+  const played = await controller(t, false, true, false, { page: sessionOk, refuse: refusing('play') });
+  await played.window.playItem(played.row, 'play');
+  assert.equal(played.posts.filter((post) => post.url.endsWith('/play')).length, 1);
+  assert.match(played.window.document.querySelector('.ycs-command-status').textContent, /Press it again/);
+  const stopped = await controller(t, false, true, false, { page: sessionOk, refuse: refusing('stop') });
+  await stopped.window.playItem(stopped.row, 'stop');
+  assert.equal(stopped.posts.filter((post) => post.url.endsWith('/stop')).length, 2, 'Stop on a single graphic does go out again');
 });
