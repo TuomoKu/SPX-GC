@@ -1,5 +1,48 @@
 # YCS SPX: stage playback and public Google Sheets linking
 
+For repeatable Windows setup, template-picker connections, LAN access and release
+checks, see [installation instructions](ycs/INSTALLATION.md).
+
+## Grouped spreadsheet sources
+
+Sources → Add spreadsheet creates one source for a Google spreadsheet URL. Add
+named groups, then named ranges inside each group. A group has a default worksheet;
+each range can choose another worksheet. Add/Edit range uses the existing worksheet
+selector and visual cell-range picker. Groups and ranges have stable IDs, so renaming
+them does not change saved mappings. In-use range targets cannot be moved or deleted.
+
+Refresh interval belongs to the spreadsheet source and accepts any finite positive
+number of seconds, including fractions. There is no five-second minimum or one-hour
+maximum. The scheduler checks grouped sources every 100 ms; actual refresh cadence
+also depends on request duration and error backoff. No overlapping refresh runs are
+started for the same spreadsheet. With the Google Sheets API reader, all due ranges
+are submitted together and batches contain at most 32 reads. Tabs in the same
+spreadsheet share a batch. The public query compatibility reader still makes its
+separate range/header requests; batching requires enabling the API reader.
+
+The spreadsheet summary shows Last sync (the last successful refresh of all its
+ranges) and Requests/min (actual outbound requests for that spreadsheet during the
+last 60 seconds, including metadata, test/picker reads and failed requests). The
+counter resets when the server restarts. Failed reads preserve last valid values.
+
+The existing three-panel Mappings view now has Source → Group → Named range in
+the source panel. Groups matching the selected output's stage are preferred, and
+the last chosen range is remembered per group for the current page session. Source
+options show green Google Sheets icons or gray JSON/CSV icons, including keyboard
+navigation in the custom source selector. Existing local values, JSON, CSV and
+ungrouped legacy connections remain available.
+
+A named range can enable Use header labels, choose its header row and default data
+row, and still use the raw cell browser when needed. Header browsing displays the
+column label with the selected row's value; bindings continue to use the value cell's
+absolute address. For example CUSTOM / FALSE maps to C2, not header cell C1. Story
+mapping starts with the named range's configured header row and retains its existing
+collection controls. No new header setting is inferred for existing source entries.
+
+This feature adds workbook/group metadata to the existing version-2 data document;
+named ranges remain normal range connections internally. It does not migrate or
+delete existing experimental connections. Use Add spreadsheet for the grouped flow.
+
 This is a fork of [TuomoKu/SPX-GC](https://github.com/TuomoKu/SPX-GC), based on upstream commit `8bb7ec4e7b969fe7c777d2c2a9b03ed6de3f6981`. The upstream MIT license and notices are retained.
 
 The initial implementation keeps SPX's normal rundown editor and HTML template lifecycle. An optional `ycs` module gives each stage its own program composition and independent preview. Multiple graphics can play together using named display slots. Commands target a stage and graphic ID, independent of controller focus.
@@ -174,7 +217,7 @@ Official references: [batchGet](https://developers.google.com/workspace/sheets/a
 
 The connector uses Google's documented [public spreadsheet query endpoint](https://developers.google.com/chart/interactive/docs/spreadsheets). Share the original sheet as **Anyone with the link → Viewer**; no Google sign-in, API key or service account is required. The server only reads it.
 
-In Sources, add a connection name, the original `https://docs.google.com/spreadsheets/d/.../edit` sharing URL, an optional worksheet name/numeric gid and an A1 range. The URL's `gid` selects its tab when Worksheet is blank. Ranges are bounded to **200 rows × 32 columns**; the form previews the first ten rows/eight columns. Refresh intervals are **5–3600 seconds** under Refresh settings. Test before saving; editing the target invalidates the test. The save re-reads the range rather than trusting browser preview data.
+In Sources, add a connection name, the original `https://docs.google.com/spreadsheets/d/.../edit` sharing URL, an optional worksheet name/numeric gid and an A1 range. The URL's `gid` selects its tab when Worksheet is blank. Ranges are bounded to **200 rows × 32 columns**; the form previews the first ten rows/eight columns. Google Sheets refresh intervals accept **any finite positive number of seconds**. Test before saving; editing the target invalidates the test. The save re-reads the range rather than trusting browser preview data.
 
 The **Worksheet** dropdown loads actual tab names from the public sheet when the URL is entered or a connection is opened. The URL's gid selects the matching tab. Use the refresh button to reload the list. **Enter a tab name or gid…** provides a manual fallback if discovery is unavailable. Discovery reads bounded public HTML metadata, parses only tab-name/gid scalar descriptors, and never evaluates its scripts or follows embedded links. This is a compatibility parser for Google's public viewer, not the authenticated Sheets API; a Google markup change can make discovery unavailable while manual tab selection and normal data reads continue working.
 

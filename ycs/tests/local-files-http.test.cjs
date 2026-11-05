@@ -166,7 +166,7 @@ test('Data Manager accepts full server paths, tests/saves both formats and expos
   });
   await loadDataManagerScripts(window);
   window.eval(await fs.readFile(path.join(__dirname, '../public/data-manager.js'), 'utf8'));
-  await flush();
+  await until(() => window.document.getElementById('health').textContent !== 'Connecting…');
   const $ = (id) => window.document.getElementById(id),
     change = (id, value) => {
       $(id).value = value;

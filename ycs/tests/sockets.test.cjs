@@ -58,4 +58,10 @@ test('stage WebSocket access rejects a bad origin, missing keys and unauthorized
   assert.ok(await check(request()));
   assert.equal(await check(request(undefined, 'test-only-key')), undefined);
   assert.equal(await check(request(undefined, undefined, 'operator')), undefined);
+  config.general.username = '';
+  delete config.ycs.apiKey;
+  const noLogin = request(undefined, undefined, 'default');
+  assert.ok(await check(noLogin));
+  noLogin.request.session.ycsOperator = true;
+  assert.equal(await check(noLogin), undefined);
 });

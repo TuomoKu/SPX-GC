@@ -33,6 +33,7 @@ class GoogleSheetsAPI {
     this.pending = new Map();
     this.active = 0;
     this.waiters = [];
+    this.metrics = new (require('./sheet-metrics.cjs').SheetMetrics)(now);
   }
 
   async request(id, suffix, parameters) {
@@ -45,6 +46,7 @@ class GoogleSheetsAPI {
     try {
       const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${id}${suffix}`);
       for (const [name, value] of parameters) url.searchParams.append(name, value);
+      this.metrics.record(id);
       const response = await this.fetcher(url, {
         signal: controller.signal, redirect: 'manual', credentials: 'omit', referrerPolicy: 'no-referrer',
         headers: { Accept: 'application/json', 'X-Goog-Api-Key': this.key }

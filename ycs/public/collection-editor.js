@@ -16,7 +16,11 @@ window.YCSCollectionEditor = class CollectionEditor {
   sources() {
     return Object.entries(this.workspace.getState().connections || {}).filter(
       ([, source]) => !source.project || source.project === this.workspace.project()
-    );
+    ).map(([id, source]) => {
+      if (!source.sheetRange) return [id, source];
+      const state = this.workspace.getState(), book = state.workbooks?.[source.sheetRange.workbook];
+      return [id, { ...source, label: [book?.label, book?.groups[source.sheetRange.group]?.label, source.label].filter(Boolean).join(' / ') }];
+    });
   }
   connection() {
     return this.workspace.getState().connections[this.connectionId];

@@ -14,7 +14,7 @@ const vm = require('node:vm');
 
 function setup(t, overrides = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ycs-settings-'));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  t.after(() => fs.promises.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }));
   fs.mkdirSync(path.join(root, '.local'));
   const configFile = path.join(root, '.local/config.json');
   const config = { general: { username: '', port: 5660 }, ycs: {
@@ -183,6 +183,7 @@ test('settings login middleware leaves Companion token access independent', asyn
     auth: { CheckLogin: (req, res) => res.status(401).json({ error: 'Operator login required' }) }
   });
   t.after(() => playback.close());
+  await playback.sources.ready;
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
@@ -226,7 +227,7 @@ test('server registration succeeds with a damaged key even when the API reader i
   const app = express(); app.use(express.json());
   const playback = require('../index.cjs')(app, r.config, { configFile: r.configFile, settings: { root: r.root }, auth: { CheckLogin: (req, res, next) => next() } });
   t.after(() => playback.close());
-  await new Promise(resolve => setImmediate(resolve));
+  await playback.sources.ready;
 });
 
 test('missing restart helper releases playback without requiring settings polling', async t => {

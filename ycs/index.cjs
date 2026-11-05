@@ -7,6 +7,7 @@ const { LocalFiles } = require('./local-files.cjs');
 const { createSheets } = require('./google-sheets-api.cjs');
 const { Renderers } = require('./renderers.cjs');
 const outputAccess = require('./output-access.cjs');
+const operatorAccess = require('./operator-access.cjs');
 
 module.exports = function registerYCS(app, config, hooks = {}) {
   if (!config.ycs?.enabled) return;
@@ -63,8 +64,14 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     1000
   );
   sourceTimer.unref();
+  const workbookTimer = setInterval(() => {
+    if (Object.keys(sources.document?.workbooks || {}).length)
+      sources.pollSheets().catch(error => console.error('[YCS Sheets]', error.message));
+  }, 100);
+  workbookTimer.unref();
   playback.close = () => {
     clearInterval(sourceTimer);
+    clearInterval(workbookTimer);
     sources.off('change', updateLinks);
     sources.close();
     closeSockets?.();
@@ -84,7 +91,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   }
   function apiAccess(req, res, next) {
     // Browser operator sessions use normal SPX login. Companion can use a header.
-    const operator = req.session?.user && req.session.user === config.general.username;
+    const operator = operatorAccess.allowed(req, config);
     if (operator) return next();
     if (settings.apiKey) {
       if (req.get('authorization') !== `Bearer ${settings.apiKey}`)
@@ -97,9 +104,10 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     next();
   }
 
-  app.get('/ycs/data-manager', auth.CheckLogin, (req, res) =>
-    res.sendFile(path.join(__dirname, 'public/data-manager.html'))
-  );
+  app.get('/ycs/data-manager', auth.CheckLogin, (req, res) => {
+    operatorAccess.grant(req);
+    res.sendFile(path.join(__dirname, 'public/data-manager.html'));
+  });
   app.use('/ycs', express.static(path.join(__dirname, 'public')));
   require('./decktype-assets.cjs')(app, settings.decktypeFolders);
 
@@ -239,6 +247,12 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       )
     )
   );
+  router.post('/data/workbooks', handlers(async (req, res) => res.json(await sources.saveWorkbook(req.body))));
+  router.post('/data/workbooks/:id/groups', handlers(async (req, res) => res.json(await sources.saveWorkbookGroup(req.params.id, req.body))));
+  router.post('/data/workbooks/:id/groups/:group/ranges', handlers(async (req, res) => res.json(await sources.saveNamedRange(req.params.id, req.params.group, req.body))));
+  router.post('/data/workbooks/:id/refresh', handlers(async (req, res) => res.json(await sources.refreshWorkbook(req.params.id))));
+  router.post('/data/workbooks/:id/remove', handlers(async (req, res) => res.json(await sources.removeWorkbookItem(req.params.id, null, req.body.revision))));
+  router.post('/data/workbooks/:id/groups/:group/remove', handlers(async (req, res) => res.json(await sources.removeWorkbookItem(req.params.id, req.params.group, req.body.revision))));
   router.post(
     '/data/connections/:id/refresh',
     handlers(async (req, res) => res.json(await sources.refreshSheet(req.params.id)))
@@ -441,6 +455,11 @@ module.exports = function registerYCS(app, config, hooks = {}) {
           rundown: stage.rundown,
           previewUrl: `/output/${stage.id}/preview`
         };
+      if (stage && (parts.length === 4 || (parts.length === 5 && parts[4] === '')))
+        return auth.CheckLogin(req, res, () => {
+          operatorAccess.grant(req);
+          next();
+        });
     }
     if (req.method === 'POST' && req.body?.command === 'removeItemFromRundown') {
       const stage = repository.matchFile(req.body.datafile);

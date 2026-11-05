@@ -129,6 +129,9 @@ async function fixture(t) {
   };
   const connect = async () => {
     window.document.getElementById('add-connection').click();
+    window.document.getElementById('connection-type').querySelector('[value="google-sheets"]').disabled = false;
+    window.document.getElementById('connection-type').value = 'google-sheets';
+    window.document.getElementById('connection-type').dispatchEvent(new window.Event('change'));
     set('sheet-label', 'Show');
     set('sheet-url', 'https://docs.google.com/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890/edit');
     window.document.getElementById('test-sheet').click();

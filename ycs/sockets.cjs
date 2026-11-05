@@ -1,5 +1,6 @@
 'use strict';
 const outputAccess = require('./output-access.cjs');
+const operatorAccess = require('./operator-access.cjs');
 // Browser playout uses WebSockets rather than one HTTP event stream per mode.
 // Three stage controllers plus their previews must not exhaust HTTP/1 slots.
 module.exports = function attachSockets(io, playback, config) {
@@ -9,7 +10,7 @@ module.exports = function attachSockets(io, playback, config) {
     const request = socket.request,
       origin = request.headers.origin;
     const expected = `${request.socket.encrypted ? 'https' : 'http'}://${request.headers.host}`;
-    const operator = request.session?.user && request.session.user === config.general.username;
+    const operator = operatorAccess.allowed(request, config);
     const key = config.ycs.apiKey;
     const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress);
     const auth = socket.handshake.auth || {};

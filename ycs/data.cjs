@@ -146,6 +146,7 @@ function validate(document) {
       seen.add(key);
     }
   }
+  require('./workbooks.cjs').validate(document);
   return document;
 }
 function migrate(input) {
@@ -499,6 +500,7 @@ class DataSources extends EventEmitter {
           ? 'stale'
           : runtime?.health || 'loading',
       lastSuccess: runtime?.lastSuccess || null,
+      ...(connection.type === 'google-sheets' ? { requestsPerMinute: this.sheets.metrics?.count(connection.settings.url) || 0 } : {}),
       lastAttempt: runtime?.lastAttempt || null,
       nextRefresh: runtime?.nextAt ? new Date(runtime.nextAt).toISOString() : null,
       error: runtime?.error || '',
@@ -534,6 +536,7 @@ class DataSources extends EventEmitter {
         source: this.reference(item.binding)
       })),
       sources,
+      workbooks: this.workbookSnapshots(),
       connections: Object.fromEntries(
         Object.entries(document.connections).map(([id, value]) => [
           id,
@@ -814,7 +817,7 @@ class DataSources extends EventEmitter {
       health: 'ok',
       error: '',
       cacheError: '',
-      nextAt: now + this.document.connections[id].settings.refreshSeconds * 1000
+      nextAt: Math.min(8640000000000000, now + this.document.connections[id].settings.refreshSeconds * 1000)
     });
   }
   async ensureCollectionHeaders(input) {
@@ -868,9 +871,10 @@ class DataSources extends EventEmitter {
     const job = (async () => {
       runtime.lastAttempt = new Date(this.now()).toISOString();
       try {
+        const configuredHeader = connection.sheetRange?.headerRow;
         const result = await this.readConnection(connection.type, connection.settings, {
           signal: controller.signal,
-          headerRows: [...new Set([...this.headerRows(id), ...headerRows])]
+          headerRows: [...new Set([...this.headerRows(id), ...headerRows, ...(Number.isInteger(configuredHeader) ? [configuredHeader] : [])])]
         });
         if (this.closed || this.runtimes.get(id) !== runtime) return;
         if (sourceTypes.isTable(connection) && !Array.isArray(result.rows))
@@ -911,8 +915,9 @@ class DataSources extends EventEmitter {
     if (this.polling || this.closed || this.error) return;
     this.polling = true;
     try {
+      await this.pollWorkbooks();
       const due = [...this.runtimes]
-        .filter(([, value]) => value.nextAt <= this.now())
+        .filter(([id, value]) => !this.document.connections[id]?.sheetRange && value.nextAt <= this.now())
         .map(([id]) => id);
       // API reads scheduled together are combined into one batch per workbook.
       // Other adapters retain the existing four-connection concurrency bound.
@@ -935,4 +940,5 @@ class DataSources extends EventEmitter {
     for (const controller of this.controllers) controller.abort();
   }
 }
+require('./workbooks.cjs').attach(DataSources);
 module.exports = { DataSources, linkable, validate, migrate, binding };

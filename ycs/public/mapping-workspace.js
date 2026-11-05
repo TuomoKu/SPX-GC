@@ -26,6 +26,12 @@ window.YCSMappingWorkspace = class MappingWorkspace {
     this.drafts.current = value;
   }
   selectSource(id) {
+    if (this.view.groupedSources) {
+      this.sourceId = this.view.groupedSources.select(id);
+      this.view.groupedSources.iconSelect?.sync();
+      this.renderSourceContext(); this.renderFields(); this.renderSourceValues();
+      return;
+    }
     this.sourceId = id;
     this.tableMode = false;
     this.renderSourceContext();

@@ -22,7 +22,8 @@ test('public sheet URLs, tab selection and bounded cell ranges are normalized wi
   assert.equal(parseRange('$b$2:$c$4').a1, 'B2:C4');
   for (const url of ['http://docs.google.com/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890', 'https://evil.example/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890', 'https://docs.google.com@localhost/private', 'https://docs.google.com/spreadsheets/d/e/2PUBLIC/pubhtml', 'https://user:pass@docs.google.com/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890']) assert.throws(() => normalizeSettings({ ...settings, url }));
   for (const range of ['A1:Z999', 'A:A', 'Sheet1!A1', 'A0', 'B2:A1']) assert.throws(() => normalizeSettings({ ...settings, range }));
-  for (const refreshSeconds of [0, 1, 4, 3601, NaN]) assert.throws(() => normalizeSettings({ ...settings, refreshSeconds }));
+  for (const refreshSeconds of [0, -1, Infinity, NaN]) assert.throws(() => normalizeSettings({ ...settings, refreshSeconds }));
+  for (const refreshSeconds of [0.25, 1, 4, 3601, 100000]) assert.equal(normalizeSettings({ ...settings, refreshSeconds }).refreshSeconds, refreshSeconds);
   assert.throws(() => normalizeSettings({ ...settings, cell: 'E2' }));
 });
 

@@ -12,7 +12,7 @@
     ]
   },
   "scripts": {
-    "test": "node --test ycs/tests/*.test.cjs",
+    "test": "node ycs/run-tests.cjs",
     "ycs:demo": "node ycs/setup-demo.cjs",
     "ycs:rehearsal": "node ycs/rehearsal.cjs",
     "devORG": "nodemon server.js -i config.json -i DATAROOT/",

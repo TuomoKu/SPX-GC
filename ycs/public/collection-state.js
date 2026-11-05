@@ -44,7 +44,7 @@ window.YCSCollectionDraft = class CollectionDraft {
     this.duplicates = [];
     if (this.format === 'sheet') {
       this.pick.range = saved?.range || connection.settings.range;
-      this.pick.headerRow = saved?.headerRow || Number(this.pick.range.match(/\d+/)?.[0]) || 1;
+      this.pick.headerRow = saved?.headerRow || connection.sheetRange?.headerRow || Number(this.pick.range.match(/\d+/)?.[0]) || 1;
       const headers =
         (connection.rows || []).find(
           (row) => Number(row[0]?.address.match(/\d+$/)?.[0]) === this.pick.headerRow

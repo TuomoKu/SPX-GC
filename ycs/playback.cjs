@@ -6,6 +6,7 @@ const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { linkable } = require('./data.cjs');
 const {types,normalizeField}=require('./field-types.cjs');
+const { writeJSON } = require('../utils/config-store.cjs');
 
 const clone = value => structuredClone(value);
 const identifier = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
@@ -45,8 +46,7 @@ class RundownRepository {
   }
   async write(id, rundown) {
     const file = this.stage(id).file;
-    await fs.writeFile(file + '.ycs-tmp', JSON.stringify({ ...rundown, updated: new Date().toISOString() }, null, 2));
-    await fs.rename(file + '.ycs-tmp', file);
+    await writeJSON(file, { ...rundown, updated: new Date().toISOString() });
   }
   item(rundown, id) { return rundown.templates.find(item => item.itemID === id) || fail('Unknown graphic', 404); }
 }

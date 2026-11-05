@@ -27,7 +27,7 @@ function normalizeSettings(input) {
   if (selector.gid && !/^\d{1,16}$/.test(selector.gid)) fail('Invalid worksheet gid');
   const range = parseRange(input.range);
   const refreshSeconds = Number(input.refreshSeconds);
-  if (!Number.isInteger(refreshSeconds) || refreshSeconds < 5 || refreshSeconds > 3600) fail('Refresh interval must be 5–3600 seconds');
+  if (!Number.isFinite(refreshSeconds) || refreshSeconds <= 0) fail('Refresh interval must be a positive number of seconds');
   let cell;
   if (input.cell !== undefined && input.cell !== '') {
     const selected = parseRange(input.cell);
@@ -86,11 +86,12 @@ async function readLimited(response, limit = MAX_BODY) {
   } catch (error) { await reader.cancel().catch(() => {}); throw error; }
 }
 class PublicSheets {
-  constructor(fetcher = fetch) { this.fetcher = fetcher; }
+  constructor(fetcher = fetch) { this.fetcher = fetcher; this.metrics = new (require('./sheet-metrics.cjs').SheetMetrics)(); }
   async worksheets(input, { signal } = {}) {
     const settings = normalizeSettings({ url: input?.url, range: 'A1', refreshSeconds: 5 });
     const timeout = new AbortController(), timer = setTimeout(() => timeout.abort(), 8000); timer.unref?.();
     try {
+      this.metrics.record(settings.url.split('/')[5]);
       const response = await this.fetcher(settings.url.replace('/edit', '/htmlview'), {
         signal: signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal,
         redirect: 'manual', credentials: 'omit', referrerPolicy: 'no-referrer', headers: { Accept: 'text/html' }
@@ -110,6 +111,7 @@ class PublicSheets {
     try {
       const combined = signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal;
       const readRange=async selected=>{
+        this.metrics.record(settings.url.split('/')[5]);
         const response = await this.fetcher(endpoint(settings, selected), {
           signal: combined, redirect: 'manual', credentials: 'omit', referrerPolicy: 'no-referrer',
           headers: { Accept: 'application/javascript, application/json', 'Cache-Control': 'no-cache' }

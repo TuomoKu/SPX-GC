@@ -176,6 +176,10 @@ window.YCSMappingView = class MappingView {
     }
   }
   renderSources() {
+    if (window.YCSGroupedMappingSources) {
+      this.groupedSources ||= new window.YCSGroupedMappingSources(this);
+      return this.groupedSources.render();
+    }
     const select = this.$('mapping-source'),
       state = this.workspace.getState();
     select.replaceChildren();
@@ -281,7 +285,7 @@ window.YCSMappingView = class MappingView {
       const head = this.node('span', undefined, 'source-card-heading');
       head.append(
         this.node('code', leaf.name),
-        this.node('small', used.length ? 'Used · ' + used.join(', ') : '')
+        this.node('small', [leaf.path !== leaf.name ? leaf.path : '', used.length ? 'Used · ' + used.join(', ') : ''].filter(Boolean).join(' · '))
       );
       card.append(head, this.node('span', String(leaf.value ?? 'No value'), 'source-card-value'));
       card.title = leaf.path || leaf.name;

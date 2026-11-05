@@ -632,7 +632,7 @@ module.exports = {
       if (fs.existsSync(datafolder)) {
         fs.readdirSync(datafolder).forEach((file, index) => {
           const curPath = path.join(datafolder, file);
-          if (fs.lstatSync(curPath).isDirectory()) { 
+          if (fs.statSync(curPath).isDirectory()) {
               // it is folder, and does not start with . or _
               if (file.charAt(0) != '.' && file.charAt(0) != '_') {
                 data.foldArr.push(path.basename(curPath));

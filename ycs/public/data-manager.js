@@ -5,7 +5,8 @@ let state,
   disposed = false,
   editingId = null,
   tested = '',
-  draftRevision;
+  draftRevision,
+  rangeOwner = null;
 function node(tag, text, className) {
   const element = document.createElement(tag);
   if (text !== undefined) element.textContent = text;
@@ -70,7 +71,9 @@ function usageText(usage) {
 function renderConnections() {
   const container = $('connections');
   container.replaceChildren();
+  workbookSources.render(container);
   for (const [id, connection] of Object.entries(state.connections || {})) {
+    if (connection.sheetRange) continue;
     const card = node('article', undefined, 'connection'),
       top = node('div', undefined, 'connection-top'),
       badge = node(
@@ -83,7 +86,10 @@ function renderConnections() {
         'status'
       );
     badge.classList.toggle('warning', connection.health !== 'ok');
-    top.append(node('h3', connection.label), badge);
+    const title = node('h3', connection.label);
+    title.prepend(YCSSourceIcons.node(connection.type));
+    top.append(title);
+    if (connection.type !== 'google-sheets') top.append(badge);
     const actions = node('div', undefined, 'connection-actions');
     actions.append(
       button('Refresh', async () => {
@@ -108,7 +114,9 @@ function renderConnections() {
       top,
       node(
         'p',
-        `${YCSSourceTypes.isLocal(connection) ? connection.settings.file : connection.type === 'json-api' ? 'JSON API' : connection.settings.worksheet + ' · ' + connection.settings.range} · ${connection.project || 'Shared'} · Every ${connection.settings.refreshSeconds}s · Last read ${time(connection.lastSuccess)}`,
+        connection.type === 'google-sheets'
+          ? `Last sync: ${connection.lastSuccess ? time(connection.lastSuccess) : '—'} · Requests/min: ${connection.requestsPerMinute || 0}`
+          : `${YCSSourceTypes.isLocal(connection) ? connection.settings.file : 'JSON API'} · ${connection.project || 'Shared'} · Every ${connection.settings.refreshSeconds}s · Last read ${time(connection.lastSuccess)}`,
         'meta'
       )
     );
@@ -221,15 +229,20 @@ function connectionType() {
       : 'Use a sheet shared with Anyone with the link as Viewer. No sign-in or API key.';
   $('source-url-title').textContent = json ? 'JSON API URL' : 'Google Sheets URL';
   sheetPicker.enabled = sheet;
+  $('named-range-metadata').hidden = !rangeOwner;
+  $('range-header-row').disabled = !$('range-use-headers').checked;
+  if (rangeOwner) $('connection-help').textContent = '';
 }
-function openConnection(id = null) {
+function openConnection(id = null, owner = null) {
+  rangeOwner = owner;
   editingId = id;
   tested = '';
   draftRevision = state.revision;
   const connection = state.connections[id];
   $('connection-form').reset();
-  $('connection-type').value = connection?.type || 'google-sheets';
-  $('connection-type').disabled = Boolean(connection?.usages.length);
+  $('connection-type').value = connection?.type || (owner ? 'google-sheets' : 'json-api');
+  $('connection-type').querySelector('[value="google-sheets"]').disabled = !owner && !connection;
+  $('connection-type').disabled = Boolean(owner || connection?.usages.length);
   $('connection-project').value = connection?.project || '';
   $('connection-project').disabled = Boolean(connection?.usages.length);
   $('json-token').value = connection?.settings.tokenEnv || '';
@@ -237,8 +250,16 @@ function openConnection(id = null) {
   $('sheet-url').value = connection?.settings.url || '';
   $('sheet-range').value = connection?.settings.range || 'A1:D4';
   $('sheet-refresh').value = connection?.settings.refreshSeconds || 5;
+  if (owner) {
+    const book = state.workbooks[owner.workbook];
+    $('sheet-url').value = book.settings.url; $('sheet-refresh').value = book.settings.refreshSeconds;
+  }
+  $('range-use-headers').checked = connection?.sheetRange?.headerRow != null;
+  $('range-header-row').value = connection?.sheetRange?.headerRow || 1;
+  $('range-data-row').value = connection?.sheetRange?.dataRow || 2;
   $('csv-delimiter').value = connection?.settings.delimiter || ',';
   $('connection-title').textContent = id ? 'Edit connection' : 'Add connection';
+  if (owner) $('connection-title').textContent = id ? 'Edit named range' : 'Add named range';
   $('sheet-preview').replaceChildren();
   $('sheet-test-status').textContent = '';
   $('save-sheet').disabled = true;
@@ -247,9 +268,11 @@ function openConnection(id = null) {
     : '';
   for (const key of ['sheet-url', 'sheet-range'])
     $(key).readOnly = Boolean(connection?.usages.length);
+  if (owner) { $('sheet-url').readOnly = true; $('sheet-refresh').disabled = true; }
+  else $('sheet-refresh').disabled = false;
   $('connection-dialog').showModal();
   sheetPicker.reset({
-    worksheet: connection?.settings.worksheet || '',
+    worksheet: connection?.settings.worksheet || (owner ? state.workbooks[owner.workbook].groups[owner.group].worksheet : ''),
     locked: Boolean(connection?.usages.length),
     enabled: !connection || connection.type === 'google-sheets'
   });
@@ -263,7 +286,17 @@ function openConnection(id = null) {
 }
 $('add-connection').onclick = () => openConnection();
 $('close-connection').onclick = () => $('connection-dialog').close();
+$('range-use-headers').onchange = () => { $('range-header-row').disabled = !$('range-use-headers').checked; invalidateSheetTest(); };
 function invalidateSheetTest() {
+  if (rangeOwner) {
+    const match = $('sheet-range').value.toUpperCase().match(/^[A-Z]+(\d+)(?::[A-Z]+(\d+))?$/);
+    if (match) {
+      const first = Number(match[1]), last = Number(match[2] || match[1]);
+      for (const id of ['range-header-row', 'range-data-row']) { $(id).min = first; $(id).max = last; }
+      if (Number($('range-header-row').value) < first || Number($('range-header-row').value) > last) $('range-header-row').value = first;
+      if (Number($('range-data-row').value) < first || Number($('range-data-row').value) > last) $('range-data-row').value = Math.min(first + 1, last);
+    }
+  }
   tested = '';
   $('save-sheet').disabled = true;
   $('sheet-test-status').textContent = 'Test the updated settings before saving.';
@@ -319,7 +352,7 @@ $('test-sheet').onclick = async () => {
         node('pre', JSON.stringify(result.data, null, 2).slice(0, 12000))
       );
     } else previewTable(result.rows);
-    $('sheet-test-status').textContent = 'Connected. Choose fields from Mappings after saving.';
+    $('sheet-test-status').textContent = 'Read successful';
     $('save-sheet').disabled = false;
   } catch (error) {
     tested = '';
@@ -333,13 +366,14 @@ $('connection-form').onsubmit = async (event) => {
   if (tested !== fingerprint()) return;
   $('save-sheet').disabled = true;
   try {
-    const result = await request('/data/connections', {
+    const result = await request(rangeOwner ? `/data/workbooks/${rangeOwner.workbook}/groups/${rangeOwner.group}/ranges` : '/data/connections', {
       id: editingId,
       label: $('sheet-label').value,
       settings: settings(),
       type: $('connection-type').value,
       project: $('connection-project').value || undefined,
-      revision: draftRevision
+      revision: draftRevision,
+      ...(rangeOwner ? { headerRow: $('range-use-headers').checked ? Number($('range-header-row').value) : null, dataRow: Number($('range-data-row').value) } : {})
     });
     workspace.acceptRevision(draftRevision, result.snapshot.revision);
     state = result.snapshot;
@@ -350,7 +384,7 @@ $('connection-form').onsubmit = async (event) => {
       workspace.renderSourceContext();
       workspace.renderSourceValues();
     }
-    message('Connection saved. Assign its fields in Mappings.');
+    message(rangeOwner ? 'Named range saved.' : 'Source saved.');
   } catch (error) {
     $('sheet-test-status').textContent = error.message;
     $('save-sheet').disabled = false;
@@ -365,6 +399,16 @@ const workspace = new window.YCSMappingWorkspace({
     renderConnections();
   }
 });
+const workbookSources = new window.YCSWorkbookSources({
+  request, getState: () => state,
+  accept: next => {
+    const previous = state.revision;
+    state = next; workspace.acceptRevision(previous, next.revision);
+    renderConnections();
+    if (workspace.model) { workspace.renderSources(); workspace.renderSourceContext(); workspace.renderSourceValues(); workspace.renderFields(); }
+  },
+  openRange: (workbook, group, id) => openConnection(id || null, { workbook, group })
+});
 function refreshValues() {
   workspace.update(state);
 }
@@ -377,10 +421,11 @@ async function poll() {
       state.health === 'ok' ? 'Background sync active' : 'Data needs attention';
     $('health').classList.toggle('warning', state.health !== 'ok');
     if (
-      !document.querySelector('#connections details[open]') &&
+      !document.querySelector('#connections details[open], #connections .workbook-body:not([hidden])') &&
       !document.activeElement?.closest('#connections')
     )
       renderConnections();
+    workbookSources.updateMetrics();
     refreshValues();
   } catch {
     $('health').textContent = 'Server disconnected';

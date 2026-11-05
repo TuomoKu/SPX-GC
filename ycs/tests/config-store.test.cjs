@@ -14,6 +14,26 @@ async function fixture(t) {
   await fs.writeFile(file, JSON.stringify({ general: { recents: [] }, ycs: { graphicsRoot: 'original' } }));
   return { root, file, read: async () => JSON.parse(await fs.readFile(file, 'utf8')) };
 }
+
+test('atomic writes retry transient locks and preserve the original on permanent failure', async t => {
+  const r = await fixture(t), originalRename = fs.rename;
+  let attempts = 0;
+  fs.rename = async (...args) => {
+    if (++attempts < 3) throw Object.assign(new Error('File is locked'), { code: 'EPERM' });
+    return originalRename(...args);
+  };
+  try {
+    await store.writeJSON(r.file, { saved: true });
+    assert.equal(attempts, 3);
+    assert.deepEqual(await r.read(), { saved: true });
+    fs.rename = async () => { throw Object.assign(new Error('File is locked'), { code: 'EBUSY' }); };
+    await assert.rejects(store.writeJSON(r.file, { saved: false }), { code: 'EBUSY' });
+    assert.deepEqual(await r.read(), { saved: true });
+    assert.deepEqual(await fs.readdir(r.root), ['config.json']);
+  } finally {
+    fs.rename = originalRename;
+  }
+});
 test('queued configuration patches preserve independent fields and recover after rejected writes', async t => {
   const r = await fixture(t);
   await Promise.all(Array.from({ length: 20 }, (_, index) => store.update(r.file, current => { current.general['setting' + index] = index; })));

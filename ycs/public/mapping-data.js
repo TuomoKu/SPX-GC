@@ -21,6 +21,11 @@ window.YCSMappingData = Object.freeze({
     if (binding.source) return state.sources[binding.source]?.label || 'Local value';
     const connection = state.connections[binding.connection],
       pick = binding.selection;
+    if (connection?.sheetRange) {
+      const metadata = connection.sheetRange, book = state.workbooks?.[metadata.workbook];
+      const address = pick.kind === 'cell' ? pick.cell : pick.kind === 'collection' ? pick.range : pick.valueColumn;
+      return [book?.label, book?.groups[metadata.group]?.label, connection.label, address].filter(Boolean).join(' › ');
+    }
     if (pick.kind === 'collection')
       return `${connection?.label || 'Unavailable source'} › Stories (${pick.format === 'sheet' ? pick.range : pick.pointer || 'root array'})`;
     return `${connection?.label || 'Unavailable source'} › ${pick.kind === 'cell' ? pick.cell : pick.kind === 'json' ? pick.pointer || '/' : pick.valueColumn + ' where ' + pick.keyColumn + ' = ' + pick.keyValue}`;
