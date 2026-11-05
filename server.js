@@ -804,7 +804,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 
 // Middleware
-app.use(bodyParser.json());
+// Linkable fields allow 65,536 characters and Save/Play send them twice; the
+// 100 kB default rejected large tickers with 413.
+app.use(bodyParser.json({ limit: '1mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 const spxSession = session({
