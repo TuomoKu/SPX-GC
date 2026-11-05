@@ -11,6 +11,10 @@ const outputAccess = require('./output-access.cjs');
 module.exports = function registerYCS(app, config, hooks = {}) {
   if (!config.ycs?.enabled) return;
   const settings = config.ycs;
+  // Stock SPX replaces global.config when the login policy is saved. Read login
+  // settings from it per request; YCS settings stay as started until restart.
+  const followGlobal = global.config === config;
+  const live = () => (followGlobal && global.config?.general ? global.config : config);
   const configFile = hooks.configFile || global.configfileref;
   const repository = new RundownRepository(config.general.dataroot, settings.stages);
   const sources = new DataSources(
@@ -45,7 +49,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   let lastReconciliation = 0;
   let closeSockets;
   playback.attachSockets = (io) => {
-    closeSockets = require('./sockets.cjs')(io, playback, config);
+    closeSockets = require('./sockets.cjs')(io, playback, config, live);
   };
   const updateLinks = () => {
     for (const stage of settings.stages)
@@ -86,7 +90,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   }
   function apiAccess(req, res, next) {
     // Browser operator sessions use normal SPX login. Companion can use a header.
-    const operator = req.session?.user && req.session.user === config.general.username;
+    const operator = outputAccess.operator(req, live());
     if (operator) return next();
     if (settings.apiKey) {
       if (req.get('authorization') !== `Bearer ${settings.apiKey}`)
@@ -126,7 +130,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     '/stages/:stage/:mode/report',
     sameOrigin,
     (req, res, next) =>
-      outputAccess.allowed(req, config, req.params.stage, req.params.mode)
+      outputAccess.allowed(req, live(), req.params.stage, req.params.mode)
         ? next()
         : apiAccess(req, res, next),
     handlers(async (req, res) => {
@@ -388,6 +392,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     // endpoints that must remain 404 rather than becoming item commands.
     (req, res, next) => (['ycs', 'v1'].includes(req.params.project) ? next('route') : next()),
     (req, res, next) => {
+      res.locals.ycsJSON = true; // Errors are JSON for Companion, never an HTML stack trace.
       res.set('Cache-Control', 'no-store');
       // Express normally runs GET handlers for HEAD too. Control URLs must
       // execute only explicit GET/POST requests, never probes or preflights.
@@ -491,6 +496,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     if (
       !req.path.startsWith('/api/ycs') &&
       !req.path.startsWith('/output') &&
+      !res.locals.ycsJSON &&
       !repository.matchFile(req.body?.datafile || req.body?.rundownfile)
     )
       return next(error);

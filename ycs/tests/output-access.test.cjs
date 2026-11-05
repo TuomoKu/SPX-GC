@@ -23,7 +23,7 @@ const register = require('../index.cjs'),
   attach = require('../sockets.cjs'),
   access = require('../output-access.cjs'),
   { fixture } = require('./playback.test.cjs');
-test('no-login output sessions authorize only their viewer scope, not commands, data or another output', async (t) => {
+test('no-login browser sessions are operators when an API key is set; viewer sockets stay scoped', async (t) => {
   const f = await fixture(t),
     app = express();
   app.use(express.json());
@@ -67,17 +67,24 @@ test('no-login output sessions authorize only their viewer scope, not commands, 
   assert.equal(page.status, 200);
   const cookie = page.headers.get('set-cookie').split(';')[0],
     headers = { Cookie: cookie, Origin: base };
-  assert.equal((await fetch(base + '/api/ycs/data', { headers })).status, 401);
-  assert.equal((await fetch(base + '/api/Stage1/Show/ticker/play', { headers })).status, 401);
-  const post = (stage, mode) =>
+  // SPX CheckLogin gives every no-login browser the 'default' user, so the
+  // controller works with an API key set. Requests without it still need the key.
+  assert.equal((await fetch(base + '/api/ycs/data', { headers })).status, 200);
+  assert.equal((await fetch(base + '/api/Stage1/Show/ticker/stop', { headers })).status, 200);
+  assert.equal((await fetch(base + '/api/ycs/data')).status, 401);
+  assert.equal((await fetch(base + '/api/Stage1/Show/ticker/stop')).status, 401);
+  assert.equal(
+    (await fetch(base + '/api/Stage1/Show/ticker/stop', { headers: { Authorization: 'Bearer private-command-key' } })).status,
+    200
+  );
+  const post = (stage, mode, extra = headers) =>
     fetch(base + '/api/ycs/stages/' + stage + '/' + mode + '/report', {
       method: 'POST',
-      headers: { ...headers, 'Content-Type': 'application/json' },
+      headers: { ...extra, 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: 'viewer-test', state: 'ready', revision: 0 })
     });
   assert.equal((await post('stage-1', 'program')).status, 204);
-  assert.equal((await post('stage-1', 'preview')).status, 401);
-  assert.equal((await post('stage-2', 'program')).status, 401);
+  assert.equal((await post('stage-1', 'preview', {})).status, 401);
   browserHeaders = headers;
   const socket = client(base + '/ycs-playback', {
     transports: ['websocket'],
@@ -113,7 +120,7 @@ test('no-login output sessions authorize only their viewer scope, not commands, 
   }
   assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0);
 });
-test('remote viewer auth requires the granted session and rejects forged scopes, logout and foreign origins', async (t) => {
+test('socket auth follows the live login settings and rejects logout, foreign origins and invalid scopes', async (t) => {
   const f = await fixture(t);
   let authorize;
   const namespace = {
@@ -122,8 +129,9 @@ test('remote viewer auth requires the granted session and rejects forged scopes,
     to: () => ({ emit() {} }),
     disconnectSockets() {}
   };
-  const config = { general: { username: '' }, ycs: { apiKey: 'test-key' } };
-  const cleanup = attach({ of: () => namespace }, f.playback, config);
+  const startup = { general: { username: '' }, ycs: { apiKey: 'test-key' } };
+  let current = startup;
+  const cleanup = attach({ of: () => namespace }, f.playback, startup, () => current);
   t.after(cleanup);
   const request = {
     headers: { host: 'SPX-PC:5660', origin: 'http://SPX-PC:5660' },
@@ -134,9 +142,8 @@ test('remote viewer auth requires the granted session and rejects forged scopes,
   const check = (auth, req = request) =>
     new Promise((resolve) => authorize({ request: req, handshake: { auth }, data: {} }, resolve));
   assert.equal(await check({ viewer: true, stage: 'stage-1', mode: 'program' }), undefined);
-  assert.ok(await check({ viewer: true, stage: 'stage-2', mode: 'program' }));
-  assert.ok(await check({ viewer: true, stage: 'stage-1', mode: 'preview' }));
-  assert.ok(await check({}));
+  assert.equal(await check({}), undefined, 'a no-login controller connects with an API key set');
+  assert.ok(await check({ viewer: true, stage: '../outside', mode: 'program' }));
   assert.ok(
     await check(
       { viewer: true, stage: 'stage-1', mode: 'program' },
@@ -149,5 +156,13 @@ test('remote viewer auth requires the granted session and rejects forged scopes,
       { ...request, session: { ...request.session, user: '' } }
     )
   );
-  assert.equal(await check({ token: 'test-key' }), undefined);
+  assert.ok(await check({}, { ...request, session: undefined }));
+  assert.equal(await check({ token: 'test-key' }, { ...request, session: undefined }), undefined);
+  // Enabling SPX login at runtime replaces global.config; no restart is needed.
+  current = { general: { username: 'op' }, ycs: startup.ycs };
+  assert.ok(await check({ viewer: true, stage: 'stage-1', mode: 'program' }), 'old no-login session');
+  const signedIn = { ...request, session: { user: 'op', ycsOutputs: ['stage-1:program'] } };
+  assert.equal(await check({ viewer: true, stage: 'stage-1', mode: 'program' }, signedIn), undefined);
+  assert.equal(await check({}, signedIn), undefined);
+  assert.equal(await check({ token: 'test-key' }, { ...request, session: undefined }), undefined);
 });

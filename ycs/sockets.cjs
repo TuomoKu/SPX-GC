@@ -2,20 +2,22 @@
 const outputAccess = require('./output-access.cjs');
 // Browser playout uses WebSockets rather than one HTTP event stream per mode.
 // Three stage controllers plus their previews must not exhaust HTTP/1 slots.
-module.exports = function attachSockets(io, playback, config) {
+module.exports = function attachSockets(io, playback, config, live = () => config) {
   const namespace = io.of('/ycs-playback'),
     listeners = [];
   namespace.use((socket, next) => {
     const request = socket.request,
       origin = request.headers.origin;
     const expected = `${request.socket.encrypted ? 'https' : 'http'}://${request.headers.host}`;
-    const operator = request.session?.user && request.session.user === config.general.username;
+    // Login settings are read per handshake: they can change while SPX runs.
+    const current = live();
+    const operator = outputAccess.operator(request, current);
     const key = config.ycs.apiKey;
     const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(request.socket.remoteAddress);
     const auth = socket.handshake.auth || {};
     const ordinary = operator || (key ? auth.token === key : local);
     const viewer =
-      auth.viewer === true && outputAccess.allowed(request, config, auth.stage, auth.mode);
+      auth.viewer === true && outputAccess.allowed(request, current, auth.stage, auth.mode);
     if ((origin && origin !== expected) || (!ordinary && !viewer))
       return next(new Error('Stage connection not authorized'));
     if (auth.viewer === true) {

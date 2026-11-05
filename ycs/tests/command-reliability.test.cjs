@@ -232,3 +232,42 @@ test('a repeated Toggle or Continue for the same item within the window is ignor
   await playback.command('stage-1', 'ticker', 'stop');
   assert.deepEqual(playback.snapshot('stage-1', 'program').graphics.map((g) => g.id), ['lower-third']);
 });
+
+test('changing the SPX login at runtime applies to command and output access without a restart', async (t) => {
+  const sessions = session({ secret: 'isolated-test-session-secret', resave: false, saveUninitialized: false });
+  const r = await server(t, {
+    apiKey: 'companion-key',
+    sessions,
+    auth: { CheckLogin: (req, res, next) => { req.session.user = req.query.as || 'default'; next(); } }
+  });
+  const login = async (as) => {
+    const page = await fetch(r.base + '/output/stage-1/program' + (as ? '?as=' + as : ''));
+    return { Cookie: page.headers.get('set-cookie').split(';')[0], Origin: r.base };
+  };
+  const report = (headers) => r.post('/api/ycs/stages/stage-1/program/report', { id: 'swap', state: 'ready', revision: 0 }, headers);
+  const before = await login();
+  assert.equal((await fetch(r.base + '/api/ycs/data', { headers: before })).status, 200);
+  // Stock /saveauthpolicy goes through config-store, which replaces global.config.
+  global.config = { ...r.config, general: { ...r.config.general, username: 'op', password: 'hash' } };
+  assert.equal((await fetch(r.base + '/api/ycs/data', { headers: before })).status, 401, 'old no-login session');
+  assert.equal((await report(before)).status, 401);
+  const operator = await login('op');
+  assert.equal((await fetch(r.base + '/api/ycs/data', { headers: operator })).status, 200);
+  assert.equal((await report(operator)).status, 204);
+  assert.equal((await fetch(r.base + '/api/Stage1/Show/ticker/stop', { headers: { Authorization: 'Bearer companion-key' } })).status, 200);
+});
+
+test('Companion item-route errors are JSON without stack traces or paths', async (t) => {
+  quiet(t);
+  const r = await server(t, { fallback: false });
+  const missing = await fetch(r.base + '/api/Stage1/Show/missing/play');
+  assert.equal(missing.status, 404);
+  assert.match(missing.headers.get('content-type'), /json/);
+  assert.deepEqual(await missing.json(), { error: 'Unknown graphic' });
+  fs.writeFileSync(r.repository.stage('stage-1').file, '{');
+  const broken = await fetch(r.base + '/api/Stage1/Show/ticker/play');
+  assert.equal(broken.status, 500);
+  const body = await broken.text();
+  assert.deepEqual(JSON.parse(body), { error: 'Stage operation failed; program state retained' });
+  assert.doesNotMatch(body, new RegExp(r.root.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
