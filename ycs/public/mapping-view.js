@@ -444,7 +444,8 @@ window.YCSMappingView = class MappingView {
             ['uppercase', 'Uppercase'],
             ['lowercase', 'Lowercase'],
             ['trim', 'Trim whitespace'],
-            ['prefix', 'Prefix text / media path']
+            ['prefix', 'Prefix text / media path'],
+            ['completed-game', 'Completed game (count - 1)']
           ],
           binding?.transform?.kind || 'none',
           field.title + ' transform'

@@ -99,11 +99,18 @@ function transform(value, input) {
   if (kind === 'lowercase') return text.toLowerCase();
   if (kind === 'trim') return text.trim();
   if (kind === 'prefix') return input.value + text;
+  if (kind === 'completed-game') {
+    // A game count of wins + 1 is one past the game that just ended. It is 1 before any
+    // result is in, when game 1 is the only game a winner could be shown for.
+    const count = Number(text);
+    if (!text.trim() || !Number.isInteger(count)) throw new Error('Expected a whole game count');
+    return String(Math.max(1, count - 1));
+  }
   throw new Error('Unsupported transform');
 }
 function normalizeTransform(input) {
   if (!input || input.kind === 'none') return undefined;
-  if (!['uppercase', 'lowercase', 'trim', 'prefix'].includes(input.kind))
+  if (!['uppercase', 'lowercase', 'trim', 'prefix', 'completed-game'].includes(input.kind))
     fail('Unsupported transform');
   if (input.kind === 'prefix' && (typeof input.value !== 'string' || input.value.length > 200))
     fail('Enter a prefix up to 200 characters');

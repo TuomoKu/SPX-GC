@@ -1,5 +1,5 @@
 'use strict';
-const {test}=require('node:test');const assert=require('node:assert/strict');const path=require('node:path');const {EventEmitter}=require('node:events');const {PassThrough}=require('node:stream');const {JSONAPI,normalizeJSONSettings,publicAddress}=require('../json-api.cjs');const {DataSources}=require('../data.cjs');const {normalizeField,normalizeLinked}=require('../field-types.cjs');const {fixture}=require('./playback.test.cjs');
+const {test}=require('node:test');const assert=require('node:assert/strict');const path=require('node:path');const {EventEmitter}=require('node:events');const {PassThrough}=require('node:stream');const {JSONAPI,normalizeJSONSettings,publicAddress}=require('../json-api.cjs');const {DataSources}=require('../data.cjs');const {normalizeField,normalizeLinked}=require('../field-types.cjs');const {transform:transformValue,normalizeTransform}=require('../bindings.cjs');const {fixture}=require('./playback.test.cjs');
 const settings={url:'https://api.example.com/event',refreshSeconds:5};
 function adapter({body='{"event":{"name":"Finals","round":15,"active":true}}',status=200,type='application/json',address='93.184.216.34',env={}}={}){
   let calls=0,headers;const json=new JSONAPI({env,lookup:(host,options,callback)=>callback(null,[{address,family:4}]),request:(url,options,receive)=>{calls++;headers=options.headers;const request=new EventEmitter();request.end=()=>options.lookup(url.hostname,{all:true},(error)=>{if(error){queueMicrotask(()=>request.emit('error',error));return;}const response=new PassThrough();response.statusCode=status;response.headers={'content-type':type};receive(response);queueMicrotask(()=>response.end(body));});return request;}});return {json,calls:()=>calls,headers:()=>headers};
@@ -81,6 +81,46 @@ test('a JSON value that is missing, null or empty shows blank, never an earlier 
   data={blue:{name:'Player E'}};await sources.refreshSheet(connection);await base.playback.command('stage-1','ticker','stop',undefined,{});await base.playback.command('stage-1','ticker','play',undefined,{links});
   const fields=base.playback.snapshot('stage-1','program').graphics[0].data;assert.equal(fields.f8,'','a fresh Play blanks a number');assert.equal(fields.f2,'0','a fresh Play unticks a checkbox');
   data={blue:{name:{first:'Not text'}}};await sources.refreshSheet(connection);const status=sources.resolveSnapshot(sources.reference(link('f6','/blue/name').binding));assert.equal(status.health,'error','a value of the wrong kind is still reported');
+});
+test('the completed game transform gives the game that just ended and refuses anything but a whole count',()=>{
+  for(const [count,game] of [['1','1'],['2','1'],['3','2'],['4','3'],['0','1']])assert.equal(transformValue(count,{kind:'completed-game'}),game,count);
+  for(const bad of ['','  ','two','1.5','NaN'])assert.throws(()=>transformValue(bad,{kind:'completed-game'}),/whole game count/,bad);
+  assert.deepEqual(normalizeTransform({kind:'completed-game',value:'ignored'}),{kind:'completed-game'});
+  assert.throws(()=>normalizeTransform({kind:'subtract-two'}),/Unsupported transform/);
+});
+test('a linked game number follows the game count minus one on air, and a typed one is left alone',async t=>{
+  const base=await fixture(t);let data={gameCount:1,wins:0};
+  const sources=new DataSources(path.join(base.root,'sources.json'),base.stages,{json:{read:async()=>({data})}});await sources.ready;t.after(()=>sources.close());base.playback.sources=sources;
+  const rundown=await base.repository.read('stage-1');rundown.templates[0].DataFields.push({field:'f2',title:'Game number',ftype:'number',min:1,max:3,value:'1'},{field:'f3',title:'Typed game',ftype:'number',min:1,max:3,value:'3'});await base.repository.write('stage-1',rundown);
+  const {connectionId:connection}=await sources.saveConnection(null,'API',settings,0,'json-api');
+  const counted={connection,selection:{kind:'json',pointer:'/gameCount'},transform:{kind:'completed-game'}};
+  await sources.saveMappings('stage-1','ticker','/test/graphic.html',[{field:'f2',scope:'override',binding:counted},{field:'f3',scope:'override',binding:counted}],sources.snapshot().revision);
+  const onAir=async count=>{data={gameCount:count};await sources.refreshSheet(connection);await base.playback.refreshLinks('stage-1');return base.playback.snapshot('stage-1','program').graphics[0].data;};
+  await base.playback.command('stage-1','ticker','play',undefined,{links:{f2:{mode:'linked',manual:'1'},f3:{mode:'manual',manual:'3'}}});
+  assert.equal(base.playback.snapshot('stage-1','program').graphics[0].data.f2,'1','game 1 before any result');
+  for(const [count,game] of [[2,'1'],[3,'2'],[4,'3']]){const shown=await onAir(count);assert.equal(shown.f2,game,'count '+count);assert.equal(shown.f3,'3','a typed value is untouched');}
+  data={gameCount:'two'};await sources.refreshSheet(connection);await base.playback.refreshLinks('stage-1');assert.equal(base.playback.snapshot('stage-1','program').graphics[0].data.f2,'3','an unusable count keeps the last value');
+  assert.equal(sources.resolveSnapshot(sources.reference(counted)).health,'error','and reports it');
+  data={wins:0};await sources.refreshSheet(connection);await base.playback.refreshLinks('stage-1');assert.equal(base.playback.snapshot('stage-1','program').graphics[0].data.f2,'','a missing count stays blank');
+});
+test('a link whose transform refuses its value reports an error and breaks nothing else',async t=>{
+  const base=await fixture(t);let data={name:'Player A',gameCount:2};
+  const sources=new DataSources(path.join(base.root,'sources.json'),base.stages,{json:{read:async()=>({data})}});await sources.ready;t.after(()=>sources.close());base.playback.sources=sources;
+  const rundown=await base.repository.read('stage-1');rundown.templates[0].DataFields.push({field:'f6',title:'Name',ftype:'textfield',value:'typed'},{field:'f2',title:'Game',ftype:'number',min:1,max:3,value:'3'},{field:'f3',title:'Other',ftype:'number',min:1,max:3,value:'2'});await base.repository.write('stage-1',rundown);
+  const {connectionId:connection}=await sources.saveConnection(null,'API',settings,0,'json-api');
+  const refused={kind:'completed-game'};
+  for(const record of [{static:'',transform:refused},{static:'text',transform:refused}]){const status=sources.resolveSnapshot('preview',record);assert.equal(status.health,'error');assert.equal(status.value,undefined);assert.match(status.error,/whole game count/);}
+  assert.equal(sources.resolveSnapshot('preview',{static:'3',transform:refused}).value,'2');
+  sources.document.sources.localText={label:'Local text',value:'not a number'};
+  const alias=sources.resolveSnapshot('preview',{source:'localText',transform:refused});assert.equal(alias.health,'error');assert.equal(alias.value,undefined);delete sources.document.sources.localText;
+  await sources.saveMappings('stage-1','ticker','/test/graphic.html',[{field:'f6',scope:'override',binding:{connection,selection:{kind:'json',pointer:'/name'}}},{field:'f2',scope:'override',binding:{static:'',transform:refused}},{field:'f3',scope:'override',binding:{connection,selection:{kind:'json',pointer:'/gameCount'},transform:refused}}],sources.snapshot().revision);
+  assert.doesNotThrow(()=>sources.snapshot(),'the snapshot every controller reads still works');
+  await base.playback.command('stage-1','ticker','play',undefined,{links:{f6:{mode:'linked',manual:'typed'},f2:{mode:'linked',manual:'3'},f3:{mode:'linked',manual:'2'}}});
+  const shown=()=>base.playback.snapshot('stage-1','program').graphics[0].data;
+  assert.equal(shown().f2,'3','the refused link uses its typed fallback');assert.equal(shown().f3,'1');
+  data={name:'Player B',gameCount:3};await sources.refreshSheet(connection);await base.playback.refreshLinks('stage-1');
+  assert.equal(shown().f6,'Player B','other links keep refreshing');assert.equal(shown().f3,'2');assert.equal(shown().f2,'3');
+  assert.equal((await base.playback.mappingPreview('stage-1','ticker')).fields.find(field=>field.field==='f2').health,'error');
 });
 test('a report with no data counts as a failed read, so the last values stay',async()=>{
   for(const body of ['null','{}','[]','5','"text"','true'])await assert.rejects(adapter({body}).json.read(settings),{status:502},body);

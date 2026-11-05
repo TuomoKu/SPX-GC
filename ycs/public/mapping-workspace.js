@@ -214,7 +214,9 @@ window.YCSMappingWorkspace = class MappingWorkspace {
       this.message('Use Map story list to select a range or JSON array.', true);
       return;
     }
-    if (binding && !Object.hasOwn(binding, 'transform') && previous?.transform)
+    // Completed game only makes sense for a game count, so a new source must not inherit it
+    // and quietly show one less than its value.
+    if (binding && !Object.hasOwn(binding, 'transform') && previous?.transform && previous.transform.kind !== 'completed-game')
       binding = { ...binding, transform: previous.transform };
     this.drafts.edit(this.model, this.selectedField, binding, this.$('mapping-scope').value);
     this.changed();
