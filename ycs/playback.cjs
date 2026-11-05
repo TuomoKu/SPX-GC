@@ -265,10 +265,10 @@ class Playback extends EventEmitter {
   repeated(stageId, graphicId, action, arrived) {
     const key = stageId + '\n' + graphicId + '\n' + action;
     const last = this.presses.get(key);
-    return last !== undefined && arrived - last < this.repeatWindow;
+    return last !== undefined && arrived >= last && arrived - last < this.repeatWindow;
   }
   pressed(stageId, graphicId, action, arrived) {
-    for (const [key, at] of this.presses) if (arrived - at >= this.repeatWindow) this.presses.delete(key);
+    for (const [key, at] of this.presses) if (arrived < at || arrived - at >= this.repeatWindow) this.presses.delete(key);
     this.presses.set(stageId + '\n' + graphicId + '\n' + action, arrived);
   }
   async routed(stageId, item) {
@@ -479,6 +479,7 @@ class Playback extends EventEmitter {
       let changed = false;
       for (const graphic of [...state.program, ...(state.draft ? [state.draft] : [])]) {
         for (const [field, link] of Object.entries(graphic.links || {})) {
+          if (link.mode === 'linked' && this.sources?.awaitingLiveRead?.(link.source)) continue;
           let value = this.sources?.value(link.source);
           if(value!==undefined){try{value=normalizeField(link.definition||{ftype:'textfield'},value);}catch{continue;}}
           if (link.mode === 'linked' && value !== undefined && value !== graphic.data[field]) {

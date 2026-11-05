@@ -9,8 +9,10 @@ try {
         else {
             # Explorer may not have the same PATH as a development terminal.
             if (Test-Path -LiteralPath $recordFile) {
-                $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
-                if (Test-Path -LiteralPath $record.executable -PathType Leaf) { $NodePath = $record.executable }
+                try {
+                    $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
+                    if (Test-Path -LiteralPath $record.executable -PathType Leaf) { $NodePath = $record.executable }
+                } catch { }
             }
         }
         if (-not $NodePath) { throw 'Node.js was not found. Install Node.js or pass -NodePath with its full path.' }

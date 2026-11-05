@@ -94,7 +94,7 @@ test('backoff is capped at two minutes; a success on the same transport retries 
   assert.equal(sources.runtimes.get(b).health, 'ok');
 });
 
-test('a success wakes connections in backoff on the same transport only', async (t) => {
+test('a connection that recovers wakes others on its transport only; ordinary successes wake nobody', async (t) => {
   const base = await fixture(t);
   let clock = 1e12;
   const failing = new Set();
@@ -110,11 +110,51 @@ test('a success wakes connections in backoff on the same transport only', async 
   await sources.refreshSheet(b);
   await sources.refreshSheet(j);
   assert.ok(sources.runtimes.get(b).nextAt > clock);
+  // A healthy connection's normal read says nothing new about a permanently bad one.
+  clock += 500;
+  await sources.refreshSheet(a);
+  assert.ok(sources.runtimes.get(b).nextAt > clock, 'an ordinary success leaves the backoff alone');
+  failing.add(sheetURL(1));
+  await sources.refreshSheet(a);
   failing.clear();
   clock += 1000;
-  await sources.refreshSheet(a);
+  await sources.refreshSheet(a); // A was failing and has recovered.
   assert.ok(sources.runtimes.get(b).nextAt <= clock, 'sheet in backoff is due now');
   assert.ok(sources.runtimes.get(j).nextAt > clock, 'other transports keep their backoff');
+});
+
+test('one bad range keeps its own backoff; healthy ranges stay on schedule and two spreadsheets cannot feed each other', async (t) => {
+  const base = await fixture(t);
+  let clock = 1e12;
+  const reads = {}, bad = new Set();
+  const sheets = { read: async (input) => {
+    const key = input.url.split('/')[5] + ' ' + input.range;
+    reads[key] = (reads[key] || 0) + 1;
+    if (bad.has(key)) throw Object.assign(new Error('rejected'), { status: 400 });
+    return { rows: table('ok') };
+  } };
+  const sources = new DataSources(path.join(base.root, 'books.json'), base.stages, { sheets, now: () => clock });
+  t.after(() => sources.close());
+  await sources.ready;
+  const keys = [];
+  for (const number of [1, 2]) {
+    const { workbookId } = await sources.saveWorkbook({ label: 'Book ' + number, settings: { url: sheetURL(number), refreshSeconds: 5 }, revision: sources.snapshot().revision });
+    const { groupId } = await sources.saveWorkbookGroup(workbookId, { label: 'Stage', worksheet: '0', revision: sources.snapshot().revision });
+    for (const range of ['A1:A2', 'B1:B2'])
+      await sources.saveNamedRange(workbookId, groupId, { label: 'Range ' + range, settings: { range, worksheet: '0' }, headerRow: null, dataRow: 1, revision: sources.snapshot().revision });
+    keys.push(sheetURL(number).split('/')[5]);
+  }
+  bad.add(keys[0] + ' B1:B2').add(keys[1] + ' B1:B2');
+  for (const key of Object.keys(reads)) delete reads[key];
+  for (let second = 0; second < 60; second++) {
+    clock += 1000;
+    await sources.pollSheets();
+  }
+  for (const key of keys) {
+    const healthy = reads[key + ' A1:A2'], failing = reads[key + ' B1:B2'];
+    assert.ok(healthy >= 10 && healthy <= 13, `healthy range read on schedule, saw ${healthy}`);
+    assert.ok(failing <= 6, `bad range waits out its backoff, saw ${failing}`);
+  }
 });
 
 test('an invalid external edit blocks saves but keeps polling from the last valid configuration', async (t) => {

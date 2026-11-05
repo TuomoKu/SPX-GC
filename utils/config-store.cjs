@@ -62,15 +62,16 @@ function writeTextSync(file, text) {
       try { fsSync.renameSync(temporary, file); break; }
       catch (error) {
         // Same transient Windows sharing errors as writeText, with a blocking wait.
-        if (!['EPERM', 'EBUSY'].includes(error.code) || attempt >= 4) throw error;
-        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 15 * 2 ** attempt);
+        if (!['EPERM', 'EBUSY'].includes(error.code) || attempt >= 7) throw error;
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Math.min(15 * 2 ** attempt, 500));
       }
     }
   } finally { fsSync.rmSync(temporary, { force: true }); }
 }
 const writeJSON = (file, value) => writeText(file, JSON.stringify(value, null, 2) + '\n');
+const stripBom = text => text.replace(/^\uFEFF/, '');
 function parseConfig(text) {
-  const value = JSON.parse(text);
+  const value = JSON.parse(stripBom(text));
   if (!value || typeof value !== 'object' || Array.isArray(value) || !value.general || typeof value.general !== 'object')
     throw new Error('Configuration has no general section');
   return value;
@@ -88,7 +89,7 @@ async function replaceConfig(file, value) {
 async function update(file, change) {
   return transaction(file, async () => {
     // Read inside the shared queue, rather than enqueueing a stale snapshot.
-    const current = JSON.parse(await fs.readFile(file, 'utf8'));
+    const current = JSON.parse(stripBom(await fs.readFile(file, 'utf8')));
     const replacement = await change(current);
     if (replacement === UNCHANGED) return current;
     const next = replacement === undefined ? current : replacement;
@@ -100,11 +101,22 @@ async function update(file, change) {
 }
 // Startup: parse the configuration, falling back to <file>.bak when the main file
 // is damaged (for example NUL-filled after a power cut). A recovered file is
-// restored from the backup and the damaged copy is kept beside it.
+// restored from the backup and the damaged copy is kept beside it. A missing file
+// with a backup is restored the same way. The backup still loads if the restored
+// file cannot be written.
 function loadConfigSync(file, log = console.error) {
-  const raw = fsSync.readFileSync(file, 'utf8');
+  let raw;
+  try { raw = fsSync.readFileSync(file, 'utf8'); }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
   try {
+    if (raw === undefined) throw new Error('The file is missing');
     const config = parseConfig(raw);
+    if (raw !== stripBom(raw)) {
+      // Other readers use plain JSON.parse, so store it without the BOM.
+      raw = stripBom(raw);
+      try { writeTextSync(file, raw); }
+      catch (error) { log('Could not rewrite configuration ' + file + ' without its BOM: ' + error.message); }
+    }
     try {
       let saved = null;
       try { saved = fsSync.readFileSync(backupFile(file), 'utf8'); } catch { /* No backup yet. */ }
@@ -115,17 +127,18 @@ function loadConfigSync(file, log = console.error) {
     let backup;
     try { backup = fsSync.readFileSync(backupFile(file), 'utf8'); parseConfig(backup); }
     catch { throw new Error(`Configuration ${file} is damaged (${problem.message}) and no usable backup exists at ${backupFile(file)}`); }
-    const damaged = file + '.damaged-' + new Date().toISOString().replace(/[:.]/g, '-');
-    try { fsSync.copyFileSync(file, damaged); } catch { /* Recovery must not depend on the copy. */ }
-    writeTextSync(file, backup);
+    const damaged = raw === undefined ? null : file + '.damaged-' + new Date().toISOString().replace(/[:.]/g, '-');
+    if (damaged) { try { fsSync.copyFileSync(file, damaged); } catch { /* Recovery must not depend on the copy. */ } }
+    try { writeTextSync(file, backup); }
+    catch (error) { log('Could not restore ' + file + ' (' + error.message + '); running from ' + backupFile(file) + ' for now.'); }
     log([
       '',
       '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
-      '!!  CONFIGURATION FILE WAS DAMAGED: ' + file,
+      '!!  CONFIGURATION FILE WAS ' + (damaged ? 'DAMAGED' : 'MISSING') + ': ' + file,
       // The parser quotes the bad byte; keep NULs out of the log.
       '!!  ' + problem.message.replace(/[\u0000-\u001f]/g, '?'),
       '!!  Restored the last good configuration from ' + backupFile(file),
-      '!!  The damaged file was kept as ' + damaged,
+      ...(damaged ? ['!!  The damaged file was kept as ' + damaged] : []),
       '!!  Check recent settings changes before going on air.',
       '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
       ''

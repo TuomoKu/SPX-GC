@@ -88,11 +88,13 @@ async function mount(graphic, signal) {
   provisional.add(entry);
   signal.addEventListener('abort', remove, { once: true });
   root.append(frame);
+  let shown = false;
   try {
     await bounded(loaded, 8000, signal);
     await invoke(entry, 'update', [JSON.stringify(graphic.data)], signal);
     if (signal.aborted || disposed) throw superseded();
     frame.style.visibility = '';
+    shown = true;
     await invoke(entry, 'play', [], signal);
     entry.data = JSON.stringify(graphic.data);
     // A reload or remount of a stepped graphic returns to the step on air.
@@ -100,6 +102,7 @@ async function mount(graphic, signal) {
     return entry;
   } catch (error) {
     frame.remove();
+    if (shown && error?.name !== 'AbortError') throw Object.assign(new Error(error?.message || String(error)), { afterShown: true });
     throw error;
   } finally {
     provisional.delete(entry);
@@ -198,10 +201,14 @@ function kick(job) {
         return;
       job.error = error.message;
       console.error('[YCS output]', job.slot, error);
+      // Retry a template that could not load for as long as it takes. One that failed
+      // after being shown would replay its entrance each time, so its retries are limited.
+      const wait = retryDelays[job.failures++] ?? (error.afterShown ? undefined : retryCap);
+      if (wait === undefined) return;
       job.timer = setTimeout(() => {
         job.timer = null;
         kick(job);
-      }, retryDelays[job.failures++] ?? retryCap);
+      }, wait);
     })
     .finally(() => {
       job.running = false;

@@ -58,5 +58,5 @@ test('a rejected range fails only its own connection; healthy ranges on the work
     // for the healthy ranges and one request for the remembered bad range.
     assert.equal(calls.batch.length, poll === 0 ? 4 : 2);
   }
-  assert.ok(calls.metadata - metadata <= 1, 'range errors refresh tab metadata at most once a minute');
+  assert.ok(calls.metadata - metadata <= 1, 'range errors refresh tab metadata at most once per recheck interval');
 });

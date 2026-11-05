@@ -365,7 +365,7 @@ class DataSources extends EventEmitter {
     this.serial = result.catch(() => {});
     return result;
   }
-  async read() {
+  async read(snapshotOptions) {
     const previous = JSON.stringify([this.document, this.error]);
     try {
       const raw = await fs.readFile(this.file, 'utf8');
@@ -390,12 +390,12 @@ class DataSources extends EventEmitter {
     }
     this.checkedAt = new Date().toISOString();
     if (previous !== JSON.stringify([this.document, this.error])) this.emit('change');
-    return this.snapshot();
+    return this.snapshot(snapshotOptions);
   }
-  refresh() {
+  refresh(snapshotOptions) {
     return this.queue(async () => {
       await this.ready;
-      return this.read();
+      return this.read(snapshotOptions);
     });
   }
   syncRuntimes() {
@@ -431,6 +431,7 @@ class DataSources extends EventEmitter {
         headerRows,
         datasetHash: rows || data !== undefined ? datasetHash(rows, data, headerRows) : '',
         lastSuccess: restored ? saved.lastSuccess : null,
+        cacheOnly: restored,
         lastAttempt: null,
         nextAt: 0,
         failures: 0,
@@ -990,6 +991,13 @@ class DataSources extends EventEmitter {
     await this.persistCache();
     return { sourceId, snapshot: this.snapshot() };
   }
+  // True until a connection restored from the restart cache has been read live.
+  // That cache can be older than a restored Program, so on-air links wait for live data.
+  awaitingLiveRead(id) {
+    const input = this.document?.sources[id]?.binding || this.bindings.get(id);
+    const connection = input?.source ? this.document?.sources[input.source]?.binding?.connection : input?.connection;
+    return Boolean(this.runtimes.get(connection)?.cacheOnly);
+  }
   // Returns whether the dataset differs from the one already held.
   acceptRead(id, rows, data, headerRows, warning = '') {
     const runtime = this.runtimes.get(id),
@@ -1007,6 +1015,7 @@ class DataSources extends EventEmitter {
       health: 'ok',
       error: '',
       cacheError: '',
+      cacheOnly: false,
       restoreWarning: '',
       readWarning: warning || '',
       nextAt: Math.min(8640000000000000, now + this.document.connections[id].settings.refreshSeconds * 1000)
@@ -1086,7 +1095,8 @@ class DataSources extends EventEmitter {
     this.controllers.add(controller);
     const job = (async () => {
       runtime.lastAttempt = new Date(this.now()).toISOString();
-      const before = runtime.health + '\n' + runtime.error;
+      const before = runtime.health + '\n' + runtime.error,
+        wasCacheOnly = runtime.cacheOnly;
       let changed = false;
       try {
         const configuredHeader = connection.sheetRange?.headerRow;
@@ -1100,21 +1110,25 @@ class DataSources extends EventEmitter {
         if (this.closed || this.runtimes.get(id) !== runtime) return;
         if (sourceTypes.isTable(connection) && !Array.isArray(result.rows))
           fail('Connection returned invalid rows', 502);
+        const recovered = runtime.failures > 0;
         changed = this.acceptRead(id, result.rows, result.data, result.headerRows, result.warning);
         if (changed) this.scheduleCacheWrite();
-        // The transport is back: retry connections still waiting out a backoff.
-        const transport = this.transport(connection);
-        for (const [other, value] of this.runtimes)
-          if (
-            other !== id &&
-            value.failures > 0 &&
-            this.document.connections[other] &&
-            this.transport(this.document.connections[other]) === transport
-          )
-            value.nextAt = Math.min(value.nextAt, this.now());
-        if (transport === 'google-sheets')
-          for (const value of this.workbookRuntimes?.values() || [])
-            if (value.failures > 0) value.nextAt = Math.min(value.nextAt, this.now());
+        if (recovered) {
+          // This connection was failing and now works, so the transport is back: retry
+          // the others waiting out a backoff. A permanently bad source never triggers this.
+          const transport = this.transport(connection);
+          for (const [other, value] of this.runtimes)
+            if (
+              other !== id &&
+              value.failures > 0 &&
+              this.document.connections[other] &&
+              this.transport(this.document.connections[other]) === transport
+            )
+              value.nextAt = Math.min(value.nextAt, this.now());
+          if (transport === 'google-sheets')
+            for (const value of this.workbookRuntimes?.values() || [])
+              if (value.failures > 0) value.nextAt = Math.min(value.nextAt, this.now());
+        }
       } catch (error) {
         if (this.closed || this.runtimes.get(id) !== runtime) return;
         if (error.transient) {
@@ -1124,6 +1138,7 @@ class DataSources extends EventEmitter {
           runtime.nextAt = this.now() + (error.retryAfterMs ?? TRANSIENT_RETRY_MS);
         } else {
           runtime.failures++;
+          runtime.transient = 0;
           runtime.health = 'error';
           runtime.error = error.message;
           runtime.nextAt =
@@ -1145,7 +1160,7 @@ class DataSources extends EventEmitter {
       if (
         !this.closed &&
         this.runtimes.get(id) === runtime &&
-        (changed || pendingEmpty || before !== runtime.health + '\n' + runtime.error)
+        (changed || pendingEmpty || (wasCacheOnly && !runtime.cacheOnly) || before !== runtime.health + '\n' + runtime.error)
       )
         this.emit('change');
     })();

@@ -221,6 +221,17 @@ test('the repeat window runs from command arrival, so a slow save cannot swallow
   assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0, 'the second press takes it off air');
 });
 
+test('a clock moved backwards does not make a later press look like a repeat', async (t) => {
+  const { playback } = await fixture(t);
+  let now = 200000;
+  playback.now = () => now;
+  await playback.command('stage-1', 'ticker', 'toggle');
+  now -= 120000;
+  const second = await playback.command('stage-1', 'ticker', 'toggle');
+  assert.notEqual(second.repeated, true);
+  assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0);
+});
+
 test('a repeated Toggle or Continue for the same item within the window is ignored', async (t) => {
   const { playback, repository } = await fixture(t);
   const show = await repository.read('stage-1');

@@ -8,7 +8,8 @@ if (-not $Config) {
     if (Test-Path -LiteralPath $recordFile) {
         try {
             $lastConfiguration = (Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json).configuration
-            if ($lastConfiguration -and (Test-Path -LiteralPath $lastConfiguration -PathType Leaf)) { $Config = $lastConfiguration }
+            # A record copied from another folder can name a configuration outside this checkout.
+            if ($lastConfiguration -and $lastConfiguration.StartsWith($projectRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $lastConfiguration -PathType Leaf)) { $Config = $lastConfiguration }
         } catch { }
     }
 }
@@ -20,12 +21,12 @@ try {
     $configuration = Get-Content -LiteralPath $configurationFile -Raw | ConvertFrom-Json
     if (-not $configuration.general) { throw 'Configuration has no general section' }
 } catch {
-    # A power cut can damage the file. SPX restores it from the backup when it
-    # starts, so read this launcher's settings from that same backup.
+    # A power cut can damage the file, or it can go missing. SPX restores it from
+    # the backup when it starts, so read this launcher's settings from that backup.
     $backupFile = $configurationFile + '.bak'
-    if (-not (Test-Path -LiteralPath $backupFile -PathType Leaf)) { throw "Configuration $configurationFile is damaged and no backup exists at $backupFile." }
+    if (-not (Test-Path -LiteralPath $backupFile -PathType Leaf)) { throw "Configuration $configurationFile is missing or damaged and no backup exists at $backupFile." }
     $configuration = Get-Content -LiteralPath $backupFile -Raw | ConvertFrom-Json
-    Write-Warning "Configuration $configurationFile is damaged. SPX will restore it from $backupFile."
+    Write-Warning "Configuration $configurationFile is missing or damaged. SPX will restore it from $backupFile."
 }
 if (-not $configuration.ycs.enabled) { throw 'Enable YCS in the saved server configuration first.' }
 if ($configuration.general.launchBrowser) { throw 'Set general.launchBrowser to false for background runtime use.' }
@@ -46,8 +47,14 @@ try {
     try { $ownsMutex = $startupMutex.WaitOne(10000) } catch [Threading.AbandonedMutexException] { $ownsMutex = $true }
     if (-not $ownsMutex) { throw 'Another runtime startup is in progress.' }
     $listener = Get-NetTCPConnection -LocalPort $portNumber -State Listen -ErrorAction SilentlyContinue
+    # A power cut can damage the record. Treat that as no record: the port check
+    # below still protects a server that is running.
+    $record = $null
     if (Test-Path -LiteralPath $recordFile) {
-        $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
+        try { $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json }
+        catch { Write-Warning "Ignoring unreadable runtime record $recordFile." }
+    }
+    if ($record -and $record.id) {
         $runtimeProcess = Get-Process -Id $record.id -ErrorAction SilentlyContinue
         if ($runtimeProcess -and $runtimeProcess.Path -eq $record.executable -and $runtimeProcess.StartTime.ToUniversalTime().Ticks.ToString() -eq $record.startTicks) {
             if ($record.configuration -ne $configurationFile) { throw 'This checkout already runs a different configuration. Stop it first.' }
@@ -85,7 +92,7 @@ try {
         try { $null = Invoke-WebRequest $readinessUrl -Headers $readinessHeaders -TimeoutSec 1 -UseBasicParsing; $ready = $true; break } catch { Start-Sleep -Milliseconds 250 }
     }
     if (-not $ready) { throw "Runtime did not become ready at $readinessUrl. Check $stderr" }
-    Write-Output "YCS runtime ready (PID $($startedProcess.Id)). $baseUrl/ycs/data-manager"
+    Write-Output "YCS runtime ready (PID $($startedProcess.Id)) using $configurationArgument. $baseUrl/ycs/data-manager"
     Write-Output 'Saved connections refresh in the background. Program starts stopped unless the last run crashed within ycs.restoreProgramWithinSeconds.'
 } catch {
     if ($startedProcess -and -not $startedProcess.HasExited) { Stop-Process -Id $startedProcess.Id }

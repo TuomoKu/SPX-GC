@@ -17,14 +17,14 @@ function capture(t) {
   t.after(() => Object.assign(console, original));
   return lines;
 }
-async function eventually(check, label, timeout = 3000) {
+async function eventually(check, label, timeout = 3000, every = 10) {
   const end = Date.now() + timeout;
   for (;;) {
     let value;
     try { value = await check(); } catch { /* not yet */ }
     if (value) return value;
     if (Date.now() > end) assert.fail('Timed out: ' + label);
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, every));
   }
 }
 const stateFile = (f) => path.join(f.root, 'sources.program-state.json');
@@ -75,7 +75,7 @@ async function boot(t, f, { within, stopMarker = null, onCreate } = {}) {
         return state.pid === process.pid && state.startedAt === playback.recovery.startedAt &&
           [...playback.states].every(([id, current]) => state.stages[id].revision === current.revision &&
             JSON.stringify(state.stages[id].program) === JSON.stringify(current.program)) && state;
-      }, 'program state saved');
+      }, 'program state saved', 8000, 50);
     },
     async crash() { playback.close(); await stopListening(); },
     async shutdown() { await playback.shutdown(); await stopListening(); }
@@ -209,6 +209,48 @@ test('a stage with only a Preview draft gets it back after a crash, with no on-a
   assert.deepEqual((await second.call('/api/ycs/stages/stage-1/preview/state')).body.graphics, before.graphics);
   assert.deepEqual((await second.program('stage-1')).graphics, []);
   assert.equal((await second.health('stage-1')).restored, null);
+});
+
+test('a restored linked graphic keeps its value until a live read, even when the restart cache is older', async (t) => {
+  capture(t);
+  const f = await fixture(t);
+  const app = express();
+  app.use(express.json());
+  let live = 'ROUND 2', online = true;
+  const sheets = { read: async () => {
+    if (!online) throw Object.assign(new Error('offline'), { status: 502 });
+    return { rows: [[{ address: 'A1', value: live, usable: true }]] };
+  } };
+  const { DataSources } = require('../data.cjs');
+  const file = path.join(f.root, 'linked.json');
+  const seed = new DataSources(file, f.stages, { sheets });
+  await seed.ready;
+  const { connectionId } = await seed.saveConnection(null, 'C', { url: 'https://docs.google.com/spreadsheets/d/1PUBLIC_SHEET_TEST_1234567890/edit', worksheet: '0', range: 'A1:A1', refreshSeconds: 5 }, 0);
+  const binding = { connection: connectionId, selection: { kind: 'cell', cell: 'A1' } };
+  const source = seed.reference(binding);
+  seed.retain('t', [source]);
+  await seed.persistCache(); // The cache holds ROUND 2.
+  await seed.close();
+  // Restart with the sheet offline: the cached rows are all there is.
+  online = false;
+  const restored = new DataSources(file, f.stages, { sheets });
+  t.after(() => restored.close());
+  await restored.ready;
+  restored.reference(binding);
+  assert.equal(restored.awaitingLiveRead(source), true);
+  const playback = f.playback;
+  playback.sources = restored;
+  const state = playback.state('stage-1');
+  state.program = [{ id: 'ticker', slot: 'ticker', z: 10, template: '/templates/x.html', data: { f5: 'ROUND 3 ON AIR' }, links: { f5: { mode: 'linked', source } } }];
+  await playback.refreshLinks('stage-1');
+  assert.equal(state.program[0].data.f5, 'ROUND 3 ON AIR', 'the older cache does not replace what was on air');
+  // Once a live read arrives, the link follows it.
+  online = true;
+  live = 'ROUND 4';
+  await restored.refreshSheet(connectionId);
+  assert.equal(restored.awaitingLiveRead(source), false);
+  await playback.refreshLinks('stage-1');
+  assert.equal(state.program[0].data.f5, 'ROUND 4');
 });
 
 test('restoreProgramWithinSeconds 0 disables restoration', async (t) => {

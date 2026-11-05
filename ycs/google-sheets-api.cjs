@@ -10,7 +10,7 @@ function fail(message, status = 502, upstream) {
 }
 // A missing tab or a rejected range may mean a renamed tab. Refresh worksheet
 // metadata then, but no more often than this per spreadsheet.
-const TAB_RECHECK = 60000;
+const TAB_RECHECK = 15000;
 
 function cells(values = [], range) {
   const bounds = parseRange(range);

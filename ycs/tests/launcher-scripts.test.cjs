@@ -39,7 +39,21 @@ test('stop waits for the process to exit and start sets UV_THREADPOOL_SIZE for t
 test('without -Config the launchers default to the configuration launched last', async () => {
   for (const name of ['launch.ps1', 'start-runtime.ps1'])
     assert.match((await read(name)).split('\n')[0], /\[string\]\$Config = ''/, name);
-  assert.match(await read('start-runtime.ps1'), /\$lastConfiguration -and \(Test-Path -LiteralPath \$lastConfiguration -PathType Leaf\)/);
+  assert.match(await read('start-runtime.ps1'), /\$lastConfiguration -and .*\(Test-Path -LiteralPath \$lastConfiguration -PathType Leaf\)/);
+});
+
+test('launcher scripts survive an unreadable runtime record and a record naming another folder', async () => {
+  const start = await read('start-runtime.ps1');
+  assert.match(start, /try \{ \$record = Get-Content[^\n]*ConvertFrom-Json \}\s+catch \{ Write-Warning/);
+  assert.match(start, /if \(\$record -and \$record\.id\)/);
+  assert.match(start, /\$lastConfiguration\.StartsWith\(\$projectRoot/);
+  assert.match(await read('stop-runtime.ps1'), /catch \{ throw "Could not read \$recordFile/);
+});
+
+test('every deliberate stop records its marker, including when the process already exited', async () => {
+  const stop = await read('stop-runtime.ps1');
+  assert.match(stop, /if \(-not \$runtimeProcess\) \{ \$null = Write-StopMarker;/);
+  assert.match(await read('stop-dev.ps1'), /runtime-stopped\.json/);
 });
 
 test('launcher scripts parse in PowerShell when pwsh is available', async t => {

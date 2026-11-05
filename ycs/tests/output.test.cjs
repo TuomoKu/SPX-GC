@@ -54,7 +54,7 @@ async function renderer(t, { lan = false, speed = 1 } = {}) {
         calls.push({ id: frame.dataset.graphic, name, data });
         if (gates.has(frame.dataset.graphic + ':' + name))
           return gates.get(frame.dataset.graphic + ':' + name).promise;
-        if (failed && name === 'play' && frame.dataset.graphic === 'replacement')
+        if (failed === name && frame.dataset.graphic === 'replacement')
           throw new Error('Template failed to load');
       };
     queueMicrotask(() => frame.onload());
@@ -82,8 +82,8 @@ async function renderer(t, { lan = false, speed = 1 } = {}) {
     events: () => events,
     send,
     graphic,
-    fail: () => {
-      failed = true;
+    fail: (step = 'play') => {
+      failed = step;
     },
     recover: () => {
       failed = false;
@@ -294,13 +294,13 @@ test('a failed slot keeps retrying at a capped interval and recovers without ano
   const r = await renderer(t, { speed: 20 });
   r.send(1, [r.graphic('healthy')]);
   await eventually(() => r.root.dataset.revision === '1');
-  r.fail();
+  r.fail('update'); // A template outage fails before the graphic is ever shown.
   r.send(2, [r.graphic('replacement'), r.graphic('healthy')]);
-  const plays = () => r.calls.filter((c) => c.id === 'replacement' && c.name === 'play').length;
+  const attempts = () => r.calls.filter((c) => c.id === 'replacement' && c.name === 'update').length;
   // 250/1000/3000 ms, then the 5 s cap (scaled 20x): the old code gave up after 4 attempts.
-  for (let index = 0; index < 400 && plays() < 6; index++)
+  for (let index = 0; index < 400 && attempts() < 6; index++)
     await new Promise((resolve) => setTimeout(resolve, 5));
-  assert.ok(plays() >= 6, `expected continued retries, saw ${plays()}`);
+  assert.ok(attempts() >= 6, `expected continued retries, saw ${attempts()}`);
   assert.equal(r.reports.at(-1).state, 'error');
   assert.equal(r.calls.filter((c) => c.id === 'healthy' && c.name === 'play').length, 1);
   r.recover();
@@ -309,6 +309,21 @@ test('a failed slot keeps retrying at a capped interval and recovers without ano
   assert.equal(r.root.dataset.revision, '2');
   assert.equal(r.root.querySelectorAll('iframe').length, 2);
   assert.equal(r.reports.at(-1).state, 'ready');
+});
+
+test('a template that fails after being shown stops retrying, so its entrance cannot loop on air', async (t) => {
+  const r = await renderer(t, { speed: 20 });
+  r.send(1, [r.graphic('healthy')]);
+  await eventually(() => r.root.dataset.revision === '1');
+  r.fail('play');
+  r.send(2, [r.graphic('replacement'), r.graphic('healthy')]);
+  const plays = () => r.calls.filter((c) => c.id === 'replacement' && c.name === 'play').length;
+  for (let index = 0; index < 400 && plays() < 4; index++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.equal(plays(), 4, 'the first attempt plus three short retries');
+  await new Promise((resolve) => setTimeout(resolve, 600)); // Several retry caps, scaled 20x.
+  assert.equal(plays(), 4, 'no further entrance replays');
+  assert.equal(r.reports.at(-1).state, 'error');
 });
 
 test('Stop then Play of the same graphic during its exit leaves it on air', async (t) => {

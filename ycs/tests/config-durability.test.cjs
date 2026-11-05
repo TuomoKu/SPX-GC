@@ -106,6 +106,58 @@ test('SPX startup config loading uses the backup instead of exiting', async t =>
   assert.match(output, /PORT=5793 REF=true/);
 });
 
+test('a valid configuration with a BOM loads as written, is stored without it, and never uses the older backup', async t => {
+  const root = await directory(t, 'ycs-config-bom-');
+  const file = path.join(root, 'cfg.json');
+  await fs.writeFile(file + '.bak', JSON.stringify({ general: { port: 7777 } }));
+  await fs.writeFile(file, '\uFEFF' + JSON.stringify({ general: { port: 9999 } }));
+  const result = store.loadConfigSync(file, () => {});
+  assert.equal(result.recovered, false);
+  assert.equal(result.config.general.port, 9999);
+  assert.equal(JSON.parse(await fs.readFile(file, 'utf8')).general.port, 9999, 'stored without the BOM');
+  assert.equal(JSON.parse(await fs.readFile(file + '.bak', 'utf8')).general.port, 9999);
+  assert.equal((await fs.readdir(root)).filter(name => name.includes('.damaged-')).length, 0);
+  await fs.writeFile(file, '\uFEFF' + JSON.stringify({ general: { port: 1 } }));
+  assert.equal((await store.update(file, config => { config.general.port = 2; })).general.port, 2);
+});
+
+test('a missing configuration with a backup is restored from it instead of being replaced by defaults', async t => {
+  const root = await directory(t, 'ycs-config-missing-');
+  const file = path.join(root, 'cfg.json');
+  await fs.writeFile(file + '.bak', JSON.stringify({ general: { port: 7777 }, ycs: { enabled: true } }));
+  const logs = [];
+  const result = store.loadConfigSync(file, line => logs.push(line));
+  assert.equal(result.recovered, true);
+  assert.equal(result.config.ycs.enabled, true);
+  assert.equal(JSON.parse(await fs.readFile(file, 'utf8')).general.port, 7777);
+  assert.match(logs.join('\n'), /WAS MISSING/);
+  const script = `
+    process.argv[2] = 'cfg2.json';
+    require(${JSON.stringify(path.resolve(__dirname, '../../utils/spx_getconf.js'))}).readConfig().then(() => {
+      console.log(JSON.stringify({ port: global.config.general.port, defaults: Boolean(global.generatingDefaultConfig) }));
+    });`;
+  await fs.writeFile(path.join(root, 'cfg2.json.bak'), JSON.stringify({ general: { port: 7778, logfolder: path.join(root, 'LOG') } }));
+  const output = execFileSync(process.execPath, ['-e', script, 'cfg2.json'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  assert.deepEqual(JSON.parse(output.trim().split('\n').pop()), { port: 7778, defaults: false });
+});
+
+test('the backup still loads when the restored configuration cannot be written', async t => {
+  const root = await directory(t, 'ycs-config-readonly-');
+  const file = path.join(root, 'cfg.json');
+  await fs.writeFile(file, '\0\0\0');
+  await fs.writeFile(file + '.bak', JSON.stringify({ general: { port: 7777 } }));
+  const fsSync = require('node:fs');
+  const original = fsSync.renameSync;
+  fsSync.renameSync = () => { throw Object.assign(new Error('denied'), { code: 'EACCES' }); };
+  const logs = [];
+  let result;
+  try { result = store.loadConfigSync(file, line => logs.push(line)); }
+  finally { fsSync.renameSync = original; }
+  assert.equal(result.recovered, true);
+  assert.equal(result.config.general.port, 7777);
+  assert.match(logs.join('\n'), /Could not restore/);
+});
+
 test('startup restore retries a transient Windows sharing error on rename', async t => {
   const root = await directory(t, 'ycs-recover-retry-');
   const file = path.join(root, 'config.json');

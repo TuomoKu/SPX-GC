@@ -99,9 +99,17 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   const sourceTimer = setInterval(
     () =>
       sources
-        .refresh()
+        .refresh({ datasets: 'none' })
         .then(() => sources.pollSheets())
-        .then(async () => { await playback.ready; if (Date.now() - lastReconciliation > 5000) { lastReconciliation = Date.now(); await reconcileMappings(); } })
+        .then(async () => {
+          await playback.ready;
+          if (Date.now() - lastReconciliation > 5000) {
+            lastReconciliation = Date.now();
+            // Publishes nothing unless a value differs, and heals any missed update.
+            updateLinks();
+            await reconcileMappings();
+          }
+        })
         .catch((error) => console.error('[YCS data]', error.message)),
     1000
   );
