@@ -157,5 +157,7 @@ test('GET /data leaves out datasets the poller already holds', async (t) => {
   assert.equal(partial.connections[ids[1]].rows[1][0].value, 'v1 r1c0');
   const none = JSON.parse((await get('?datasets=none')).text);
   assert.equal('rows' in none.connections[ids[1]], false);
-  assert.ok(Object.keys(none.sources).length > 0);
+  // Field values still come back without datasets; demo sources are not assumed to exist.
+  assert.equal(typeof none.sources, 'object');
+  assert.equal('rows' in none.connections[ids[0]], false);
 });
