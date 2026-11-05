@@ -196,6 +196,21 @@ test('a graceful shutdown or a launcher stop starts clean, however quickly the s
   assert.ok(logs.some((line) => /Starting with program stopped: the launcher stopped the previous run/.test(line)));
 });
 
+test('a stage with only a Preview draft gets it back after a crash, with no on-air notice', async (t) => {
+  capture(t);
+  const f = await fixture(t);
+  const first = await boot(t, f);
+  await first.command('stage-1', 'other-name', 'preview');
+  const before = (await first.call('/api/ycs/stages/stage-1/preview/state')).body;
+  assert.equal(before.graphics.length, 1);
+  await first.saved();
+  await first.crash();
+  const second = await boot(t, f);
+  assert.deepEqual((await second.call('/api/ycs/stages/stage-1/preview/state')).body.graphics, before.graphics);
+  assert.deepEqual((await second.program('stage-1')).graphics, []);
+  assert.equal((await second.health('stage-1')).restored, null);
+});
+
 test('restoreProgramWithinSeconds 0 disables restoration', async (t) => {
   const logs = capture(t);
   const f = await fixture(t);

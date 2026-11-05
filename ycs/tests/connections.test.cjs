@@ -35,6 +35,7 @@ test('one dataset serves independent stage rows; reordered rows work and ambiguo
   const reordered = table(); [reordered[1], reordered[3]] = [reordered[3], reordered[1]]; reordered[3][1].value = 'UPDATED'; r.set(reordered); await r.sources.refreshSheet(connectionId); assert.equal(r.sources.value(ref), 'UPDATED');
   const duplicate = table(); duplicate[2][0].value = 'STAGE 1'; r.set(duplicate); await r.sources.refreshSheet(connectionId);
   assert.equal(r.sources.value(ref), 'UPDATED'); assert.match(r.sources.snapshot().sources[ref].error, /More than one/);
+  await r.sources.flushCache(); // background cache writes are throttled
   const restarted = new DataSources(r.sources.file, r.stages, { sheets: r.sheets }); t.after(() => restarted.close()); await restarted.ready;
   assert.equal(restarted.value(restarted.reference(bind)), 'UPDATED');
   const blank = table(); blank[1][1].value = ''; r.set(blank); await restarted.refreshSheet(connectionId); assert.equal(restarted.value(restarted.reference(bind)), 'UPDATED');

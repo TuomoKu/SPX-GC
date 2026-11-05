@@ -421,7 +421,8 @@ if (stage) {
     if (polling || disposed) return; polling = true;
     try {
       const health = request('/api/ycs/stages/' + encodeURIComponent(stage) + '/health').then(value => { stagePanel.setOutputHealth(value); stagePanel.setRestored(value.restored); }, () => {});
-      sourceState = await request('/api/ycs/data');
+      // The rundown needs field values and health, not connection datasets.
+      sourceState = await request('/api/ycs/data?datasets=none');
       await health;
       stagePanel.setDataAvailable(sourceState.health === 'ok');
       for (const row of document.querySelectorAll('.itemrow')) { const model = models.get(row.dataset.spxEpoch); if (model?.widgets) paintLink(row, model); }

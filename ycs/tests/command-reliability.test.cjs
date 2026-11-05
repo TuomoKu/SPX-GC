@@ -203,6 +203,24 @@ test('restart gives up on a stuck stage, releases the gate, and Stop works while
   playback.restartPending = false;
 });
 
+test('the repeat window runs from command arrival, so a slow save cannot swallow a real second press', async (t) => {
+  const { playback, repository } = await fixture(t);
+  let now = 1000;
+  playback.now = () => now;
+  const write = repository.write.bind(repository);
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  repository.write = async (...args) => { await held; return write(...args); };
+  const first = playback.command('stage-1', 'ticker', 'toggle');
+  now += 600;
+  const second = playback.command('stage-1', 'ticker', 'toggle');
+  release();
+  await first;
+  const result = await second;
+  assert.notEqual(result.repeated, true);
+  assert.equal(playback.snapshot('stage-1', 'program').graphics.length, 0, 'the second press takes it off air');
+});
+
 test('a repeated Toggle or Continue for the same item within the window is ignored', async (t) => {
   const { playback, repository } = await fixture(t);
   const show = await repository.read('stage-1');

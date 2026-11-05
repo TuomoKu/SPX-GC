@@ -92,7 +92,11 @@ test('local CSV/JSON mapping refreshes committed links, retains invalid/missing 
   );
   let clock = Date.now();
   const file = path.join(f.root, 'sources.json'),
-    options = { localFiles: new LocalFiles(path.join(f.root, 'unrelated')), now: () => clock };
+    // Files here are written just before each poll; settle timing has its own test.
+    options = {
+      localFiles: new LocalFiles(path.join(f.root, 'unrelated'), { settleMs: 0 }),
+      now: () => clock
+    };
   const sources = new DataSources(file, f.stages, options);
   await sources.ready;
   t.after(() => sources.close());

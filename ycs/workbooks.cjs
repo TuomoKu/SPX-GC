@@ -2,6 +2,8 @@
 const { randomUUID } = require('node:crypto');
 const { normalizeSettings, parseRange } = require('./public-sheets.cjs');
 const pattern = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
+// Matches the connection backoff cap in data.cjs: sources recover soon after an outage.
+const BACKOFF_CAP_SECONDS = 120;
 function fail(message, status = 422) { throw Object.assign(new Error(message), { status }); }
 function label(value) {
   if (typeof value !== 'string' || !value.trim() || value.length > 300) fail('Enter a name.');
@@ -118,27 +120,40 @@ function attach(DataSources) {
       }, confirmed);
       return this.snapshot();
     },
-    async refreshWorkbook(id) {
-      await this.ready;
+    // Reads every named range together, so API reads form one batch per spreadsheet.
+    readWorkbook(id) {
       const runtime = this.workbookRuntime(id);
       if (runtime.pending) return runtime.pending;
       const ids = Object.keys(this.document.connections).filter(key => this.document.connections[key].sheetRange?.workbook === id);
       runtime.pending = (async () => {
-        const results = await Promise.allSettled(ids.map(key => this.refreshSheet(key)));
-        const okay = ids.length && results.every((result, index) => result.status === 'fulfilled' && this.runtimes.get(ids[index])?.health === 'ok');
+        await Promise.allSettled(ids.map(key => this.refreshConnection(key)));
+        const ranges = ids.map(key => this.runtimes.get(key));
+        const okay = ids.length && ranges.every(value => value?.health === 'ok');
         if (okay) { runtime.lastSuccess = new Date(this.now()).toISOString(); runtime.failures = 0; }
         else runtime.failures++;
-        const seconds = this.document.workbooks?.[id]?.settings.refreshSeconds || 5;
-        runtime.nextAt = Math.min(8640000000000000, this.now() + seconds * 1000 * (okay || !ids.length ? 1 : Math.min(64, 2 ** Math.min(runtime.failures, 6))));
-      })();
-      try { await runtime.pending; } finally { runtime.pending = null; }
+        const seconds = this.document?.workbooks?.[id]?.settings.refreshSeconds || 5;
+        const wait = okay || !ids.length ? seconds : Math.min(BACKOFF_CAP_SECONDS, seconds * 2 ** Math.min(runtime.failures, 6));
+        // A range caught mid-check asks to be read again sooner than the interval.
+        const soonest = Math.min(...ranges.filter(value => value?.transient > 0).map(value => value.nextAt));
+        runtime.nextAt = Math.min(8640000000000000, this.now() + wait * 1000, soonest);
+      })().finally(() => { runtime.pending = null; });
+      return runtime.pending;
+    },
+    async refreshWorkbook(id) {
+      await this.ready;
+      await this.readWorkbook(id);
       return this.snapshot();
     },
-    async pollWorkbooks() {
+    // Each spreadsheet runs independently, so a stalled one cannot delay another.
+    // Polling also skips the full snapshot, which only the refresh route returns.
+    pollWorkbooks() {
+      const jobs = [];
       for (const id of Object.keys(this.document?.workbooks || {})) {
         const runtime = this.workbookRuntime(id);
-        if (runtime.nextAt <= this.now()) await this.refreshWorkbook(id);
+        if (!runtime.pending && runtime.nextAt <= this.now())
+          jobs.push(this.readWorkbook(id).catch(error => console.error('[YCS Sheets]', error.message)));
       }
+      return Promise.all(jobs);
     }
   });
 }

@@ -103,7 +103,7 @@ async function controller(t, compact = false, previewOnEdit = true, primary = fa
             ]
           : [{ field: 'f5', ftype: 'textfield', title: 'Current round', value: 'MANUAL ROUND' }]
       };
-    else if (url.endsWith('/data'))
+    else if (/\/data(?:\?.*)?$/.test(url))
       payload = {
         health: 'ok',
         sources: { 'test.round': { label: 'Test round', value: 'LINKED ROUND' } },

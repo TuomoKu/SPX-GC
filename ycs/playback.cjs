@@ -260,15 +260,16 @@ class Playback extends EventEmitter {
   }
   // Companion GET buttons retry, and operators double-press. A Toggle or
   // Continue repeated for the same item within the window is ignored.
-  repeated(stageId, graphicId, action) {
+  // Times are when each press arrived, so a slow save cannot make a later,
+  // intentional press look like a repeat of the one still being processed.
+  repeated(stageId, graphicId, action, arrived) {
     const key = stageId + '\n' + graphicId + '\n' + action;
     const last = this.presses.get(key);
-    return last !== undefined && this.now() - last < this.repeatWindow;
+    return last !== undefined && arrived - last < this.repeatWindow;
   }
-  pressed(stageId, graphicId, action) {
-    const now = this.now();
-    for (const [key, at] of this.presses) if (now - at >= this.repeatWindow) this.presses.delete(key);
-    this.presses.set(stageId + '\n' + graphicId + '\n' + action, now);
+  pressed(stageId, graphicId, action, arrived) {
+    for (const [key, at] of this.presses) if (arrived - at >= this.repeatWindow) this.presses.delete(key);
+    this.presses.set(stageId + '\n' + graphicId + '\n' + action, arrived);
   }
   async routed(stageId, item) {
     const definition = await this.definition(stageId, item);
@@ -359,12 +360,12 @@ class Playback extends EventEmitter {
   command(stageId, graphicId, action, fields, options = {}) {
     if (!['play', 'stop', 'toggle', 'update', 'preview', 'save', 'continue', 'focus'].includes(action)) fail('Unknown command');
     if (action === 'focus' && (fields !== undefined || options.links !== undefined)) fail('Focus uses saved data', 400);
-    const requested = action;
+    const requested = action, arrived = this.now();
     return this.queue(stageId, async () => {
       const state = this.state(stageId);
       if (['play', 'stop', 'toggle', 'update', 'continue'].includes(requested)) this.notices.delete(stageId);
       const active = state.program.find(current => current.id === graphicId);
-      if (['toggle', 'continue'].includes(requested) && this.repeated(stageId, graphicId, requested))
+      if (['toggle', 'continue'].includes(requested) && this.repeated(stageId, graphicId, requested, arrived))
         return { ...this.snapshot(stageId, 'program'), editorRevision: this.editorRevision(stageId, graphicId), repeated: true };
       // Resolve inside the stage queue, using actual program membership rather
       // than saved onair flags, preview selection or a Companion-local toggle.
@@ -383,7 +384,7 @@ class Playback extends EventEmitter {
         }
         this.publish(stageId);
         if (active) await this.persist(stageId);
-        if (requested === 'toggle') this.pressed(stageId, graphicId, requested);
+        if (requested === 'toggle') this.pressed(stageId, graphicId, requested, arrived);
         return { ...this.snapshot(stageId, 'program'), editorRevision: this.editorRevision(stageId, graphicId) };
       }
       const rundown = await this.repository.read(stageId);
@@ -466,7 +467,7 @@ class Playback extends EventEmitter {
         }
         this.publish(stageId);
         if (deferred) await this.persist(stageId);
-        if (['toggle', 'continue'].includes(requested)) this.pressed(stageId, graphicId, requested);
+        if (['toggle', 'continue'].includes(requested)) this.pressed(stageId, graphicId, requested, arrived);
         if (action === 'focus') this.emit(stageId + ':focus', { stage: stageId, selected: graphicId });
         return { ...this.snapshot(stageId, action === 'preview' || action === 'focus' || action === 'save' ? 'preview' : 'program'), editorRevision: item.ycsEditRevision || 0 };
       } finally { release?.(); }
