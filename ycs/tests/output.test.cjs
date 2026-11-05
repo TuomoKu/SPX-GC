@@ -12,7 +12,7 @@ async function eventually(condition) {
   }
   assert.fail('Renderer did not reach the expected state');
 }
-async function renderer(t, { lan = false } = {}) {
+async function renderer(t, { lan = false, speed = 1 } = {}) {
   const dom = new JSDOM('<main id="composition"></main>', {
     url: `http://${lan ? '192.168.1.10' : 'localhost'}/output/stage-1/program`,
     runScripts: 'outside-only'
@@ -24,6 +24,12 @@ async function renderer(t, { lan = false } = {}) {
     failed = false;
   const gates = new Map();
   window.console.error = () => {};
+  window.console.warn = () => {};
+  if (speed !== 1) {
+    // Compress retry/heartbeat timers so capped intervals can be observed quickly.
+    const schedule = window.setTimeout.bind(window);
+    window.setTimeout = (callback, ms = 0, ...args) => schedule(callback, ms / speed, ...args);
+  }
   window.crypto.randomUUID = lan ? undefined : randomUUID;
   window.fetch = async (url, request) => {
     reports.push(JSON.parse(request.body));
@@ -43,7 +49,7 @@ async function renderer(t, { lan = false } = {}) {
   const append = root.append.bind(root);
   root.append = (frame) => {
     append(frame);
-    for (const name of ['update', 'play', 'stop'])
+    for (const name of ['update', 'play', 'stop', 'next'])
       frame.contentWindow[name] = (data) => {
         calls.push({ id: frame.dataset.graphic, name, data });
         if (gates.has(frame.dataset.graphic + ':' + name))
@@ -284,16 +290,99 @@ test('a permanently failed slot stops retrying and Stop clears its retry timer a
   assert.equal(r.reports.at(-1).state, 'ready');
 });
 
-test('autonomous retries stop after three attempts without replaying a healthy graphic', async (t) => {
-  const r = await renderer(t);
+test('a failed slot keeps retrying at a capped interval and recovers without another command', async (t) => {
+  const r = await renderer(t, { speed: 20 });
+  r.send(1, [r.graphic('healthy')]);
+  await eventually(() => r.root.dataset.revision === '1');
   r.fail();
-  r.send(1, [r.graphic('replacement'), r.graphic('healthy')]);
-  await new Promise((resolve) => setTimeout(resolve, 4700));
-  assert.equal(r.calls.filter((c) => c.id === 'replacement' && c.name === 'play').length, 4);
-  assert.equal(r.calls.filter((c) => c.id === 'healthy' && c.name === 'play').length, 1);
+  r.send(2, [r.graphic('replacement'), r.graphic('healthy')]);
+  const plays = () => r.calls.filter((c) => c.id === 'replacement' && c.name === 'play').length;
+  // 250/1000/3000 ms, then the 5 s cap (scaled 20x): the old code gave up after 4 attempts.
+  for (let index = 0; index < 400 && plays() < 6; index++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.ok(plays() >= 6, `expected continued retries, saw ${plays()}`);
   assert.equal(r.reports.at(-1).state, 'error');
-  r.send(2, []);
+  assert.equal(r.calls.filter((c) => c.id === 'healthy' && c.name === 'play').length, 1);
+  r.recover();
+  for (let index = 0; index < 400 && r.root.dataset.revision !== '2'; index++)
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.equal(r.root.dataset.revision, '2');
+  assert.equal(r.root.querySelectorAll('iframe').length, 2);
+  assert.equal(r.reports.at(-1).state, 'ready');
+});
+
+test('Stop then Play of the same graphic during its exit leaves it on air', async (t) => {
+  const r = await renderer(t);
+  r.send(1, [r.graphic('lower')]);
+  await eventually(() => r.root.dataset.revision === '1');
+  r.block('lower', 'stop'); // the OUT animation is still running
+  r.send(2, []); // Stop (or the first press of a double Toggle)
+  await eventually(() => r.calls.some((c) => c.name === 'stop'));
+  r.send(3, [r.graphic('lower')]); // Play again before the exit completes
+  await eventually(() => r.root.dataset.revision === '3');
+  r.release('lower', 'stop');
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const shown = [...r.root.querySelectorAll('iframe')].filter((f) => f.style.visibility !== 'hidden');
+  assert.equal(shown.length, 1, 'program has the graphic, so the output must show it');
+  assert.equal(r.calls.filter((c) => c.name === 'play').length, 2);
+  assert.equal(r.reports.at(-1).state, 'ready');
+});
+
+test('reverting a replacement that is still loading never shows the replacement', async (t) => {
+  const r = await renderer(t);
+  r.send(1, [r.graphic('first', 'lower')]);
+  await eventually(() => r.root.dataset.revision === '1');
+  const original = r.root.querySelector('[data-graphic="first"]');
+  r.block('second', 'update'); // replacement template is still loading
+  r.send(2, [r.graphic('second', 'lower')]);
+  await eventually(() => r.calls.some((c) => c.id === 'second' && c.name === 'update'));
+  r.send(3, [r.graphic('first', 'lower')]); // operator plays the original again
+  await eventually(() => r.root.dataset.revision === '3');
+  r.release('second', 'update');
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(r.calls.some((c) => c.id === 'second' && c.name === 'play'), false);
+  assert.equal(r.root.querySelector('[data-graphic="second"]'), null);
+  assert.equal(r.root.querySelector('[data-graphic="first"]'), original);
+  assert.equal(r.calls.filter((c) => c.id === 'first' && c.name === 'play').length, 1);
+  assert.equal(r.calls.filter((c) => c.name === 'stop').length, 0);
+});
+
+test('a remounted stepped graphic returns to its current continuation step', async (t) => {
+  const r = await renderer(t);
+  r.send(1, [{ ...r.graphic('ticker'), continuation: 2 }]);
+  await eventually(() => r.root.dataset.revision === '1');
+  assert.deepEqual(
+    r.calls.map((c) => c.name),
+    ['update', 'play', 'next', 'next']
+  );
+  r.send(2, [{ ...r.graphic('ticker'), continuation: 3 }]);
   await eventually(() => r.root.dataset.revision === '2');
+  assert.equal(r.calls.filter((c) => c.name === 'next').length, 3);
+  assert.equal(r.calls.filter((c) => c.name === 'play').length, 1);
+});
+
+test('login-mode renewal redirected to the login page reports Output needs login and does not reconnect', async (t) => {
+  const r = await renderer(t);
+  r.send(1, [r.graphic('ticker')]);
+  await eventually(() => r.root.dataset.revision === '1');
+  const fetch = r.window.fetch;
+  let renewals = 0,
+    reconnects = 0;
+  r.window.fetch = async (url, request) => {
+    if (!request.method) {
+      renewals++;
+      return { ok: true, status: 200, redirected: true, url: 'http://localhost/login' };
+    }
+    return fetch(url, request);
+  };
+  r.events().connected = false;
+  r.events().connect = () => reconnects++;
+  r.events().connect_error();
+  await eventually(() => renewals === 1);
+  await eventually(() => /needs login/.test(r.reports.at(-1)?.message || ''));
+  assert.equal(r.reports.at(-1).state, 'error');
+  assert.equal(reconnects, 0);
+  assert.equal(r.root.querySelectorAll('iframe').length, 1, 'current graphics are retained');
 });
 
 test('a lost output session renews its page grant and reconnects after a namespace authorization error', async (t) => {
