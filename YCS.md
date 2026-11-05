@@ -5,11 +5,19 @@ checks, see [installation instructions](ycs/INSTALLATION.md).
 
 ## Grouped spreadsheet sources
 
-Sources → Add spreadsheet creates one source for a Google spreadsheet URL. Add
+Sources → Add source → Google Sheets creates one source for a Google spreadsheet URL. Add
 named groups, then named ranges inside each group. A group has a default worksheet;
 each range can choose another worksheet. Add/Edit range uses the existing worksheet
 selector and visual cell-range picker. Groups and ranges have stable IDs, so renaming
 them does not change saved mappings. In-use range targets cannot be moved or deleted.
+The spreadsheet card has a group sidebar, per-group range counts, an inline numeric
+refresh interval and a Refresh all action. Source/group/range maintenance actions
+are in their overflow menus. The same Add source chooser also opens JSON API,
+CSV file and JSON file editors.
+
+The named-range dialog shows only its name, worksheet, cell range and optional
+header settings; source type, URL, project and refresh interval are inherited and
+hidden. Saving validates and reads the range on the server. Preview range is optional.
 
 Refresh interval belongs to the spreadsheet source and accepts any finite positive
 number of seconds, including fractions. There is no five-second minimum or one-hour
@@ -41,7 +49,7 @@ collection controls. No new header setting is inferred for existing source entri
 
 This feature adds workbook/group metadata to the existing version-2 data document;
 named ranges remain normal range connections internally. It does not migrate or
-delete existing experimental connections. Use Add spreadsheet for the grouped flow.
+delete existing experimental connections. Use Add source → Google Sheets for the grouped flow.
 
 This is a fork of [TuomoKu/SPX-GC](https://github.com/TuomoKu/SPX-GC), based on upstream commit `8bb7ec4e7b969fe7c777d2c2a9b03ed6de3f6981`. The upstream MIT license and notices are retained.
 

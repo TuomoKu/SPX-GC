@@ -231,7 +231,22 @@ function connectionType() {
   sheetPicker.enabled = sheet;
   $('named-range-metadata').hidden = !rangeOwner;
   $('range-header-row').disabled = !$('range-use-headers').checked;
-  if (rangeOwner) $('connection-help').textContent = '';
+  $('range-header-options').hidden = !rangeOwner || !$('range-use-headers').checked;
+  $('connection-dialog').classList.toggle('named-range-editor', Boolean(rangeOwner));
+  for (const id of ['connection-type-field', 'connection-project-field', 'connection-refresh-settings']) $(id).hidden = Boolean(rangeOwner);
+  $('sheet-url-label').hidden = Boolean(rangeOwner) || local;
+  $('connection-help').hidden = Boolean(rangeOwner);
+  $('sheet-tabs-status').hidden = Boolean(rangeOwner) || !sheet;
+  $('connection-usage').hidden = Boolean(rangeOwner);
+  $('connection-name-title').textContent = rangeOwner ? 'Range name' : 'Source name';
+  $('sheet-label').placeholder = rangeOwner ? 'e.g. Match status' : 'Tournament data';
+  $('test-sheet').textContent = rangeOwner ? 'Preview range' : 'Test connection';
+  $('save-sheet').textContent = rangeOwner ? 'Save range' : 'Save source';
+  $('range-parent-context').hidden = !rangeOwner;
+  if (rangeOwner) {
+    const book = state.workbooks[rangeOwner.workbook];
+    $('range-parent-context').textContent = book.label + ' / ' + book.groups[rangeOwner.group].label;
+  }
 }
 function openConnection(id = null, owner = null) {
   rangeOwner = owner;
@@ -262,7 +277,7 @@ function openConnection(id = null, owner = null) {
   if (owner) $('connection-title').textContent = id ? 'Edit named range' : 'Add named range';
   $('sheet-preview').replaceChildren();
   $('sheet-test-status').textContent = '';
-  $('save-sheet').disabled = true;
+  $('save-sheet').disabled = !owner;
   $('connection-usage').textContent = connection?.usages.length
     ? `Used by ${connection.usages.length} field references. You can change its name or refresh interval. Add a new connection to change its location, file, delimiter, sheet, tab or range.`
     : '';
@@ -284,9 +299,9 @@ function openConnection(id = null, owner = null) {
   });
   $('sheet-label').focus();
 }
-$('add-connection').onclick = () => openConnection();
 $('close-connection').onclick = () => $('connection-dialog').close();
-$('range-use-headers').onchange = () => { $('range-header-row').disabled = !$('range-use-headers').checked; invalidateSheetTest(); };
+$('cancel-connection').onclick = () => $('connection-dialog').close();
+$('range-use-headers').onchange = () => { $('range-header-row').disabled = !$('range-use-headers').checked; $('range-header-options').hidden = !$('range-use-headers').checked; invalidateSheetTest(); };
 function invalidateSheetTest() {
   if (rangeOwner) {
     const match = $('sheet-range').value.toUpperCase().match(/^[A-Z]+(\d+)(?::[A-Z]+(\d+))?$/);
@@ -298,8 +313,8 @@ function invalidateSheetTest() {
     }
   }
   tested = '';
-  $('save-sheet').disabled = true;
-  $('sheet-test-status').textContent = 'Test the updated settings before saving.';
+  $('save-sheet').disabled = !rangeOwner;
+  $('sheet-test-status').textContent = rangeOwner ? '' : 'Test the updated settings before saving.';
 }
 const localFile = new window.YCSLocalFileField({ request });
 const sheetPicker = new window.YCSSheetPicker({ request, invalidate: invalidateSheetTest });
@@ -326,10 +341,8 @@ function previewTable(data) {
     body.append(row);
   }
   table.append(body);
-  $('sheet-preview').append(
-    table,
-    node('p', 'Preview: first 10 rows and 8 columns. Values remain read-only.', 'hint')
-  );
+  $('sheet-preview').append(table);
+  if (!rangeOwner) $('sheet-preview').append(node('p', 'Preview: first 10 rows and 8 columns.', 'hint'));
 }
 $('test-sheet').onclick = async () => {
   const submitted = fingerprint();
@@ -363,7 +376,7 @@ $('test-sheet').onclick = async () => {
 };
 $('connection-form').onsubmit = async (event) => {
   event.preventDefault();
-  if (tested !== fingerprint()) return;
+  if (!rangeOwner && tested !== fingerprint()) return;
   $('save-sheet').disabled = true;
   try {
     const result = await request(rangeOwner ? `/data/workbooks/${rangeOwner.workbook}/groups/${rangeOwner.group}/ranges` : '/data/connections', {
@@ -407,7 +420,8 @@ const workbookSources = new window.YCSWorkbookSources({
     renderConnections();
     if (workspace.model) { workspace.renderSources(); workspace.renderSourceContext(); workspace.renderSourceValues(); workspace.renderFields(); }
   },
-  openRange: (workbook, group, id) => openConnection(id || null, { workbook, group })
+  openRange: (workbook, group, id) => openConnection(id || null, { workbook, group }),
+  openOther: type => { openConnection(); $('connection-type').value = type; connectionType(); }
 });
 function refreshValues() {
   workspace.update(state);

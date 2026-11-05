@@ -76,9 +76,13 @@ window.YCSSheetPicker = class SheetPicker {
       this.setOptions(current || desired, this.tabs);
       if (wasManual) { this.$('sheet-worksheet').value = '__manual__'; this.updateManual(); }
       this.$('sheet-tabs-status').textContent = `${this.tabs.length} worksheets loaded. Choose a tab, then select its data range.`;
+      this.$('sheet-tabs-status').hidden = this.$('connection-dialog').classList.contains('named-range-editor');
       if (!this.locked && before !== this.worksheet) this.invalidate();
     } catch (error) {
-      if (generation === this.sequence && session === this.session) this.$('sheet-tabs-status').textContent = error.message + ' Use “Enter a tab name or gid” if needed.';
+      if (generation === this.sequence && session === this.session) {
+        this.$('sheet-tabs-status').textContent = error.message;
+        this.$('sheet-tabs-status').hidden = false;
+      }
     } finally { if (generation === this.sequence) this.$('load-worksheets').disabled = false; }
   }
   column(value) { let name = ''; while (value) { value--; name = String.fromCharCode(65 + value % 26) + name; value = Math.floor(value / 26); } return name; }

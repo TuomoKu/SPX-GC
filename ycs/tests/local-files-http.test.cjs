@@ -173,6 +173,7 @@ test('Data Manager accepts full server paths, tests/saves both formats and expos
       $(id).dispatchEvent(new window.Event('change'));
     };
   $('add-connection').click();
+  window.document.querySelector('[data-create-source="local-json"]').click();
   change('connection-type', 'local-json');
   assert.match($('local-file-status').textContent, /SPX computer/);
   assert.equal($('file-browser-dialog'), null);
@@ -190,6 +191,7 @@ test('Data Manager accepts full server paths, tests/saves both formats and expos
   assert.match($('connections').textContent, /round.json/);
   assert.equal($('connection-dialog').open, false);
   $('add-connection').click();
+  window.document.querySelector('[data-create-source="local-csv"]').click();
   change('connection-type', 'local-csv');
   assert.equal($('local-file').tagName, 'INPUT');
   assert.equal($('csv-delimiter-field').hidden, false);

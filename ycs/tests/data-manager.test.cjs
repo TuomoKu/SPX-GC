@@ -129,6 +129,7 @@ async function fixture(t) {
   };
   const connect = async () => {
     window.document.getElementById('add-connection').click();
+    window.document.querySelector('[data-create-source="json-api"]').click();
     window.document.getElementById('connection-type').querySelector('[value="google-sheets"]').disabled = false;
     window.document.getElementById('connection-type').value = 'google-sheets';
     window.document.getElementById('connection-type').dispatchEvent(new window.Event('change'));
