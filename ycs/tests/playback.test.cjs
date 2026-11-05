@@ -6,6 +6,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { RundownRepository, Playback } = require('../playback.cjs');
 
+const { testData } = require('./helpers/test-data.cjs');
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ycs-playback-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
@@ -18,6 +19,8 @@ async function fixture(t) {
     ] });
     await fs.writeFile(path.join(folder, 'Show.json'), JSON.stringify({ templates: [make('ticker', 'ticker'), make('lower-third', 'lower-third'), make('other-name', 'lower-third')] }));
   }
+  // Test round sources at the conventional data path (see helpers/test-data.cjs).
+  await fs.writeFile(path.join(root, 'sources.json'), JSON.stringify(testData(stages), null, 2));
   const repository = new RundownRepository(root, stages);
   const playback = new Playback(repository, { ticker: { order: 10 }, 'lower-third': { order: 20 } });
   return { root, stages, repository, playback };
