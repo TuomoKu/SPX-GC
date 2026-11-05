@@ -231,3 +231,10 @@ test('the Data Manager still reports a server it cannot reach', async (t) => {
   await flush();
   assert.equal(r.window.document.getElementById('health').textContent, 'Server disconnected');
 });
+
+test('the mapping search boxes do not offer browser suggestions', () => {
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, '../public/data-manager.html'), 'utf8');
+  const { JSDOM } = require('jsdom');
+  const page = new JSDOM(html).window.document;
+  for (const id of ['graphic-search', 'source-search']) assert.equal(page.getElementById(id).getAttribute('autocomplete'), 'off', id);
+});
