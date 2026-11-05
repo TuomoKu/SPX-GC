@@ -56,6 +56,10 @@ process.on('exit', function(code) {
       codestr = "Port is already in use on this machine."
       break;
 
+    case 4:
+      codestr = "Could not open the configured port or address."
+      break;
+
     default:
       break;
   }
@@ -918,6 +922,17 @@ var server = app.listen(port, config.ycs?.listenHost, (err) => {
   }
 
 });
+
+// A copy that cannot open its port must exit before it does anything else. It has
+// already started YCS, which would otherwise restore and rewrite the running
+// server's show and program state. Only a failure to open the port exits; later
+// errors keep going to the uncaughtException handler above.
+const portFailed = (err) => {
+  console.log('Process failed! Could not open port ' + port + ' [' + err + ']');
+  process.exit(err.code === 'EADDRINUSE' ? 3 : 4);
+};
+server.once('error', portFailed);
+server.once('listening', () => server.off('error', portFailed));
 
 global.io = require('socket.io')(server);
 if (ycsPlayback) {

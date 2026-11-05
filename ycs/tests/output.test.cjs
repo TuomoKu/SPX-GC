@@ -89,9 +89,17 @@ async function renderer(t, { lan = false, speed = 1 } = {}) {
       failed = false;
     },
     block(id, method) {
-      let resolve;
-      const promise = new Promise((done) => (resolve = done));
-      gates.set(id + ':' + method, { promise, resolve });
+      let resolve, reject;
+      const promise = new Promise((done, refuse) => {
+        resolve = done;
+        reject = refuse;
+      });
+      gates.set(id + ':' + method, { promise, resolve, reject });
+    },
+    refuse(id, method) {
+      const gate = gates.get(id + ':' + method);
+      gates.delete(id + ':' + method);
+      gate.reject(new Error('Template failed to load'));
     },
     release(id, method) {
       const gate = gates.get(id + ':' + method);
@@ -333,6 +341,95 @@ test('a template that fails after being shown cannot loop its entrance, even on 
   await eventually(() => r.root.querySelectorAll('iframe').length === 2, 'the slot recovers without a command', 2000);
   assert.equal(plays(), 5);
   assert.equal(r.calls.filter((c) => c.id === 'replacement' && c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 9' }));
+});
+
+test('new data during an entrance is applied afterwards without restarting the entrance', async (t) => {
+  const r = await renderer(t);
+  const plays = () => r.calls.filter((c) => c.id === 'ticker' && c.name === 'play').length;
+  r.block('ticker', 'play');
+  r.send(1, [r.graphic('ticker')]);
+  await eventually(() => plays() === 1);
+  const frame = r.root.querySelector('iframe');
+  r.send(2, [r.graphic('ticker', 'ticker', 'ROUND 12')]);
+  r.send(3, [r.graphic('ticker', 'ticker', 'ROUND 13')]);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(r.root.querySelector('iframe'), frame, 'the frame on screen stays');
+  assert.equal(plays(), 1);
+  r.release('ticker', 'play');
+  await eventually(() => r.root.dataset.revision === '3');
+  assert.equal(plays(), 1, 'the entrance played once');
+  assert.equal(r.root.querySelector('iframe'), frame);
+  assert.equal(r.calls.filter((c) => c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 13' }));
+  assert.equal(r.calls.filter((c) => c.name === 'update').length, 2, 'only the newest data is applied');
+});
+
+test('new data while a graphic loads does not start it again', async (t) => {
+  const r = await renderer(t);
+  r.block('ticker', 'update');
+  r.send(1, [r.graphic('ticker')]);
+  await eventually(() => r.calls.some((c) => c.name === 'update'));
+  r.send(2, [r.graphic('ticker', 'ticker', 'ROUND 12')]);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  r.release('ticker', 'update');
+  await eventually(() => r.root.dataset.revision === '2');
+  assert.equal(r.root.querySelectorAll('iframe').length, 1);
+  assert.equal(r.calls.filter((c) => c.name === 'play').length, 1);
+  assert.equal(r.calls.filter((c) => c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 12' }));
+});
+
+test('new data for a replacement mid-entrance keeps the old graphic until it has finished', async (t) => {
+  const r = await renderer(t);
+  const named = (id, text) => ({ ...r.graphic(id, 'lower', text) });
+  r.send(1, [named('old')]);
+  await eventually(() => r.root.dataset.revision === '1');
+  r.block('new', 'play');
+  r.send(2, [named('new')]);
+  await eventually(() => r.calls.some((c) => c.id === 'new' && c.name === 'play'));
+  const frame = r.root.querySelector('iframe[data-graphic="new"]');
+  r.send(3, [named('new', 'ROUND 12')]);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(r.root.querySelector('iframe[data-graphic="new"]'), frame);
+  assert.ok(r.root.querySelector('iframe[data-graphic="old"]'), 'the old graphic is still up');
+  r.release('new', 'play');
+  await eventually(() => r.root.dataset.revision === '3');
+  assert.equal(r.calls.filter((c) => c.id === 'new' && c.name === 'play').length, 1);
+  assert.equal(r.root.querySelector('iframe[data-graphic="old"]'), null);
+  assert.equal(r.calls.filter((c) => c.id === 'new' && c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 12' }));
+});
+
+test('Stop and a different graphic still cancel an entrance straight away', async (t) => {
+  const r = await renderer(t);
+  r.block('ticker', 'play');
+  r.send(1, [r.graphic('ticker')]);
+  await eventually(() => r.calls.some((c) => c.name === 'play'));
+  r.send(2, []);
+  await eventually(() => r.root.dataset.revision === '2');
+  assert.equal(r.root.querySelectorAll('iframe').length, 0, 'Stop does not wait for the entrance');
+  r.block('first', 'play');
+  r.send(3, [r.graphic('first', 'lower')]);
+  await eventually(() => r.calls.some((c) => c.id === 'first' && c.name === 'play'));
+  r.send(4, [r.graphic('second', 'lower')]);
+  await eventually(() => r.root.dataset.revision === '4');
+  assert.equal(r.root.querySelector('iframe').dataset.graphic, 'second');
+  assert.equal(r.root.querySelectorAll('iframe').length, 1);
+});
+
+test('a retry that fails before showing, with new data waiting, still waits before trying again', async (t) => {
+  const r = await renderer(t);
+  const count = (name) => r.calls.filter((c) => c.id === 'replacement' && c.name === name).length;
+  r.fail('play');
+  r.send(1, [r.graphic('replacement')]);
+  await eventually(() => count('play') === 1);
+  // The shown failure's retry is in progress when new data arrives, then fails before showing.
+  r.recover();
+  r.block('replacement', 'update');
+  await eventually(() => count('update') === 2, 'the retry started', 1000);
+  r.send(2, [r.graphic('replacement', 'replacement', 'ROUND 12')]);
+  r.refuse('replacement', 'update');
+  await new Promise((resolve) => setTimeout(resolve, 60));
+  assert.equal(count('update'), 2, 'no immediate retry');
+  await eventually(() => r.root.dataset.revision === '2', 'it recovers after the wait', 1000);
+  assert.equal(r.calls.filter((c) => c.name === 'update').at(-1).data, JSON.stringify({ f5: 'ROUND 12' }));
 });
 
 test('Stop then Play retries a failed graphic at once', async (t) => {

@@ -124,7 +124,9 @@ async function createRehearsal(root, graphicsRoot, { restart } = {}) {
     // Close transports first so browsers reconnect automatically to a fresh
     // server, rather than receiving a deliberate namespace disconnect.
     // A deliberate stop: the next start is clean (YCS.md, "Restart recovery").
-    await new Promise(resolve => io.close(resolve)); await playback.shutdown();
+    // Closing the HTTP server waits for every connection to end, and an open
+    // rehearsal page keeps its connections busy, so end them once it has stopped listening.
+    await new Promise(resolve => { io.close(resolve).then(() => server.closeAllConnections()); }); await playback.shutdown();
   } };
 }
 async function main() {

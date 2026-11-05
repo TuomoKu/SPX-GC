@@ -32,4 +32,4 @@ if ($record.port) {
         Start-Sleep -Milliseconds 250
     }
 }
-Write-Output 'YCS runtime stopped. Saved configuration and rundowns retained.'
+Write-Output 'YCS runtime stopped and its window closed. Saved configuration and rundowns retained.'
