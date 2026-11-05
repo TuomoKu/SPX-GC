@@ -401,7 +401,8 @@ if (stage) {
   async function poll() {
     if (polling || disposed) return; polling = true;
     try {
-      sourceState = await request('/api/ycs/data');
+      // The rundown needs field values and health, not connection datasets.
+      sourceState = await request('/api/ycs/data?datasets=none');
       stagePanel.setDataAvailable(sourceState.health === 'ok');
       for (const row of document.querySelectorAll('.itemrow')) { const model = models.get(row.dataset.spxEpoch); if (model?.widgets) paintLink(row, model); }
     } catch { stagePanel.setDataAvailable(false); }

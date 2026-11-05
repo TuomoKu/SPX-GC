@@ -95,6 +95,7 @@ test('automatic polling respects interval/backoff and last-good cache survives r
   r.advance(1); await r.sources.pollSheets();
   const delayed = r.sources.snapshot().sources[added.sourceId];
   assert.equal(Date.parse(delayed.nextRefresh) - Date.parse(delayed.lastAttempt), 10000);
+  await r.sources.flushCache(); // background cache writes are throttled
   const restarted = new DataSources(r.sources.file, r.stages, { sheets: r.sheets }); t.after(() => restarted.close()); await restarted.ready;
   assert.equal(restarted.value(added.sourceId), 'LATEST GOOD');
   await restarted.refreshSheet(added.sourceId); assert.equal(restarted.value(added.sourceId), 'LATEST GOOD');

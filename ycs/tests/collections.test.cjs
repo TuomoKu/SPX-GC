@@ -42,6 +42,7 @@ test('collection preview, explicit commits, live refresh, schema enforcement and
  await assert.rejects(base.playback.mappingPreview('stage-1','ticker',[{field:'f5',scope:'override',binding}]),/single value/);
  await assert.rejects(base.playback.mappingPreview('stage-1','ticker',[{field:'f14',scope:'override',binding:{connection:connectionId,selection:{kind:'cell',cell:'A2'}}}]),/story list/);
  await base.playback.command('stage-1','ticker','update',undefined,{links:{f14:{mode:'manual',manual:field.value}}});assert.equal(base.playback.snapshot('stage-1','program').graphics[0].data.f14,field.value);
+ await sources.flushCache();// background cache writes are throttled
  const restarted=new DataSources(file,base.stages,{sheets:{read:async()=>{throw new Error('offline');}}});await restarted.ready;t.after(()=>restarted.close());const ref=restarted.mapping('stage-1','ticker','f14','/test/graphic.html');assert.match(restarted.value(ref),/Updated story/);assert.notEqual(restarted.value(ref),committed);
 });
 test('JSON playlists use the same typed preview and commit path, and invalid required fields cannot be bypassed',async t=>{

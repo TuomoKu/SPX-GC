@@ -368,11 +368,28 @@ const workspace = new window.YCSMappingWorkspace({
 function refreshValues() {
   workspace.update(state);
 }
+// Background polls send the dataset hashes already held; the server leaves out
+// unchanged rows/data, which are carried over from the previous state.
+async function pollData(previous) {
+  const have = Object.entries(previous?.connections || {})
+    .filter(([, connection]) => connection.datasetHash)
+    .map(([id, connection]) => id + ':' + connection.datasetHash)
+    .join(',');
+  const next = await request('/data' + (have ? '?have=' + encodeURIComponent(have) : ''));
+  for (const [id, connection] of Object.entries(next.connections || {})) {
+    if (!connection.datasetUnchanged) continue;
+    const held = previous?.connections[id];
+    delete connection.datasetUnchanged;
+    if (held && 'rows' in held) connection.rows = held.rows;
+    if (held && 'data' in held) connection.data = held.data;
+  }
+  return next;
+}
 async function poll() {
   if (loading || disposed) return;
   loading = true;
   try {
-    state = await request('/data');
+    state = await pollData(state);
     $('health').textContent =
       state.health === 'ok' ? 'Background sync active' : 'Data needs attention';
     $('health').classList.toggle('warning', state.health !== 'ok');
