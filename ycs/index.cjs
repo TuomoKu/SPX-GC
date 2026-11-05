@@ -10,6 +10,8 @@ const outputAccess = require('./output-access.cjs');
 
 module.exports = function registerYCS(app, config, hooks = {}) {
   if (!config.ycs?.enabled) return;
+  // Views swap the stock Kill menu item for the managed restart in YCS settings.
+  app.locals.ycsEnabled = true;
   const settings = config.ycs;
   const configFile = hooks.configFile || global.configfileref;
   const repository = new RundownRepository(config.general.dataroot, settings.stages);
