@@ -433,7 +433,7 @@ The graphics repository now includes `graphics/lower-third/lower-third.html`: on
 
 ## Match status templates
 
-The graphics repository provides separate shuffling.html and siding.html entries in graphics/match-status. Both use the lower-third slot, with fixed captions and one Show rounds remaining checkbox; Siding adds score fields. Templates may mark an individual DataField with ycsPrimary: true to keep an important number or asset selector in the main editor. Existing templates retain the normal Appearance & timing grouping. The development graphics mount includes the sibling match-status directory.
+The graphics repository provides separate shuffling.html and siding.html entries in graphics/match-status. Both use the lower-third slot, with fixed captions, a Show rounds remaining checkbox and a Custom checkbox with Custom text that replaces the round label; Siding adds score fields. Templates may mark an individual DataField with ycsPrimary: true to keep an important number or asset selector in the main editor. Existing templates retain the normal Appearance & timing grouping. The development graphics mount includes the sibling match-status directory.
 
 ## Application settings persistence
 
