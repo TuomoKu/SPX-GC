@@ -33,6 +33,24 @@ function Write-RuntimeRecord($Record) {
         catch { if ($attempt -ge 50) { Remove-Item -LiteralPath $temporaryRecord -ErrorAction SilentlyContinue; throw }; Start-Sleep -Milliseconds 100 }
     }
 }
+function Exit-AfterServer {
+    # A deliberate stop closes this window. Anything else stays up so the reason can be read.
+    $stopped = $false
+    try {
+        $marker = Get-Content -LiteralPath $markerFile -Raw | ConvertFrom-Json
+        # A marker left by an earlier run could name a reused process id.
+        $startedAt = ([DateTimeOffset]$node.StartTime).ToUnixTimeMilliseconds()
+        $stopped = $marker.id -eq $node.Id -and $marker.stoppedAt -ge $startedAt
+    } catch { }
+    if ($node.ExitCode -eq 0 -or $stopped) { exit 0 }
+    Write-Host ''
+    Write-Host "SPX stopped unexpectedly (exit code $($node.ExitCode))." -ForegroundColor Red
+    Write-Host 'Run Start SPX to start it again. Logs:'
+    Write-Host "  $Stdout"
+    Write-Host "  $Stderr"
+    Wait-ToClose
+    exit 1
+}
 function Open-Log([string]$File) {
     $share = [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete
     $stream = New-Object IO.FileStream($File, [IO.FileMode]::Open, [IO.FileAccess]::Read, $share)
@@ -67,23 +85,7 @@ try {
         Start-Sleep -Milliseconds 500
     }
     foreach ($log in $logs) { $log.Dispose() }
-
-    # A deliberate stop closes this window. Anything else stays up so the reason can be read.
-    $stopped = $false
-    try {
-        $marker = Get-Content -LiteralPath $markerFile -Raw | ConvertFrom-Json
-        # A marker left by an earlier run could name a reused process id.
-        $startedAt = ([DateTimeOffset]$node.StartTime).ToUnixTimeMilliseconds()
-        $stopped = $marker.id -eq $node.Id -and $marker.stoppedAt -ge $startedAt
-    } catch { }
-    if ($node.ExitCode -eq 0 -or $stopped) { exit 0 }
-    Write-Host ''
-    Write-Host "SPX stopped unexpectedly (exit code $($node.ExitCode))." -ForegroundColor Red
-    Write-Host 'Run Start SPX to start it again. Logs:'
-    Write-Host "  $Stdout"
-    Write-Host "  $Stderr"
-    Wait-ToClose
-    exit 1
+    Exit-AfterServer
 } catch {
     Write-Host ''
     # This window failing must not stop a server that is on air, or claim that it failed.
@@ -91,9 +93,11 @@ try {
         Write-Host ('This window stopped showing the log: ' + $_.Exception.Message) -ForegroundColor Yellow
         Write-Host "SPX is still running. Close this window to stop it. Logs: $Stdout" -ForegroundColor Yellow
         $node.WaitForExit()
-        exit 0
+        Exit-AfterServer
     }
     Write-Host ('Could not run SPX: ' + $_.Exception.Message) -ForegroundColor Red
+    # Tells the launcher to report this now and leave this window up to be read.
+    try { Set-Content -LiteralPath ($Stdout + '.failed') -Value $_.Exception.Message } catch { }
     Wait-ToClose
     exit 1
 }

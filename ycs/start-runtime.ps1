@@ -81,19 +81,26 @@ try {
     $windowArguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (& $quote (Join-Path $PSScriptRoot 'runtime-window.ps1')),
         '-NodeExecutable', (& $quote $nodeExecutable), '-ConfigurationFile', (& $quote $configurationFile), '-ConfigurationArgument', (& $quote $configurationArgument),
         '-Port', $portNumber, '-BaseUrl', (& $quote $baseUrl), '-Stdout', (& $quote $stdout), '-Stderr', (& $quote $stderr))
+    $exitedAtOnce = $false
     $window = Start-Process -FilePath 'powershell.exe' -ArgumentList $windowArguments -WorkingDirectory $projectRoot -WindowStyle Normal -PassThru
     # A busy PC can take a while to open a window, just after boot for example.
     for ($attempt = 0; -not $startedProcess -and $attempt -lt 120; $attempt++) {
         try {
             $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
             # A record from an earlier run names different log files.
-            if ($record.stdout -eq $stdout) { $startedProcess = Get-Process -Id $record.id; $null = $startedProcess.Handle }
+            if ($record.stdout -eq $stdout) {
+                $startedProcess = Get-Process -Id $record.id -ErrorAction SilentlyContinue
+                if ($startedProcess) { $null = $startedProcess.Handle } else { $exitedAtOnce = $true; break }
+            }
         } catch { }
         if (-not $startedProcess) {
             if ($window.HasExited) { throw 'The SPX window closed before the server started.' }
+            if (Test-Path -LiteralPath ($stdout + '.failed')) { throw 'SPX could not start. See the SPX window.' }
             Start-Sleep -Milliseconds 250
         }
     }
+    # The window stays up showing why, so leave it open.
+    if ($exitedAtOnce) { throw "Runtime exited. See the SPX window, or $stderr" }
     if (-not $startedProcess) {
         # Do not leave it starting: a second Start would then open another copy.
         if (-not $window.HasExited) {

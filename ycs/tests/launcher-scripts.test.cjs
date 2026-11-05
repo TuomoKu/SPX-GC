@@ -52,6 +52,9 @@ test('SPX runs in a visible window that shares its console but never writes to i
   assert.match(window, /Write-RuntimeRecord \$record/);
   assert.match(window, /SPX is still running/, 'a failure in the window does not claim the server failed');
   assert.match(start, /\$window\.CloseMainWindow\(\)/, 'a launch that times out does not leave a window starting');
+  assert.ok(start.indexOf('$exitedAtOnce) { throw') < start.indexOf('$window.CloseMainWindow()'), 'a server that died at once leaves its window up to be read');
+  assert.ok(start.indexOf(".failed')) { throw") < start.indexOf('$window.CloseMainWindow()'), 'a window that could not start the server stays up to be read');
+  assert.match(window, /\$node\.WaitForExit\(\)\s+Exit-AfterServer/, 'a crash after the log display failed still shows its reason');
 });
 
 test('the stock welcome splash stays removed', async () => {
