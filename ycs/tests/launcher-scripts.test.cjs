@@ -25,15 +25,40 @@ test('runtime readiness probes the configured listenHost, not a fixed 127.0.0.1'
   assert.match(start, /'0\.0\.0\.0'/);
   for (const line of start.split('\n').filter(line => line.includes('Invoke-WebRequest')))
     assert.doesNotMatch(line, /127\.0\.0\.1/, line.trim());
-  assert.match(start, /url=\$baseUrl/, 'the runtime record keeps the probed address for launch.ps1');
+  assert.match(start, /'-BaseUrl', \(& \$quote \$baseUrl\)/, 'the window receives the probed address');
+  assert.match(await read('runtime-window.ps1'), /url=\$BaseUrl/, 'the runtime record keeps the probed address for launch.ps1');
   assert.doesNotMatch(await read('launch.ps1'), /'http:\/\/127\.0\.0\.1:' \+ \[int\]\$configuration/);
 });
 
-test('stop waits for the process to exit and start sets UV_THREADPOOL_SIZE for the server', async () => {
+test('stop waits for the process to exit and the window sets UV_THREADPOOL_SIZE for the server', async () => {
   assert.match(await read('stop-runtime.ps1'), /Wait-Process -Id \$runtimeProcess\.Id -Timeout 10/);
+  const window = await read('runtime-window.ps1');
+  assert.match(window, /\$env:UV_THREADPOOL_SIZE = '16'/);
+  assert.ok(window.indexOf("$env:UV_THREADPOOL_SIZE = '16'") < window.indexOf('Start-Process -FilePath $NodeExecutable'));
+});
+
+test('SPX runs in a visible window that shares its console but never writes to it', async () => {
   const start = await read('start-runtime.ps1');
-  assert.match(start, /\$env:UV_THREADPOOL_SIZE = '16'/);
-  assert.ok(start.indexOf("$env:UV_THREADPOOL_SIZE = '16'") < start.indexOf('Start-Process -FilePath $nodeExecutable'));
+  assert.match(start, /Start-Process -FilePath 'powershell\.exe' -ArgumentList \$windowArguments [^\n]*-WindowStyle Normal/);
+  assert.doesNotMatch(start, /-WindowStyle Hidden/);
+  const window = await read('runtime-window.ps1');
+  // Sharing the console is what stops SPX when the window closes. Writing to files keeps
+  // a text selection in that console, which pauses console writes, away from the server.
+  const launch = window.split('\n').find(line => line.includes('Start-Process -FilePath $NodeExecutable'));
+  assert.match(launch, /-NoNewWindow/);
+  assert.match(launch, /-RedirectStandardOutput \$Stdout -RedirectStandardError \$Stderr/);
+  assert.match(window, /id=\$node\.Id;/, 'the runtime record names Node, which Settings and stop-runtime act on');
+  assert.match(window, /\[Console\]::TreatControlCAsInput = \$true/, 'Ctrl+C while copying a message must not stop the show');
+  assert.match(window, /Write-RuntimeRecord \$record/);
+  assert.match(window, /SPX is still running/, 'a failure in the window does not claim the server failed');
+  assert.match(start, /\$window\.CloseMainWindow\(\)/, 'a launch that times out does not leave a window starting');
+  assert.ok(start.indexOf('$exitedAtOnce) { throw') < start.indexOf('$window.CloseMainWindow()'), 'a server that died at once leaves its window up to be read');
+  assert.ok(start.indexOf(".failed')) { throw") < start.indexOf('$window.CloseMainWindow()'), 'a window that could not start the server stays up to be read');
+  assert.match(window, /\$node\.WaitForExit\(\)\s+Exit-AfterServer/, 'a crash after the log display failed still shows its reason');
+});
+
+test('the stock welcome splash stays removed', async () => {
+  await assert.rejects(fs.stat(path.join(folder, '../ASSETS/plugins/welcomeOverlay')), { code: 'ENOENT' });
 });
 
 test('without -Config the launchers default to the configuration launched last', async () => {

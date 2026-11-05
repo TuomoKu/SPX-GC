@@ -86,4 +86,4 @@ stage playback, Companion commands, and reconnection after a managed restart.
 Commit and push source changes before opening a pull request. `.local/`, saved
 credentials, machine-specific configuration and the local template junction are
 not part of the merge. Repeat local setup on each SPX server; output clients only
-need their HTTP URLs. Use `./ycs/stop-runtime.ps1` to stop the background runtime.
+need their HTTP URLs. Close the SPX window, or use `./ycs/stop-runtime.ps1`, to stop the runtime.

@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
+const net = require('node:net');
 const { prepare, createRehearsal } = require('../rehearsal.cjs');
 
 test('disposable rehearsal uses real template definitions, offline sheet/JSON lists and persistent isolated stage data', async t => {
@@ -84,4 +85,29 @@ test('disposable rehearsal uses real template definitions, offline sheet/JSON li
   for (const number of [1, 2, 3]) assert.equal((await get(`/api/ycs/stages/stage-${number}/program/state`)).graphics.length, 0);
   assert.equal((await get('/api/ycs/data')).sources['test.stage-2.currentRound'].value, 'SAVED ROUND');
   assert.equal((await get('/api/ycs/data')).mappings.length, 6);
+});
+
+test('a graceful rehearsal stop does not wait for connections a browser keeps open', async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ycs-rehearsal-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 20 }));
+  const graphics = path.join(root, 'graphics'); await fs.mkdir(graphics);
+  await fs.writeFile(path.join(graphics, 'ticker.html'), `window.SPXGCTemplateDefinition = ${JSON.stringify({ DataFields: [{ field: 'f14', ftype: 'textarea', value: '[]', ycsCollection: { version: 1, fields: [{ key: 'subtopic', required: true }] } }] })};`);
+  const show = path.join(root, 'show'); await prepare(show, graphics);
+  const runtime = await createRehearsal(show, graphics);
+  await new Promise(resolve => runtime.server.listen(0, '127.0.0.1', resolve));
+  // A request still in progress: Node's server.close() alone waits for this.
+  const browser = net.connect(runtime.server.address().port, '127.0.0.1');
+  t.after(() => browser.destroy());
+  browser.on('error', () => {});
+  await new Promise(resolve => browser.once('connect', resolve));
+  browser.write('GET /rehearsal/info HTTP/1.1\r\nHost: rehearsal\r\n');
+  await new Promise(resolve => setTimeout(resolve, 50));
+  let timer;
+  const outcome = await Promise.race([
+    runtime.close().then(() => 'closed'),
+    new Promise(resolve => { timer = setTimeout(() => resolve('still waiting'), 5000); })
+  ]);
+  clearTimeout(timer);
+  assert.equal(outcome, 'closed');
+  assert.equal(JSON.parse(await fs.readFile(show + '/sources.program-state.json', 'utf8')).clean, true, 'the stop is recorded as deliberate');
 });

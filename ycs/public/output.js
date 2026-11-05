@@ -172,9 +172,14 @@ async function apply(job, graphic, signal) {
     await invoke(entry, 'update', [data], signal);
     entry.data = data;
   }
-  if ((graphic.continuation || 0) !== entry.continuation) {
-    await invoke(entry, 'next', [], signal);
-    entry.continuation = graphic.continuation || 0;
+  // Several Continue presses can land while an entrance finishes; apply each of them.
+  const steps = graphic.continuation || 0;
+  if (steps !== entry.continuation) {
+    do {
+      await invoke(entry, 'next', [], signal);
+      entry.continuation++;
+    } while (entry.continuation < steps);
+    entry.continuation = steps;
   }
   entry.graphic = graphic;
 }
@@ -202,8 +207,9 @@ function kick(job) {
     })
     .catch((error) => {
       if (error.name === 'AbortError' || disposed || generation !== epoch) return;
-      // New data for the same graphic must not skip the retry limit below.
-      if (job.key !== key && !(error.afterShown && sameTemplate(job.goal, graphic))) return;
+      // New data for the same graphic must not skip the retry limit below. That
+      // includes a retry that fails before it shows, once the graphic has been shown.
+      if (job.key !== key && !((error.afterShown || job.shownFailures) && sameTemplate(job.goal, graphic))) return;
       job.error = error.message;
       console.error('[YCS output]', job.slot, error);
       const wait = error.afterShown
@@ -271,15 +277,11 @@ events.on('state', (snapshot) => {
     }
     job.shownFailures = 0;
     if (key !== job.key) {
-      // Keep active data updates serial. Pending mounts and removed/replaced
-      // identities are cancellable so Stop never waits for a stale Play.
-      // Compare with the in-flight target too: reverting a replacement that is
-      // still loading must cancel it rather than briefly showing it.
-      if (
-        !sameTemplate(frames.get(slot)?.graphic, goal) ||
-        (job.running && !sameTemplate(job.target, goal))
-      )
-        job.controller?.abort();
+      // Keep data updates serial: new data for the graphic in flight, even during
+      // its entrance, is applied when that finishes, so the entrance never restarts.
+      // Stop or a different graphic cancels the run, so Stop never waits for a stale
+      // Play and reverting a loading replacement never briefly shows it.
+      if (job.running && !sameTemplate(job.target, goal)) job.controller?.abort();
       clearTimeout(job.timer);
       job.timer = null;
       job.failures = 0;

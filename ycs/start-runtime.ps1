@@ -29,7 +29,7 @@ try {
     Write-Warning "Configuration $configurationFile is missing or damaged. SPX will restore it from $backupFile."
 }
 if (-not $configuration.ycs.enabled) { throw 'Enable YCS in the saved server configuration first.' }
-if ($configuration.general.launchBrowser) { throw 'Set general.launchBrowser to false for background runtime use.' }
+if ($configuration.general.launchBrowser) { throw 'Set general.launchBrowser to false for runtime use.' }
 $readinessHeaders = @{}
 if ($configuration.ycs.apiKey) { $readinessHeaders.Authorization = 'Bearer ' + $configuration.ycs.apiKey }
 $portNumber = [int]$configuration.general.port
@@ -76,23 +76,46 @@ try {
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
     $stdout = Join-Path $logFolder "$stamp.log"
     $stderr = Join-Path $logFolder "$stamp-error.log"
-    # More libuv file-I/O threads, so one hung SMB read cannot block all file access.
-    $previousThreadPool = $env:UV_THREADPOOL_SIZE
-    if (-not $env:UV_THREADPOOL_SIZE) { $env:UV_THREADPOOL_SIZE = '16' }
-    try {
-        $startedProcess = Start-Process -FilePath $nodeExecutable -ArgumentList @('server.js', ('"{0}"' -f $configurationArgument)) -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    } finally { $env:UV_THREADPOOL_SIZE = $previousThreadPool }
-    $record = @{ id=$startedProcess.Id; executable=$nodeExecutable; startTicks=$startedProcess.StartTime.ToUniversalTime().Ticks.ToString(); configuration=$configurationFile; port=$portNumber; url=$baseUrl; stdout=$stdout; stderr=$stderr }
-    $temporaryRecord = $recordFile + '.tmp'
-    $record | ConvertTo-Json | Set-Content -LiteralPath $temporaryRecord
-    Move-Item -LiteralPath $temporaryRecord -Destination $recordFile -Force
+    # SPX runs in its own visible window, which starts Node and writes the runtime record.
+    $quote = { param($value) '"{0}"' -f $value }
+    $windowArguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (& $quote (Join-Path $PSScriptRoot 'runtime-window.ps1')),
+        '-NodeExecutable', (& $quote $nodeExecutable), '-ConfigurationFile', (& $quote $configurationFile), '-ConfigurationArgument', (& $quote $configurationArgument),
+        '-Port', $portNumber, '-BaseUrl', (& $quote $baseUrl), '-Stdout', (& $quote $stdout), '-Stderr', (& $quote $stderr))
+    $exitedAtOnce = $false
+    $window = Start-Process -FilePath 'powershell.exe' -ArgumentList $windowArguments -WorkingDirectory $projectRoot -WindowStyle Normal -PassThru
+    # A busy PC can take a while to open a window, just after boot for example.
+    for ($attempt = 0; -not $startedProcess -and $attempt -lt 120; $attempt++) {
+        try {
+            $record = Get-Content -LiteralPath $recordFile -Raw | ConvertFrom-Json
+            # A record from an earlier run names different log files.
+            if ($record.stdout -eq $stdout) {
+                $startedProcess = Get-Process -Id $record.id -ErrorAction SilentlyContinue
+                if ($startedProcess) { $null = $startedProcess.Handle } else { $exitedAtOnce = $true; break }
+            }
+        } catch { }
+        if (-not $startedProcess) {
+            if ($window.HasExited) { throw 'The SPX window closed before the server started.' }
+            if (Test-Path -LiteralPath ($stdout + '.failed')) { throw 'SPX could not start. See the SPX window.' }
+            Start-Sleep -Milliseconds 250
+        }
+    }
+    # The window stays up showing why, so leave it open.
+    if ($exitedAtOnce) { throw "Runtime exited. See the SPX window, or $stderr" }
+    if (-not $startedProcess) {
+        # Do not leave it starting: a second Start would then open another copy.
+        if (-not $window.HasExited) {
+            $null = $window.CloseMainWindow()
+            if (-not $window.WaitForExit(5000)) { Stop-Process -Id $window.Id -Force -ErrorAction SilentlyContinue }
+        }
+        throw 'The server did not start in time. Run Start SPX again.'
+    }
     $ready = $false
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
-        if ($startedProcess.HasExited) { throw "Runtime exited. Check $stderr" }
+        if ($startedProcess.HasExited) { throw "Runtime exited. See the SPX window, or $stderr" }
         try { $null = Invoke-WebRequest $readinessUrl -Headers $readinessHeaders -TimeoutSec 1 -UseBasicParsing; $ready = $true; break } catch { Start-Sleep -Milliseconds 250 }
     }
     if (-not $ready) { throw "Runtime did not become ready at $readinessUrl. Check $stderr" }
-    Write-Output "YCS runtime ready (PID $($startedProcess.Id)) using $configurationArgument. $baseUrl/ycs/data-manager"
+    Write-Output "YCS runtime ready in its own window (PID $($startedProcess.Id)) using $configurationArgument. $baseUrl/ycs/data-manager"
     Write-Output 'Saved connections refresh in the background. Program starts stopped unless the last run crashed within ycs.restoreProgramWithinSeconds.'
 } catch {
     if ($startedProcess -and -not $startedProcess.HasExited) { Stop-Process -Id $startedProcess.Id }
