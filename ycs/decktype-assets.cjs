@@ -22,7 +22,9 @@ module.exports = function registerDecktypeAssets(app, folders = []) {
         // Resolve symlinks before serving; a shortcut cannot expose another folder.
         if (relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) continue;
         if (!(await fs.stat(resolvedFile)).isFile()) continue;
-        return res.sendFile(resolvedFile, { dotfiles: 'deny', cacheControl: false }, error => {
+        // Serve relative to the folder: dotfiles checks then cover only the file's
+        // own name, so a folder such as .local\decktypes still works.
+        return res.sendFile(relative, { root: resolvedRoot, dotfiles: 'deny', cacheControl: false }, error => {
           if (error && !res.headersSent && !res.destroyed) res.status(error.status || 503).end();
         });
       } catch {
