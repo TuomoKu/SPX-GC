@@ -41,7 +41,8 @@ module.exports = function attachSockets(io, playback, config, live = () => confi
     listeners.push([event, listener]);
   }
   namespace.on('connection', (socket) => {
-    socket.on('subscribe', (payload) => {
+    // Wait for the startup restore decision before the first snapshot.
+    socket.on('subscribe', (payload) => Promise.resolve(playback.ready).then(() => {
       try {
         if (
           !payload ||
@@ -69,7 +70,7 @@ module.exports = function attachSockets(io, playback, config, live = () => confi
       } catch {
         socket.emit('stage-error', { error: 'Unknown stage or output mode' });
       }
-    });
+    }));
   });
   return () => {
     for (const [event, listener] of listeners) playback.off(event, listener);

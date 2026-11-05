@@ -415,3 +415,37 @@ test('a lost output session renews its page grant and reconnects after a namespa
   assert.equal(r.root.querySelector('iframe'), original);
   assert.equal(r.calls.filter((c) => c.name === 'play').length, 1);
 });
+
+test('after a restore, an output holding the identical composition keeps its frames: no remount, play, update or next', async (t) => {
+  const r = await renderer(t);
+  r.events().connect();
+  const ticker = r.graphic('ticker', 'ticker', 'ROUND 7');
+  const lower = { ...r.graphic('lower-third'), continuation: 2 };
+  r.send(57, [ticker, lower]);
+  await eventually(() => r.root.dataset.revision === '57');
+  const frames = [...r.root.querySelectorAll('iframe')],
+    before = r.calls.length;
+  r.events().disconnect();
+  // The restored server publishes a different revision and may describe links
+  // differently; content identity (slot, template, data, step) is unchanged.
+  r.events().connect();
+  r.send(3, [{ ...ticker, links: { f5: { mode: 'linked', source: 'restored' } } }, lower]);
+  await eventually(() => r.root.dataset.revision === '3');
+  assert.deepEqual([...r.root.querySelectorAll('iframe')], frames, 'same frames stay on air');
+  assert.equal(r.calls.length, before, 'no lifecycle call: nothing replays');
+  assert.equal(r.reports.at(-1).state, 'ready');
+  assert.equal(r.reports.at(-1).revision, 3);
+  // A later linked data update is an ordinary update on the same frame.
+  r.send(4, [r.graphic('ticker', 'ticker', 'ROUND 8'), lower]);
+  await eventually(() => r.root.dataset.revision === '4');
+  assert.deepEqual(r.calls.slice(before).map((call) => call.id + ':' + call.name), ['ticker:update']);
+  assert.deepEqual([...r.root.querySelectorAll('iframe')], frames);
+});
+
+test('an output reloaded during the outage mounts the restored composition with its IN and step', async (t) => {
+  const r = await renderer(t);
+  r.events().connect();
+  r.send(3, [{ ...r.graphic('lower-third'), continuation: 1 }]);
+  await eventually(() => r.root.dataset.revision === '3');
+  assert.deepEqual(r.calls.map((call) => call.name), ['update', 'play', 'next']);
+});

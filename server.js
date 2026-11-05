@@ -923,6 +923,16 @@ global.io = require('socket.io')(server);
 if (ycsPlayback) {
   io.engine.use(spxSession);
   ycsPlayback.attachSockets(io);
+  // A deliberate stop (Ctrl+C, closing the console window, a service stop)
+  // records a clean shutdown, so the next start does not restore the program.
+  // A crash, kill or power loss leaves no record and restores within the window.
+  let stopping = false;
+  const stop = () => {
+    if (stopping) return;
+    stopping = true;
+    ycsPlayback.shutdown().catch(() => {}).finally(() => process.exit(0));
+  };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) process.on(signal, stop);
 }
 var clients = {}
 

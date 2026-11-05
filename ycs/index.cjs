@@ -7,6 +7,7 @@ const { LocalFiles } = require('./local-files.cjs');
 const { createSheets } = require('./google-sheets-api.cjs');
 const { Renderers } = require('./renderers.cjs');
 const outputAccess = require('./output-access.cjs');
+const { ProgramRecovery } = require('./program-recovery.cjs');
 
 module.exports = function registerYCS(app, config, hooks = {}) {
   if (!config.ycs?.enabled) return;
@@ -17,8 +18,9 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   const live = () => (followGlobal && global.config?.general ? global.config : config);
   const configFile = hooks.configFile || global.configfileref;
   const repository = new RundownRepository(config.general.dataroot, settings.stages);
+  const dataFile = settings.dataFile || path.resolve(config.general.dataroot, '../ycs-data.json');
   const sources = new DataSources(
-    settings.dataFile || path.resolve(config.general.dataroot, '../ycs-data.json'),
+    dataFile,
     settings.stages,
     {
       sheets: hooks.sheets || createSheets(settings.sheetsAPI, { keyFile: configFile ? require('./sheets-key.cjs').credentialFile(configFile) : undefined }),
@@ -33,6 +35,39 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   );
   const playback = new Playback(repository, settings.slots, sources);
   const renderers = new Renderers();
+  // Restart recovery (YCS.md, "Restart recovery"). Commands and output
+  // subscriptions wait for this one decision, so no output can see an empty
+  // program from a server that is about to restore it.
+  const recovery = new ProgramRecovery(
+    settings.programStateFile || dataFile.replace(/\.json$/i, '') + '.program-state.json',
+    {
+      withinSeconds: settings.restoreProgramWithinSeconds,
+      // The Windows launcher's stop script leaves this marker (stop-runtime.ps1).
+      stopMarker: hooks.stopMarker !== undefined ? hooks.stopMarker : path.resolve(__dirname, '../.local/runtime-stopped.json'),
+      ...hooks.recovery
+    }
+  );
+  playback.recovery = recovery;
+  playback.ready = recovery
+    .decide(settings.stages.map((stage) => stage.id))
+    .then((decision) => {
+      if (!decision.restore) return console.log(`[YCS restore] Starting with program stopped: ${decision.reason}.`);
+      for (const stage of settings.stages) {
+        const saved = decision.stages.get(stage.id);
+        if (!saved?.program.length) { console.log(`[YCS restore] ${stage.id}: nothing was on air; ${decision.reason}.`); continue; }
+        playback.restore(stage.id, saved, decision.downtimeMs);
+        const count = saved.program.length;
+        console.log(`[YCS restore] ${stage.id}: restored ${count} graphic${count === 1 ? '' : 's'} (${saved.program.map((graphic) => graphic.id).join(', ')}); ${decision.reason}.`);
+      }
+    })
+    .catch((error) => console.error('[YCS restore] Starting with program stopped:', error.message));
+  playback.ready.then(() => {
+    recovery.attach(playback);
+    // Make rundown onair flags match the program: restored graphics are marked
+    // on air and stale flags from before a clean start are cleared.
+    for (const stage of settings.stages)
+      playback.queue(stage.id, () => playback.persist(stage.id), { duringRestart: true }).catch(() => {});
+  });
   sources.activeReferences = () =>
     [...playback.states].flatMap(([stage, state]) =>
       state.program.flatMap((graphic) =>
@@ -45,7 +80,7 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     [...state.program, ...(state.draft ? [state.draft] : [])].map(graphic => ({stage, graphic: graphic.id})));
   const reconcileMappings = () => sources.reconcileMappings(repository, protectedMappingItems);
   playback.reconcileMappings = reconcileMappings;
-  sources.ready.then(reconcileMappings).catch(error => console.error('[YCS mapping cleanup]', error.message));
+  Promise.all([sources.ready, playback.ready]).then(reconcileMappings).catch(error => console.error('[YCS mapping cleanup]', error.message));
   let lastReconciliation = 0;
   let closeSockets;
   playback.attachSockets = (io) => {
@@ -62,18 +97,24 @@ module.exports = function registerYCS(app, config, hooks = {}) {
       sources
         .refresh()
         .then(() => sources.pollSheets())
-        .then(async () => { if (Date.now() - lastReconciliation > 5000) { lastReconciliation = Date.now(); await reconcileMappings(); } })
+        .then(async () => { await playback.ready; if (Date.now() - lastReconciliation > 5000) { lastReconciliation = Date.now(); await reconcileMappings(); } })
         .catch((error) => console.error('[YCS data]', error.message)),
     1000
   );
   sourceTimer.unref();
   const closePlayback = playback.close.bind(playback);
   playback.close = () => {
+    recovery.stop();
     closePlayback();
     clearInterval(sourceTimer);
     sources.off('change', updateLinks);
     sources.close();
     closeSockets?.();
+  };
+  // A deliberate stop (signal, rehearsal stop): record it so the next start is clean.
+  playback.shutdown = async () => {
+    await recovery.shutdown();
+    playback.close();
   };
   const auth = hooks.auth || require('../utils/spx_auth.js');
   const router = express.Router();
@@ -329,14 +370,28 @@ module.exports = function registerYCS(app, config, hooks = {}) {
   router.get(
     '/stages/:stage/health',
     handlers(async (req, res) =>
-      res.json(renderers.snapshot(req.params.stage, playback.state(req.params.stage).revision))
+      res.json({
+        ...renderers.snapshot(req.params.stage, playback.state(req.params.stage).revision),
+        restored: playback.restored(req.params.stage)
+      })
     )
+  );
+  router.post(
+    '/stages/:stage/restored/dismiss',
+    handlers(async (req, res) => {
+      playback.dismissRestored(req.params.stage);
+      res.json({ dismissed: true });
+    })
   );
   router.get(
     '/stages/:stage/:mode/state',
-    handlers(async (req, res) => res.json(playback.snapshot(req.params.stage, req.params.mode)))
+    handlers(async (req, res) => {
+      await playback.ready;
+      res.json(playback.snapshot(req.params.stage, req.params.mode));
+    })
   );
-  router.get('/stages/:stage/:mode/events', (req, res, next) => {
+  router.get('/stages/:stage/:mode/events', async (req, res, next) => {
+    await playback.ready;
     try {
       const { stage, mode } = req.params;
       const state = playback.snapshot(stage, mode);

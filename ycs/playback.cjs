@@ -169,6 +169,10 @@ class Playback extends EventEmitter {
     this.presses = new Map();
     this.now = Date.now;
     this.repeatWindow = 400;
+    // Restart recovery: notices for stages whose program was put back, and a
+    // gate that holds commands and output subscriptions until that decision.
+    this.notices = new Map();
+    this.ready = Promise.resolve();
     for (const stage of repository.stages.values()) this.states.set(stage.id, { revision: 0, program: [], draft: null });
   }
   state(stageId) { this.repository.stage(stageId); return this.states.get(stageId); }
@@ -184,7 +188,7 @@ class Playback extends EventEmitter {
   }
   queue(stageId, operation, { duringRestart = false } = {}) {
     this.repository.stage(stageId);
-    const result = (this.queues.get(stageId) || Promise.resolve()).then(() => {
+    const result = (this.queues.get(stageId) || this.ready).then(() => {
       if (this.restartPending && !duringRestart) fail('Server restart in progress; try again after it reconnects', 503);
       return operation();
     });
@@ -199,7 +203,23 @@ class Playback extends EventEmitter {
         Object.values(graphic?.links || {}).filter(link => link.mode === 'linked').map(link => link.source))));
     this.state(stageId).revision++;
     for (const mode of ['program', 'preview']) this.emit(stageId + ':' + mode, this.snapshot(stageId, mode));
+    this.emit('publish', stageId);
   }
+  // Put back a stage's saved program exactly as it was: same descriptors, data,
+  // continuation steps and a later revision. The rundown is not consulted, so a
+  // stale rundown cannot change what is on air; linked data updates follow
+  // through refreshLinks as usual.
+  restore(stageId, saved, downtimeMs) {
+    const state = this.state(stageId);
+    state.program = clone(saved.program);
+    state.draft = saved.draft ? clone(saved.draft) : null;
+    state.revision = saved.revision;
+    if (state.program.length) this.notices.set(stageId, { graphics: state.program.length, downtimeSeconds: Math.round(downtimeMs / 1000) });
+    this.publish(stageId);
+  }
+  // Shown in the stage panel until dismissed or the next Program command.
+  restored(stageId) { this.state(stageId); return this.notices.get(stageId) || null; }
+  dismissRestored(stageId) { this.state(stageId); this.notices.delete(stageId); }
   async definition(stageId, item) {
     const profile = await this.repository.profile(stageId);
     const matches = (profile.templates || []).filter(template => template.relpath === item.relpath);
@@ -227,6 +247,8 @@ class Playback extends EventEmitter {
       if (this.flag(rundown, this.state(stageId).program)) await this.repository.write(stageId, rundown);
       entry.failures = 0;
     } catch (error) {
+      // A missing rundown has no flags to save; do not retry it forever.
+      if (error.code === 'ENOENT') { entry.failures = 0; return; }
       const wait = Math.min(30000, 1000 * 2 ** entry.failures++);
       console.warn(`[YCS playback] ${stageId}: could not save on-air flags (${error.message}); retrying in ${wait / 1000} s`);
       entry.timer = setTimeout(() => this.queue(stageId, () => this.persist(stageId), { duringRestart: true }).catch(() => {}), wait);
@@ -340,6 +362,7 @@ class Playback extends EventEmitter {
     const requested = action;
     return this.queue(stageId, async () => {
       const state = this.state(stageId);
+      if (['play', 'stop', 'toggle', 'update', 'continue'].includes(requested)) this.notices.delete(stageId);
       const active = state.program.find(current => current.id === graphicId);
       if (['toggle', 'continue'].includes(requested) && this.repeated(stageId, graphicId, requested))
         return { ...this.snapshot(stageId, 'program'), editorRevision: this.editorRevision(stageId, graphicId), repeated: true };
@@ -467,6 +490,7 @@ class Playback extends EventEmitter {
     // Stop stage acts on memory first, like Stop, and is allowed during a restart.
     return this.queue(stageId, async () => {
       const state = this.state(stageId);
+      this.notices.delete(stageId);
       state.program = [];
       state.draft = null;
       this.publish(stageId);
