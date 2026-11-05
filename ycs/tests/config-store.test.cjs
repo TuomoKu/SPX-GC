@@ -23,7 +23,8 @@ test('queued configuration patches preserve independent fields and recover after
   assert.equal((await r.read()).ycs.graphicsRoot, 'original');
   await store.update(r.file, current => { current.ycs.graphicsRoot = 'new'; });
   assert.equal((await r.read()).ycs.graphicsRoot, 'new');
-  assert.deepEqual(await fs.readdir(r.root), ['config.json']);
+  // Only the configuration and its last-good backup remain; no temp files.
+  assert.deepEqual((await fs.readdir(r.root)).sort(), ['config.json', 'config.json.bak']);
 });
 test('stock recent-rundown updates use latest configuration rather than overwriting YCS settings', async t => {
   const r = await fixture(t);

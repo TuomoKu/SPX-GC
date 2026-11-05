@@ -101,8 +101,8 @@ module.exports = {
                         }
                     });
                 } else {
-                    let configFileStr = fs.readFileSync(CONFIG_FILE);
-                    global.config = JSON.parse(configFileStr);
+                    // Falls back to CONFIG_FILE.bak, with a loud log, when the file is damaged.
+                    global.config = require('./config-store.cjs').loadConfigSync(CONFIG_FILE).config;
                 }
 
                 // folderchecks (improved in 1.0.15)

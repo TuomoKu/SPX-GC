@@ -9,6 +9,7 @@ const sourceTypes = require('./public/source-types.js');
 const { LocalFiles, normalizeLocalSettings } = require('./local-files.cjs');
 const { linkable } = require('./field-types.cjs');
 const { selection, resolve, transform, normalizeTransform } = require('./bindings.cjs');
+const { writeText } = require('../utils/config-store.cjs');
 const clone = (value) => structuredClone(value);
 const keyPattern = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -258,8 +259,7 @@ class DataSources extends EventEmitter {
       await fs.writeFile(this.file + '.v1-backup.json', original, { flag: 'wx' }).catch((error) => {
         if (error.code !== 'EEXIST') throw error;
       });
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       for (const [id, source] of Object.entries(parsed.sources)) {
         const saved = this.legacyCache?.[id];
         if (
@@ -601,8 +601,7 @@ class DataSources extends EventEmitter {
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       this.document = next;
       this.syncRuntimes(); this.checkedAt = next.updatedAt; this.emit('change');
       return { removed };
@@ -620,8 +619,7 @@ class DataSources extends EventEmitter {
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       this.document = next;
       this.syncRuntimes();
       this.checkedAt = next.updatedAt;

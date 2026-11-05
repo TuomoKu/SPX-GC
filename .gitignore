@@ -98,6 +98,9 @@ ASSETS/**
 .local/
 *.sheets-key.json
 *.sheets-key.json.*.tmp
+# Last-good and damaged configuration copies kept by utils/config-store.cjs
+*.json.bak
+*.json.damaged-*
 dist/companion/
 !ycs/**/*.md
 !YCS.md

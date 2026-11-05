@@ -153,7 +153,7 @@ class Settings {
       // credential bytes (including a damaged file) if configuration persistence fails.
       const changeKey = Boolean(input.key || input.clearKey);
       if (changeKey) await configStore.writeJSON(keyFile, { key });
-      try { await configStore.writeJSON(this.configFile, config); }
+      try { await configStore.replaceConfig(this.configFile, config); }
       catch (error) {
         if (changeKey && current.credentials.raw !== null) await configStore.writeText(keyFile, current.credentials.raw);
         else if (changeKey) fs.rmSync(keyFile, { force: true });
