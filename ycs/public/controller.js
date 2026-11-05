@@ -5,7 +5,7 @@ const project = document.documentElement.dataset.ycsProject;
 const rundown = document.documentElement.dataset.ycsRundown;
 if (stage) {
   const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = '/ycs/controller.css'; document.head.append(css);
-  const stagePanel = new window.YCSStagePanel({ stage, onStop: clearStage });
+  const stagePanel = new window.YCSStagePanel({ stage, onStop: clearStage, onDismissRestored: () => request(`/api/ycs/stages/${stage}/restored/dismiss`, {}).catch(() => {}) });
   const models = new Map(), timers = new Map();
   const rundownTools = window.YCSRundownTools ? new window.YCSRundownTools() : null;
   let validationRow, previewGeneration = 0;
@@ -420,7 +420,7 @@ if (stage) {
   async function poll() {
     if (polling || disposed) return; polling = true;
     try {
-      const health = request('/api/ycs/stages/' + encodeURIComponent(stage) + '/health').then(value => stagePanel.setOutputHealth(value), () => {});
+      const health = request('/api/ycs/stages/' + encodeURIComponent(stage) + '/health').then(value => { stagePanel.setOutputHealth(value); stagePanel.setRestored(value.restored); }, () => {});
       sourceState = await request('/api/ycs/data');
       await health;
       stagePanel.setDataAvailable(sourceState.health === 'ok');
