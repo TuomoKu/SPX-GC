@@ -12,6 +12,37 @@ test('JSON APIs read bounded scalar data without redirects and pin DNS to public
   const secure=adapter({env:{YCS_DATA_TOKEN:'private-value'}});await secure.json.read({...settings,tokenEnv:'YCS_DATA_TOKEN'});assert.equal(secure.headers().Authorization,'Bearer private-value');
   await assert.rejects(adapter().json.read({...settings,tokenEnv:'YCS_DATA_MISSING'}),{status:422});assert.throws(()=>normalizeJSONSettings({...settings,tokenEnv:'AWS_SECRET_ACCESS_KEY'}));
 });
+const listed={url:'http://192.168.1.55:8080/api/stages/1',refreshSeconds:1};
+function localAdapter(localHosts=['192.168.1.55:8080']){
+  const calls={http:0,https:0};
+  const reply=kind=>(url,options,receive)=>{calls[kind]++;const request=new EventEmitter();request.end=()=>{const response=new PassThrough();response.statusCode=200;response.headers={'content-type':'application/json'};receive(response);queueMicrotask(()=>response.end('{"ok":true}'));};return request;};
+  return {json:new JSONAPI({localHosts,request:reply('https'),httpRequest:reply('http'),lookup:()=>assert.fail('an IP address needs no lookup')}),calls};
+}
+test('only listed network addresses are read, over plain HTTP and at a fast refresh',async()=>{
+  assert.deepEqual(normalizeJSONSettings(listed),listed);
+  const allowed=localAdapter();assert.equal((await allowed.json.read(listed)).data.ok,true);assert.deepEqual(allowed.calls,{http:1,https:0});
+  const secure=localAdapter(['192.168.1.55:8443']);await secure.json.read({...listed,url:'https://192.168.1.55:8443/x'});assert.deepEqual(secure.calls,{http:0,https:1});
+  for(const [hosts,url] of [[[],listed.url],[['192.168.1.55:8081'],listed.url],[['192.168.1.56:8080'],listed.url],[['192.168.1.55:8080'],'http://192.168.1.55/x'],[['192.168.1.55:8080'],'http://10.0.0.5:8080/x']]){
+    const refused=localAdapter(hosts);await assert.rejects(refused.json.read({...listed,url}),{status:422,message:/localJsonHosts/});assert.deepEqual(refused.calls,{http:0,https:0});
+  }
+});
+test('the local allowance does not widen the rules for anything else',()=>{
+  for(const url of ['http://93.184.216.34:8080/x','http://api.example.com/x','https://api.example.com:8443/x','http://127.0.0.1:8080/x','http://localhost:8080/x','http://169.254.169.254/x','http://[::1]:8080/x','ftp://192.168.1.55/x'])assert.throws(()=>normalizeJSONSettings({...listed,url,refreshSeconds:5}),url);
+  assert.throws(()=>normalizeJSONSettings({...listed,url:'http://user:secret@192.168.1.55:8080/x'}),/username and password/);
+  assert.throws(()=>normalizeJSONSettings({...listed,url:'http://192.168.1.55:8080/x#part'}),/# part/);
+  assert.throws(()=>normalizeJSONSettings({...settings,refreshSeconds:1}),/5–3600/);
+  assert.throws(()=>normalizeJSONSettings({...listed,refreshSeconds:0}),/1–3600/);
+  assert.throws(()=>normalizeJSONSettings({...listed,refreshSeconds:3601}),/1–3600/);
+});
+test('a saved local source that is no longer listed fails alone and the data file still loads',async t=>{
+  const base=await fixture(t),file=path.join(base.root,'sources.json');
+  const first=new DataSources(file,base.stages,{json:{read:async()=>({data:{ok:true}})}});await first.ready;
+  const {connectionId}=await first.saveConnection(null,'Local',listed,0,'json-api');await first.close();
+  const second=new DataSources(file,base.stages,{json:new JSONAPI({localHosts:[]})});await second.ready;t.after(()=>second.close());
+  assert.equal(second.snapshot().error,'');assert.equal(second.snapshot().connections[connectionId].label,'Local');
+  await second.refreshSheet(connectionId).catch(()=>{});
+  assert.match(second.snapshot().connections[connectionId].error,/localJsonHosts/);
+});
 test('JSON mappings, static values and transforms resolve in an isolated preview and commit explicitly',async t=>{
   const base=await fixture(t);let data={event:{name:'Finals',round:15,active:true},'a/b':{'~key':'escaped'}};
   const sources=new DataSources(path.join(base.root,'sources.json'),base.stages,{json:{read:async()=>({data})}});await sources.ready;t.after(()=>sources.close());base.playback.sources=sources;

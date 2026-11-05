@@ -255,7 +255,7 @@ function connectionType() {
   $('connection-help').textContent = local
     ? 'Paste the full path to a JSON or CSV file accessible to the SPX computer. Test it, then save. Changes to the file refresh linked graphics automatically.'
     : json
-      ? 'Connect a read-only public HTTPS JSON API. Optional Bearer credentials stay in the server environment.'
+      ? 'Connect a read-only JSON API: public HTTPS, or a network address allowed in SPX. Optional Bearer credentials stay in the server environment.'
       : 'Use a sheet shared with Anyone with the link as Viewer. No sign-in or API key.';
   $('source-url-title').textContent = json ? 'JSON API URL' : 'Google Sheets URL';
   sheetPicker.enabled = sheet;
