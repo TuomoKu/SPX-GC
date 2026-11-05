@@ -215,6 +215,22 @@ test('a server shutting down deliberately does not strand the output with its la
   await eventually(() => r.root.querySelectorAll('iframe').length === 0, 'a clean start clears it', 500);
 });
 
+test('a socket that connects while the session renews is left alone', async (t) => {
+  const r = await renderer(t);
+  let reconnects = 0;
+  r.events().connect();
+  const fetchPage = r.window.fetch;
+  r.window.fetch = async (url, request) => {
+    if (!request?.body) r.events().connected = true;
+    return fetchPage(url, request);
+  };
+  r.events().connect = () => reconnects++;
+  r.events().disconnect('io server disconnect');
+  await eventually(() => r.pages.length === 1, 'the session renews', 500);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(reconnects, 0);
+});
+
 test('a lost transport is left to Socket.IO without renewing', async (t) => {
   const r = await renderer(t);
   r.events().connect();

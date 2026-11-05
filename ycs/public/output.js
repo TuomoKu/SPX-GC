@@ -331,7 +331,8 @@ async function renewViewerSession() {
       renderingError = connectionError;
       root.dataset.error = renderingError;
       report();
-    } else if (!disposed && response.ok) {
+    } else if (!disposed && response.ok && !events.connected) {
+      // It may have connected during that request; leave a healthy socket alone.
       events.disconnect(); // Reopen the transport with the renewed session cookie.
       events.connect?.();
     }
