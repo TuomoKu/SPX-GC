@@ -927,6 +927,7 @@ module.exports = {
       // return ...... nothing
       // Will manage up to 3 recents in global.config.general.recents[]
       return configStore.update(configfileref, current => {
+      let previous = JSON.stringify(current.general.recents || []);
       let recentsArray = current.general.recents || [];
       recentsArray.forEach((item,index) => {
           if (item == rundownRef) {
@@ -935,6 +936,8 @@ module.exports = {
       });
       recentsArray.unshift(rundownRef);
       if (recentsArray.length > 5 ) {recentsArray.length = 5}; // limit to 5
+      // Reopening the most recent rundown must not rewrite the config file.
+      if (JSON.stringify(recentsArray) === previous) return configStore.UNCHANGED;
       current.general.recents = recentsArray;
       }).catch(error => logger.error('Error saving recent rundowns: ' + error.message));
     } catch (error) {
