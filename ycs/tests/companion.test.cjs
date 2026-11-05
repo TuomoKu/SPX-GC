@@ -47,6 +47,9 @@ async function setup(t, { apiKey, duplicate = false } = {}) {
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body)
     });
+  // Presses in these tests are deliberate; space them past the repeat window.
+  let now = 0;
+  playback.now = () => (now += 1000);
   return { ...f, playback, base, post };
 }
 test('project/rundown item commands use saved values and isolate outputs without guessed IDs', async (t) => {

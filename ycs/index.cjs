@@ -63,7 +63,9 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     1000
   );
   sourceTimer.unref();
+  const closePlayback = playback.close.bind(playback);
   playback.close = () => {
+    closePlayback();
     clearInterval(sourceTimer);
     sources.off('change', updateLinks);
     sources.close();
@@ -147,15 +149,13 @@ module.exports = function registerYCS(app, config, hooks = {}) {
     handlers(async (req, res) => {
       await sources.ready;
       const snapshot = sources.snapshot();
+      // Controllers and Data Manager poll this every few seconds. Serve labels
+      // from the parsed-file cache; a stalled share only delays its own refresh.
       const inventories = new Map();
-      for (const stage of repository.stages.values()) {
-        try {
-          const rundown = await repository.read(stage.id);
-          let definitions = [];
-          try { definitions = JSON.parse(await require('node:fs/promises').readFile(path.resolve(stage.file, '../../profile.json'), 'utf8')).templates || []; } catch { /* Item labels still work if profile unavailable. */ }
-          inventories.set(stage.id, {items:rundown.templates, definitions});
-        } catch { /* A missing rundown must not prevent the source status page loading. */ }
-      }
+      await Promise.all([...repository.stages.values()].map(async stage => {
+        const { rundown, profile } = await repository.inventory(stage.id);
+        if (rundown) inventories.set(stage.id, { items: rundown.templates, definitions: profile?.templates || [] });
+      }));
       for (const connection of Object.values(snapshot.connections)) for (const usage of connection.usages) {
         const inventory = inventories.get(usage.stage);
         const item = inventory?.items.find(item => item.itemID === usage.graphic);
