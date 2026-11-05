@@ -2,11 +2,15 @@
 const { PublicSheets, normalizeSettings, parseRange, columnName, usable } = require('./public-sheets.cjs');
 const { readKey } = require('./sheets-key.cjs');
 
-function fail(message, status = 502) {
+function fail(message, status = 502, upstream) {
   const error = new Error(message);
   error.status = status;
+  if (upstream) error.upstream = upstream;
   throw error;
 }
+// A missing tab or a rejected range may mean a renamed tab. Refresh worksheet
+// metadata then, but no more often than this per spreadsheet.
+const TAB_RECHECK = 60000;
 
 function cells(values = [], range) {
   const bounds = parseRange(range);
@@ -31,6 +35,9 @@ class GoogleSheetsAPI {
     this.batchSize = 32;
     this.metadata = new Map();
     this.pending = new Map();
+    // Ranges Google rejected (HTTP 400) are requested on their own until they
+    // succeed, so they cannot fail the batch shared with healthy connections.
+    this.isolated = new Set();
     this.active = 0;
     this.waiters = [];
   }
@@ -53,10 +60,8 @@ class GoogleSheetsAPI {
       if (response.status === 429) fail('Google Sheets quota reached; retaining last valid data and retrying with backoff');
       if ([401, 403].includes(response.status)) fail('Google Sheets API access denied; check the server API key, enabled API and public sharing');
       if (response.status === 404) fail('Google spreadsheet not found or not publicly shared');
-      if (!response.ok || response.status !== 200) {
-        if (response.status === 400) this.metadata.delete(id);
-        fail('Google Sheets API could not read the requested worksheet/range');
-      }
+      if (!response.ok || response.status !== 200)
+        fail('Google Sheets API could not read the requested worksheet/range', 502, response.status);
       if (!/^application\/json\b/i.test(response.headers.get('content-type') || '')) fail('Google Sheets API returned an invalid response');
       const limit = 8388608;
       if (Number(response.headers.get('content-length')) > limit || !response.body) fail('Google Sheets API response is too large or empty');
@@ -98,7 +103,8 @@ class GoogleSheetsAPI {
         return { id: String(properties.sheetId), name: properties.title };
       });
       entry.pending = false;
-      entry.expires = this.now() + 300000;
+      entry.fetchedAt = this.now();
+      entry.expires = entry.fetchedAt + 300000;
       return tabs;
     }).catch(error => { if (this.metadata.get(id) === entry) this.metadata.delete(id); throw error; });
     // Limit retained metadata, without evicting requests still in flight.
@@ -139,21 +145,50 @@ class GoogleSheetsAPI {
     });
   }
 
+  // Expire cached worksheet metadata so the next read refetches it, at most once
+  // per TAB_RECHECK for each spreadsheet.
+  recheckTabs(id) {
+    const cached = this.metadata.get(id);
+    if (cached && !cached.pending && this.now() - cached.fetchedAt >= TAB_RECHECK) cached.expires = 0;
+  }
+
   async flush(id) {
     const jobs = this.pending.get(id).filter(job => !job.cancelled());
     this.pending.delete(id);
-    for (let offset = 0; offset < jobs.length; offset += this.batchSize) {
-      const batch = jobs.slice(offset, offset + this.batchSize);
-      const ranges = [...new Set(batch.map(job => job.range))];
-      try {
-        const result = await this.request(id, '/values:batchGet', [
-          ['majorDimension', 'ROWS'], ['valueRenderOption', 'FORMATTED_VALUE'],
-          ...ranges.map(range => ['ranges', range])
-        ]);
-        if (!Array.isArray(result.valueRanges) || result.valueRanges.length !== ranges.length)
-          fail('Google returned an incomplete batch; retaining last valid data');
-        for (const job of batch) job.finish(null, result.valueRanges[ranges.indexOf(job.range)]);
-      } catch (error) { for (const job of batch) job.finish(error); }
+    const alone = job => this.isolated.has(id + '\n' + job.range);
+    const shared = jobs.filter(job => !alone(job));
+    const work = [];
+    for (let offset = 0; offset < shared.length; offset += this.batchSize)
+      work.push(this.batch(id, shared.slice(offset, offset + this.batchSize)));
+    for (const range of new Set(jobs.filter(alone).map(job => job.range)))
+      work.push(this.batch(id, jobs.filter(job => job.range === range)));
+    await Promise.all(work);
+  }
+
+  async batch(id, jobs) {
+    const ranges = [...new Set(jobs.map(job => job.range))];
+    try {
+      const result = await this.request(id, '/values:batchGet', [
+        ['majorDimension', 'ROWS'], ['valueRenderOption', 'FORMATTED_VALUE'],
+        ...ranges.map(range => ['ranges', range])
+      ]);
+      if (!Array.isArray(result.valueRanges) || result.valueRanges.length !== ranges.length)
+        fail('Google returned an incomplete batch; retaining last valid data');
+      if (ranges.length === 1) this.isolated.delete(id + '\n' + ranges[0]);
+      for (const job of jobs) job.finish(null, result.valueRanges[ranges.indexOf(job.range)]);
+    } catch (error) {
+      // Google rejects the whole batch when any one range is invalid. Retry each
+      // range on its own so only the connection with the bad range fails.
+      if (error.upstream === 400 && ranges.length > 1) {
+        await Promise.all(ranges.map(range => this.batch(id, jobs.filter(job => job.range === range))));
+        return;
+      }
+      if (error.upstream === 400) {
+        if (this.isolated.size >= 1000) this.isolated.clear();
+        this.isolated.add(id + '\n' + ranges[0]);
+        this.recheckTabs(id);
+      }
+      for (const job of jobs) job.finish(error);
     }
   }
 
@@ -167,10 +202,16 @@ class GoogleSheetsAPI {
       fail('Use at most 16 header rows within the connection range', 400);
     signal?.throwIfAborted();
     const id = settings.url.split('/')[5];
-    const tabs = await this.tabs(id);
+    const find = list => list.find(tab => /^\d+$/.test(settings.worksheet) ? tab.id === settings.worksheet : tab.name === settings.worksheet);
+    let tab = find(await this.tabs(id));
     signal?.throwIfAborted();
-    const tab = tabs.find(tab => /^\d+$/.test(settings.worksheet) ? tab.id === settings.worksheet : tab.name === settings.worksheet);
-    if (!tab) { this.metadata.delete(id); fail('Worksheet not found; refresh the worksheet list and select its tab'); }
+    if (!tab) {
+      // Refetch on a miss before failing, without a metadata request every poll.
+      this.recheckTabs(id);
+      tab = find(await this.tabs(id));
+      signal?.throwIfAborted();
+    }
+    if (!tab) fail('Worksheet not found; refresh the worksheet list and select its tab');
     const qualified = `'${tab.name.replace(/'/g, "''")}'!${range}`;
     const result = await this.queue(id, qualified, signal);
     if (!result || typeof result !== 'object') fail('Google returned invalid range data');
