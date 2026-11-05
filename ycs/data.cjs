@@ -9,7 +9,9 @@ const sourceTypes = require('./public/source-types.js');
 const { LocalFiles, normalizeLocalSettings } = require('./local-files.cjs');
 const { linkable } = require('./field-types.cjs');
 const { selection, resolve, transform, normalizeTransform } = require('./bindings.cjs');
+const { writeText } = require('../utils/config-store.cjs');
 const clone = (value) => structuredClone(value);
+const empty = () => ({ version: 2, revision: 0, sources: {}, connections: {}, mappings: [], defaults: [] });
 const keyPattern = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,95}$/;
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 function fail(message, status = 400) {
@@ -213,28 +215,9 @@ class DataSources extends EventEmitter {
     });
   }
   async initialize() {
-    const initial = {
-      version: 2,
-      revision: 0,
-      sources: {},
-      connections: {},
-      mappings: [],
-      defaults: []
-    };
-    for (const stage of this.stages) {
-      const id = `test.${stage.id}.currentRound`;
-      initial.sources[id] = {
-        label: `${stage.title || stage.id} · Current round`,
-        value: 'SWISS ROUND 11 OF 15'
-      };
-      initial.mappings.push({ stage: stage.id, graphic: 'ticker', field: 'f5', source: id });
-    }
-    await fs.mkdir(path.dirname(this.file), { recursive: true });
-    try {
-      await fs.writeFile(this.file, JSON.stringify(initial, null, 2), { flag: 'wx' });
-    } catch (error) {
-      if (error.code !== 'EEXIST') throw error;
-    }
+    // A missing data file is never recreated here: seeding demo sources at
+    // startup put demo values on air. Linked fields use manual values until the
+    // file is available; setup/demo/rehearsal scripts write their own data.
     try {
       const raw = await fs.readFile(this.cacheFile, 'utf8');
       if (raw.length < 4194304) {
@@ -251,16 +234,18 @@ class DataSources extends EventEmitter {
     } catch {
       /* Cache is optional; manual fields remain usable. */
     }
-    const original = await fs.readFile(this.file, 'utf8');
-    const parsed = JSON.parse(original.replace(/^\uFEFF/, ''));
-    if (parsed.version === 1) {
+    const original = await fs.readFile(this.file, 'utf8').catch((error) => {
+      if (error.code !== 'ENOENT') throw error;
+      console.error(`[YCS data] DATA FILE NOT FOUND: ${this.file}. Linked fields use their manual values until it is available.`);
+    });
+    const parsed = original === undefined ? null : JSON.parse(original.replace(/^\uFEFF/, ''));
+    if (parsed?.version === 1) {
       const next = migrate(parsed);
       this.document = next;
       await fs.writeFile(this.file + '.v1-backup.json', original, { flag: 'wx' }).catch((error) => {
         if (error.code !== 'EEXIST') throw error;
       });
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       for (const [id, source] of Object.entries(parsed.sources)) {
         const saved = this.legacyCache?.[id];
         if (
@@ -294,8 +279,12 @@ class DataSources extends EventEmitter {
       this.document = next;
       this.syncRuntimes();
       this.error = '';
-    } catch {
-      this.error = 'Local JSON source unavailable or invalid; retaining last valid values';
+      this.missing = false;
+    } catch (error) {
+      this.missing = !this.document && error.code === 'ENOENT';
+      this.error = this.missing
+        ? 'Data file not found; linked fields use their manual values'
+        : 'Local JSON source unavailable or invalid; retaining last valid values';
     }
     this.checkedAt = new Date().toISOString();
     if (previous !== JSON.stringify([this.document, this.error])) this.emit('change');
@@ -604,8 +593,7 @@ class DataSources extends EventEmitter {
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       this.document = next;
       this.syncRuntimes(); this.checkedAt = next.updatedAt; this.emit('change');
       return { removed };
@@ -615,15 +603,20 @@ class DataSources extends EventEmitter {
     return this.queue(async () => {
       await this.ready;
       await this.read();
-      if (this.error) fail('Repair the local JSON source before saving changes', 503);
-      if (!Number.isSafeInteger(expectedRevision) || expectedRevision !== this.document.revision)
+      // An explicit save may create a missing data file, but never its folder:
+      // an unmounted share must not be replaced by a new local folder.
+      if (this.missing) await fs.stat(path.dirname(this.file)).catch(() =>
+        fail(`Data folder not found: ${path.dirname(this.file)}. Connect the drive or restore the folder, then retry.`, 503));
+      else if (this.error) fail('Repair the local JSON source before saving changes', 503);
+      const current = this.document || empty();
+      if (!Number.isSafeInteger(expectedRevision) || expectedRevision !== current.revision)
         fail('Data changed elsewhere. Reload saved data before saving.', 409);
-      const next = clone(this.document);
+      const next = clone(current);
       operation(next);
-      const changed = Object.keys(this.document.connections).filter(id =>
-        JSON.stringify({...this.document.connections[id].settings, refreshSeconds:0}) !== JSON.stringify({...next.connections[id]?.settings, refreshSeconds:0}) ||
-        this.document.connections[id].type !== next.connections[id]?.type ||
-        this.document.connections[id].project !== next.connections[id]?.project);
+      const changed = Object.keys(current.connections).filter(id =>
+        JSON.stringify({...current.connections[id].settings, refreshSeconds:0}) !== JSON.stringify({...next.connections[id]?.settings, refreshSeconds:0}) ||
+        current.connections[id].type !== next.connections[id]?.type ||
+        current.connections[id].project !== next.connections[id]?.project);
       const used = changed.filter(id => this.usages(id).length);
       if (used.length && confirmed !== true) throw Object.assign(new Error('This change affects linked graphics. Compatible mappings keep their cells or selectors. Removed or incompatible mappings use manual fallback. Existing Program graphics retain their committed values until Play or Update.'), {status:409, confirmationRequired:true});
       if (changed.length) {
@@ -644,9 +637,10 @@ class DataSources extends EventEmitter {
       validate(next);
       next.revision++;
       next.updatedAt = new Date().toISOString();
-      await fs.writeFile(this.file + '.tmp', JSON.stringify(next, null, 2));
-      await fs.rename(this.file + '.tmp', this.file);
+      await writeText(this.file, JSON.stringify(next, null, 2));
       this.document = next;
+      this.error = '';
+      this.missing = false;
       this.syncRuntimes();
       this.checkedAt = next.updatedAt;
       this.emit('change');

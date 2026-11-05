@@ -15,4 +15,15 @@ $temporaryMarker = $markerFile + '.tmp'
 Move-Item -LiteralPath $temporaryMarker -Destination $markerFile -Force
 try { Stop-Process -Id $runtimeProcess.Id }
 catch { Remove-Item -LiteralPath $markerFile -ErrorAction SilentlyContinue; throw }
+# Stop-Process returns before the process has exited and released its port.
+Wait-Process -Id $runtimeProcess.Id -Timeout 10 -ErrorAction SilentlyContinue
+if (Get-Process -Id $runtimeProcess.Id -ErrorAction SilentlyContinue | Where-Object { $_.StartTime.ToUniversalTime().Ticks.ToString() -eq $record.startTicks }) {
+    throw "YCS runtime (PID $($runtimeProcess.Id)) did not exit within 10 seconds. Check Task Manager before starting it again."
+}
+if ($record.port) {
+    for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        if (-not (Get-NetTCPConnection -LocalPort ([int]$record.port) -State Listen -ErrorAction SilentlyContinue)) { break }
+        Start-Sleep -Milliseconds 250
+    }
+}
 Write-Output 'YCS runtime stopped. Saved configuration and rundowns retained.'

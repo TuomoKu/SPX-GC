@@ -73,7 +73,8 @@ async function boot(t, f, { within, stopMarker = null, onCreate } = {}) {
       return eventually(async () => {
         const state = await readJSON(stateFile(f));
         return state.pid === process.pid && state.startedAt === playback.recovery.startedAt &&
-          [...playback.states].every(([id, current]) => JSON.stringify(state.stages[id].program) === JSON.stringify(current.program)) && state;
+          [...playback.states].every(([id, current]) => state.stages[id].revision === current.revision &&
+            JSON.stringify(state.stages[id].program) === JSON.stringify(current.program)) && state;
       }, 'program state saved');
     },
     async crash() { playback.close(); await stopListening(); },

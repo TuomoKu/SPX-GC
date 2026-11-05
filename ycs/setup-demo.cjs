@@ -7,8 +7,19 @@ const graphicsRoot = path.resolve(process.argv[2] || path.join(root, '../ycs-gra
 const slots = {"default":{"label":"Default","order":0,"exitMs":250},"ticker":{"label":"BUG","order":10,"exitMs":250},"lower-third":{"label":"L3","order":20,"exitMs":250},"upper-third":{"label":"U3","order":30,"exitMs":250}};
 
 async function once(file, value) {
-  try { await fs.access(file); }
-  catch { await fs.writeFile(file, JSON.stringify(value, null, 2)); }
+  try { await fs.access(file); return false; }
+  catch { await fs.writeFile(file, JSON.stringify(value, null, 2), { flag: 'wx' }); return true; }
+}
+// Demo round sources. The server never creates these itself: a missing data
+// file at startup leaves linked fields on their manual values.
+function demoData(stages) {
+  const data = { version: 2, revision: 0, sources: {}, connections: {}, mappings: [], defaults: [] };
+  for (const stage of stages) {
+    const id = `test.${stage.id}.currentRound`;
+    data.sources[id] = { label: `${stage.title} · Current round`, value: 'SWISS ROUND 11 OF 15' };
+    data.mappings.push({ stage: stage.id, graphic: 'ticker', field: 'f5', source: id });
+  }
+  return data;
 }
 
 async function setup() {
@@ -42,7 +53,10 @@ async function setup() {
     casparcg: { servers: [] }, osc: { enable: false, port: 57123 }, globalExtras: { customscript: '', CustomControls: [] },
     ycs: { enabled: true, listenHost: '127.0.0.1', graphicsRoot, stages, slots }
   };
-  await once(path.join(root, '.local/ycs-dev.json'), configuration);
+  // Seed demo sources only beside a newly created demo configuration, so an
+  // existing show that uses the default data path never receives demo values.
+  if (await once(path.join(root, '.local/ycs-dev.json'), configuration))
+    await once(path.join(root, '.local/ycs-data.json'), demoData(stages));
   console.log('Start from this repository: node server.js .local/ycs-dev.json');
   for (const stage of stages) console.log(`http://127.0.0.1:5660/gc/${stage.project}/${stage.rundown}`);
 }

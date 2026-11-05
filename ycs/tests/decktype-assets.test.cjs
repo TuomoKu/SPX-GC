@@ -20,3 +20,13 @@ test('decktype file symlinks cannot escape a configured image folder',async t=>{
  try{await fs.symlink(outside,path.join(f.first,'LINK.png'),'file');}catch(error){if(['EPERM','EACCES'].includes(error.code)){t.skip('OS does not permit test symlink creation');return;}throw error;}
  assert.equal((await f.get('LINK.png')).status,404);
 });
+test('decktype folders inside a dot-folder such as .local/decktypes are served',async t=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'decktype-dot-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+ const hidden=path.join(root,'.local','decktypes'),second=path.join(root,'.shared','more');await fs.mkdir(hidden,{recursive:true});await fs.mkdir(second,{recursive:true});
+ await fs.writeFile(path.join(hidden,'DECK.png'),'hidden-folder');await fs.writeFile(path.join(second,'NEXT.png'),'second-folder');
+ const app=express();register(app,[hidden,second]);const server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s));});t.after(()=>new Promise(resolve=>server.close(resolve)));
+ const get=name=>fetch('http://127.0.0.1:'+server.address().port+'/decktypes/'+encodeURIComponent(name));
+ let response=await get('DECK.png');assert.equal(response.status,200);assert.equal(await response.text(),'hidden-folder');
+ response=await get('NEXT.png');assert.equal(response.status,200,'later folders are still searched');assert.equal(await response.text(),'second-folder');
+ assert.equal((await get('.DECK.png')).status,400);
+});

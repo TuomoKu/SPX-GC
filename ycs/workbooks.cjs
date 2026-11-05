@@ -48,7 +48,7 @@ function attach(DataSources) {
   Object.assign(DataSources.prototype, {
     workbookRuntime(id) {
       this.workbookRuntimes ||= new Map();
-      const workbook = this.document.workbooks?.[id];
+      const workbook = this.document?.workbooks?.[id];
       if (!workbook) fail('Unknown spreadsheet.', 404);
       const fingerprint = JSON.stringify(workbook.settings);
       if (this.workbookRuntimes.get(id)?.fingerprint !== fingerprint) this.workbookRuntimes.set(id, { fingerprint, nextAt: 0, lastSuccess: null, failures: 0 });
@@ -89,7 +89,7 @@ function attach(DataSources) {
     },
     async saveNamedRange(workbookId, groupId, input) {
       await this.ready;
-      const book = this.document.workbooks?.[workbookId];
+      const book = this.document?.workbooks?.[workbookId];
       if (!book?.groups[groupId]) fail('Unknown group.', 404);
       const normalized = normalizeSettings({ ...input.settings, ...book.settings });
       const metadata = rangeMetadata({ workbook: workbookId, group: groupId, headerRow: input.headerRow, dataRow: input.dataRow }, normalized);
