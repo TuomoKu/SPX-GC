@@ -10,7 +10,8 @@ test('disposable rehearsal uses real template definitions, offline sheet/JSON li
   // The graphics checkout is optional for normal fork CI; this test supplies
   // an independent SPX definition with the real public Stories contract.
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ycs-rehearsal-'));
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  // A program-state write can still be finishing when a test ends.
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 20 }));
   const graphics = path.join(root, 'graphics'); await fs.mkdir(graphics);
   await fs.writeFile(path.join(graphics, 'ticker.html'), `window.SPXGCTemplateDefinition = ${JSON.stringify({ DataFields: [
     ...['f1', 'f3', 'f4', 'f5', 'f6', 'f7'].map(field => ({ field, ftype: 'textfield', value: '' })),
@@ -53,6 +54,32 @@ test('disposable rehearsal uses real template definitions, offline sheet/JSON li
   assert.equal(wrongOrigin.status, 403);
   const data = await get('/api/ycs/data');
   await post('/api/ycs/data/source', { id: 'test.stage-2.currentRound', value: 'SAVED ROUND', revision: data.revision });
+  // A crash (no clean shutdown) inside the window restores program as it was.
+  const saved = async () => {
+    const file = path.join(show, 'sources.program-state.json');
+    for (let attempt = 0; attempt < 200; attempt++) {
+      try { const state = JSON.parse(await fs.readFile(file, 'utf8')); if (state.startedAt === runtime.playback.recovery.startedAt && [...runtime.playback.states].every(([id, current]) => JSON.stringify(state.stages[id].program) === JSON.stringify(current.program))) return state; } catch { /* not yet */ }
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    assert.fail('program state was not saved');
+  };
+  await saved();
+  const crash = async () => { runtime.playback.close(); await new Promise(resolve => runtime.io.close(resolve)); };
+  const restarts = [];
+  await crash(); runtime = await createRehearsal(show, graphics, { restart: mode => restarts.push(mode) }); base = await listen();
+  assert.equal((await get('/api/ycs/stages/stage-1/program/state')).graphics.length, 2);
+  assert.equal((await get('/api/ycs/stages/stage-2/program/state')).graphics.length, 0);
+  assert.equal((await get('/api/ycs/stages/stage-1/health')).restored.graphics, 2);
+  // The over-window rehearsal restart backdates the heartbeat, then the worker is killed.
+  await saved();
+  const response = await fetch(base + '/rehearsal/restart', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'expired' }) });
+  assert.equal(response.status, 202);
+  await new Promise(resolve => setTimeout(resolve, 150));
+  assert.deepEqual(restarts, ['expired']);
+  await crash(); runtime = await createRehearsal(show, graphics); base = await listen();
+  for (const number of [1, 2, 3]) assert.equal((await get(`/api/ycs/stages/stage-${number}/program/state`)).graphics.length, 0);
+  await post('/api/ycs/stages/stage-1/graphics/ticker/play');
+  // A graceful stop starts clean, however quickly the rehearsal returns.
   await runtime.close(); runtime = await createRehearsal(show, graphics); base = await listen();
   for (const number of [1, 2, 3]) assert.equal((await get(`/api/ycs/stages/stage-${number}/program/state`)).graphics.length, 0);
   assert.equal((await get('/api/ycs/data')).sources['test.stage-2.currentRound'].value, 'SAVED ROUND');

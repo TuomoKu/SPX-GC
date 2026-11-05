@@ -7,6 +7,7 @@ const { fork } = require('node:child_process');
 const express = require('express');
 const { Server } = require('socket.io');
 const register = require('./index.cjs');
+const { writeText } = require('../utils/config-store.cjs');
 
 const numbers = [1, 2, 3];
 const write = (file, data) => fs.writeFile(file, JSON.stringify(data, null, 2));
@@ -77,7 +78,7 @@ async function createRehearsal(root, graphicsRoot, { restart } = {}) {
   const server = http.createServer(app), io = new Server(server);
   app.get('/js/socket.io.js', (req, res) => res.sendFile(path.join(path.dirname(require.resolve('socket.io')), '../client-dist/socket.io.js')));
   const config = { general: { dataroot: path.join(root, 'rundowns'), username: '' }, ycs: { enabled: true, graphicsRoot, dataFile: path.join(root, 'sources.json'), stages, slots: { ticker: { order: 10, exitMs: 250 }, 'lower-third': { order: 20, exitMs: 250 } } } };
-  const playback = register(app, config, { auth: { CheckLogin: (req, res, next) => next() }, sheets: { read: settings => fixtureData('sheet', settings) }, json: { read: settings => fixtureData('json', settings) } });
+  const playback = register(app, config, { stopMarker: null, auth: { CheckLogin: (req, res, next) => next() }, sheets: { read: settings => fixtureData('sheet', settings) }, json: { read: settings => fixtureData('json', settings) } });
   await playback.sources.ready;
   await playback.sources.pollSheets();
   playback.attachSockets(io);
@@ -99,21 +100,37 @@ async function createRehearsal(root, graphicsRoot, { restart } = {}) {
     // namespace disconnect (which requires a manual reconnect).
     for (const socket of io.of('/ycs-playback').sockets.values()) if (socket.data.stageRooms?.includes(req.params.stage + ':program')) socket.conn.close();
   });
-  app.post('/rehearsal/restart', (req, res) => {
-    if (!restart) return res.status(409).json({ error: 'Start through node ycs/rehearsal.cjs to enable restart' });
-    res.status(202).json({ restarting: true });
-    setTimeout(restart, 100);
+  // crash: the worker is killed (SIGKILL) and restores its program.
+  // graceful: the worker stops normally and starts clean.
+  // expired: the heartbeat is backdated past the window, then the worker is killed.
+  app.post('/rehearsal/restart', async (req, res, next) => {
+    try {
+      if (!restart) return res.status(409).json({ error: 'Start through node ycs/rehearsal.cjs to enable restart' });
+      const mode = req.body?.mode || 'graceful';
+      if (!['crash', 'graceful', 'expired'].includes(mode)) return res.status(400).json({ error: 'Choose a crash, graceful or expired restart' });
+      if (mode === 'expired') {
+        const recovery = playback.recovery;
+        recovery.stop();
+        while (recovery.writing) await recovery.writing;
+        const saved = recovery.document();
+        saved.heartbeat -= (recovery.withinSeconds + 30) * 1000;
+        await writeText(recovery.file, JSON.stringify(saved));
+      }
+      res.status(202).json({ restarting: true, mode });
+      setTimeout(() => restart(mode), 100);
+    } catch (error) { next(error); }
   });
   return { app, server, io, playback, async close() {
     // Close transports first so browsers reconnect automatically to a fresh
     // server, rather than receiving a deliberate namespace disconnect.
-    await new Promise(resolve => io.close(resolve)); playback.close();
+    // A deliberate stop: the next start is clean (YCS.md, "Restart recovery").
+    await new Promise(resolve => io.close(resolve)); await playback.shutdown();
   } };
 }
 async function main() {
   if (process.argv[2] === '--worker') {
     const [root, graphicsRoot, port] = process.argv.slice(3);
-    const rehearsal = await createRehearsal(root, graphicsRoot, { restart: () => process.send?.('restart') });
+    const rehearsal = await createRehearsal(root, graphicsRoot, { restart: mode => process.send?.({ restart: mode }) });
     await new Promise((resolve, reject) => { rehearsal.server.once('error', reject); rehearsal.server.listen(Number(port), '127.0.0.1', resolve); });
     let closing = false;
     const close = async () => { if (closing) return; closing = true; await rehearsal.close(); process.exit(0); };
@@ -136,7 +153,10 @@ async function main() {
     worker = fork(__filename, ['--worker', root, graphicsRoot, String(port)], { windowsHide: true, stdio: ['ignore', 'inherit', 'inherit', 'ipc'] });
     worker.on('message', message => {
       if (message === 'ready') console.log(`REHEARSAL ONLY: http://127.0.0.1:${port}/rehearsal\nDisposable show: ${root}\nReal rundowns and connections are untouched. Ctrl+C stops this rehearsal.`);
-      if (message === 'restart' && !restarting && !stopping) { restarting = true; worker.send('stop'); }
+      if (message?.restart && !restarting && !stopping) {
+        restarting = true;
+        if (message.restart === 'graceful') worker.send('stop'); else worker.kill('SIGKILL');
+      }
     });
     worker.on('error', error => { console.error(error.message); process.exitCode = 1; });
     worker.on('exit', code => { if (restarting && !stopping) { restarting = false; start(); } else process.exitCode = stopping ? 0 : code || 1; });
