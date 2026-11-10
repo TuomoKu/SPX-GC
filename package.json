@@ -5,6 +5,9 @@
   "homepage": "https://spxgraphics.com",
   "main": "server.js",
   "bin": "server.js",
+  "engines": {
+    "node": "26.x"
+  },
   "pkg": {
     "assets": [
       "views/**/*",

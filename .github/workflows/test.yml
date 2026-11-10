@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  test:
+    # The show runs on Windows, and some tests cover the Windows launch scripts.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ycs-spx
+
+      # Rehearsal uses the real templates, and the contract check runs from
+      # ycs-graphics, so check out its default branch beside this repo.
+      - uses: actions/checkout@v4
+        with:
+          repository: tzarVOLVER/ycs-graphics
+          path: ycs-graphics
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ycs-spx/.nvmrc
+          cache: npm
+          cache-dependency-path: ycs-spx/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ycs-spx
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ycs-spx
+        run: npm test
+
+      - name: Check data contracts match ycs-graphics
+        working-directory: ycs-graphics
+        run: node scripts/sync-data-contracts.mjs --check --spx ../ycs-spx

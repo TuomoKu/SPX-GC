@@ -4,6 +4,8 @@
 ._*
 *.gz
 *.md
+!CLAUDE.md
+!SHOW-DAY.md
 *.7z
 *.mov
 *.mp4
